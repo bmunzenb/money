@@ -10,13 +10,13 @@ data class Condition(val clause: String, val parameters: List<Any>) {
         fun greaterThan(column: String, value: Any) =
                 Condition("$column > ?", listOf(value))
 
-        fun greaterThanOrEquals(column: String, value: Any) =
+        fun greaterThanOrEqualTo(column: String, value: Any) =
                 Condition("$column >= ?", listOf(value))
 
         fun lessThan(column: String, value: Any) =
                 Condition("$column < ?", listOf(value))
 
-        fun lessThanOrEquals(column: String, value: Any) =
+        fun lessThanOrEqualTo(column: String, value: Any) =
                 Condition("$column <= ?", listOf(value))
 
         fun isNull(column: String) =
@@ -43,11 +43,11 @@ fun String.eq(value: Any) = Condition.eq(this, value)
 
 fun String.greaterThan(value: Any) = Condition.greaterThan(this, value)
 
-fun String.greaterThanOrEquals(value: Any) = Condition.greaterThanOrEquals(this, value)
+fun String.greaterThanOrEqualTo(value: Any) = Condition.greaterThanOrEqualTo(this, value)
 
 fun String.lessThan(value: Any) = Condition.lessThan(this, value)
 
-fun String.lessThanOrEquals(value: Any) = Condition.lessThanOrEquals(this, value)
+fun String.lessThanOrEqualTo(value: Any) = Condition.lessThanOrEqualTo(this, value)
 
 fun String.isNull() = Condition.isNull(this)
 

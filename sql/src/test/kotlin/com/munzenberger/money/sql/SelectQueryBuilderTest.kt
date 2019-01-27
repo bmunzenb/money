@@ -17,7 +17,7 @@ class SelectQueryBuilderTest {
     fun `select table and columns`() {
 
         val query = Query.selectFrom("TABLE")
-                .columns("COL_A", "COL_B", "COL_C")
+                .cols("COL_A", "COL_B", "COL_C")
                 .build()
 
         assertEquals("SELECT COL_A, COL_B, COL_C FROM TABLE", query.sql)
@@ -27,7 +27,7 @@ class SelectQueryBuilderTest {
     fun `select with where clause`() {
 
         val query = Query.selectFrom("TABLE")
-                .columns("COL")
+                .cols("COL")
                 .where("COL".eq(1))
                 .build()
 
@@ -39,7 +39,7 @@ class SelectQueryBuilderTest {
     fun `select with join`() {
 
         val query = Query.selectFrom("TABLE_A")
-                .columns("COL_A")
+                .cols("COL_A")
                 .innerJoin("TABLE_B", "COL_A", "COL_B")
                 .build()
 
@@ -50,7 +50,7 @@ class SelectQueryBuilderTest {
     fun `select with order`() {
 
         val query = Query.selectFrom("TABLE")
-                .columns("COL_A", "COL_B")
+                .cols("COL_A", "COL_B")
                 .orderBy("COL_A", "COL_B")
                 .build()
 

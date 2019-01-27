@@ -9,11 +9,11 @@ class SelectQueryBuilder(private val table: String) {
     private val joins = mutableListOf<String>()
     private val orderBy = mutableListOf<String>()
 
-    fun columns(columns: List<String>) = this.apply {
+    fun cols(columns: List<String>) = this.apply {
         this.columns.addAll(columns)
     }
 
-    fun columns(vararg columns: String) = this.apply {
+    fun cols(vararg columns: String) = this.apply {
         this.columns.addAll(columns)
     }
 

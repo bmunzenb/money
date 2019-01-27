@@ -10,8 +10,8 @@ object SQLExecutor {
 
     private val logger = Logger.getLogger(SQLExecutor::class.java.name)
 
-    fun executeQuery(connection: Connection, sql: String, parameters: List<Any>? = null, handler: ResultSetHandler? = null) {
-        logger.log(Level.FINE, "executeQuery: $sql -> $parameters")
+    fun executeQuery(connection: Connection, sql: String, parameters: List<Any> = emptyList(), handler: ResultSetHandler? = null) {
+        logger.log(Level.FINE, "executeQuery: $sql -> ${parameters.toParamString()}")
 
         connection.prepareStatement(sql).use { preparedStatement ->
 
@@ -23,8 +23,8 @@ object SQLExecutor {
         }
     }
 
-    fun executeUpdate(connection: Connection, sql: String, parameters: List<Any>? = null, handler: ResultSetHandler? = null): Int {
-        logger.log(Level.FINE, "executeUpdate: $sql -> $parameters")
+    fun executeUpdate(connection: Connection, sql: String, parameters: List<Any> = emptyList(), handler: ResultSetHandler? = null): Int {
+        logger.log(Level.FINE, "executeUpdate: $sql -> ${parameters.toParamString()}")
 
         return connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS).use { preparedStatement ->
 
@@ -41,7 +41,6 @@ object SQLExecutor {
     }
 
     private fun <T : AutoCloseable, R> T.use(block: (T) -> R): R {
-
         try {
             return block(this)
         } finally {
@@ -53,10 +52,16 @@ object SQLExecutor {
         }
     }
 
-    private fun PreparedStatement.setParameters(parameters: List<Any>?) {
-
-        parameters?.withIndex()?.forEach {
+    private fun PreparedStatement.setParameters(parameters: List<Any>) {
+        parameters.withIndex().forEach {
             setObject(it.index + 1, it.value)
+        }
+    }
+
+    private fun List<Any>.toParamString() = joinToString {
+        when (it) {
+            is String -> "\"$it\""
+            else -> it.toString()
         }
     }
 }
