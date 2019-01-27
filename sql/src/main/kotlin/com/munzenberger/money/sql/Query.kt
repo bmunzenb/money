@@ -7,5 +7,11 @@ data class Query(val sql: String, val parameters: List<Any> = emptyList()) {
         fun selectFrom(table: String) = SelectQueryBuilder(table)
 
         fun createTable(table: String) = CreateTableQueryBuilder(table)
+
+        fun insertInto(table: String) = InsertQueryBuilder(table)
+
+        fun update(table: String) = UpdateQueryBuilder(table)
+
+        fun deleteFrom(table: String) = DeleteQueryBuilder(table)
     }
 }
