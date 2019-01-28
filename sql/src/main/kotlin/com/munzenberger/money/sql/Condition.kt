@@ -1,6 +1,6 @@
 package com.munzenberger.money.sql
 
-data class Condition(val clause: String, val parameters: List<Any>) {
+data class Condition(val clause: String, val parameters: List<Any> = emptyList()) {
 
     companion object {
 
@@ -20,16 +20,22 @@ data class Condition(val clause: String, val parameters: List<Any>) {
                 Condition("$column <= ?", listOf(value))
 
         fun isNull(column: String) =
-                Condition("$column IS NULL", listOf())
+                Condition("$column IS NULL")
 
         fun isNotNull(column: String) =
-                Condition("$column IS NOT NULL", listOf())
+                Condition("$column IS NOT NULL")
 
         fun inGroup(column: String, values: List<Any>) =
                 Condition("$column IN (${values.map { '?' }.joinToString(", ")})", values)
 
+        fun inGroup(column: String, vararg values: Any) =
+                inGroup(column, values.toList())
+
         fun notInGroup(column: String, values: List<Any>) =
                 Condition("$column NOT IN (${values.map { '?' }.joinToString(", ")})", values)
+
+        fun notInGroup(column: String, vararg values: Any) =
+                notInGroup(column, values.toList())
     }
 
     fun or(condition: Condition) =
@@ -55,4 +61,8 @@ fun String.isNotNull() = Condition.isNotNull(this)
 
 fun String.inGroup(values: List<Any>) = Condition.inGroup(this, values)
 
+fun String.inGroup(vararg values: Any) = Condition.inGroup(this, values)
+
 fun String.notInGroup(values: List<Any>) = Condition.notInGroup(this, values)
+
+fun String.notInGroup(vararg values: Any) = Condition.notInGroup(this, values)

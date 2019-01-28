@@ -20,7 +20,11 @@ fun Column.isNotNull() = toString().isNotNull()
 
 fun Column.inGroup(values: List<Any>) = toString().inGroup(values)
 
+fun Column.inGroup(vararg values: Any) = toString().inGroup(values)
+
 fun Column.notInGroup(values: List<Any>) = toString().notInGroup(values)
+
+fun Column.notInGroup(vararg values: Any) = toString().notInGroup(values)
 
 fun SelectQueryBuilder.columns(columns: List<Column>) = this.apply {
     cols(columns.map { it.toString() })
