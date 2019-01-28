@@ -1,6 +1,6 @@
 rootProject.name = 'money'
 
 include 'sql'
+include 'version'
 include 'core'
 include 'app'
-
