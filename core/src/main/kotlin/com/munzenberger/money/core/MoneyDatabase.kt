@@ -1,3 +1,3 @@
 package com.munzenberger.money.core
 
-class MoneyCore
+class MoneyDatabase

@@ -1,0 +1,24 @@
+package com.munzenberger.money.sql
+
+interface QueryExecutor {
+
+    fun execute(query: Query)
+
+    fun executeQuery(query: Query, handler: ResultSetHandler? = null)
+
+    fun executeUpdate(query: Query, handler: ResultSetHandler? = null)
+
+    fun <T> getList(query: Query, mapper: ResultSetMapper<T>): List<T> {
+        return ListResultSetHandler(mapper).let {
+            executeQuery(query, it)
+            it.results
+        }
+    }
+
+    fun <T> getFirst(query: Query, mapper: ResultSetMapper<T>): T? {
+        return FirstResultSetHandler(mapper).let {
+            executeQuery(query, it)
+            it.result
+        }
+    }
+}

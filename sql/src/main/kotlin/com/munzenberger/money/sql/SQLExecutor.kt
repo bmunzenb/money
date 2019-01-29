@@ -42,18 +42,6 @@ object SQLExecutor {
         }
     }
 
-    private fun <T : AutoCloseable, R> T.use(block: (T) -> R): R {
-        try {
-            return block(this)
-        } finally {
-            try {
-                this.close()
-            } catch (e: Exception) {
-                logger.log(Level.WARNING, "failed to close resource", e)
-            }
-        }
-    }
-
     private fun PreparedStatement.setParameters(parameters: List<Any>) {
         parameters.withIndex().forEach {
             setObject(it.index + 1, it.value)

@@ -1,13 +1,9 @@
 package com.munzenberger.money.version
 
 interface Version {
-    val hash: Int
+    val hash: Long
 }
 
-interface Versionable {
-    fun getAppliedVersions(): List<Version>
-}
-
-interface PendingVersion<T : Versionable> : Version {
+interface ApplicableVersion<T> : Version {
     fun apply(obj: T)
 }
