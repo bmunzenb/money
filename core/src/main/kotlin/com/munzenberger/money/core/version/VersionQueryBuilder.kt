@@ -2,16 +2,14 @@ package com.munzenberger.money.core.version
 
 import com.munzenberger.money.sql.Query
 
-abstract class VersionQueryBuilder {
+class VersionQueryBuilder(val tableName: String) {
 
-    abstract val tableName: String
-
-    open val hashColumnName: String = "VERSION_HASH"
-    open val timestampColumnName: String = "VERSION_TIMESTAMP"
+    val hashColumnName: String = "VERSION_HASH"
+    val timestampColumnName: String = "VERSION_TIMESTAMP"
 
     fun create() = Query.createTable(tableName)
             .ifNotExists()
-            .column(hashColumnName, "BIGINT NOT NULL")
+            .column(hashColumnName, "BIGINT NOT NULL PRIMARY KEY")
             .column(timestampColumnName, "BIGINT NOT NULL")
             .build()
 
