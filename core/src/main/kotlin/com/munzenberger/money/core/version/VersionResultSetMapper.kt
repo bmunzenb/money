@@ -11,7 +11,7 @@ class VersionResultSetMapper(private val hashColumnName: String) : ResultSetMapp
         val hash = resultSet.getLong(hashColumnName)
 
         return object : Version {
-            override val hash = hash
+            override val versionId = hash
         }
     }
 }

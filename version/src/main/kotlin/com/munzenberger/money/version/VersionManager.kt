@@ -29,8 +29,8 @@ abstract class VersionManager<T> {
         // the versions must have been applied in the correct sequence
         while (iter1.hasNext() && iter2.hasNext()) {
 
-            // their hashes must match exactly
-            if (iter1.next().hash != iter2.next().hash) {
+            // their IDs must match exactly
+            if (iter1.next().versionId != iter2.next().versionId) {
                 return UnsupportedVersion
             }
         }

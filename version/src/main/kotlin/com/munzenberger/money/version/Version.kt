@@ -1,7 +1,7 @@
 package com.munzenberger.money.version
 
 interface Version {
-    val hash: Long
+    val versionId: Long
 }
 
 interface ApplicableVersion<T> : Version {

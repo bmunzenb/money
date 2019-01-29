@@ -10,11 +10,11 @@ abstract class MoneyVersionManager(private val queryBuilder: VersionQueryBuilder
 
         obj.executeUpdate(queryBuilder.create())
 
-        return obj.getList(queryBuilder.select(), VersionResultSetMapper(queryBuilder.hashColumnName))
+        return obj.getList(queryBuilder.select(), VersionResultSetMapper(queryBuilder.versionIdColumnName))
     }
 
     override fun onVersionApplied(obj: MoneyDatabase, version: Version) {
 
-        obj.executeUpdate(queryBuilder.insert(version.hash))
+        obj.executeUpdate(queryBuilder.insert(version))
     }
 }
