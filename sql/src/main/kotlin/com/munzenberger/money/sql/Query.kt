@@ -1,6 +1,6 @@
 package com.munzenberger.money.sql
 
-data class Query(val sql: String, val parameters: List<Any> = emptyList()) {
+data class Query(val sql: String, val parameters: List<Any?> = emptyList()) {
 
     companion object {
 

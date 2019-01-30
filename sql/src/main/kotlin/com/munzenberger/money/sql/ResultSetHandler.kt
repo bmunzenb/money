@@ -10,7 +10,7 @@ interface ResultSetMapper<out T> {
     fun map(resultSet: ResultSet): T
 }
 
-class ListResultSetHandler<T>(private val mapper: ResultSetMapper<T>) : ResultSetHandler {
+open class ListResultSetHandler<T>(private val mapper: ResultSetMapper<T>) : ResultSetHandler {
 
     private val mutableResults = mutableListOf<T>()
 
@@ -25,7 +25,7 @@ class ListResultSetHandler<T>(private val mapper: ResultSetMapper<T>) : ResultSe
     }
 }
 
-class FirstResultSetHandler<T>(private val mapper: ResultSetMapper<T>) : ResultSetHandler {
+open class FirstResultSetHandler<T>(private val mapper: ResultSetMapper<T>) : ResultSetHandler {
 
     private var mutableResult: T? = null
 

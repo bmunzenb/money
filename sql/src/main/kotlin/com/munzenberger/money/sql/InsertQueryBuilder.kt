@@ -6,10 +6,10 @@ class InsertQueryBuilder(table: String) : SettableQueryBuilder<InsertQueryBuilde
 
     override fun instance() = this
 
-    override fun build(table: String, parameters: Map<String, Any>): Query {
+    override fun build(table: String, parameters: Map<String, Any?>): Query {
 
         val sb = StringBuilder("INSERT INTO $table (")
-        val params = mutableListOf<Any>()
+        val params = mutableListOf<Any?>()
 
         sb.append(parameters.entries.joinToString(separator = ", ") {
             params.add(it.value)

@@ -12,10 +12,10 @@ class UpdateQueryBuilder(table: String) : SettableQueryBuilder<UpdateQueryBuilde
 
     override fun instance() = this
 
-    override fun build(table: String, parameters: Map<String, Any>): Query {
+    override fun build(table: String, parameters: Map<String, Any?>): Query {
 
         val sb = StringBuilder("UPDATE $table SET ")
-        val params = mutableListOf<Any>()
+        val params = mutableListOf<Any?>()
 
         sb.append(parameters.entries.joinToString(", ") {
             params.add(it.value)

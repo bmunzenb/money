@@ -2,9 +2,9 @@ package com.munzenberger.money.sql
 
 abstract class SettableQueryBuilder<T>(private val table: String) {
 
-    private val parameters = mutableMapOf<String, Any>()
+    private val parameters = mutableMapOf<String, Any?>()
 
-    fun set(column: String, value: Any): T {
+    fun set(column: String, value: Any?): T {
         parameters[column] = value
         return instance()
     }
@@ -13,5 +13,5 @@ abstract class SettableQueryBuilder<T>(private val table: String) {
 
     protected abstract fun instance(): T
 
-    protected abstract fun build(table: String, parameters: Map<String, Any>): Query
+    protected abstract fun build(table: String, parameters: Map<String, Any?>): Query
 }

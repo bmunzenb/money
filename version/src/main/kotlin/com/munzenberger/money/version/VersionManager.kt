@@ -6,17 +6,17 @@ object UnsupportedVersion : VersionStatus()
 
 object CurrentVersion : VersionStatus()
 
-abstract class PendingUpgrades<T> : VersionStatus() {
-    abstract fun upgrade(obj: T)
+abstract class PendingUpgrades : VersionStatus() {
+    abstract fun apply()
 }
 
 abstract class VersionManager<T> {
 
-    abstract fun getApplicableVersions(): List<ApplicableVersion<T>>
+    protected abstract fun getApplicableVersions(): List<ApplicableVersion<T>>
 
-    abstract fun getAppliedVersions(obj: T): List<Version>
+    protected abstract fun getAppliedVersions(obj: T): List<Version>
 
-    abstract fun onVersionApplied(obj: T, version: Version)
+    protected abstract fun onVersionApplied(obj: T, version: Version)
 
     fun getVersionStatus(obj: T): VersionStatus {
 
@@ -36,14 +36,14 @@ abstract class VersionManager<T> {
         }
 
         // and there can't be any additional versions not in the master list
-        if (!iter1.hasNext()) {
+        if (iter1.hasNext()) {
             return UnsupportedVersion
         }
 
         // check for pending upgrades
         if (iter2.hasNext()) {
-            return object : PendingUpgrades<T>() {
-                override fun upgrade(obj: T) = iter2.forEachRemaining {
+            return object : PendingUpgrades() {
+                override fun apply() = iter2.forEachRemaining {
                     it.apply(obj)
                     onVersionApplied(obj, it)
                 }
