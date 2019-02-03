@@ -4,7 +4,7 @@ import com.munzenberger.money.sql.SettableQueryBuilder
 
 data class BankModel(var name: String? = null) : Model()
 
-object BankRepository : Repository<BankModel>() {
+object BankModelQueryBuilder : ModelQueryBuilder<BankModel>() {
 
     override val table = "BANKS"
 

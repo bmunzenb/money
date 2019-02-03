@@ -25,6 +25,14 @@ abstract class PersistableTest<P : Persistable<*>> : MoneyDatabaseTestSupport() 
     }
 
     @Test
+    fun `can delete an unsaved persistable`() {
+
+        val p = createPersistable().apply { save().test().assertComplete() }
+
+        p.delete().test().assertComplete()
+    }
+
+    @Test
     fun `can store and retrieve a persistable by identity`() {
 
         val p = createPersistable()

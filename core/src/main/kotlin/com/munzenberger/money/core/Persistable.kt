@@ -1,13 +1,13 @@
 package com.munzenberger.money.core
 
 import com.munzenberger.money.core.model.Model
-import com.munzenberger.money.core.model.Repository
+import com.munzenberger.money.core.model.ModelQueryBuilder
 import com.munzenberger.money.sql.QueryExecutor
 import io.reactivex.Completable
 
 abstract class Persistable<M : Model>(
         protected val model: M,
-        protected val repository: Repository<M>,
+        protected val modelQueryBuilder: ModelQueryBuilder<M>,
         protected val executer: QueryExecutor
 ) {
 
@@ -18,7 +18,7 @@ abstract class Persistable<M : Model>(
 
     protected fun insert() = Completable.create {
 
-        val query = repository.insert(model)
+        val query = modelQueryBuilder.insert(model)
         val handler = IdentityResultSetHandler()
 
         executer.executeUpdate(query, handler)
@@ -30,7 +30,7 @@ abstract class Persistable<M : Model>(
 
     protected fun update() = Completable.create {
 
-        val query = repository.update(model)
+        val query = modelQueryBuilder.update(model)
 
         executer.executeUpdate(query)
 
@@ -39,7 +39,7 @@ abstract class Persistable<M : Model>(
 
     fun delete() = Completable.create {
 
-        val query = repository.delete(model)
+        val query = modelQueryBuilder.delete(model)
 
         executer.executeUpdate(query)
 

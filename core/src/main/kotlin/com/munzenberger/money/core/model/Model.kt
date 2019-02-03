@@ -6,7 +6,7 @@ import com.munzenberger.money.sql.eq
 
 abstract class Model(var identity: Long? = null)
 
-abstract class Repository<M : Model> {
+abstract class ModelQueryBuilder<M : Model> {
 
     abstract val table: String
 

@@ -1,13 +1,13 @@
 package com.munzenberger.money.core
 
 import com.munzenberger.money.core.model.BankModel
-import com.munzenberger.money.core.model.BankRepository
+import com.munzenberger.money.core.model.BankModelQueryBuilder
 import com.munzenberger.money.sql.QueryExecutor
 import com.munzenberger.money.sql.ResultSetMapper
 import io.reactivex.Single
 import java.sql.ResultSet
 
-class Bank(executor: QueryExecutor, model: BankModel = BankModel()) : Persistable<BankModel>(model, BankRepository, executor) {
+class Bank(executor: QueryExecutor, model: BankModel = BankModel()) : Persistable<BankModel>(model, BankModelQueryBuilder, executor) {
 
     var name: String?
         get() = model.name
@@ -17,7 +17,7 @@ class Bank(executor: QueryExecutor, model: BankModel = BankModel()) : Persistabl
 
         fun getAll(executor: QueryExecutor) = Single.create<List<Bank>> {
 
-            val query = BankRepository.select()
+            val query = BankModelQueryBuilder.select()
             val list = executor.getList(query, BankResultSetMapper(executor))
 
             it.onSuccess(list)
@@ -25,7 +25,7 @@ class Bank(executor: QueryExecutor, model: BankModel = BankModel()) : Persistabl
 
         fun get(identity: Long, executor: QueryExecutor) = Single.create<Bank> {
 
-            val query = BankRepository.select(identity)
+            val query = BankModelQueryBuilder.select(identity)
             val bank = executor.getFirst(query, BankResultSetMapper(executor))
 
             when (bank) {
@@ -41,8 +41,8 @@ class BankResultSetMapper(private val executor: QueryExecutor) : ResultSetMapper
     override fun map(resultSet: ResultSet): Bank {
 
         val model = BankModel().apply {
-            identity = resultSet.getLong(BankRepository.identityColumn)
-            name = resultSet.getString(BankRepository.nameColumn)
+            identity = resultSet.getLong(BankModelQueryBuilder.identityColumn)
+            name = resultSet.getString(BankModelQueryBuilder.nameColumn)
         }
 
         return Bank(executor, model)
