@@ -26,9 +26,12 @@ class Bank(executor: QueryExecutor, model: BankModel = BankModel()) : Persistabl
         fun get(identity: Long, executor: QueryExecutor) = Single.create<Bank> {
 
             val query = BankRepository.select(identity)
-            val bank = executor.getFirst(query, BankResultSetMapper(executor))!!
+            val bank = executor.getFirst(query, BankResultSetMapper(executor))
 
-            it.onSuccess(bank)
+            when (bank) {
+                is Bank -> it.onSuccess(bank)
+                else -> it.onError(PersistableNotFoundException(Bank::class, identity))
+            }
         }
     }
 }

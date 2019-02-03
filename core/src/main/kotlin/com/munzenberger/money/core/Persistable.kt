@@ -19,11 +19,11 @@ abstract class Persistable<M : Model>(
     protected fun insert() = Completable.create {
 
         val query = repository.insert(model)
-        val identity = IdentityResultSetHandler()
+        val handler = IdentityResultSetHandler()
 
-        executer.executeUpdate(query, identity)
+        executer.executeUpdate(query, handler)
 
-        model.identity = identity.result
+        model.identity = handler.identity
 
         it.onComplete()
     }

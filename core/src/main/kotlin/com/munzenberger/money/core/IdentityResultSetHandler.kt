@@ -1,11 +1,19 @@
 package com.munzenberger.money.core
 
-import com.munzenberger.money.sql.FirstResultSetHandler
-import com.munzenberger.money.sql.ResultSetMapper
+import com.munzenberger.money.sql.ResultSetHandler
 import java.sql.ResultSet
 
-private object IdentityResultSetMapper : ResultSetMapper<Long> {
-    override fun map(resultSet: ResultSet) = resultSet.getLong(1)
-}
+class IdentityResultSetHandler : ResultSetHandler {
 
-class IdentityResultSetHandler : FirstResultSetHandler<Long>(IdentityResultSetMapper)
+    private var mutableIdentity: Long? = null
+
+    val identity: Long
+        get() = mutableIdentity!!
+
+    override fun onResultSet(resultSet: ResultSet) {
+
+        if (resultSet.next()) {
+            mutableIdentity = resultSet.getLong(1)
+        }
+    }
+}
