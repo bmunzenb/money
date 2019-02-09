@@ -1,12 +1,12 @@
 package com.munzenberger.money.core
 
 import com.munzenberger.money.core.model.AccountTypeModel
-import com.munzenberger.money.core.model.AccountTypeQueryBuilder
+import com.munzenberger.money.core.model.AccountTypeModelQueryBuilder
 import com.munzenberger.money.sql.QueryExecutor
 import com.munzenberger.money.sql.ResultSetMapper
 import java.sql.ResultSet
 
-class AccountType(executor: QueryExecutor, model: AccountTypeModel = AccountTypeModel()) : Persistable<AccountTypeModel>(model, AccountTypeQueryBuilder, executor) {
+class AccountType(executor: QueryExecutor, model: AccountTypeModel = AccountTypeModel()) : Persistable<AccountTypeModel>(model, AccountTypeModelQueryBuilder, executor) {
 
     enum class Category {
         ASSETS,
@@ -26,10 +26,10 @@ class AccountType(executor: QueryExecutor, model: AccountTypeModel = AccountType
     companion object {
 
         fun getAll(executor: QueryExecutor) =
-                Persistable.getAll(executor, AccountTypeQueryBuilder, AccountTypeResultSetMapper(executor))
+                Persistable.getAll(executor, AccountTypeModelQueryBuilder, AccountTypeResultSetMapper(executor))
 
         fun get(identity: Long, executor: QueryExecutor) =
-                Persistable.get(identity, executor, AccountTypeQueryBuilder, AccountTypeResultSetMapper(executor), AccountType::class)
+                Persistable.get(identity, executor, AccountTypeModelQueryBuilder, AccountTypeResultSetMapper(executor), AccountType::class)
     }
 }
 
@@ -38,9 +38,9 @@ class AccountTypeResultSetMapper(private val executor: QueryExecutor) : ResultSe
     override fun map(resultSet: ResultSet): AccountType {
 
         val model = AccountTypeModel().apply {
-            identity = resultSet.getLong(AccountTypeQueryBuilder.identityColumn)
-            name = resultSet.getString(AccountTypeQueryBuilder.nameColumn)
-            category = resultSet.getString(AccountTypeQueryBuilder.categoryColumn)
+            identity = resultSet.getLong(AccountTypeModelQueryBuilder.identityColumn)
+            name = resultSet.getString(AccountTypeModelQueryBuilder.nameColumn)
+            category = resultSet.getString(AccountTypeModelQueryBuilder.categoryColumn)
         }
 
         return AccountType(executor, model)
