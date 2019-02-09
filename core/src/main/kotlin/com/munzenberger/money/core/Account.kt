@@ -1,0 +1,62 @@
+package com.munzenberger.money.core
+
+import com.munzenberger.money.core.model.AccountModel
+import com.munzenberger.money.core.model.AccountModelQueryBuilder
+import com.munzenberger.money.sql.QueryExecutor
+import com.munzenberger.money.sql.ResultSetMapper
+import io.reactivex.Completable
+import java.sql.ResultSet
+
+class Account(executor: QueryExecutor, model: AccountModel = AccountModel()) : Persistable<AccountModel>(model, AccountModelQueryBuilder, executor) {
+
+    var name: String?
+        get() = model.name
+        set(value) { model.name = value }
+
+    var number: String?
+        get() = model.number
+        set(value) { model.number = value }
+
+    var accountType: AccountType? = null
+
+    var bank: Bank? = null
+
+    override fun save(): Completable {
+
+        val accountTypeIdentity = Persistable.getIdentity(accountType) { model.accountType = it }
+        val bankIdentity = Persistable.getIdentity(bank) { model.bank = it }
+
+        return accountTypeIdentity.andThen(bankIdentity).andThen(super.save())
+    }
+
+    companion object {
+
+        fun getAll(executor: QueryExecutor) =
+                Persistable.getAll(executor, AccountModelQueryBuilder, AccountResultSetMapper(executor))
+
+        fun get(identity: Long, executor: QueryExecutor) =
+                Persistable.get(identity, executor, AccountModelQueryBuilder, AccountResultSetMapper(executor), Account::class)
+    }
+}
+
+class AccountResultSetMapper(private val executor: QueryExecutor) : ResultSetMapper<Account> {
+
+    private val accountTypeMapper = AccountTypeResultSetMapper(executor)
+    private val bankMapper = BankResultSetMapper(executor)
+
+    override fun map(resultSet: ResultSet): Account {
+
+        val model = AccountModel().apply {
+            identity = resultSet.getLong(AccountModelQueryBuilder.identityColumn)
+            name = resultSet.getString(AccountModelQueryBuilder.nameColumn)
+            number = resultSet.getString(AccountModelQueryBuilder.numberColumn)
+            accountType = resultSet.getLong(AccountModelQueryBuilder.accountTypeColumn)
+            bank = resultSet.getLong(AccountModelQueryBuilder.bankColumn)
+        }
+
+        return Account(executor, model).apply {
+            accountType = accountTypeMapper.map(resultSet)
+            bank = bankMapper.map(resultSet)
+        }
+    }
+}

@@ -11,7 +11,7 @@ object SQLExecutor {
     private val logger = Logger.getLogger(SQLExecutor::class.java.name)
 
     fun execute(connection: Connection, sql: String, parameters: List<Any?> = emptyList()) {
-        logger.log(Level.FINE, "execute: $sql -> ${parameters.toParamString()}")
+        logger.log(Level.FINE, toString(sql, parameters))
 
         connection.prepareStatement(sql).use {
             it.setParameters(parameters)
@@ -20,7 +20,7 @@ object SQLExecutor {
     }
 
     fun executeQuery(connection: Connection, sql: String, parameters: List<Any?> = emptyList(), handler: ResultSetHandler? = null) {
-        logger.log(Level.FINE, "executeQuery: $sql -> ${parameters.toParamString()}")
+        logger.log(Level.FINE, toString(sql, parameters))
 
         connection.prepareStatement(sql).use {
             it.setParameters(parameters)
@@ -30,7 +30,7 @@ object SQLExecutor {
     }
 
     fun executeUpdate(connection: Connection, sql: String, parameters: List<Any?> = emptyList(), handler: ResultSetHandler? = null): Int {
-        logger.log(Level.FINE, "executeUpdate: $sql -> ${parameters.toParamString()}")
+        logger.log(Level.FINE, toString(sql, parameters))
 
         return connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS).use {
             it.setParameters(parameters)
@@ -48,10 +48,13 @@ object SQLExecutor {
         }
     }
 
-    private fun List<Any?>.toParamString() = joinToString {
-        when (it) {
-            is String -> "\"$it\""
-            else -> it.toString()
+    private fun toString(sql: String, parameters: List<Any?>) = when {
+            parameters.isEmpty() -> sql
+            else -> "$sql :: ${parameters.joinToString {
+                when (it) {
+                    is String -> "\"$it\""
+                    else -> it.toString()
+                }
+            }}"
         }
-    }
 }

@@ -1,7 +1,7 @@
 package com.munzenberger.money.core.version
 
 import com.munzenberger.money.core.MoneyDatabase
-import com.munzenberger.money.core.Payee
+import com.munzenberger.money.core.model.AccountModelQueryBuilder
 import com.munzenberger.money.core.model.AccountTypeModelQueryBuilder
 import com.munzenberger.money.core.model.BankModelQueryBuilder
 import com.munzenberger.money.core.model.PayeeModelQueryBuilder
@@ -28,6 +28,14 @@ class MoneyCoreVersion_1 : ApplicableVersion<MoneyDatabase> {
         obj.execute(Query.createTable(PayeeModelQueryBuilder.table)
                 .column(PayeeModelQueryBuilder.identityColumn, "BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY")
                 .column(PayeeModelQueryBuilder.nameColumn, "TEXT NOT NULL")
+                .build())
+
+        obj.execute(Query.createTable(AccountModelQueryBuilder.table)
+                .column(AccountModelQueryBuilder.identityColumn, "BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY")
+                .column(AccountModelQueryBuilder.nameColumn, "TEXT NOT NULL")
+                .column(AccountModelQueryBuilder.numberColumn, "TEXT")
+                .columnWithReference(AccountModelQueryBuilder.accountTypeColumn, "BIGINT NOT NULL", AccountTypeModelQueryBuilder.table, AccountTypeModelQueryBuilder.identityColumn)
+                .columnWithReference(AccountModelQueryBuilder.bankColumn, "BIGINT", BankModelQueryBuilder.table, BankModelQueryBuilder.identityColumn)
                 .build())
     }
 }

@@ -7,7 +7,6 @@ class SelectQueryBuilder(private val table: String) {
     private val columns = mutableListOf<String>()
     private var where: Condition? = null
     private val joins = mutableListOf<String>()
-    private val groupBy = mutableListOf<String>()
     private val orderBy = mutableListOf<String>()
 
     fun cols(columns: List<String>) = this.apply {

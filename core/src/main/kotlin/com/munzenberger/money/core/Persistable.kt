@@ -17,11 +17,11 @@ abstract class Persistable<M : Model>(
     val identity: Long?
         get() = model.identity
 
-    fun save() = if (model.identity == null) insert() else update()
+    open fun save() = if (model.identity == null) insert() else update()
 
     private fun insert() = Completable.create {
 
-        val query = modelQueryBuilder.insert(model)
+        val query = modelQueryBuilder.insert(model).build()
         val handler = IdentityResultSetHandler()
 
         executor.executeUpdate(query, handler)
@@ -33,7 +33,7 @@ abstract class Persistable<M : Model>(
 
     private fun update() = Completable.create {
 
-        val query = modelQueryBuilder.update(model)
+        val query = modelQueryBuilder.update(model).build()
 
         executor.executeUpdate(query)
 
@@ -42,7 +42,7 @@ abstract class Persistable<M : Model>(
 
     fun delete() = Completable.create {
 
-        val query = modelQueryBuilder.delete(model)
+        val query = modelQueryBuilder.delete(model).build()
 
         executor.executeUpdate(query)
 
@@ -53,19 +53,19 @@ abstract class Persistable<M : Model>(
 
     companion object {
 
-        fun <M : Model, P : Persistable<M>> getAll(
+        internal fun <M : Model, P : Persistable<M>> getAll(
                 executor: QueryExecutor,
                 queryBuilder: ModelQueryBuilder<M>,
                 mapper: ResultSetMapper<P>
         ) = Single.create<List<P>> {
 
-            val query = queryBuilder.select()
+            val query = queryBuilder.select().build()
             val list = executor.getList(query, mapper)
 
             it.onSuccess(list)
         }
 
-        fun <M : Model, P : Persistable<M>> get(
+        internal fun <M : Model, P : Persistable<M>> get(
                 identity: Long,
                 executor: QueryExecutor,
                 queryBuilder: ModelQueryBuilder<M>,
@@ -73,7 +73,7 @@ abstract class Persistable<M : Model>(
                 clazz: KClass<P>
         ) = Single.create<P> {
 
-            val query = queryBuilder.select(identity)
+            val query = queryBuilder.select(identity).build()
             val persistable = executor.getFirst(query, mapper)
 
             when (persistable) {
@@ -81,5 +81,11 @@ abstract class Persistable<M : Model>(
                 else -> it.onError(PersistableNotFoundException(clazz, identity))
             }
         }
+
+        internal fun getIdentity(persistable: Persistable<*>?, block: (Long?) -> Unit) = when {
+                    persistable == null -> Completable.complete().doOnComplete { block(null) }
+                    persistable.identity == null -> persistable.save().doOnComplete { block(persistable.identity) }
+                    else -> Completable.complete().doOnComplete { block(persistable.identity) }
+                }
     }
 }
