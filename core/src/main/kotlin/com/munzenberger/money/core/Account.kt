@@ -4,6 +4,7 @@ import com.munzenberger.money.core.model.AccountModel
 import com.munzenberger.money.core.model.AccountModelQueryBuilder
 import com.munzenberger.money.sql.QueryExecutor
 import com.munzenberger.money.sql.ResultSetMapper
+import com.munzenberger.money.sql.getLongOrNull
 import io.reactivex.Completable
 import java.sql.ResultSet
 
@@ -50,13 +51,13 @@ class AccountResultSetMapper(private val executor: QueryExecutor) : ResultSetMap
             identity = resultSet.getLong(AccountModelQueryBuilder.identityColumn)
             name = resultSet.getString(AccountModelQueryBuilder.nameColumn)
             number = resultSet.getString(AccountModelQueryBuilder.numberColumn)
-            accountType = resultSet.getLong(AccountModelQueryBuilder.accountTypeColumn)
-            bank = resultSet.getLong(AccountModelQueryBuilder.bankColumn)
+            accountType = resultSet.getLongOrNull(AccountModelQueryBuilder.accountTypeColumn)
+            bank = resultSet.getLongOrNull(AccountModelQueryBuilder.bankColumn)
         }
 
         return Account(executor, model).apply {
-            accountType = accountTypeMapper.map(resultSet)
-            bank = bankMapper.map(resultSet)
+            accountType = model.accountType?.let { accountTypeMapper.map(resultSet) }
+            bank = model.bank?.let { bankMapper.map(resultSet) }
         }
     }
 }
