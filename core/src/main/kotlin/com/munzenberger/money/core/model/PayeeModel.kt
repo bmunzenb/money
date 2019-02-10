@@ -4,9 +4,9 @@ import com.munzenberger.money.sql.SettableQueryBuilder
 
 data class PayeeModel(var name: String? = null) : Model()
 
-object PayeeModelQueryBuilder : ModelQueryBuilder<PayeeModel>() {
+object PayeeTable : Table<PayeeModel>() {
 
-    override val table = "PAYEES"
+    override val name = "PAYEES"
     override val identityColumn = "PAYEE_ID"
 
     const val nameColumn = "PAYEE_NAME"

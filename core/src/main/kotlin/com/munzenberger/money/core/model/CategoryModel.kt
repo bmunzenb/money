@@ -5,9 +5,9 @@ import com.munzenberger.money.sql.SettableQueryBuilder
 
 data class CategoryModel(var account: Long? = null, var name: String? = null) : Model()
 
-object CategoryModelQueryBuilder : ModelQueryBuilder<CategoryModel>() {
+object CategoryTable : Table<CategoryModel>() {
 
-    override val table = "CATEGORIES"
+    override val name = "CATEGORIES"
     override val identityColumn = "CATEGORY_ID"
 
     const val accountColumn = "CATEGORY_ACCOUNT_ID"
@@ -19,6 +19,6 @@ object CategoryModelQueryBuilder : ModelQueryBuilder<CategoryModel>() {
     }
 
     override fun applyJoins(select: SelectQueryBuilder) {
-        select.leftJoin(accountColumn, AccountModelQueryBuilder)
+        select.leftJoin(accountColumn, AccountTable)
     }
 }

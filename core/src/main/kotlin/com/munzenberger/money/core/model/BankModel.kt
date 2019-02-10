@@ -4,9 +4,9 @@ import com.munzenberger.money.sql.SettableQueryBuilder
 
 data class BankModel(var name: String? = null) : Model()
 
-object BankModelQueryBuilder : ModelQueryBuilder<BankModel>() {
+object BankTable : Table<BankModel>() {
 
-    override val table = "BANKS"
+    override val name = "BANKS"
     override val identityColumn = "BANK_ID"
 
     const val nameColumn = "BANK_NAME"

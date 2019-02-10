@@ -4,9 +4,9 @@ import com.munzenberger.money.sql.SettableQueryBuilder
 
 data class AccountTypeModel(var name: String? = null, var category: String? = null) : Model()
 
-object AccountTypeModelQueryBuilder : ModelQueryBuilder<AccountTypeModel>() {
+object AccountTypeTable : Table<AccountTypeModel>() {
 
-    override val table = "ACCOUNT_TYPES"
+    override val name = "ACCOUNT_TYPES"
     override val identityColumn = "ACCOUNT_TYPE_ID"
 
     const val nameColumn = "ACCOUNT_TYPE_NAME"

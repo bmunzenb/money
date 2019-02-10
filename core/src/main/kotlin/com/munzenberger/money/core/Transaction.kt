@@ -1,7 +1,7 @@
 package com.munzenberger.money.core
 
 import com.munzenberger.money.core.model.TransactionModel
-import com.munzenberger.money.core.model.TransactionModelQueryBuilder
+import com.munzenberger.money.core.model.TransactionTable
 import com.munzenberger.money.sql.QueryExecutor
 import com.munzenberger.money.sql.ResultSetMapper
 import com.munzenberger.money.sql.getLongOrNull
@@ -9,7 +9,7 @@ import io.reactivex.Completable
 import java.sql.ResultSet
 import java.util.*
 
-class Transaction(executor: QueryExecutor, model: TransactionModel = TransactionModel()) : Persistable<TransactionModel>(model, TransactionModelQueryBuilder, executor) {
+class Transaction(executor: QueryExecutor, model: TransactionModel = TransactionModel()) : Persistable<TransactionModel>(model, TransactionTable, executor) {
 
     var date: Date?
         get() = model.date?.let { Date(it) }
@@ -34,31 +34,28 @@ class Transaction(executor: QueryExecutor, model: TransactionModel = Transaction
     companion object {
 
         fun getAll(executor: QueryExecutor) =
-                Persistable.getAll(executor, TransactionModelQueryBuilder, TransactionResultSetMapper(executor))
+                Persistable.getAll(executor, TransactionTable, TransactionResultSetMapper(executor))
 
         fun get(identity: Long, executor: QueryExecutor) =
-                Persistable.get(identity, executor, TransactionModelQueryBuilder, TransactionResultSetMapper(executor), Transaction::class)
+                Persistable.get(identity, executor, TransactionTable, TransactionResultSetMapper(executor), Transaction::class)
     }
 }
 
 class TransactionResultSetMapper(private val executor: QueryExecutor) : ResultSetMapper<Transaction> {
 
-    private val accountMapper = AccountResultSetMapper(executor)
-    private val payeeMapper = PayeeResultSetMapper(executor)
-
     override fun map(resultSet: ResultSet): Transaction {
 
         val model = TransactionModel().apply {
-            identity = resultSet.getLong(TransactionModelQueryBuilder.identityColumn)
-            account = resultSet.getLongOrNull(TransactionModelQueryBuilder.accountColumn)
-            payee = resultSet.getLongOrNull(TransactionModelQueryBuilder.payeeColumn)
-            date = resultSet.getLongOrNull(TransactionModelQueryBuilder.dateColumn)
-            memo = resultSet.getString(TransactionModelQueryBuilder.memoColumn)
+            identity = resultSet.getLong(TransactionTable.identityColumn)
+            account = resultSet.getLongOrNull(TransactionTable.accountColumn)
+            payee = resultSet.getLongOrNull(TransactionTable.payeeColumn)
+            date = resultSet.getLongOrNull(TransactionTable.dateColumn)
+            memo = resultSet.getString(TransactionTable.memoColumn)
         }
 
         return Transaction(executor, model).apply {
-            account = model.account?.let { accountMapper.map(resultSet) }
-            payee = model.payee?.let { payeeMapper.map(resultSet) }
+            account = model.account?.let { AccountResultSetMapper(executor).map(resultSet) }
+            payee = model.payee?.let { PayeeResultSetMapper(executor).map(resultSet) }
         }
     }
 }

@@ -5,39 +5,14 @@ import org.junit.Test
 
 class AccountTest : PersistableTest<Account>() {
 
-    override fun createPersistable() = Account(database).apply {
-        name = "Primary Savings"
-        number = "112233445566"
-
-        accountType = AccountType(database).apply {
-            name = "Savings"
-            category = AccountType.Category.ASSETS
-        }
-
-        bank = Bank(database).apply {
-            name = "Standard Federal"
-        }
-    }
+    override fun createPersistable() = Account(database).randomize(database)
 
     override fun getPersistable(identity: Long) = Account.get(identity, database)
 
     override fun getAllPersistables() = Account.getAll(database)
 
     override fun updatePersistable(persistable: Account) {
-
-        persistable.apply {
-            name = "Shared Checking"
-            number = "998877665544"
-
-            accountType = AccountType(database).apply {
-                name = "Checking"
-                category = AccountType.Category.ASSETS
-            }
-
-            bank = Bank(database).apply {
-                name = "Chemical Bank"
-            }
-        }
+        persistable.randomize(database)
     }
 
     override fun assertPersistablePropertiesAreEquals(p1: Account, p2: Account) {

@@ -10,9 +10,9 @@ data class AccountModel(
         var bank: Long? = null
 ) : Model()
 
-object AccountModelQueryBuilder : ModelQueryBuilder<AccountModel>() {
+object AccountTable : Table<AccountModel>() {
 
-    override val table = "ACCOUNTS"
+    override val name = "ACCOUNTS"
     override val identityColumn = "ACCOUNT_ID"
 
     const val nameColumn = "ACCOUNT_NAME"
@@ -28,6 +28,6 @@ object AccountModelQueryBuilder : ModelQueryBuilder<AccountModel>() {
     }
 
     override fun applyJoins(select: SelectQueryBuilder) {
-        select.leftJoin(accountTypeColumn, AccountTypeModelQueryBuilder).leftJoin(bankColumn, BankModelQueryBuilder)
+        select.leftJoin(accountTypeColumn, AccountTypeTable).leftJoin(bankColumn, BankTable)
     }
 }

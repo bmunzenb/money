@@ -1,6 +1,5 @@
 package com.munzenberger.money.core.model
 
-import com.munzenberger.money.sql.Condition
 import com.munzenberger.money.sql.SelectQueryBuilder
 import com.munzenberger.money.sql.SettableQueryBuilder
 
@@ -11,9 +10,9 @@ data class TransactionModel(
         var memo: String? = null
 ) : Model()
 
-object TransactionModelQueryBuilder : ModelQueryBuilder<TransactionModel>() {
+object TransactionTable : Table<TransactionModel>() {
 
-    override val table = "TRANSACTIONS"
+    override val name = "TRANSACTIONS"
     override val identityColumn = "TRANSACTION_ID"
 
     const val accountColumn = "TRANSACTION_ACCOUNT_ID"
@@ -29,6 +28,6 @@ object TransactionModelQueryBuilder : ModelQueryBuilder<TransactionModel>() {
     }
 
     override fun applyJoins(select: SelectQueryBuilder) {
-        select.leftJoin(accountColumn, AccountModelQueryBuilder).leftJoin(payeeColumn, PayeeModelQueryBuilder)
+        select.leftJoin(accountColumn, AccountTable).leftJoin(payeeColumn, PayeeTable)
     }
 }

@@ -4,16 +4,14 @@ import org.junit.Assert.assertEquals
 
 class BankTest : PersistableTest<Bank>() {
 
-    override fun createPersistable() = Bank(database).apply {
-        name = "Chemical Bank"
-    }
+    override fun createPersistable() = Bank(database).randomize()
 
     override fun getPersistable(identity: Long) = Bank.get(identity, database)
 
     override fun getAllPersistables() = Bank.getAll(database)
 
     override fun updatePersistable(persistable: Bank) {
-        persistable.name = "Standard Federal"
+        persistable.randomize()
     }
 
     override fun assertPersistablePropertiesAreEquals(p1: Bank, p2: Bank) {

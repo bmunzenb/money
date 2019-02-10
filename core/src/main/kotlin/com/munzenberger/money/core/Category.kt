@@ -1,14 +1,14 @@
 package com.munzenberger.money.core
 
 import com.munzenberger.money.core.model.CategoryModel
-import com.munzenberger.money.core.model.CategoryModelQueryBuilder
+import com.munzenberger.money.core.model.CategoryTable
 import com.munzenberger.money.sql.QueryExecutor
 import com.munzenberger.money.sql.ResultSetMapper
 import com.munzenberger.money.sql.getLongOrNull
 import io.reactivex.Completable
 import java.sql.ResultSet
 
-class Category(executor: QueryExecutor, model: CategoryModel = CategoryModel()) : Persistable<CategoryModel>(model, CategoryModelQueryBuilder, executor) {
+class Category(executor: QueryExecutor, model: CategoryModel = CategoryModel()) : Persistable<CategoryModel>(model, CategoryTable, executor) {
 
     var name: String?
         get() = model.name
@@ -25,27 +25,25 @@ class Category(executor: QueryExecutor, model: CategoryModel = CategoryModel()) 
     companion object {
 
         fun getAll(executor: QueryExecutor) =
-                Persistable.getAll(executor, CategoryModelQueryBuilder, CategoryResultSetMapper(executor))
+                Persistable.getAll(executor, CategoryTable, CategoryResultSetMapper(executor))
 
         fun get(identity: Long, executor: QueryExecutor) =
-                Persistable.get(identity, executor, CategoryModelQueryBuilder, CategoryResultSetMapper(executor), Category::class)
+                Persistable.get(identity, executor, CategoryTable, CategoryResultSetMapper(executor), Category::class)
     }
 }
 
 class CategoryResultSetMapper(private val executor: QueryExecutor) : ResultSetMapper<Category> {
 
-    private val accountMapper = AccountResultSetMapper(executor)
-
     override fun map(resultSet: ResultSet): Category {
 
         val model = CategoryModel().apply {
-            identity = resultSet.getLong(CategoryModelQueryBuilder.identityColumn)
-            account = resultSet.getLongOrNull(CategoryModelQueryBuilder.accountColumn)
-            name = resultSet.getString(CategoryModelQueryBuilder.nameColumn)
+            identity = resultSet.getLong(CategoryTable.identityColumn)
+            account = resultSet.getLongOrNull(CategoryTable.accountColumn)
+            name = resultSet.getString(CategoryTable.nameColumn)
         }
 
         return Category(executor, model).apply {
-            account = model.account?.let { accountMapper.map(resultSet) }
+            account = model.account?.let { AccountResultSetMapper(executor).map(resultSet) }
         }
     }
 }

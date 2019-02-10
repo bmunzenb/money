@@ -4,18 +4,14 @@ import org.junit.Assert.assertEquals
 
 class AccountTypeTest : PersistableTest<AccountType>() {
 
-    override fun createPersistable() = AccountType(database).apply {
-        name = "Savings"
-        category = AccountType.Category.ASSETS
-    }
+    override fun createPersistable() = AccountType(database).randomize()
 
     override fun getPersistable(identity: Long) = AccountType.get(identity, database)
 
     override fun getAllPersistables() = AccountType.getAll(database)
 
     override fun updatePersistable(persistable: AccountType) {
-        persistable.name = "Credit Card"
-        persistable.category = AccountType.Category.LIABILITIES
+        persistable.randomize()
     }
 
     override fun assertPersistablePropertiesAreEquals(p1: AccountType, p2: AccountType) {

@@ -1,7 +1,7 @@
 package com.munzenberger.money.core
 
 import com.munzenberger.money.core.model.Model
-import com.munzenberger.money.core.model.ModelQueryBuilder
+import com.munzenberger.money.core.model.Table
 import com.munzenberger.money.sql.QueryExecutor
 import com.munzenberger.money.sql.ResultSetMapper
 import io.reactivex.Completable
@@ -10,7 +10,7 @@ import kotlin.reflect.KClass
 
 abstract class Persistable<M : Model>(
         protected val model: M,
-        protected val modelQueryBuilder: ModelQueryBuilder<M>,
+        protected val table: Table<M>,
         protected val executor: QueryExecutor
 ) {
 
@@ -21,7 +21,7 @@ abstract class Persistable<M : Model>(
 
     private fun insert() = Completable.create {
 
-        val query = modelQueryBuilder.insert(model).build()
+        val query = table.insert(model).build()
         val handler = IdentityResultSetHandler()
 
         executor.executeUpdate(query, handler)
@@ -33,7 +33,7 @@ abstract class Persistable<M : Model>(
 
     private fun update() = Completable.create {
 
-        val query = modelQueryBuilder.update(model).build()
+        val query = table.update(model).build()
 
         executor.executeUpdate(query)
 
@@ -42,7 +42,7 @@ abstract class Persistable<M : Model>(
 
     fun delete() = Completable.create {
 
-        val query = modelQueryBuilder.delete(model).build()
+        val query = table.delete(model).build()
 
         executor.executeUpdate(query)
 
@@ -55,11 +55,11 @@ abstract class Persistable<M : Model>(
 
         internal fun <M : Model, P : Persistable<M>> getAll(
                 executor: QueryExecutor,
-                queryBuilder: ModelQueryBuilder<M>,
+                table: Table<M>,
                 mapper: ResultSetMapper<P>
         ) = Single.create<List<P>> {
 
-            val query = queryBuilder.select().build()
+            val query = table.select().orderBy(table.identityColumn).build()
             val list = executor.getList(query, mapper)
 
             it.onSuccess(list)
@@ -68,12 +68,12 @@ abstract class Persistable<M : Model>(
         internal fun <M : Model, P : Persistable<M>> get(
                 identity: Long,
                 executor: QueryExecutor,
-                queryBuilder: ModelQueryBuilder<M>,
+                table: Table<M>,
                 mapper: ResultSetMapper<P>,
                 clazz: KClass<P>
         ) = Single.create<P> {
 
-            val query = queryBuilder.select(identity).build()
+            val query = table.select(identity).build()
             val persistable = executor.getFirst(query, mapper)
 
             when (persistable) {
