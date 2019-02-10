@@ -18,7 +18,7 @@ object AccountModelQueryBuilder : ModelQueryBuilder<AccountModel>() {
     const val nameColumn = "ACCOUNT_NAME"
     const val numberColumn = "ACCOUNT_NUMBER"
     const val accountTypeColumn = "ACCOUNT_TYPE_ID"
-    const val bankColumn = "BANK_ID"
+    const val bankColumn = "ACCOUNT_BANK_ID"
 
     override fun setValues(settable: SettableQueryBuilder<*>, model: AccountModel) {
         settable.set(nameColumn, model.name)
@@ -27,11 +27,7 @@ object AccountModelQueryBuilder : ModelQueryBuilder<AccountModel>() {
         settable.set(bankColumn, model.bank)
     }
 
-    override fun select() = super.select().withJoins()
-
-    override fun select(identity: Long) = super.select(identity).withJoins()
-
-    private fun SelectQueryBuilder.withJoins() = this
-            .leftJoin(AccountTypeModelQueryBuilder.table, accountTypeColumn, AccountTypeModelQueryBuilder.identityColumn)
-            .leftJoin(BankModelQueryBuilder.table, bankColumn, BankModelQueryBuilder.identityColumn)
+    override fun applyJoins(select: SelectQueryBuilder) {
+        select.leftJoin(accountTypeColumn, AccountTypeModelQueryBuilder).leftJoin(bankColumn, BankModelQueryBuilder)
+    }
 }

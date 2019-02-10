@@ -1,8 +1,6 @@
 package com.munzenberger.money.core.model
 
-import com.munzenberger.money.sql.Query
-import com.munzenberger.money.sql.SettableQueryBuilder
-import com.munzenberger.money.sql.eq
+import com.munzenberger.money.sql.*
 
 abstract class Model(var identity: Long? = null)
 
@@ -14,10 +12,14 @@ abstract class ModelQueryBuilder<M : Model> {
 
     abstract fun setValues(settable: SettableQueryBuilder<*>, model: M)
 
-    open fun select() = Query.selectFrom(table)
+    open fun applyJoins(select: SelectQueryBuilder) {}
+
+    fun select() = Query.selectFrom(table)
+            .also { applyJoins(it) }
             .orderBy(identityColumn)
 
-    open fun select(identity: Long) = Query.selectFrom(table)
+    fun select(identity: Long) = Query.selectFrom(table)
+            .also { applyJoins(it) }
             .where(identityColumn.eq(identity))
 
     fun insert(model: M) = Query.insertInto(table)
@@ -29,4 +31,7 @@ abstract class ModelQueryBuilder<M : Model> {
 
     fun delete(model: M) = Query.deleteFrom(table)
             .where(identityColumn.eq(model.identity!!))
+
+    protected fun SelectQueryBuilder.leftJoin(leftColumn: String, right: ModelQueryBuilder<*>) =
+            leftJoin(table, leftColumn, right.table, right.identityColumn).apply { right.applyJoins(this) }
 }

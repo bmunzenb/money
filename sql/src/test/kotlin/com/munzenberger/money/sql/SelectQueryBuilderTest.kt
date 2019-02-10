@@ -40,7 +40,7 @@ class SelectQueryBuilderTest {
 
         val query = Query.selectFrom("TABLE_A")
                 .cols("COL_A")
-                .innerJoin("TABLE_B", "COL_A", "COL_B")
+                .innerJoin("TABLE_A", "COL_A", "TABLE_B", "COL_B")
                 .build()
 
         assertEquals("SELECT COL_A FROM TABLE_A INNER JOIN TABLE_B ON TABLE_A.COL_A = TABLE_B.COL_B", query.sql)

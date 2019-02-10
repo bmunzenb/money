@@ -21,16 +21,16 @@ class SelectQueryBuilder(private val table: String) {
         this.where = condition
     }
 
-    fun innerJoin(joinTable: String, leftColumn: String, rightColumn: String) = this.apply {
-        joins.add("INNER JOIN $joinTable ON $table.$leftColumn = $joinTable.$rightColumn")
+    fun innerJoin(leftTable: String, leftColumn: String, rightTable: String, rightColumn: String) = this.apply {
+        joins.add("INNER JOIN $rightTable ON $leftTable.$leftColumn = $rightTable.$rightColumn")
     }
 
-    fun leftJoin(joinTable: String, leftColumn: String, rightColumn: String) = this.apply {
-        joins.add("LEFT JOIN $joinTable ON $table.$leftColumn = $joinTable.$rightColumn")
+    fun leftJoin(leftTable: String, leftColumn: String, rightTable: String, rightColumn: String) = this.apply {
+        joins.add("LEFT JOIN $rightTable ON $leftTable.$leftColumn = $rightTable.$rightColumn")
     }
 
-    fun rightJoin(joinTable: String, leftColumn: String, rightColumn: String) = this.apply {
-        joins.add("RIGHT JOIN $joinTable ON $table.$leftColumn = $joinTable.$rightColumn")
+    fun rightJoin(leftTable: String, leftColumn: String, rightTable: String, rightColumn: String) = this.apply {
+        joins.add("RIGHT JOIN $rightTable ON $leftTable.$leftColumn = $rightTable.$rightColumn")
     }
 
     fun orderBy(vararg columns: String) = this.apply {
