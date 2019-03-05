@@ -12,15 +12,13 @@ fun main(args: Array<String>) {
 
 class MoneyApplication : Application() {
 
-    private lateinit var applicationController: ApplicationController
-
     override fun start(primaryStage: Stage) {
 
         val loader = FXMLLoader(ApplicationController.LAYOUT)
         val root: Parent = loader.load()
-        applicationController = loader.getController()
+        val controller: ApplicationController = loader.getController()
 
-        applicationController.stage = primaryStage
+        controller.start(ApplicationController.Parameters(stage = primaryStage))
 
         primaryStage.title = "Money"
         primaryStage.scene = Scene(root)
@@ -28,6 +26,6 @@ class MoneyApplication : Application() {
     }
 
     override fun stop() {
-        applicationController.onApplicationClose()
+
     }
 }

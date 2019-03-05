@@ -18,3 +18,12 @@ mainClassName = 'com.munzenberger.money.app.MoneyApplicationKt'
 javafx {
     modules = [ 'javafx.controls', 'javafx.fxml' ]
 }
+
+dependencies {
+
+    implementation project(':core')
+
+    implementation "io.reactivex.rxjava2:rxjavafx:2.2.2"
+
+    implementation "com.h2database:h2:1.4.197"
+}
