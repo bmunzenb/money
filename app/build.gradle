@@ -6,7 +6,7 @@ buildscript {
     }
 
     dependencies {
-        classpath "org.openjfx:javafx-plugin:0.0.7"
+        classpath "org.openjfx:javafx-plugin:$versions.javafx"
     }
 }
 
@@ -23,7 +23,7 @@ dependencies {
 
     implementation project(':core')
 
-    implementation "io.reactivex.rxjava2:rxjavafx:2.2.2"
+    implementation "io.reactivex.rxjava2:rxjavafx:$versions.rxjavafx"
 
-    implementation "com.h2database:h2:1.4.197"
+    implementation "com.h2database:h2:$versions.h2"
 }

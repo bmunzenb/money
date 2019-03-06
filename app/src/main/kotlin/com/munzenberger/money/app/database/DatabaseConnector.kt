@@ -36,11 +36,15 @@ class DatabaseConnector {
             Class.forName(driver)
 
             val connection = DriverManager.getConnection(connectionUrl, user, password)
-            val executor = ConnectionQueryExecutor(connection)
-            val database = MoneyDatabase(executor)
-            val status = MoneyCoreVersionManager().getVersionStatus(database)
+            val database = MoneyDatabase(connection)
 
-            it.onSuccess(database to status)
+            try {
+                val status = MoneyCoreVersionManager().getVersionStatus(database)
+                it.onSuccess(database to status)
+            } catch (e: Throwable) {
+                database.close()
+                it.onError(e)
+            }
         }
                 .subscribeOn(Schedulers.single())
                 .observeOn(JavaFxScheduler.platform())
@@ -56,22 +60,33 @@ class DatabaseConnector {
         val status = pair.second
 
         when (status) {
+
             is CurrentVersion -> callback.onConnectComplete(database)
-            is UnsupportedVersion -> callback.onConnectUnsupportedVersion()
-            is PendingUpgrades -> {
-                if (callback.onConnectPendingUpgrades()) {
-                    Completable.create {
-                        status.apply()
-                        it.onComplete()
-                    }
-                            .subscribeOn(Schedulers.single())
-                            .observeOn(JavaFxScheduler.platform())
-                            .subscribe(
-                                    { callback.onConnectComplete(database) },
-                                    { callback.onConnectError(it) }
-                            )
-                }
+
+            is UnsupportedVersion -> {
+                database.close()
+                callback.onConnectUnsupportedVersion()
+            }
+
+            is PendingUpgrades -> if (callback.onConnectPendingUpgrades()) {
+                applyUpgrades(database, status, callback)
+            } else {
+                database.close()
             }
         }
     }
+}
+
+private fun applyUpgrades(database: MoneyDatabase, upgrades: PendingUpgrades, callback: DatabaseConnector.Callback) {
+
+    Completable.create {
+        upgrades.apply()
+        it.onComplete()
+    }
+            .subscribeOn(Schedulers.single())
+            .observeOn(JavaFxScheduler.platform())
+            .subscribe(
+                    { callback.onConnectComplete(database) },
+                    { callback.onConnectError(it) }
+            )
 }

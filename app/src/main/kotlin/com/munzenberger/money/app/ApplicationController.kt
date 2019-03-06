@@ -1,6 +1,5 @@
 package com.munzenberger.money.app
 
-import com.munzenberger.money.app.database.DatabaseConnector
 import com.munzenberger.money.app.database.NewFileDatabaseConnector
 import com.munzenberger.money.app.database.OpenFileDatabaseConnector
 import com.munzenberger.money.core.MoneyDatabase
@@ -24,51 +23,32 @@ class ApplicationController {
 
     private lateinit var params: Parameters
 
+    private var database: MoneyDatabase? = null
+
     fun start(params: Parameters) {
         this.params = params
     }
 
     @FXML fun onFileNew() {
-
-        NewFileDatabaseConnector(params.stage).connect(object : NewFileDatabaseConnector.Callback {
-
-            override fun onConnectComplete(database: MoneyDatabase) {
-
-            }
-
-            override fun onConnectUnsupportedVersion() {
-
-            }
-
-            override fun onConnectError(error: Throwable) {
-
-            }
-        })
+        NewFileDatabaseConnector(params.stage).connect {
+            onDatabaseConnected(it)
+        }
     }
 
     @FXML fun onFileOpen() {
-
-        OpenFileDatabaseConnector(params.stage).connect(object : DatabaseConnector.Callback {
-
-            override fun onConnectPendingUpgrades(): Boolean {
-                return true
-            }
-
-            override fun onConnectComplete(database: MoneyDatabase) {
-
-            }
-
-            override fun onConnectUnsupportedVersion() {
-
-            }
-
-            override fun onConnectError(error: Throwable) {
-
-            }
-        })
+        OpenFileDatabaseConnector(params.stage).connect {
+            onDatabaseConnected(it)
+        }
     }
 
     @FXML fun onFileQuit() {
         Platform.exit()
+    }
+
+    private fun onDatabaseConnected(database: MoneyDatabase) {
+        this.database?.close()
+        this.database = database
+
+        params.stage.title = database.name
     }
 }

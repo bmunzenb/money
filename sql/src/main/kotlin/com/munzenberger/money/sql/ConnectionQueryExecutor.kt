@@ -2,7 +2,7 @@ package com.munzenberger.money.sql
 
 import java.sql.Connection
 
-class ConnectionQueryExecutor(private val connection: Connection) : QueryExecutor {
+open class ConnectionQueryExecutor(private val connection: Connection) : QueryExecutor {
 
     override fun execute(query: Query) {
         SQLExecutor.execute(connection, query.sql, query.parameters)

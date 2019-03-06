@@ -3,7 +3,7 @@ dependencies {
     api project(':sql')
     api project(':version')
 
-    api "io.reactivex.rxjava2:rxjava:2.2.6"
+    api "io.reactivex.rxjava2:rxjava:$versions.rxjava"
 
-    testImplementation "com.h2database:h2:1.4.197"
+    testImplementation "com.h2database:h2:$versions.h2"
 }
