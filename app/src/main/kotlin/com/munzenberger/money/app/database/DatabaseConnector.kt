@@ -2,7 +2,6 @@ package com.munzenberger.money.app.database
 
 import com.munzenberger.money.core.MoneyDatabase
 import com.munzenberger.money.core.version.MoneyCoreVersionManager
-import com.munzenberger.money.sql.ConnectionQueryExecutor
 import com.munzenberger.money.version.CurrentVersion
 import com.munzenberger.money.version.PendingUpgrades
 import com.munzenberger.money.version.UnsupportedVersion
@@ -75,18 +74,18 @@ class DatabaseConnector {
             }
         }
     }
-}
 
-private fun applyUpgrades(database: MoneyDatabase, upgrades: PendingUpgrades, callback: DatabaseConnector.Callback) {
+    private fun applyUpgrades(database: MoneyDatabase, upgrades: PendingUpgrades, callback: DatabaseConnector.Callback) {
 
-    Completable.create {
-        upgrades.apply()
-        it.onComplete()
+        Completable.create {
+            upgrades.apply()
+            it.onComplete()
+        }
+                .subscribeOn(Schedulers.single())
+                .observeOn(JavaFxScheduler.platform())
+                .subscribe(
+                        { callback.onConnectComplete(database) },
+                        { callback.onConnectError(it) }
+                )
     }
-            .subscribeOn(Schedulers.single())
-            .observeOn(JavaFxScheduler.platform())
-            .subscribe(
-                    { callback.onConnectComplete(database) },
-                    { callback.onConnectError(it) }
-            )
 }
