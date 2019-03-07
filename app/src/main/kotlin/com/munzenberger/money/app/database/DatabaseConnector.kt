@@ -1,5 +1,7 @@
 package com.munzenberger.money.app.database
 
+import com.munzenberger.money.app.ApplicationState
+import com.munzenberger.money.core.DatabaseDialect
 import com.munzenberger.money.core.MoneyDatabase
 import com.munzenberger.money.core.version.MoneyCoreVersionManager
 import com.munzenberger.money.version.CurrentVersion
@@ -17,25 +19,29 @@ class DatabaseConnector {
     interface Callback {
 
         fun onConnectPendingUpgrades(): Boolean
-        fun onConnectComplete(database: MoneyDatabase)
         fun onConnectUnsupportedVersion()
         fun onConnectError(error: Throwable)
     }
 
     fun connect(
+            name: String? = null,
             driver: String,
+            dialect: DatabaseDialect,
             connectionUrl: String,
             user: String? = null,
             password: String? = null,
             callback: Callback
     ) {
 
+        // make sure any previously opened database is closed
+        ApplicationState.database = null
+
         Single.create<Pair<MoneyDatabase, VersionStatus>> {
 
             Class.forName(driver)
 
             val connection = DriverManager.getConnection(connectionUrl, user, password)
-            val database = MoneyDatabase(connection)
+            val database = MoneyDatabase(connection, dialect, name)
 
             try {
                 val status = MoneyCoreVersionManager().getVersionStatus(database)
@@ -60,7 +66,7 @@ class DatabaseConnector {
 
         when (status) {
 
-            is CurrentVersion -> callback.onConnectComplete(database)
+            is CurrentVersion -> ApplicationState.database = database
 
             is UnsupportedVersion -> {
                 database.close()
@@ -84,7 +90,7 @@ class DatabaseConnector {
                 .subscribeOn(Schedulers.single())
                 .observeOn(JavaFxScheduler.platform())
                 .subscribe(
-                        { callback.onConnectComplete(database) },
+                        { ApplicationState.database = database },
                         { callback.onConnectError(it) }
                 )
     }

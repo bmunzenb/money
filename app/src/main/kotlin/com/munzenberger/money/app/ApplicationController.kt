@@ -16,39 +16,41 @@ class ApplicationController {
         val LAYOUT: URL = ApplicationController::class.java.getResource("ApplicationLayout.fxml")
     }
 
-    data class Parameters(val stage: Stage)
-
     @FXML lateinit var menuBar: MenuBar
     @FXML lateinit var borderPane: BorderPane
 
-    private lateinit var params: Parameters
+    private lateinit var stage: Stage
 
-    private var database: MoneyDatabase? = null
+    fun start(stage: Stage) {
+        this.stage = stage
 
-    fun start(params: Parameters) {
-        this.params = params
+        onDatabaseDisconnected()
+
+        ApplicationState.observableDatabase.addListener { _, _, newValue ->
+            when {
+                newValue != null -> onDatabaseConnected(newValue)
+                else -> onDatabaseDisconnected()
+            }
+        }
+    }
+
+    private fun onDatabaseConnected(database: MoneyDatabase) {
+        stage.title = database.name
+    }
+
+    private fun onDatabaseDisconnected() {
+        stage.title = "Money"
     }
 
     @FXML fun onFileNew() {
-        NewFileDatabaseConnector(params.stage).connect {
-            onDatabaseConnected(it)
-        }
+        NewFileDatabaseConnector(stage).connect()
     }
 
     @FXML fun onFileOpen() {
-        OpenFileDatabaseConnector(params.stage).connect {
-            onDatabaseConnected(it)
-        }
+        OpenFileDatabaseConnector(stage).connect()
     }
 
     @FXML fun onFileQuit() {
         Platform.exit()
-    }
-
-    private fun onDatabaseConnected(database: MoneyDatabase) {
-        this.database?.close()
-        this.database = database
-
-        params.stage.title = database.name
     }
 }

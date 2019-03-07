@@ -18,14 +18,13 @@ class MoneyApplication : Application() {
         val root: Parent = loader.load()
         val controller: ApplicationController = loader.getController()
 
-        controller.start(ApplicationController.Parameters(stage = primaryStage))
+        controller.start(primaryStage)
 
-        primaryStage.title = "Money"
         primaryStage.scene = Scene(root)
         primaryStage.show()
     }
 
     override fun stop() {
-
+        ApplicationState.database = null
     }
 }

@@ -26,4 +26,5 @@ dependencies {
     implementation "io.reactivex.rxjava2:rxjavafx:$versions.rxjavafx"
 
     implementation "com.h2database:h2:$versions.h2"
+    implementation "org.xerial:sqlite-jdbc:$versions.sqlite"
 }

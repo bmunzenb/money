@@ -6,6 +6,21 @@ import org.junit.After
 import org.junit.Before
 import java.sql.DriverManager
 
+private data class DatabaseConfiguration(
+        val driver: String,
+        val url: String,
+        val dialect: DatabaseDialect)
+
+private val H2DatabaseConfiguration = DatabaseConfiguration(
+        driver = "org.h2.Driver",
+        url = "jdbc:h2:mem:",
+        dialect = H2DatabaseDialect)
+
+private val SQLiteDatabaseConfiguration = DatabaseConfiguration(
+        driver = "org.sqlite.JDBC",
+        url = "jdbc:sqlite::memory:",
+        dialect = SQLiteDatabaseDialect)
+
 open class MoneyDatabaseTestSupport {
 
     protected lateinit var database: MoneyDatabase
@@ -13,10 +28,12 @@ open class MoneyDatabaseTestSupport {
     @Before
     fun createDatabase() {
 
-        Class.forName("org.h2.Driver")
-        val connection = DriverManager.getConnection("jdbc:h2:mem:")
+        val configuration = SQLiteDatabaseConfiguration
 
-        database = MoneyDatabase(connection)
+        Class.forName(configuration.driver)
+        val connection = DriverManager.getConnection(configuration.url)
+
+        database = MoneyDatabase(connection, configuration.dialect)
 
         val status = MoneyCoreVersionManager().getVersionStatus(database)
         when (status) {
