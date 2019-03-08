@@ -1,9 +1,10 @@
 package com.munzenberger.money.app.database
 
-import com.munzenberger.money.app.ApplicationState
+import com.munzenberger.money.core.ConnectionMoneyDatabase
 import com.munzenberger.money.core.DatabaseDialect
 import com.munzenberger.money.core.MoneyDatabase
 import com.munzenberger.money.core.version.MoneyCoreVersionManager
+import com.munzenberger.money.sql.Query
 import com.munzenberger.money.version.CurrentVersion
 import com.munzenberger.money.version.PendingUpgrades
 import com.munzenberger.money.version.UnsupportedVersion
@@ -14,17 +15,18 @@ import io.reactivex.rxjavafx.schedulers.JavaFxScheduler
 import io.reactivex.schedulers.Schedulers
 import java.sql.DriverManager
 
-class DatabaseConnector {
+object DatabaseConnector {
 
     interface Callback {
 
+        fun onConnectSuccess(database: MoneyDatabase)
         fun onConnectPendingUpgrades(): Boolean
         fun onConnectUnsupportedVersion()
         fun onConnectError(error: Throwable)
     }
 
     fun connect(
-            name: String? = null,
+            name: String,
             driver: String,
             dialect: DatabaseDialect,
             connectionUrl: String,
@@ -33,17 +35,21 @@ class DatabaseConnector {
             callback: Callback
     ) {
 
-        // make sure any previously opened database is closed
-        ApplicationState.database = null
-
         Single.create<Pair<MoneyDatabase, VersionStatus>> {
 
             Class.forName(driver)
 
             val connection = DriverManager.getConnection(connectionUrl, user, password)
-            val database = MoneyDatabase(connection, dialect, name)
+            val database = ConnectionMoneyDatabase(name, dialect, connection)
 
             try {
+                when (driver) {
+                    "org.sqlite.JDBC" ->
+                        // SQLite requires explicitly enabling foreign key constraints
+                        // https://www.sqlite.org/foreignkeys.html#fk_enable
+                        database.execute(Query("PRAGMA foreign_keys = ON"))
+                }
+
                 val status = MoneyCoreVersionManager().getVersionStatus(database)
                 it.onSuccess(database to status)
             } catch (e: Throwable) {
@@ -66,7 +72,7 @@ class DatabaseConnector {
 
         when (status) {
 
-            is CurrentVersion -> ApplicationState.database = database
+            is CurrentVersion -> callback.onConnectSuccess(database)
 
             is UnsupportedVersion -> {
                 database.close()
@@ -90,7 +96,7 @@ class DatabaseConnector {
                 .subscribeOn(Schedulers.single())
                 .observeOn(JavaFxScheduler.platform())
                 .subscribe(
-                        { ApplicationState.database = database },
+                        { callback.onConnectSuccess(database) },
                         { callback.onConnectError(it) }
                 )
     }

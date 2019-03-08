@@ -33,7 +33,7 @@ open class MoneyDatabaseTestSupport {
         Class.forName(configuration.driver)
         val connection = DriverManager.getConnection(configuration.url)
 
-        database = MoneyDatabase(connection, configuration.dialect)
+        database = ConnectionMoneyDatabase(configuration::class.java.simpleName, configuration.dialect, connection)
 
         val status = MoneyCoreVersionManager().getVersionStatus(database)
         when (status) {

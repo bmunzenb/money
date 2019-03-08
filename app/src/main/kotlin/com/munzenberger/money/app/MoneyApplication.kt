@@ -25,6 +25,6 @@ class MoneyApplication : Application() {
     }
 
     override fun stop() {
-        ApplicationState.database = null
+
     }
 }
