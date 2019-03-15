@@ -1,6 +1,9 @@
 package com.munzenberger.money.app
 
+import com.munzenberger.money.core.MoneyDatabase
 import javafx.application.Application
+import javafx.beans.property.SimpleObjectProperty
+import javafx.beans.value.ObservableValue
 import javafx.fxml.FXMLLoader
 import javafx.scene.Parent
 import javafx.scene.Scene
@@ -25,6 +28,20 @@ class MoneyApplication : Application() {
     }
 
     override fun stop() {
+        database?.close()
+    }
 
+    companion object {
+
+        private val databaseProperty = SimpleObjectProperty<MoneyDatabase?>()
+
+        var database: MoneyDatabase?
+            get() = databaseProperty.get()
+            set(value) {
+                databaseProperty.value?.close()
+                databaseProperty.value = value
+            }
+
+        val observableDatabase: ObservableValue<MoneyDatabase?> = databaseProperty
     }
 }

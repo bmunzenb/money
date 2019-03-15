@@ -14,6 +14,9 @@ object NewFileDatabaseConnector {
             title = "New Money Database"
             initialDirectory = File(System.getProperty("user.home"))
             initialFileName = "Money${FileDatabaseConnector.SUFFIX}"
+            extensionFilters.addAll(
+                    FileChooser.ExtensionFilter("Money Database Files", "*${FileDatabaseConnector.SUFFIX}"),
+                    FileChooser.ExtensionFilter("All Files", "*"))
         }.showSaveDialog(ownerWindow)
 
         file?.run {
