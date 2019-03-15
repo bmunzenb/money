@@ -8,7 +8,9 @@ import com.munzenberger.money.sql.getLongOrNull
 import io.reactivex.Completable
 import java.sql.ResultSet
 
-class Account(model: AccountModel = AccountModel()) : Persistable<AccountModel>(model, AccountTable) {
+class Account internal constructor(model: AccountModel) : Persistable<AccountModel>(model, AccountTable) {
+
+    constructor() : this(AccountModel())
 
     var name: String?
         get() = model.name

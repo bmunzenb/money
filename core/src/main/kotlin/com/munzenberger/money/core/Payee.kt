@@ -6,7 +6,9 @@ import com.munzenberger.money.sql.QueryExecutor
 import com.munzenberger.money.sql.ResultSetMapper
 import java.sql.ResultSet
 
-class Payee(model: PayeeModel = PayeeModel()) : Persistable<PayeeModel>(model, PayeeTable) {
+class Payee internal constructor(model: PayeeModel) : Persistable<PayeeModel>(model, PayeeTable) {
+
+    constructor() : this(PayeeModel())
 
     var name: String?
         get() = model.name

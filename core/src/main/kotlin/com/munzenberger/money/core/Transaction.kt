@@ -9,7 +9,9 @@ import io.reactivex.Completable
 import java.sql.ResultSet
 import java.util.*
 
-class Transaction(model: TransactionModel = TransactionModel()) : Persistable<TransactionModel>(model, TransactionTable) {
+class Transaction internal constructor(model: TransactionModel) : Persistable<TransactionModel>(model, TransactionTable) {
+
+    constructor() : this(TransactionModel())
 
     var date: Date?
         get() = model.date?.let { Date(it) }

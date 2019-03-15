@@ -8,7 +8,9 @@ import com.munzenberger.money.sql.getLongOrNull
 import io.reactivex.Completable
 import java.sql.ResultSet
 
-class Transfer(model: TransferModel = TransferModel()) : Persistable<TransferModel>(model, TransferTable) {
+class Transfer internal constructor(model: TransferModel) : Persistable<TransferModel>(model, TransferTable) {
+
+    constructor() : this(TransferModel())
 
     var amount: Long?
         get() = model.amount

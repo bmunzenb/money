@@ -8,7 +8,9 @@ import com.munzenberger.money.sql.getLongOrNull
 import io.reactivex.Completable
 import java.sql.ResultSet
 
-class Category(model: CategoryModel = CategoryModel()) : Persistable<CategoryModel>(model, CategoryTable) {
+class Category internal constructor(model: CategoryModel) : Persistable<CategoryModel>(model, CategoryTable) {
+
+    constructor() : this(CategoryModel())
 
     var name: String?
         get() = model.name

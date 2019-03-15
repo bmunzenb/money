@@ -10,7 +10,7 @@ import kotlin.reflect.KClass
 
 abstract class Persistable<M : Model>(
         protected val model: M,
-        protected val table: Table<M>) {
+        private val table: Table<M>) {
 
     val identity: Long?
         get() = model.identity
