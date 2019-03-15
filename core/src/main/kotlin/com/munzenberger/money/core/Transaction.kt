@@ -28,7 +28,7 @@ class Transaction(executor: QueryExecutor, model: TransactionModel = Transaction
         val accountIdentity = Persistable.getIdentity(account) { model.account = it }
         val payeeIdentity = Persistable.getIdentity(payee) { model.payee = it }
 
-        return accountIdentity.andThen(payeeIdentity).andThen(super.save())
+        return completableChain(accountIdentity, payeeIdentity, super.save())
     }
 
     companion object {

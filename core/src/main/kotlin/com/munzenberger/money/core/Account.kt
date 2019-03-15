@@ -27,7 +27,7 @@ class Account(executor: QueryExecutor, model: AccountModel = AccountModel()) : P
         val accountTypeIdentity = Persistable.getIdentity(accountType) { model.accountType = it }
         val bankIdentity = Persistable.getIdentity(bank) { model.bank = it }
 
-        return accountTypeIdentity.andThen(bankIdentity).andThen(super.save())
+        return completableChain(accountTypeIdentity, bankIdentity, super.save())
     }
 
     companion object {

@@ -20,24 +20,18 @@ class Transfer(executor: QueryExecutor, model: TransferModel = TransferModel()) 
 
     var category: Category? = null
 
-    private var transaction: Transaction? = null
-    private var transactionUpdated = false
+    private val transaction = PersistableIdentityReference()
 
     fun setTransaction(transaction: Transaction) {
-        this.transaction = transaction
-        this.transactionUpdated = true
+        this.transaction.set(transaction)
     }
 
     override fun save(): Completable {
 
-        val transactionIdentity = when {
-            this.transactionUpdated -> Persistable.getIdentity(transaction) { model.transaction = it }
-            else -> Completable.complete()
-        }
-
+        val transactionIdentity = transaction.getIdentity { model.transaction = it }
         val categoryIdentity = Persistable.getIdentity(category) { model.category = it }
 
-        return transactionIdentity.andThen(categoryIdentity).andThen(super.save())
+        return completableChain(transactionIdentity, categoryIdentity, super.save())
     }
 
     companion object {

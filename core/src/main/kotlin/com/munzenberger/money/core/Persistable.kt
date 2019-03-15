@@ -88,4 +88,7 @@ abstract class Persistable<M : Model>(
                     else -> Completable.complete().doOnComplete { block(persistable.identity) }
                 }
     }
+
+    internal fun completableChain(head: Completable, vararg tail: Completable) =
+            tail.fold(head) { chain, next -> chain.andThen(next) }
 }

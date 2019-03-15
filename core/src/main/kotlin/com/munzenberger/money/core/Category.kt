@@ -19,7 +19,8 @@ class Category(executor: QueryExecutor, model: CategoryModel = CategoryModel()) 
     override fun save(): Completable {
 
         val accountIdentity = Persistable.getIdentity(account) { model.account = it }
-        return accountIdentity.andThen(super.save())
+
+        return completableChain(accountIdentity, super.save())
     }
 
     companion object {
