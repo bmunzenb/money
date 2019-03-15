@@ -8,7 +8,7 @@ import com.munzenberger.money.sql.getLongOrNull
 import io.reactivex.Completable
 import java.sql.ResultSet
 
-class Transfer(executor: QueryExecutor, model: TransferModel = TransferModel()) : Persistable<TransferModel>(model, TransferTable, executor) {
+class Transfer(model: TransferModel = TransferModel()) : Persistable<TransferModel>(model, TransferTable) {
 
     var amount: Long?
         get() = model.amount
@@ -26,25 +26,25 @@ class Transfer(executor: QueryExecutor, model: TransferModel = TransferModel()) 
         this.transaction.set(transaction)
     }
 
-    override fun save(): Completable {
+    override fun save(executor: QueryExecutor): Completable {
 
-        val transactionIdentity = transaction.getIdentity { model.transaction = it }
-        val categoryIdentity = Persistable.getIdentity(category) { model.category = it }
+        val transactionIdentity = transaction.getIdentity(executor) { model.transaction = it }
+        val categoryIdentity = Persistable.getIdentity(category, executor) { model.category = it }
 
-        return completableChain(transactionIdentity, categoryIdentity, super.save())
+        return completableChain(transactionIdentity, categoryIdentity, super.save(executor))
     }
 
     companion object {
 
         fun getAll(executor: QueryExecutor) =
-                Persistable.getAll(executor, TransferTable, TransferResultSetMapper(executor))
+                Persistable.getAll(executor, TransferTable, TransferResultSetMapper())
 
         fun get(identity: Long, executor: QueryExecutor) =
-                Persistable.get(identity, executor, TransferTable, TransferResultSetMapper(executor), Transfer::class)
+                Persistable.get(identity, executor, TransferTable, TransferResultSetMapper(), Transfer::class)
     }
 }
 
-class TransferResultSetMapper(private val executor: QueryExecutor) : ResultSetMapper<Transfer> {
+class TransferResultSetMapper : ResultSetMapper<Transfer> {
 
     override fun map(resultSet: ResultSet): Transfer {
 
@@ -56,8 +56,8 @@ class TransferResultSetMapper(private val executor: QueryExecutor) : ResultSetMa
             memo = resultSet.getString(TransferTable.memoColumn)
         }
 
-        return Transfer(executor, model).apply {
-            category = model.category?.let { CategoryResultSetMapper(executor).map(resultSet) }
+        return Transfer(model).apply {
+            category = model.category?.let { CategoryResultSetMapper().map(resultSet) }
         }
     }
 }

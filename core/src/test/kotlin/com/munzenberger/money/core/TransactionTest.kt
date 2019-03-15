@@ -4,14 +4,14 @@ import org.junit.Assert.assertEquals
 
 class TransactionTest : PersistableTest<Transaction>() {
 
-    override fun createPersistable() = Transaction(database).randomize(database)
+    override fun createPersistable() = Transaction().randomize()
 
     override fun getPersistable(identity: Long) = Transaction.get(identity, database)
 
     override fun getAllPersistables() = Transaction.getAll(database)
 
     override fun updatePersistable(persistable: Transaction) {
-        persistable.randomize(database)
+        persistable.randomize()
     }
 
     override fun assertPersistablePropertiesAreEquals(p1: Transaction, p2: Transaction) {

@@ -4,14 +4,14 @@ import org.junit.Assert.assertEquals
 
 class CategoryTest : PersistableTest<Category>() {
 
-    override fun createPersistable() = Category(database).randomize(database)
+    override fun createPersistable() = Category().randomize()
 
     override fun getPersistable(identity: Long) = Category.get(identity, database)
 
     override fun getAllPersistables() = Category.getAll(database)
 
     override fun updatePersistable(persistable: Category) {
-        persistable.randomize(database)
+        persistable.randomize()
     }
 
     override fun assertPersistablePropertiesAreEquals(p1: Category, p2: Category) {

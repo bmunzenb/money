@@ -1,5 +1,6 @@
 package com.munzenberger.money.core
 
+import com.munzenberger.money.sql.QueryExecutor
 import io.reactivex.Completable
 
 internal class PersistableIdentityReference {
@@ -12,8 +13,8 @@ internal class PersistableIdentityReference {
         this.updated = true
     }
 
-    fun getIdentity(block: (Long?) -> Unit): Completable = when {
-        updated -> Persistable.getIdentity(value, block)
+    fun getIdentity(executor: QueryExecutor, block: (Long?) -> Unit): Completable = when {
+        updated -> Persistable.getIdentity(value, executor, block)
         else -> Completable.complete()
     }
 }

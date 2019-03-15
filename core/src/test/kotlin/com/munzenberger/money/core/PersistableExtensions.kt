@@ -1,6 +1,5 @@
 package com.munzenberger.money.core
 
-import com.munzenberger.money.sql.QueryExecutor
 import java.util.*
 
 private val random = Random()
@@ -23,32 +22,32 @@ fun AccountType.randomize() = this.apply {
     category = AccountType.Category.values().let { it[random.nextInt(it.size)] }
 }
 
-fun Account.randomize(executor: QueryExecutor) = this.apply {
+fun Account.randomize() = this.apply {
     name = randomString()
     number = randomString()
-    accountType = AccountType(executor).randomize()
-    bank = Bank(executor).randomize()
+    accountType = AccountType().randomize()
+    bank = Bank().randomize()
 }
 
 fun Payee.randomize() = this.apply {
     name = randomString()
 }
 
-fun Category.randomize(executor: QueryExecutor) = this.apply {
-    account = Account(executor).randomize(executor)
+fun Category.randomize() = this.apply {
+    account = Account().randomize()
     name = randomString()
 }
 
-fun Transaction.randomize(executor: QueryExecutor) = this.apply {
-    account = Account(executor).randomize(executor)
-    payee = Payee(executor).randomize()
+fun Transaction.randomize() = this.apply {
+    account = Account().randomize()
+    payee = Payee().randomize()
     date = Date()
     memo = randomString()
 }
 
-fun Transfer.randomize(executor: QueryExecutor) = this.apply {
-    category = Category(executor).randomize(executor)
-    setTransaction(Transaction(executor).randomize(executor))
+fun Transfer.randomize() = this.apply {
+    category = Category().randomize()
+    setTransaction(Transaction().randomize())
     amount = random.nextLong()
     memo = randomString()
 }

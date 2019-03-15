@@ -4,7 +4,7 @@ import org.junit.Assert.assertEquals
 
 class BankTest : PersistableTest<Bank>() {
 
-    override fun createPersistable() = Bank(database).randomize()
+    override fun createPersistable() = Bank().randomize()
 
     override fun getPersistable(identity: Long) = Bank.get(identity, database)
 

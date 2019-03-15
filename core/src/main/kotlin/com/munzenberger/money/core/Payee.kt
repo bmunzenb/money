@@ -6,7 +6,7 @@ import com.munzenberger.money.sql.QueryExecutor
 import com.munzenberger.money.sql.ResultSetMapper
 import java.sql.ResultSet
 
-class Payee(executor: QueryExecutor, model: PayeeModel = PayeeModel()) : Persistable<PayeeModel>(model, PayeeTable, executor) {
+class Payee(model: PayeeModel = PayeeModel()) : Persistable<PayeeModel>(model, PayeeTable) {
 
     var name: String?
         get() = model.name
@@ -15,14 +15,14 @@ class Payee(executor: QueryExecutor, model: PayeeModel = PayeeModel()) : Persist
     companion object {
 
         fun getAll(executor: QueryExecutor) =
-                Persistable.getAll(executor, PayeeTable, PayeeResultSetMapper(executor))
+                Persistable.getAll(executor, PayeeTable, PayeeResultSetMapper())
 
         fun get(identity: Long, executor: QueryExecutor) =
-                Persistable.get(identity, executor, PayeeTable, PayeeResultSetMapper(executor), Payee::class)
+                Persistable.get(identity, executor, PayeeTable, PayeeResultSetMapper(), Payee::class)
     }
 }
 
-class PayeeResultSetMapper(private val executor: QueryExecutor) : ResultSetMapper<Payee> {
+class PayeeResultSetMapper : ResultSetMapper<Payee> {
 
     override fun map(resultSet: ResultSet): Payee {
 
@@ -31,6 +31,6 @@ class PayeeResultSetMapper(private val executor: QueryExecutor) : ResultSetMappe
             name = resultSet.getString(PayeeTable.nameColumn)
         }
 
-        return Payee(executor, model)
+        return Payee(model)
     }
 }

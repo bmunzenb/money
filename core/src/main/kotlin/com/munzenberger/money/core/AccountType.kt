@@ -6,7 +6,7 @@ import com.munzenberger.money.sql.QueryExecutor
 import com.munzenberger.money.sql.ResultSetMapper
 import java.sql.ResultSet
 
-class AccountType(executor: QueryExecutor, model: AccountTypeModel = AccountTypeModel()) : Persistable<AccountTypeModel>(model, AccountTypeTable, executor) {
+class AccountType(model: AccountTypeModel = AccountTypeModel()) : Persistable<AccountTypeModel>(model, AccountTypeTable) {
 
     enum class Category {
         ASSETS,
@@ -26,14 +26,14 @@ class AccountType(executor: QueryExecutor, model: AccountTypeModel = AccountType
     companion object {
 
         fun getAll(executor: QueryExecutor) =
-                Persistable.getAll(executor, AccountTypeTable, AccountTypeResultSetMapper(executor))
+                Persistable.getAll(executor, AccountTypeTable, AccountTypeResultSetMapper())
 
         fun get(identity: Long, executor: QueryExecutor) =
-                Persistable.get(identity, executor, AccountTypeTable, AccountTypeResultSetMapper(executor), AccountType::class)
+                Persistable.get(identity, executor, AccountTypeTable, AccountTypeResultSetMapper(), AccountType::class)
     }
 }
 
-class AccountTypeResultSetMapper(private val executor: QueryExecutor) : ResultSetMapper<AccountType> {
+class AccountTypeResultSetMapper : ResultSetMapper<AccountType> {
 
     override fun map(resultSet: ResultSet): AccountType {
 
@@ -43,6 +43,6 @@ class AccountTypeResultSetMapper(private val executor: QueryExecutor) : ResultSe
             category = resultSet.getString(AccountTypeTable.categoryColumn)
         }
 
-        return AccountType(executor, model)
+        return AccountType(model)
     }
 }

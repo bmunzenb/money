@@ -6,7 +6,7 @@ import com.munzenberger.money.sql.QueryExecutor
 import com.munzenberger.money.sql.ResultSetMapper
 import java.sql.ResultSet
 
-class Bank(executor: QueryExecutor, model: BankModel = BankModel()) : Persistable<BankModel>(model, BankTable, executor) {
+class Bank(model: BankModel = BankModel()) : Persistable<BankModel>(model, BankTable) {
 
     var name: String?
         get() = model.name
@@ -15,14 +15,14 @@ class Bank(executor: QueryExecutor, model: BankModel = BankModel()) : Persistabl
     companion object {
 
         fun getAll(executor: QueryExecutor) =
-                Persistable.getAll(executor, BankTable, BankResultSetMapper(executor))
+                Persistable.getAll(executor, BankTable, BankResultSetMapper())
 
         fun get(identity: Long, executor: QueryExecutor) =
-                Persistable.get(identity, executor, BankTable, BankResultSetMapper(executor), Bank::class)
+                Persistable.get(identity, executor, BankTable, BankResultSetMapper(), Bank::class)
     }
 }
 
-class BankResultSetMapper(private val executor: QueryExecutor) : ResultSetMapper<Bank> {
+class BankResultSetMapper : ResultSetMapper<Bank> {
 
     override fun map(resultSet: ResultSet): Bank {
 
@@ -31,6 +31,6 @@ class BankResultSetMapper(private val executor: QueryExecutor) : ResultSetMapper
             name = resultSet.getString(BankTable.nameColumn)
         }
 
-        return Bank(executor, model)
+        return Bank(model)
     }
 }

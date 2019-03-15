@@ -5,14 +5,14 @@ import org.junit.Test
 
 class AccountTest : PersistableTest<Account>() {
 
-    override fun createPersistable() = Account(database).randomize(database)
+    override fun createPersistable() = Account().randomize()
 
     override fun getPersistable(identity: Long) = Account.get(identity, database)
 
     override fun getAllPersistables() = Account.getAll(database)
 
     override fun updatePersistable(persistable: Account) {
-        persistable.randomize(database)
+        persistable.randomize()
     }
 
     override fun assertPersistablePropertiesAreEquals(p1: Account, p2: Account) {
@@ -25,16 +25,16 @@ class AccountTest : PersistableTest<Account>() {
     @Test
     fun `optional fields`() {
 
-        val account = Account(database).apply {
+        val account = Account().apply {
             name = "Primary Savings"
 
-            accountType = AccountType(database).apply {
+            accountType = AccountType().apply {
                 name = "Savings"
                 category = AccountType.Category.ASSETS
             }
         }
 
-        account.save().test().assertComplete()
+        account.save(database).test().assertComplete()
 
         Account.get(account.identity!!, database).test().assertComplete().apply {
             assertValue { it.bank == null }

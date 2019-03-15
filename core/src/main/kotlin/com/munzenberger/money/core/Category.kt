@@ -8,7 +8,7 @@ import com.munzenberger.money.sql.getLongOrNull
 import io.reactivex.Completable
 import java.sql.ResultSet
 
-class Category(executor: QueryExecutor, model: CategoryModel = CategoryModel()) : Persistable<CategoryModel>(model, CategoryTable, executor) {
+class Category(model: CategoryModel = CategoryModel()) : Persistable<CategoryModel>(model, CategoryTable) {
 
     var name: String?
         get() = model.name
@@ -16,24 +16,24 @@ class Category(executor: QueryExecutor, model: CategoryModel = CategoryModel()) 
 
     var account: Account? = null
 
-    override fun save(): Completable {
+    override fun save(executor: QueryExecutor): Completable {
 
-        val accountIdentity = Persistable.getIdentity(account) { model.account = it }
+        val accountIdentity = Persistable.getIdentity(account, executor) { model.account = it }
 
-        return completableChain(accountIdentity, super.save())
+        return completableChain(accountIdentity, super.save(executor))
     }
 
     companion object {
 
         fun getAll(executor: QueryExecutor) =
-                Persistable.getAll(executor, CategoryTable, CategoryResultSetMapper(executor))
+                Persistable.getAll(executor, CategoryTable, CategoryResultSetMapper())
 
         fun get(identity: Long, executor: QueryExecutor) =
-                Persistable.get(identity, executor, CategoryTable, CategoryResultSetMapper(executor), Category::class)
+                Persistable.get(identity, executor, CategoryTable, CategoryResultSetMapper(), Category::class)
     }
 }
 
-class CategoryResultSetMapper(private val executor: QueryExecutor) : ResultSetMapper<Category> {
+class CategoryResultSetMapper : ResultSetMapper<Category> {
 
     override fun map(resultSet: ResultSet): Category {
 
@@ -43,8 +43,8 @@ class CategoryResultSetMapper(private val executor: QueryExecutor) : ResultSetMa
             name = resultSet.getString(CategoryTable.nameColumn)
         }
 
-        return Category(executor, model).apply {
-            account = model.account?.let { AccountResultSetMapper(executor).map(resultSet) }
+        return Category(model).apply {
+            account = model.account?.let { AccountResultSetMapper().map(resultSet) }
         }
     }
 }

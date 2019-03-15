@@ -10,16 +10,14 @@ import kotlin.reflect.KClass
 
 abstract class Persistable<M : Model>(
         protected val model: M,
-        protected val table: Table<M>,
-        protected val executor: QueryExecutor
-) {
+        protected val table: Table<M>) {
 
     val identity: Long?
         get() = model.identity
 
-    open fun save() = if (model.identity == null) insert() else update()
+    open fun save(executor: QueryExecutor) = if (model.identity == null) insert(executor) else update(executor)
 
-    private fun insert() = Completable.create {
+    private fun insert(executor: QueryExecutor) = Completable.create {
 
         val query = table.insert(model).build()
         val handler = IdentityResultSetHandler()
@@ -31,7 +29,7 @@ abstract class Persistable<M : Model>(
         it.onComplete()
     }
 
-    private fun update() = Completable.create {
+    private fun update(executor: QueryExecutor) = Completable.create {
 
         val query = table.update(model).build()
 
@@ -40,7 +38,7 @@ abstract class Persistable<M : Model>(
         it.onComplete()
     }
 
-    fun delete() = Completable.create {
+    fun delete(executor: QueryExecutor) = Completable.create {
 
         val query = table.delete(model).build()
 
@@ -82,11 +80,17 @@ abstract class Persistable<M : Model>(
             }
         }
 
-        internal fun getIdentity(persistable: Persistable<*>?, block: (Long?) -> Unit) = when {
-                    persistable == null -> Completable.complete().doOnComplete { block(null) }
-                    persistable.identity == null -> persistable.save().doOnComplete { block(persistable.identity) }
-                    else -> Completable.complete().doOnComplete { block(persistable.identity) }
-                }
+        internal fun getIdentity(persistable: Persistable<*>?, executor: QueryExecutor, block: (Long?) -> Unit) = when {
+
+            persistable == null ->
+                Completable.complete().doOnComplete { block(null) }
+
+            persistable.identity == null ->
+                persistable.save(executor).doOnComplete { block(persistable.identity) }
+
+            else ->
+                Completable.complete().doOnComplete { block(persistable.identity) }
+        }
     }
 
     internal fun completableChain(head: Completable, vararg tail: Completable) =

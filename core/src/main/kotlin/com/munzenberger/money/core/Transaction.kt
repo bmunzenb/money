@@ -9,7 +9,7 @@ import io.reactivex.Completable
 import java.sql.ResultSet
 import java.util.*
 
-class Transaction(executor: QueryExecutor, model: TransactionModel = TransactionModel()) : Persistable<TransactionModel>(model, TransactionTable, executor) {
+class Transaction(model: TransactionModel = TransactionModel()) : Persistable<TransactionModel>(model, TransactionTable) {
 
     var date: Date?
         get() = model.date?.let { Date(it) }
@@ -23,25 +23,25 @@ class Transaction(executor: QueryExecutor, model: TransactionModel = Transaction
 
     var payee: Payee? = null
 
-    override fun save(): Completable {
+    override fun save(executor: QueryExecutor): Completable {
 
-        val accountIdentity = Persistable.getIdentity(account) { model.account = it }
-        val payeeIdentity = Persistable.getIdentity(payee) { model.payee = it }
+        val accountIdentity = Persistable.getIdentity(account, executor) { model.account = it }
+        val payeeIdentity = Persistable.getIdentity(payee, executor) { model.payee = it }
 
-        return completableChain(accountIdentity, payeeIdentity, super.save())
+        return completableChain(accountIdentity, payeeIdentity, super.save(executor))
     }
 
     companion object {
 
         fun getAll(executor: QueryExecutor) =
-                Persistable.getAll(executor, TransactionTable, TransactionResultSetMapper(executor))
+                Persistable.getAll(executor, TransactionTable, TransactionResultSetMapper())
 
         fun get(identity: Long, executor: QueryExecutor) =
-                Persistable.get(identity, executor, TransactionTable, TransactionResultSetMapper(executor), Transaction::class)
+                Persistable.get(identity, executor, TransactionTable, TransactionResultSetMapper(), Transaction::class)
     }
 }
 
-class TransactionResultSetMapper(private val executor: QueryExecutor) : ResultSetMapper<Transaction> {
+class TransactionResultSetMapper : ResultSetMapper<Transaction> {
 
     override fun map(resultSet: ResultSet): Transaction {
 
@@ -53,9 +53,9 @@ class TransactionResultSetMapper(private val executor: QueryExecutor) : ResultSe
             memo = resultSet.getString(TransactionTable.memoColumn)
         }
 
-        return Transaction(executor, model).apply {
-            account = model.account?.let { AccountResultSetMapper(executor).map(resultSet) }
-            payee = model.payee?.let { PayeeResultSetMapper(executor).map(resultSet) }
+        return Transaction(model).apply {
+            account = model.account?.let { AccountResultSetMapper().map(resultSet) }
+            payee = model.payee?.let { PayeeResultSetMapper().map(resultSet) }
         }
     }
 }
