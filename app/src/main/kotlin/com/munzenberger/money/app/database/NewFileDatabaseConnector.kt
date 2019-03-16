@@ -1,51 +1,51 @@
 package com.munzenberger.money.app.database
 
-import com.munzenberger.money.core.MoneyDatabase
 import javafx.scene.control.Alert
 import javafx.stage.FileChooser
 import javafx.stage.Window
 import java.io.File
 
-object NewFileDatabaseConnector {
+object NewFileDatabaseConnector : FileDatabaseConnector() {
 
-    fun connect(ownerWindow: Window, success: (MoneyDatabase) -> Unit) {
+    override fun openFile(ownerWindow: Window): File? = FileChooser().apply {
+        title = "New Money Database"
+        initialDirectory = File(System.getProperty("user.home"))
+        initialFileName = "Money${FileDatabaseConnector.SUFFIX}"
+        extensionFilters.addAll(
+                FileChooser.ExtensionFilter("Money Database Files", "*${FileDatabaseConnector.SUFFIX}"),
+                FileChooser.ExtensionFilter("All Files", "*"))
+    }.showSaveDialog(ownerWindow)
 
-        val file: File? = FileChooser().apply {
-            title = "New Money Database"
-            initialDirectory = File(System.getProperty("user.home"))
-            initialFileName = "Money${FileDatabaseConnector.SUFFIX}"
-            extensionFilters.addAll(
-                    FileChooser.ExtensionFilter("Money Database Files", "*${FileDatabaseConnector.SUFFIX}"),
-                    FileChooser.ExtensionFilter("All Files", "*"))
-        }.showSaveDialog(ownerWindow)
+    override fun connect(file: File, complete: DatabaseConnectionHandler) {
 
-        file?.run {
+        if (file.exists()) {
+            if (!file.delete()) {
 
-            if (exists()) {
-                delete()
+                Alert(Alert.AlertType.ERROR).apply {
+                    title = "Error"
+                    contentText = "Could not delete existing file."
+                }.showAndWait()
+
+                return
             }
-
-            FileDatabaseConnector.connect(this, object : DatabaseConnector.Callback {
-
-                override fun onConnectSuccess(database: MoneyDatabase) {
-                    success.invoke(database)
-                }
-
-                override fun onConnectPendingUpgrades() = true
-
-                override fun onConnectUnsupportedVersion() {
-                    // this should not happen when creating a new file
-                    throw IllegalStateException("unsupported database version")
-                }
-
-                override fun onConnectError(error: Throwable) {
-                    Alert(Alert.AlertType.ERROR).apply {
-                        title = "Error"
-                        headerText = "Could not create database file"
-                        contentText = error.message
-                    }.showAndWait()
-                }
-            })
         }
+
+        super.connect(file, complete)
+    }
+
+    override fun onUnsupportedVersion() {
+        // this should not happen when creating a new file
+        throw IllegalStateException("unsupported database version")
+    }
+
+    override fun onPendingUpgrades() = true
+
+    override fun onConnectError(error: Throwable) {
+
+        Alert(Alert.AlertType.ERROR).apply {
+            title = "Error"
+            headerText = "Could not create database file"
+            contentText = error.message
+        }.showAndWait()
     }
 }

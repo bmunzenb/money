@@ -1,63 +1,47 @@
 package com.munzenberger.money.app.database
 
-import com.munzenberger.money.core.MoneyDatabase
 import javafx.scene.control.Alert
 import javafx.scene.control.ButtonType
 import javafx.stage.FileChooser
 import javafx.stage.Window
 import java.io.File
-import java.util.logging.Level
-import java.util.logging.Logger
 
-object OpenFileDatabaseConnector {
+object OpenFileDatabaseConnector : FileDatabaseConnector() {
 
-    private val logger = Logger.getLogger(OpenFileDatabaseConnector::class.java.simpleName)
+    override fun openFile(ownerWindow: Window): File? = FileChooser().apply {
+        title = "Open Money Database"
+        initialDirectory = File(System.getProperty("user.home"))
+        extensionFilters.addAll(
+                FileChooser.ExtensionFilter("Money Database Files", "*${FileDatabaseConnector.SUFFIX}"),
+                FileChooser.ExtensionFilter("All Files", "*"))
+    }.showOpenDialog(ownerWindow)
 
-    fun connect(ownerWindow: Window, success: (MoneyDatabase) -> Unit) {
+    override fun onUnsupportedVersion() {
 
-        val file: File? = FileChooser().apply {
-            title = "Open Money Database"
-            initialDirectory = File(System.getProperty("user.home"))
-            extensionFilters.addAll(
-                    FileChooser.ExtensionFilter("Money Database Files", "*${FileDatabaseConnector.SUFFIX}"),
-                    FileChooser.ExtensionFilter("All Files", "*"))
-        }.showOpenDialog(ownerWindow)
+        Alert(Alert.AlertType.ERROR).apply {
+            title = "Error"
+            headerText = "Could not open database file."
+            contentText = "The database file is unsupported by this version of Money. This is likely due to having used the database file with a newer version of Money. Please update your version of Money and try again."
+        }.showAndWait()
+    }
 
-        file?.run {
-            FileDatabaseConnector.connect(this, object : DatabaseConnector.Callback {
+    override fun onPendingUpgrades(): Boolean {
 
-                override fun onConnectSuccess(database: MoneyDatabase) {
-                    success.invoke(database)
-                }
+        val result = Alert(Alert.AlertType.CONFIRMATION).apply {
+            title = "Confirm Upgrade"
+            headerText = "Database upgrade required."
+            contentText = "The database file requires an upgrade to work with this version of Money. This operation cannot be undone. It is recommended you make a backup of your existing file before upgrading it. Would you like to proceed with the upgrade?"
+        }.showAndWait()
 
-                override fun onConnectPendingUpgrades(): Boolean {
-                    val result = Alert(Alert.AlertType.CONFIRMATION).apply {
-                        title = "Confirm Upgrade"
-                        headerText = "Database upgrade required."
-                        contentText = "The database file requires an upgrade to work with this version of Money. This operation cannot be undone. It is recommended you make a backup of your existing file before upgrading it. Would you like to proceed with the upgrade?"
-                    }.showAndWait()
+        return result.isPresent && result.get() == ButtonType.OK
+    }
 
-                    return result.isPresent && result.get() == ButtonType.OK
-                }
+    override fun onConnectError(error: Throwable) {
 
-                override fun onConnectUnsupportedVersion() {
-                    Alert(Alert.AlertType.ERROR).apply {
-                        title = "Error"
-                        headerText = "Could not open database file."
-                        contentText = "The database file is unsupported by this version of Money. This is likely due to having used the database file with a newer version of Money. Please update your version of Money and try again."
-                    }.showAndWait()
-                }
-
-                override fun onConnectError(error: Throwable) {
-                    logger.log(Level.WARNING, error) { "could not open database file" }
-
-                    Alert(Alert.AlertType.ERROR).apply {
-                        title = "Error"
-                        headerText = "Could not open database file."
-                        contentText = error.message
-                    }.showAndWait()
-                }
-            })
-        }
+        Alert(Alert.AlertType.ERROR).apply {
+            title = "Error"
+            headerText = "Could not open database file."
+            contentText = error.message
+        }.showAndWait()
     }
 }

@@ -32,6 +32,7 @@ private class ManagedTransactionQueryExecutor(
     private var autoCommit = connection.autoCommit
     private var semaphore = AtomicInteger(0)
 
+    @Synchronized
     override fun createTransaction(): TransactionQueryExecutor {
 
         if (semaphore.getAndIncrement() == 0) {
@@ -42,6 +43,7 @@ private class ManagedTransactionQueryExecutor(
         return this
     }
 
+    @Synchronized
     override fun commit() {
 
         if (semaphore.decrementAndGet() == 0) {
@@ -50,6 +52,7 @@ private class ManagedTransactionQueryExecutor(
         }
     }
 
+    @Synchronized
     override fun rollback() {
 
         if (semaphore.decrementAndGet() == 0) {

@@ -7,14 +7,22 @@ import javafx.stage.Window
 interface DatabaseConnectorViewModel {
 
     fun createDatabase(ownerWindow: Window) {
-        NewFileDatabaseConnector.connect(ownerWindow) {
-            MoneyApplication.database = it
+
+        ProgressDialog.doInDialog(ownerWindow, "Creating new database...") { dialog ->
+            NewFileDatabaseConnector.connect(ownerWindow) {
+                dialog.close()
+                it?.run { MoneyApplication.database = this }
+            }
         }
     }
 
     fun openDatabase(ownerWindow: Window) {
-        OpenFileDatabaseConnector.connect(ownerWindow) {
-            MoneyApplication.database = it
+
+        ProgressDialog.doInDialog(ownerWindow, "Opening database...") { dialog ->
+            OpenFileDatabaseConnector.connect(ownerWindow) {
+                dialog.close()
+                it?.run { MoneyApplication.database = this }
+            }
         }
     }
 }

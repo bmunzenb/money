@@ -15,89 +15,79 @@ import io.reactivex.rxjavafx.schedulers.JavaFxScheduler
 import io.reactivex.schedulers.Schedulers
 import java.sql.DriverManager
 
-object DatabaseConnector {
+typealias DatabaseConnectionHandler = (MoneyDatabase?) -> Unit
 
-    interface Callback {
+abstract class DatabaseConnector {
 
-        fun onConnectSuccess(database: MoneyDatabase)
-        fun onConnectPendingUpgrades(): Boolean
-        fun onConnectUnsupportedVersion()
-        fun onConnectError(error: Throwable)
-    }
-
-    fun connect(
+    protected fun connect(
             name: String,
             driver: String,
             dialect: DatabaseDialect,
             connectionUrl: String,
             user: String? = null,
             password: String? = null,
-            callback: Callback
+            complete: DatabaseConnectionHandler
     ) {
 
-        Single.create<Pair<MoneyDatabase, VersionStatus>> {
+        Single.create<MoneyDatabase> {
 
             Class.forName(driver)
 
             val connection = DriverManager.getConnection(connectionUrl, user, password)
             val database = ConnectionMoneyDatabase(name, dialect, connection)
 
-            try {
-                when (driver) {
-                    "org.sqlite.JDBC" ->
-                        // SQLite requires explicitly enabling foreign key constraints
-                        // https://www.sqlite.org/foreignkeys.html#fk_enable
-                        database.execute(Query("PRAGMA foreign_keys = ON"))
-                }
-
-                val status = MoneyCoreVersionManager().getVersionStatus(database)
-                it.onSuccess(database to status)
-            } catch (e: Throwable) {
-                database.close()
-                it.onError(e)
+            when (driver) {
+                "org.sqlite.JDBC" ->
+                    // SQLite requires explicitly enabling foreign key constraints
+                    // https://www.sqlite.org/foreignkeys.html#fk_enable
+                    database.execute(Query("PRAGMA foreign_keys = ON"))
             }
+
+            it.onSuccess(database)
         }
                 .subscribeOn(Schedulers.single())
                 .observeOn(JavaFxScheduler.platform())
-                .subscribe(
-                        { onConnectSuccess(it, callback) },
-                        { callback.onConnectError(it) }
-                )
+                .subscribe({ onConnectSuccess(it, complete) }, { onConnectError(it); complete.invoke(null) })
     }
 
-    private fun onConnectSuccess(pair: Pair<MoneyDatabase, VersionStatus>, callback: Callback) {
+    private fun onConnectSuccess(database: MoneyDatabase, complete: DatabaseConnectionHandler) {
 
-        val database = pair.first
-        val status = pair.second
+        Single.fromCallable { MoneyCoreVersionManager().getVersionStatus(database) }
+                .subscribeOn(Schedulers.io())
+                .observeOn(JavaFxScheduler.platform())
+                .doOnError { database.close() }
+                .subscribe({ onVersionStatus(database, it, complete) }, { onConnectError(it); complete.invoke(null) })
+    }
+
+    private fun onVersionStatus(database: MoneyDatabase, status: VersionStatus, complete: DatabaseConnectionHandler) {
 
         when (status) {
 
-            is CurrentVersion -> callback.onConnectSuccess(database)
+            is CurrentVersion -> complete.invoke(database)
 
             is UnsupportedVersion -> {
                 database.close()
-                callback.onConnectUnsupportedVersion()
+                onUnsupportedVersion()
             }
 
-            is PendingUpgrades -> if (callback.onConnectPendingUpgrades()) {
-                applyUpgrades(database, status, callback)
-            } else {
-                database.close()
-            }
+            is PendingUpgrades ->
+                if (onPendingUpgrades()) applyPendingUpgrades(database, status, complete)
+                else database.close()
         }
     }
 
-    private fun applyUpgrades(database: MoneyDatabase, upgrades: PendingUpgrades, callback: DatabaseConnector.Callback) {
+    private fun applyPendingUpgrades(database: MoneyDatabase, upgrades: PendingUpgrades, complete: DatabaseConnectionHandler) {
 
-        Completable.create {
-            upgrades.apply()
-            it.onComplete()
-        }
-                .subscribeOn(Schedulers.single())
+        Completable.fromRunnable { upgrades.apply() }
+                .subscribeOn(Schedulers.io())
                 .observeOn(JavaFxScheduler.platform())
-                .subscribe(
-                        { callback.onConnectSuccess(database) },
-                        { callback.onConnectError(it) }
-                )
+                .doOnError { database.close() }
+                .subscribe({ complete.invoke(database) }, { onConnectError(it); complete.invoke(null) })
     }
+
+    protected abstract fun onUnsupportedVersion()
+
+    protected abstract fun onPendingUpgrades(): Boolean
+
+    protected abstract fun onConnectError(error: Throwable)
 }
