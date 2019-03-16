@@ -8,6 +8,8 @@ interface QueryExecutor {
 
     fun executeUpdate(query: Query, handler: ResultSetHandler? = null)
 
+    fun createTransaction(): TransactionQueryExecutor
+
     fun <T> getList(query: Query, mapper: ResultSetMapper<T>): List<T> {
         return ListResultSetHandler(mapper).let {
             executeQuery(query, it)

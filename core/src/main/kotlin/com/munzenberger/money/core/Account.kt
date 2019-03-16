@@ -26,10 +26,12 @@ class Account internal constructor(model: AccountModel) : Persistable<AccountMod
 
     override fun save(executor: QueryExecutor): Completable {
 
-        val accountTypeIdentity = Persistable.getIdentity(accountType, executor) { model.accountType = it }
-        val bankIdentity = Persistable.getIdentity(bank, executor) { model.bank = it }
+        val tx = executor.createTransaction()
 
-        return completableChain(accountTypeIdentity, bankIdentity, super.save(executor))
+        val accountTypeIdentity = Persistable.getIdentity(accountType, tx) { model.accountType = it }
+        val bankIdentity = Persistable.getIdentity(bank, tx) { model.bank = it }
+
+        return concatAll(accountTypeIdentity, bankIdentity, super.save(tx)).withTransaction(tx)
     }
 
     companion object {

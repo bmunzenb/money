@@ -4,6 +4,7 @@ import com.munzenberger.money.core.model.Model
 import com.munzenberger.money.core.model.Table
 import com.munzenberger.money.sql.QueryExecutor
 import com.munzenberger.money.sql.ResultSetMapper
+import com.munzenberger.money.sql.TransactionQueryExecutor
 import io.reactivex.Completable
 import io.reactivex.Single
 import kotlin.reflect.KClass
@@ -92,7 +93,4 @@ abstract class Persistable<M : Model>(
                 Completable.complete().doOnComplete { block(persistable.identity) }
         }
     }
-
-    internal fun completableChain(head: Completable, vararg tail: Completable) =
-            tail.fold(head) { chain, next -> chain.andThen(next) }
 }
