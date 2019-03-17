@@ -4,15 +4,17 @@ import javafx.fxml.FXML
 import javafx.fxml.FXMLLoader
 import javafx.scene.Parent
 import javafx.scene.layout.BorderPane
+import javafx.scene.layout.VBox
 import javafx.stage.Stage
 import java.net.URL
 
-class ApplicationController {
+class ApplicationController : DatabaseConnectorDelegate {
 
     companion object {
         val LAYOUT: URL = ApplicationController::class.java.getResource("ApplicationLayout.fxml")
     }
 
+    @FXML lateinit var container: VBox
     @FXML lateinit var borderPane: BorderPane
 
     private val viewModel = ApplicationViewModel()
@@ -27,6 +29,8 @@ class ApplicationController {
                 else -> presentWelcome()
             }
         }
+
+        container.disableProperty().bind(viewModel.isConnectionInProgressProperty)
     }
 
     fun start(stage: Stage) {
@@ -37,15 +41,15 @@ class ApplicationController {
         presentWelcome()
     }
 
-    @FXML fun onFileNew() {
+    @FXML override fun onCreateDatabase() {
         viewModel.createDatabase(stage)
     }
 
-    @FXML fun onFileOpen() {
+    @FXML override fun onOpenDatabase() {
         viewModel.openDatabase(stage)
     }
 
-    @FXML fun onFileExit() {
+    @FXML fun onExit() {
         viewModel.exit()
     }
 
@@ -55,7 +59,7 @@ class ApplicationController {
         val view: Parent = loader.load()
         val controller: WelcomeController = loader.getController()
 
-        controller.start(stage)
+        controller.start(this)
 
         borderPane.center = view
     }

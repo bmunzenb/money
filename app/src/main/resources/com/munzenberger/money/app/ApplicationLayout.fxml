@@ -7,16 +7,16 @@
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.VBox?>
 
-<VBox maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="0.0" minWidth="0.0" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.munzenberger.money.app.ApplicationController">
+<VBox fx:id="container" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="0.0" minWidth="0.0" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.munzenberger.money.app.ApplicationController">
    <children>
       <MenuBar>
          <menus>
             <Menu text="_File">
               <items>
-                  <MenuItem onAction="#onFileNew" text="_New" />
-                <MenuItem onAction="#onFileOpen" text="_Open" />
+                  <MenuItem onAction="#onCreateDatabase" text="_New" />
+                <MenuItem onAction="#onOpenDatabase" text="_Open" />
                   <SeparatorMenuItem mnemonicParsing="false" />
-                  <MenuItem onAction="#onFileExit" text="E_xit" />
+                  <MenuItem onAction="#onExit" text="E_xit" />
               </items>
             </Menu>
          </menus></MenuBar>

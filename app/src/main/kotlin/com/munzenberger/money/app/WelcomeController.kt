@@ -1,7 +1,6 @@
 package com.munzenberger.money.app
 
 import javafx.fxml.FXML
-import javafx.stage.Stage
 import java.net.URL
 
 class WelcomeController {
@@ -12,17 +11,17 @@ class WelcomeController {
 
     private val viewModel = WelcomeViewModel()
 
-    private lateinit var stage: Stage
+    private lateinit var databaseConnectorDelegate: DatabaseConnectorDelegate
 
-    fun start(stage: Stage) {
-        this.stage = stage
+    fun start(databaseConnectorDelegate: DatabaseConnectorDelegate) {
+        this.databaseConnectorDelegate = databaseConnectorDelegate
     }
 
     @FXML fun onCreateDatabase() {
-        viewModel.createDatabase(stage)
+        databaseConnectorDelegate.onCreateDatabase()
     }
 
     @FXML fun onOpenDatabase() {
-        viewModel.openDatabase(stage)
+        databaseConnectorDelegate.onOpenDatabase()
     }
 }
