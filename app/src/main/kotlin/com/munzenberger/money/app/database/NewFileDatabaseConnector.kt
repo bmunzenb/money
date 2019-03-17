@@ -26,6 +26,7 @@ object NewFileDatabaseConnector : FileDatabaseConnector() {
                     contentText = "Could not delete existing file."
                 }.showAndWait()
 
+                complete.invoke(null)
                 return
             }
         }

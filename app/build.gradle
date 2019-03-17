@@ -27,5 +27,4 @@ dependencies {
 
     implementation "com.h2database:h2:$versions.h2"
     implementation "org.xerial:sqlite-jdbc:$versions.sqlite"
-    implementation "info.picocli:picocli:$versions.picocli"
 }

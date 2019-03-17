@@ -8,19 +8,9 @@ import javafx.fxml.FXMLLoader
 import javafx.scene.Parent
 import javafx.scene.Scene
 import javafx.stage.Stage
-import picocli.CommandLine
-import java.util.concurrent.Callable
 
 fun main(args: Array<String>) {
-    CommandLine.call(Launcher(), *args)
-}
-
-@CommandLine.Command
-class Launcher : Callable<Unit> {
-
-    override fun call() {
-        Application.launch(MoneyApplication::class.java)
-    }
+    Application.launch(MoneyApplication::class.java, *args)
 }
 
 class MoneyApplication : Application() {
