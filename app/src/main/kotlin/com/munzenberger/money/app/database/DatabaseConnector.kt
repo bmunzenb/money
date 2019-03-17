@@ -53,7 +53,7 @@ abstract class DatabaseConnector {
     private fun onConnectSuccess(database: MoneyDatabase, complete: DatabaseConnectionHandler) {
 
         Single.fromCallable { MoneyCoreVersionManager().getVersionStatus(database) }
-                .subscribeOn(Schedulers.io())
+                .subscribeOn(Schedulers.single())
                 .observeOn(JavaFxScheduler.platform())
                 .doOnError { database.close() }
                 .subscribe({ onVersionStatus(database, it, complete) }, { onConnectError(it); complete.invoke(null) })
@@ -79,7 +79,7 @@ abstract class DatabaseConnector {
     private fun applyPendingUpgrades(database: MoneyDatabase, upgrades: PendingUpgrades, complete: DatabaseConnectionHandler) {
 
         Completable.fromRunnable { upgrades.apply() }
-                .subscribeOn(Schedulers.io())
+                .subscribeOn(Schedulers.single())
                 .observeOn(JavaFxScheduler.platform())
                 .doOnError { database.close() }
                 .subscribe({ complete.invoke(database) }, { onConnectError(it); complete.invoke(null) })

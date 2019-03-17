@@ -7,5 +7,6 @@ versions.h2 = '1.4.197'
 versions.sqlite = '3.25.2'
 versions.javafx = '0.0.7'
 versions.rxjavafx = '2.2.2'
+versions.picocli = '3.9.5'
 
 ext.versions = versions
