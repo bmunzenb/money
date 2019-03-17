@@ -1,7 +1,6 @@
 package com.munzenberger.money.app.database
 
 import com.munzenberger.money.core.SQLiteDatabaseDialect
-import javafx.stage.Window
 import java.io.File
 
 abstract class FileDatabaseConnector : DatabaseConnector() {
@@ -10,11 +9,7 @@ abstract class FileDatabaseConnector : DatabaseConnector() {
         const val SUFFIX = ".money"
     }
 
-    fun connect(ownerWindow: Window, complete: DatabaseConnectionHandler) {
-        openFile(ownerWindow)?.run { connect(this, complete) }
-    }
-
-    protected open fun connect(file: File, complete: DatabaseConnectionHandler) {
+    open fun connect(file: File, complete: DatabaseConnectionHandler) {
 
         val name = file.absolutePath
         val connectionUrl = "jdbc:sqlite:$name"
@@ -26,6 +21,4 @@ abstract class FileDatabaseConnector : DatabaseConnector() {
                 complete = complete)
 
     }
-
-    protected abstract fun openFile(ownerWindow: Window): File?
 }

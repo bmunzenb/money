@@ -8,7 +8,7 @@ import java.io.File
 
 object OpenFileDatabaseConnector : FileDatabaseConnector() {
 
-    override fun openFile(ownerWindow: Window): File? = FileChooser().apply {
+    fun openFile(ownerWindow: Window): File? = FileChooser().apply {
         title = "Open Money Database"
         initialDirectory = File(System.getProperty("user.home"))
         extensionFilters.addAll(

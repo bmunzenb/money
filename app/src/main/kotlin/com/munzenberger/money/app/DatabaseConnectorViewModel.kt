@@ -1,28 +1,28 @@
 package com.munzenberger.money.app
 
+import com.munzenberger.money.app.database.FileDatabaseConnector
 import com.munzenberger.money.app.database.NewFileDatabaseConnector
 import com.munzenberger.money.app.database.OpenFileDatabaseConnector
 import javafx.stage.Window
+import java.io.File
 
 interface DatabaseConnectorViewModel {
 
     fun createDatabase(ownerWindow: Window) {
-
-        ProgressDialog.doInDialog(ownerWindow, "Creating new database...") { dialog ->
-            NewFileDatabaseConnector.connect(ownerWindow) {
-                dialog.close()
-                it?.run { MoneyApplication.database = this }
-            }
+        NewFileDatabaseConnector.openFile(ownerWindow)?.run {
+            connectToFileDatabase(NewFileDatabaseConnector, this)
         }
     }
 
     fun openDatabase(ownerWindow: Window) {
+        OpenFileDatabaseConnector.openFile(ownerWindow)?.run {
+            connectToFileDatabase(OpenFileDatabaseConnector, this)
+        }
+    }
 
-        ProgressDialog.doInDialog(ownerWindow, "Opening database...") { dialog ->
-            OpenFileDatabaseConnector.connect(ownerWindow) {
-                dialog.close()
-                it?.run { MoneyApplication.database = this }
-            }
+    private fun connectToFileDatabase(connector: FileDatabaseConnector, file: File) {
+        connector.connect(file) {
+            it?.run { MoneyApplication.database = this }
         }
     }
 }

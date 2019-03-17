@@ -7,7 +7,7 @@ import java.io.File
 
 object NewFileDatabaseConnector : FileDatabaseConnector() {
 
-    override fun openFile(ownerWindow: Window): File? = FileChooser().apply {
+    fun openFile(ownerWindow: Window): File? = FileChooser().apply {
         title = "New Money Database"
         initialDirectory = File(System.getProperty("user.home"))
         initialFileName = "Money${FileDatabaseConnector.SUFFIX}"
