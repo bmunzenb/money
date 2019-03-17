@@ -66,6 +66,12 @@ class ApplicationController : DatabaseConnectorDelegate {
 
     private fun presentNavigation() {
 
-        borderPane.center = null
+        val loader = FXMLLoader(NavigationController.LAYOUT)
+        val view: Parent = loader.load()
+        val controller: NavigationController = loader.getController()
+
+        controller.start()
+
+        borderPane.center = view
     }
 }
