@@ -16,12 +16,15 @@ class MoneyApplication : Application() {
 
     override fun start(primaryStage: Stage) {
 
-        val root: Parent = FXMLLoader(ApplicationController.LAYOUT).loadWithController { controller: ApplicationController ->
-            this.controller = controller.apply { start(primaryStage) }
-        }
+        FXMLLoader(ApplicationController.LAYOUT).load { root: Parent, controller: ApplicationController ->
 
-        primaryStage.scene = Scene(root)
-        primaryStage.show()
+            this.controller = controller.apply { start(primaryStage) }
+
+            primaryStage.scene = Scene(root)
+            primaryStage.minWidth = 640.0
+            primaryStage.minHeight = 480.0
+            primaryStage.show()
+        }
     }
 
     override fun stop() {

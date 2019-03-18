@@ -11,7 +11,7 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
-<GridPane hgap="6.0" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="0.0" minWidth="0.0" vgap="6.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.munzenberger.money.app.AccountsController">
+<GridPane hgap="6.0" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="0.0" minWidth="0.0" vgap="6.0" xmlns="http://javafx.com/javafx/8.0.141" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.munzenberger.money.app.AccountListController">
   <columnConstraints>
     <ColumnConstraints fillWidth="false" hgrow="NEVER" />
     <ColumnConstraints hgrow="ALWAYS" maxWidth="1.7976931348623157E308" minWidth="0.0" />
@@ -44,8 +44,7 @@
       </Label>
       <VBox minHeight="0.0" minWidth="0.0" GridPane.rowIndex="1" GridPane.rowSpan="2147483647" GridPane.valignment="TOP">
          <children>
-            <Hyperlink text="Create account" />
-            <Hyperlink text="Another action" />
+            <Hyperlink onAction="#onCreateAccount" text="Create account" />
          </children>
          <padding>
             <Insets right="6.0" />

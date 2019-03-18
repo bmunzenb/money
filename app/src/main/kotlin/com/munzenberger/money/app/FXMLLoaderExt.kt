@@ -2,12 +2,10 @@ package com.munzenberger.money.app
 
 import javafx.fxml.FXMLLoader
 
-fun <T, C> FXMLLoader.loadWithController(block: (C) -> Unit): T {
+fun <T, C> FXMLLoader.load(block: (T, C) -> Unit) {
 
     val root: T = load()
     val controller: C = getController()
 
-    block.invoke(controller)
-
-    return root
+    block.invoke(root, controller)
 }

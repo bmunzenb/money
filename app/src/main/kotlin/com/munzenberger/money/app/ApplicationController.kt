@@ -4,6 +4,7 @@ import javafx.fxml.FXML
 import javafx.fxml.FXMLLoader
 import javafx.scene.Node
 import javafx.scene.Parent
+import javafx.scene.control.MenuBar
 import javafx.scene.layout.AnchorPane
 import javafx.scene.layout.BorderPane
 import javafx.scene.layout.VBox
@@ -16,7 +17,7 @@ class ApplicationController : DatabaseConnectorDelegate {
         val LAYOUT: URL = ApplicationController::class.java.getResource("ApplicationLayout.fxml")
     }
 
-    @FXML lateinit var container: VBox
+    @FXML lateinit var menuBar: MenuBar
     @FXML lateinit var contentPane: AnchorPane
 
     private val viewModel = ApplicationViewModel()
@@ -25,6 +26,8 @@ class ApplicationController : DatabaseConnectorDelegate {
 
     @FXML fun initialize() {
 
+        menuBar.isUseSystemMenuBar = true
+
         viewModel.connectedDatabaseProperty.addListener { _, _, db ->
             when {
                 db != null -> presentNavigation()
@@ -32,7 +35,8 @@ class ApplicationController : DatabaseConnectorDelegate {
             }
         }
 
-        container.disableProperty().bind(viewModel.isConnectionInProgressProperty)
+        menuBar.disableProperty().bind(viewModel.isConnectionInProgressProperty)
+        contentPane.disableProperty().bind(viewModel.isConnectionInProgressProperty)
     }
 
     fun start(stage: Stage) {
@@ -61,20 +65,18 @@ class ApplicationController : DatabaseConnectorDelegate {
 
     private fun presentWelcome() {
 
-        val node: Node = FXMLLoader(WelcomeController.LAYOUT).loadWithController { controller: WelcomeController ->
+        FXMLLoader(WelcomeController.LAYOUT).load { node: Node, controller: WelcomeController ->
             controller.start(this)
+            setContent(node)
         }
-
-        setContent(node)
     }
 
     private fun presentNavigation() {
 
-        val node: Node = FXMLLoader(NavigationController.LAYOUT).loadWithController { controller: NavigationController ->
-            controller.start()
+        FXMLLoader(NavigationController.LAYOUT).load { node: Node, controller: NavigationController ->
+            controller.start(stage)
+            setContent(node)
         }
-
-        setContent(node)
     }
 
     private fun setContent(content: Node) {

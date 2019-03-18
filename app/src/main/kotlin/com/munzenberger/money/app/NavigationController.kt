@@ -5,6 +5,7 @@ import com.munzenberger.money.app.navigation.Navigator
 import javafx.fxml.FXML
 import javafx.scene.control.Button
 import javafx.scene.layout.BorderPane
+import javafx.stage.Stage
 import java.net.URL
 
 class NavigationController {
@@ -19,7 +20,9 @@ class NavigationController {
 
     private val navigator = Navigator { borderPane.center = it }
 
-    private val accountsNavigation = Navigation(AccountsController.LAYOUT) { controller: AccountsController -> controller.start() }
+    private val accountsNavigation = Navigation(AccountListController.LAYOUT) { controller: AccountListController -> controller.start(stage) }
+
+    private lateinit var stage: Stage
 
     fun initialize() {
 
@@ -27,7 +30,8 @@ class NavigationController {
         forwardButton.disableProperty().bind(navigator.forwardHistoryProperty.emptyProperty())
     }
 
-    fun start() {
+    fun start(stage: Stage) {
+        this.stage = stage
         navigator.goTo(accountsNavigation)
     }
 
