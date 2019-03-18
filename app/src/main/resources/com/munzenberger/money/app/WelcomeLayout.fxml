@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.geometry.Insets?>
-<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Hyperlink?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
@@ -14,8 +14,8 @@
          </font>
       </Label>
       <Label text="Get started by selecting an option from the file menu, or an option below." wrapText="true" />
-      <Button mnemonicParsing="false" onAction="#onCreateDatabase" text="Create new Money database" />
-      <Button mnemonicParsing="false" onAction="#onOpenDatabase" text="Open existing Money database" />
+      <Hyperlink onAction="#onCreateDatabase" text="Create new Money database" />
+      <Hyperlink onAction="#onOpenDatabase" text="Open existing Money database" />
    </children>
    <padding>
       <Insets bottom="16.0" left="16.0" right="16.0" top="16.0" />

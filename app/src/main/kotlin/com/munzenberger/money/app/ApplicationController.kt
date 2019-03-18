@@ -2,7 +2,9 @@ package com.munzenberger.money.app
 
 import javafx.fxml.FXML
 import javafx.fxml.FXMLLoader
+import javafx.scene.Node
 import javafx.scene.Parent
+import javafx.scene.layout.AnchorPane
 import javafx.scene.layout.BorderPane
 import javafx.scene.layout.VBox
 import javafx.stage.Stage
@@ -15,7 +17,7 @@ class ApplicationController : DatabaseConnectorDelegate {
     }
 
     @FXML lateinit var container: VBox
-    @FXML lateinit var borderPane: BorderPane
+    @FXML lateinit var contentPane: AnchorPane
 
     private val viewModel = ApplicationViewModel()
 
@@ -55,23 +57,32 @@ class ApplicationController : DatabaseConnectorDelegate {
 
     private fun presentWelcome() {
 
-        val loader = FXMLLoader(WelcomeController.LAYOUT)
-        val view: Parent = loader.load()
-        val controller: WelcomeController = loader.getController()
+        val node: Node = FXMLLoader(WelcomeController.LAYOUT).loadWithController { controller: WelcomeController ->
+            controller.start(this)
+        }
 
-        controller.start(this)
-
-        borderPane.center = view
+        setContent(node)
     }
 
     private fun presentNavigation() {
 
-        val loader = FXMLLoader(NavigationController.LAYOUT)
-        val view: Parent = loader.load()
-        val controller: NavigationController = loader.getController()
+        val node: Node = FXMLLoader(NavigationController.LAYOUT).loadWithController { controller: NavigationController ->
+            controller.start()
+        }
 
-        controller.start()
+        setContent(node)
+    }
 
-        borderPane.center = view
+    private fun setContent(content: Node) {
+
+        contentPane.children.also {
+            it.clear()
+            it.add(content)
+        }
+
+        AnchorPane.setTopAnchor(content, 0.0)
+        AnchorPane.setLeftAnchor(content, 0.0)
+        AnchorPane.setRightAnchor(content, 0.0)
+        AnchorPane.setBottomAnchor(content, 0.0)
     }
 }

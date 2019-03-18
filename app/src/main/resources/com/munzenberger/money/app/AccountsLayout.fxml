@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Hyperlink?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.RowConstraints?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
+
+<GridPane hgap="6.0" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="0.0" minWidth="0.0" vgap="6.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.munzenberger.money.app.AccountsController">
+  <columnConstraints>
+    <ColumnConstraints fillWidth="false" hgrow="NEVER" />
+    <ColumnConstraints hgrow="ALWAYS" maxWidth="1.7976931348623157E308" minWidth="0.0" />
+  </columnConstraints>
+  <rowConstraints>
+    <RowConstraints fillHeight="false" vgrow="NEVER" />
+    <RowConstraints maxHeight="1.7976931348623157E308" minHeight="0.0" vgrow="ALWAYS" />
+    <RowConstraints fillHeight="false" vgrow="NEVER" />
+  </rowConstraints>
+   <children>
+      <Label text="Accounts" GridPane.columnIndex="1">
+         <font>
+            <Font size="18.0" />
+         </font>
+      </Label>
+      <TableView maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="0.0" minWidth="0.0" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS" GridPane.rowIndex="1" GridPane.vgrow="ALWAYS">
+        <columns>
+          <TableColumn editable="false" prefWidth="75.0" text="Account" />
+          <TableColumn editable="false" prefWidth="75.0" text="Account Number" />
+            <TableColumn editable="false" prefWidth="75.0" text="Balance" />
+        </columns>
+         <columnResizePolicy>
+            <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
+         </columnResizePolicy>
+      </TableView>
+      <Label text="Total Account Balance: $123,456.78" GridPane.columnIndex="1" GridPane.halignment="RIGHT" GridPane.rowIndex="2">
+         <font>
+            <Font name="System Bold" size="12.0" />
+         </font>
+      </Label>
+      <VBox minHeight="0.0" minWidth="0.0" GridPane.rowIndex="1" GridPane.rowSpan="2147483647" GridPane.valignment="TOP">
+         <children>
+            <Hyperlink text="Create account" />
+            <Hyperlink text="Another action" />
+         </children>
+         <padding>
+            <Insets right="6.0" />
+         </padding>
+      </VBox>
+   </children>
+   <padding>
+      <Insets bottom="12.0" left="12.0" right="12.0" top="12.0" />
+   </padding>
+</GridPane>

@@ -17,11 +17,9 @@ class MoneyApplication : Application() {
 
     override fun start(primaryStage: Stage) {
 
-        val loader = FXMLLoader(ApplicationController.LAYOUT)
-        val root: Parent = loader.load()
-        val controller: ApplicationController = loader.getController()
-
-        controller.start(primaryStage)
+        val root: Parent = FXMLLoader(ApplicationController.LAYOUT).loadWithController { controller: ApplicationController ->
+            controller.start(primaryStage)
+        }
 
         primaryStage.scene = Scene(root)
         primaryStage.show()
