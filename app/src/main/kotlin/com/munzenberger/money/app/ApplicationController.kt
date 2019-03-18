@@ -25,7 +25,7 @@ class ApplicationController : DatabaseConnectorDelegate {
 
     @FXML fun initialize() {
 
-        MoneyApplication.observableDatabase.addListener { _, _, db ->
+        viewModel.connectedDatabaseProperty.addListener { _, _, db ->
             when {
                 db != null -> presentNavigation()
                 else -> presentWelcome()
@@ -53,6 +53,10 @@ class ApplicationController : DatabaseConnectorDelegate {
 
     @FXML fun onExit() {
         viewModel.exit()
+    }
+
+    fun shutdown() {
+        viewModel.shutdown()
     }
 
     private fun presentWelcome() {

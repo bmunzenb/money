@@ -1,9 +1,6 @@
 package com.munzenberger.money.app
 
-import com.munzenberger.money.core.MoneyDatabase
 import javafx.application.Application
-import javafx.beans.property.SimpleObjectProperty
-import javafx.beans.value.ObservableValue
 import javafx.fxml.FXMLLoader
 import javafx.scene.Parent
 import javafx.scene.Scene
@@ -15,10 +12,12 @@ fun main(args: Array<String>) {
 
 class MoneyApplication : Application() {
 
+    private lateinit var controller: ApplicationController
+
     override fun start(primaryStage: Stage) {
 
         val root: Parent = FXMLLoader(ApplicationController.LAYOUT).loadWithController { controller: ApplicationController ->
-            controller.start(primaryStage)
+            this.controller = controller.apply { start(primaryStage) }
         }
 
         primaryStage.scene = Scene(root)
@@ -26,20 +25,6 @@ class MoneyApplication : Application() {
     }
 
     override fun stop() {
-        database?.close()
-    }
-
-    companion object {
-
-        private val databaseProperty = SimpleObjectProperty<MoneyDatabase?>()
-
-        var database: MoneyDatabase?
-            get() = databaseProperty.get()
-            set(value) {
-                databaseProperty.value?.close()
-                databaseProperty.value = value
-            }
-
-        val observableDatabase: ObservableValue<MoneyDatabase?> = databaseProperty
+        controller.shutdown()
     }
 }
