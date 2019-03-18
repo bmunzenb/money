@@ -18,7 +18,7 @@ abstract class Persistable<M : Model>(
 
     open fun save(executor: QueryExecutor) = if (model.identity == null) insert(executor) else update(executor)
 
-    private fun insert(executor: QueryExecutor) = Completable.create {
+    private fun insert(executor: QueryExecutor) = Completable.fromAction {
 
         val query = table.insert(model).build()
         val handler = IdentityResultSetHandler()
@@ -26,28 +26,22 @@ abstract class Persistable<M : Model>(
         executor.executeUpdate(query, handler)
 
         model.identity = handler.identity
-
-        it.onComplete()
     }
 
-    private fun update(executor: QueryExecutor) = Completable.create {
+    private fun update(executor: QueryExecutor) = Completable.fromAction {
 
         val query = table.update(model).build()
 
         executor.executeUpdate(query)
-
-        it.onComplete()
     }
 
-    fun delete(executor: QueryExecutor) = Completable.create {
+    fun delete(executor: QueryExecutor) = Completable.fromAction {
 
         val query = table.delete(model).build()
 
         executor.executeUpdate(query)
 
         model.identity = null
-
-        it.onComplete()
     }
 
     companion object {
@@ -56,12 +50,11 @@ abstract class Persistable<M : Model>(
                 executor: QueryExecutor,
                 table: Table<M>,
                 mapper: ResultSetMapper<P>
-        ) = Single.create<List<P>> {
+        ) = Single.fromCallable {
 
             val query = table.select().orderBy(table.identityColumn).build()
-            val list = executor.getList(query, mapper)
 
-            it.onSuccess(list)
+            executor.getList(query, mapper)
         }
 
         internal fun <M : Model, P : Persistable<M>> get(

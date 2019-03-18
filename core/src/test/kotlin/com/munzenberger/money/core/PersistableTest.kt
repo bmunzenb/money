@@ -48,7 +48,7 @@ abstract class PersistableTest<P : Persistable<*>> : MoneyDatabaseTestSupport() 
     }
 
     @Test
-    fun `can store and retrieve a list of persistables`() {
+    open fun `can store and retrieve a list of persistables`() {
 
         val list = listOf(createPersistable(), createPersistable(), createPersistable())
 

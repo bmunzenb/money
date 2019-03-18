@@ -2,18 +2,20 @@ package com.munzenberger.money.core
 
 interface DatabaseDialect {
 
+    val identityType: String
     val identityColumnType: String
-    val identityReferenceType: String
+
+    fun identityType(constraints: String) = "$identityType $constraints"
 }
 
 object H2DatabaseDialect : DatabaseDialect {
 
-    override val identityReferenceType = "INTEGER"
-    override val identityColumnType = "$identityReferenceType NOT NULL AUTO_INCREMENT PRIMARY KEY"
+    override val identityType = "INTEGER"
+    override val identityColumnType = identityType("NOT NULL AUTO_INCREMENT PRIMARY KEY")
 }
 
 object SQLiteDatabaseDialect : DatabaseDialect {
 
-    override val identityReferenceType = "INTEGER"
-    override val identityColumnType = "$identityReferenceType NOT NULL PRIMARY KEY AUTOINCREMENT"
+    override val identityType = "INTEGER"
+    override val identityColumnType = identityType("NOT NULL PRIMARY KEY AUTOINCREMENT")
 }

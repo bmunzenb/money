@@ -2,6 +2,7 @@ package com.munzenberger.money.app
 
 import com.munzenberger.money.app.navigation.Navigation
 import com.munzenberger.money.app.navigation.Navigator
+import com.munzenberger.money.core.MoneyDatabase
 import javafx.fxml.FXML
 import javafx.scene.control.Button
 import javafx.scene.layout.BorderPane
@@ -20,9 +21,12 @@ class NavigationController {
 
     private val navigator = Navigator { borderPane.center = it }
 
-    private val accountsNavigation = Navigation(AccountListController.LAYOUT) { controller: AccountListController -> controller.start(stage) }
+    private val accountsNavigation = Navigation(AccountListController.LAYOUT) {
+        controller: AccountListController -> controller.start(stage, database)
+    }
 
     private lateinit var stage: Stage
+    private lateinit var database: MoneyDatabase
 
     fun initialize() {
 
@@ -30,8 +34,10 @@ class NavigationController {
         forwardButton.disableProperty().bind(navigator.forwardHistoryProperty.emptyProperty())
     }
 
-    fun start(stage: Stage) {
+    fun start(stage: Stage, database: MoneyDatabase) {
         this.stage = stage
+        this.database = database
+
         navigator.goTo(accountsNavigation)
     }
 

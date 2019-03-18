@@ -18,4 +18,13 @@ class AccountTypeTest : PersistableTest<AccountType>() {
         assertEquals(p1.name, p2.name)
         assertEquals(p1.category, p2.category)
     }
+
+    override fun `can store and retrieve a list of persistables`() {
+
+        // verify that the initial values are present
+
+        getAllPersistables().test().assertComplete().apply {
+            assertValue { it.isNotEmpty() }
+        }
+    }
 }

@@ -1,5 +1,6 @@
 package com.munzenberger.money.app
 
+import com.munzenberger.money.core.MoneyDatabase
 import javafx.fxml.FXML
 import javafx.fxml.FXMLLoader
 import javafx.scene.Node
@@ -30,7 +31,7 @@ class ApplicationController : DatabaseConnectorDelegate {
 
         viewModel.connectedDatabaseProperty.addListener { _, _, db ->
             when {
-                db != null -> presentNavigation()
+                db != null -> presentNavigation(db)
                 else -> presentWelcome()
             }
         }
@@ -71,10 +72,10 @@ class ApplicationController : DatabaseConnectorDelegate {
         }
     }
 
-    private fun presentNavigation() {
+    private fun presentNavigation(database: MoneyDatabase) {
 
         FXMLLoader(NavigationController.LAYOUT).load { node: Node, controller: NavigationController ->
-            controller.start(stage)
+            controller.start(stage, database)
             setContent(node)
         }
     }
