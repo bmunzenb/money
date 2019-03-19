@@ -16,6 +16,7 @@
       <Label text="Get started by selecting an option from the file menu, or an option below." wrapText="true" />
       <Hyperlink onAction="#onCreateDatabase" text="Create new Money database" />
       <Hyperlink onAction="#onOpenDatabase" text="Open existing Money database" />
+      <Hyperlink onAction="#onMemoryDatabase" text="Use an in-memory Money database" />
    </children>
    <padding>
       <Insets bottom="16.0" left="16.0" right="16.0" top="16.0" />

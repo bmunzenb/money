@@ -24,4 +24,8 @@ class WelcomeController {
     @FXML fun onOpenDatabase() {
         databaseConnectorDelegate.onOpenDatabase()
     }
+
+    @FXML fun onMemoryDatabase() {
+        databaseConnectorDelegate.onMemoryDatabase()
+    }
 }

@@ -56,6 +56,10 @@ class ApplicationController : DatabaseConnectorDelegate {
         viewModel.openDatabase(stage)
     }
 
+    override fun onMemoryDatabase() {
+        viewModel.startMemoryDatabase()
+    }
+
     @FXML fun onExit() {
         viewModel.exit()
     }

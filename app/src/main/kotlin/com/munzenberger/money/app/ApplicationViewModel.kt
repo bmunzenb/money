@@ -1,13 +1,13 @@
 package com.munzenberger.money.app
 
-import com.munzenberger.money.app.database.FileDatabaseConnector
+import com.munzenberger.money.app.database.DatabaseConnectionHandler
+import com.munzenberger.money.app.database.MemoryDatabaseConnector
 import com.munzenberger.money.app.database.NewFileDatabaseConnector
 import com.munzenberger.money.app.database.OpenFileDatabaseConnector
 import com.munzenberger.money.core.MoneyDatabase
 import javafx.application.Platform
 import javafx.beans.property.*
 import javafx.stage.Window
-import java.io.File
 
 class ApplicationViewModel {
 
@@ -30,20 +30,30 @@ class ApplicationViewModel {
     }
 
     fun createDatabase(ownerWindow: Window) {
-        NewFileDatabaseConnector.openFile(ownerWindow)?.run {
-            connectToFileDatabase(NewFileDatabaseConnector, this)
+        NewFileDatabaseConnector.openFile(ownerWindow)?.let { file ->
+            connectToDatabase {
+                NewFileDatabaseConnector.connect(file, it)
+            }
         }
     }
 
     fun openDatabase(ownerWindow: Window) {
-        OpenFileDatabaseConnector.openFile(ownerWindow)?.run {
-            connectToFileDatabase(OpenFileDatabaseConnector, this)
+        OpenFileDatabaseConnector.openFile(ownerWindow)?.let { file ->
+            connectToDatabase {
+                OpenFileDatabaseConnector.connect(file, it)
+            }
         }
     }
 
-    private fun connectToFileDatabase(connector: FileDatabaseConnector, file: File) {
+    fun startMemoryDatabase() {
+        connectToDatabase {
+            MemoryDatabaseConnector.connect(it)
+        }
+    }
+
+    private fun connectToDatabase(block: (DatabaseConnectionHandler) -> Unit) {
         isConnectionInProgress.value = true
-        connector.connect(file) {
+        block.invoke {
             isConnectionInProgress.value = false
             it?.run {
                 connectedDatabase.value?.close()

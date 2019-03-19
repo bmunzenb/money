@@ -5,4 +5,6 @@ interface DatabaseConnectorDelegate {
     fun onCreateDatabase()
 
     fun onOpenDatabase()
+
+    fun onMemoryDatabase()
 }

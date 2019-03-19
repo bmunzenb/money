@@ -20,10 +20,14 @@ class MoneyApplication : Application() {
 
             this.controller = controller.apply { start(primaryStage) }
 
-            primaryStage.scene = Scene(root)
-            primaryStage.minWidth = 640.0
-            primaryStage.minHeight = 480.0
-            primaryStage.show()
+            primaryStage.apply {
+                scene = Scene(root)
+                width = 640.0
+                height = 480.0
+                minWidth = width
+                minHeight = height
+                show()
+            }
         }
     }
 
