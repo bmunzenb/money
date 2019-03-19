@@ -2,7 +2,6 @@ package com.munzenberger.money.app.property
 
 import javafx.beans.property.BooleanProperty
 import javafx.collections.ObservableList
-import kotlin.reflect.KClass
 
 fun <T> ObservableList<T>.bindAsync(asyncObjectProperty: ReadOnlyAsyncObjectProperty<List<T>>) {
 
@@ -20,7 +19,9 @@ fun <T> ObservableList<T>.bindAsync(asyncObjectProperty: ReadOnlyAsyncObjectProp
 
 fun BooleanProperty.bindAsync(asyncObjectProperty: ReadOnlyAsyncObjectProperty<*>, vararg status: AsyncObject.Status) {
 
-    val listener = { obj: AsyncObject<*> -> set(obj.status in status) }
+    val listener = { obj: AsyncObject<*> ->
+        set(obj.status in status)
+    }
 
     asyncObjectProperty.addListener { _, _, obj -> listener.invoke(obj) }
 

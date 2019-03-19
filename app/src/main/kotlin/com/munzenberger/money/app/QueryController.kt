@@ -55,20 +55,18 @@ class QueryController {
 
     private fun onResult(result: QueryViewModel.QueryResult) {
 
-        resultTableView.getColumns().clear()
-        resultTableView.setItems(result.data)
-
-        for (i in 0 until result.columns.size) {
-
-            val col = TableColumn<List<Any>, Any>().apply {
-                text = result.columns[i]
-                setCellValueFactory { p -> ReadOnlyObjectWrapper(p.value[i]) }
+        resultTableView.apply {
+            columns.clear()
+            items = result.data
+            result.columns.forEachIndexed { index, s ->
+                val col = TableColumn<List<Any>, Any>().apply {
+                    text = s
+                    setCellValueFactory { ReadOnlyObjectWrapper(it.value[index]) }
+                }
+                columns.add(col)
             }
-
-            resultTableView.columns.add(col)
+            placeholder = Text(result.message)
         }
-
-        resultTableView.placeholder = Text(result.message)
     }
 
     private fun onError(error: Throwable) {

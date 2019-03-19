@@ -13,7 +13,6 @@ import javafx.beans.property.SimpleStringProperty
 import javafx.collections.FXCollections
 import javafx.collections.ObservableList
 import java.sql.ResultSet
-import java.util.*
 
 class QueryViewModel {
 
@@ -47,6 +46,9 @@ class QueryViewModel {
     }
 
     private fun subscribe(single: Single<QueryResult>) {
+
+        result.set(AsyncObject.Executing())
+
         single.subscribeOn(Schedulers.single())
                 .observeOn(JavaFxScheduler.platform())
                 .subscribe({ result.set(AsyncObject.Complete(it)) }, { result.set(AsyncObject.Error(it)) })
@@ -59,14 +61,15 @@ class QueryViewModel {
         database.executeQuery(Query(queryString), object : ResultSetHandler {
             override fun onResultSet(resultSet: ResultSet) {
 
-                val md = resultSet.getMetaData()
-                val colCount = md.getColumnCount()
+                val md = resultSet.metaData
+                val colCount = md.columnCount
+
                 for (i in 1..colCount) {
                     result.columns.add(md.getColumnLabel(i))
                 }
 
                 while (resultSet.next()) {
-                    val row = ArrayList<Any>()
+                    val row = mutableListOf<Any>()
                     for (i in 1..colCount) {
                         row.add(resultSet.getObject(i))
                     }
