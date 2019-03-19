@@ -21,6 +21,7 @@ class MoneyCoreVersion_1 : ApplicableVersion<MoneyDatabase> {
                 .column(AccountTypeTable.identityColumn, obj.dialect.identityColumnType)
                 .column(AccountTypeTable.nameColumn, "TEXT NOT NULL")
                 .column(AccountTypeTable.categoryColumn, "TEXT NOT NULL")
+                .constraint("ACCOUNT_TYPE_CATEGORY_CONSTRAINT", "CHECK (${AccountTypeTable.categoryColumn} IN ('${AccountType.Category.ASSETS.name}', '${AccountType.Category.LIABILITIES.name}', '${AccountType.Category.INCOME.name}', '${AccountType.Category.EXPENSES.name}'))")
                 .build())
 
         obj.execute(Query.createTable(PayeeTable.name)
