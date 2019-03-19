@@ -1,5 +1,6 @@
 package com.munzenberger.money.app.database
 
+import com.munzenberger.money.app.useDatabaseSchedulers
 import com.munzenberger.money.core.ConnectionMoneyDatabase
 import com.munzenberger.money.core.DatabaseDialect
 import com.munzenberger.money.core.MoneyDatabase
@@ -45,16 +46,14 @@ abstract class DatabaseConnector {
 
             it.onSuccess(database)
         }
-                .subscribeOn(Schedulers.single())
-                .observeOn(JavaFxScheduler.platform())
+                .useDatabaseSchedulers()
                 .subscribe({ onConnectSuccess(it, complete) }, { onConnectError(it); complete.invoke(null) })
     }
 
     private fun onConnectSuccess(database: MoneyDatabase, complete: DatabaseConnectionHandler) {
 
         Single.fromCallable { MoneyCoreVersionManager().getVersionStatus(database) }
-                .subscribeOn(Schedulers.single())
-                .observeOn(JavaFxScheduler.platform())
+                .useDatabaseSchedulers()
                 .doOnError { database.close() }
                 .subscribe({ onVersionStatus(database, it, complete) }, { onConnectError(it); complete.invoke(null) })
     }
@@ -79,8 +78,7 @@ abstract class DatabaseConnector {
     private fun applyPendingUpgrades(database: MoneyDatabase, upgrades: PendingUpgrades, complete: DatabaseConnectionHandler) {
 
         Completable.fromRunnable { upgrades.apply() }
-                .subscribeOn(Schedulers.single())
-                .observeOn(JavaFxScheduler.platform())
+                .useDatabaseSchedulers()
                 .doOnError { database.close() }
                 .subscribe({ complete.invoke(database) }, { onConnectError(it); complete.invoke(null) })
     }

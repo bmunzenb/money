@@ -1,5 +1,6 @@
 package com.munzenberger.money.app.property
 
+import com.munzenberger.money.app.useDatabaseSchedulers
 import io.reactivex.Single
 import io.reactivex.rxjavafx.schedulers.JavaFxScheduler
 import io.reactivex.schedulers.Schedulers
@@ -12,8 +13,7 @@ class SimpleAsyncObjectProperty<T>(value: AsyncObject<T> = AsyncObject.Pending()
 
         set(AsyncObject.Executing())
 
-        single.subscribeOn(Schedulers.single())
-                .observeOn(JavaFxScheduler.platform())
+        single.useDatabaseSchedulers()
                 .subscribe({ set(AsyncObject.Complete(it)) }, { set(AsyncObject.Error(it)) })
     }
 }

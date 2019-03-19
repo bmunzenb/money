@@ -34,31 +34,34 @@ class QueryViewModel {
         this.database = database
     }
 
-    private val queryString: String
-        get() = if (selectedQueryProperty.value.isBlank()) queryProperty.value else selectedQueryProperty.value
+    private val queryString: String?
+        get() = listOf(selectedQueryProperty.value, queryProperty.value).firstOrNull { it.isNotBlank() }
 
     fun executeQuery() {
-        subscribe(observableQuery())
+        queryString?.run {
+            subscribe(observableQuery(this))
+        }
     }
 
     fun executeUpdate() {
-        subscribe(observableUpdate())
+        queryString?.run {
+            subscribe(observableUpdate(this))
+        }
     }
 
     private fun subscribe(single: Single<QueryResult>) {
 
         result.set(AsyncObject.Executing())
 
-        single.subscribeOn(Schedulers.single())
-                .observeOn(JavaFxScheduler.platform())
+        single.useDatabaseSchedulers()
                 .subscribe({ result.set(AsyncObject.Complete(it)) }, { result.set(AsyncObject.Error(it)) })
     }
 
-    private fun observableQuery() = Single.fromCallable {
+    private fun observableQuery(input: String) = Single.fromCallable {
 
         val result = QueryResult()
 
-        database.executeQuery(Query(queryString), object : ResultSetHandler {
+        database.executeQuery(Query(input), object : ResultSetHandler {
             override fun onResultSet(resultSet: ResultSet) {
 
                 val md = resultSet.metaData
@@ -83,9 +86,9 @@ class QueryViewModel {
         }
     }
 
-    private fun observableUpdate() = Single.fromCallable {
+    private fun observableUpdate(input: String) = Single.fromCallable {
 
-        val updated = database.executeUpdate(Query(queryString))
+        val updated = database.executeUpdate(Query(input))
 
         QueryResult(message = "$updated row(s) updated.")
     }

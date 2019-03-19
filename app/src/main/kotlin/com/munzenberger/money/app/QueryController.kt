@@ -28,13 +28,18 @@ class QueryController {
 
     fun initialize() {
 
-        container.disableProperty().bindAsync(viewModel.resultProperty, AsyncObject.Status.EXECUTING)
+        resultTableView.placeholder = Text("Execute a statement to see results.")
+
+        queryTextArea.disableProperty().bindAsync(viewModel.resultProperty, AsyncObject.Status.EXECUTING)
+        queryButton.disableProperty().bindAsync(viewModel.resultProperty, AsyncObject.Status.EXECUTING)
+        updateButton.disableProperty().bindAsync(viewModel.resultProperty, AsyncObject.Status.EXECUTING)
 
         viewModel.queryProperty.bind(queryTextArea.textProperty())
         viewModel.selectedQueryProperty.bind(queryTextArea.selectedTextProperty())
 
         viewModel.resultProperty.addListener { _, _, value ->
             when (value) {
+                is AsyncObject.Executing -> onExecuting()
                 is AsyncObject.Complete -> onResult(value.value)
                 is AsyncObject.Error -> onError(value.error)
             }
@@ -51,6 +56,18 @@ class QueryController {
 
     @FXML fun onUpdateButton() {
         viewModel.executeUpdate()
+    }
+
+    private fun onExecuting() {
+
+        resultTableView.apply {
+            columns.clear()
+            items = null
+            placeholder = ProgressIndicator().apply {
+                minWidth = 60.0
+                minHeight = 60.0
+            }
+        }
     }
 
     private fun onResult(result: QueryViewModel.QueryResult) {

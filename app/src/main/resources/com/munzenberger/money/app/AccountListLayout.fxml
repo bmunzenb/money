@@ -45,7 +45,7 @@
       </Label>
       <VBox minHeight="0.0" minWidth="0.0" GridPane.rowIndex="1" GridPane.rowSpan="2147483647" GridPane.valignment="TOP">
          <children>
-            <Button mnemonicParsing="false" onAction="#onCreateAccount" text="Create Account" />
+            <Button fx:id="createAccountButton" mnemonicParsing="false" onAction="#onCreateAccount" text="Create Account" />
          </children>
          <padding>
             <Insets right="6.0" />
