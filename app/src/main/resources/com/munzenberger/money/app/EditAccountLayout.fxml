@@ -30,11 +30,11 @@
       <Label text="Account number:" GridPane.rowIndex="2" />
       <TextField fx:id="accountNumberTextField" maxWidth="1.7976931348623157E308" GridPane.columnIndex="1" GridPane.rowIndex="2" />
       <Label text="Financial institution:" GridPane.rowIndex="3" />
-      <ComboBox editable="true" maxWidth="1.7976931348623157E308" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+      <ComboBox fx:id="bankComboBox" editable="true" maxWidth="1.7976931348623157E308" GridPane.columnIndex="1" GridPane.rowIndex="3" />
       <ButtonBar prefHeight="40.0" prefWidth="200.0" GridPane.columnSpan="2147483647" GridPane.halignment="RIGHT" GridPane.rowIndex="4">
         <buttons>
-          <Button fx:id="saveButton" defaultButton="true" mnemonicParsing="false" text="Save" />
-            <Button fx:id="cancelButton" cancelButton="true" mnemonicParsing="false" text="Cancel" />
+          <Button fx:id="saveButton" defaultButton="true" mnemonicParsing="false" onAction="#onSaveButton" text="Save" />
+            <Button fx:id="cancelButton" cancelButton="true" mnemonicParsing="false" onAction="#onCancelButton" text="Cancel" />
         </buttons>
       </ButtonBar>
    </children>

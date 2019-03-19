@@ -2,13 +2,14 @@ package com.munzenberger.money.app.navigation
 
 import javafx.beans.property.ReadOnlyListProperty
 import javafx.beans.property.SimpleListProperty
+import javafx.collections.FXCollections
 import javafx.scene.Node
 import java.util.concurrent.Callable
 
 class Navigator(private val consumer: (Node) -> Unit) {
 
-    private val backHistory = SimpleListProperty<Callable<Node>>()
-    private val forwardHistory = SimpleListProperty<Callable<Node>>()
+    private val backHistory = SimpleListProperty<Callable<Node>>(FXCollections.observableArrayList())
+    private val forwardHistory = SimpleListProperty<Callable<Node>>(FXCollections.observableArrayList())
 
     private var lastNavigation: Callable<Node>? = null
 
@@ -32,7 +33,7 @@ class Navigator(private val consumer: (Node) -> Unit) {
         goHistory(forwardHistory, backHistory)
     }
 
-    private fun navigate(to: Callable<Node>, history: MutableList<Callable<Node>>): Boolean {
+    private fun navigate(to: Callable<Node>, history: SimpleListProperty<Callable<Node>>): Boolean {
 
         consumer.invoke(to.call())
 
@@ -49,7 +50,7 @@ class Navigator(private val consumer: (Node) -> Unit) {
         return changed
     }
 
-    private fun goHistory(from: MutableList<Callable<Node>>, to: MutableList<Callable<Node>>) {
+    private fun goHistory(from: SimpleListProperty<Callable<Node>>, to: SimpleListProperty<Callable<Node>>) {
 
         val callable = from.removeAt(0)
         navigate(callable, to)

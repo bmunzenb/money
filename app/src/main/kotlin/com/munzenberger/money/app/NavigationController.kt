@@ -25,6 +25,10 @@ class NavigationController {
         controller: AccountListController -> controller.start(stage, database)
     }
 
+    private val queryNavigation = Navigation(QueryController.LAYOUT) {
+        controller: QueryController -> controller.start(database)
+    }
+
     private lateinit var stage: Stage
     private lateinit var database: MoneyDatabase
 
@@ -54,6 +58,6 @@ class NavigationController {
     }
 
     @FXML fun onQueryButton() {
-
+        navigator.goTo(queryNavigation)
     }
 }

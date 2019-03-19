@@ -2,6 +2,7 @@ package com.munzenberger.money.sql
 
 import java.sql.ResultSet
 
+@FunctionalInterface
 interface ResultSetHandler {
     fun onResultSet(resultSet: ResultSet)
 }

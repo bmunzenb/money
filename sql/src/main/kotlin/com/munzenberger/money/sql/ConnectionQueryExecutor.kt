@@ -5,17 +5,14 @@ import java.util.concurrent.atomic.AtomicInteger
 
 open class ConnectionQueryExecutor(private val connection: Connection) : QueryExecutor {
 
-    override fun execute(query: Query) {
+    override fun execute(query: Query) =
         SQLExecutor.execute(connection, query.sql, query.parameters)
-    }
 
-    override fun executeQuery(query: Query, handler: ResultSetHandler?) {
+    override fun executeQuery(query: Query, handler: ResultSetHandler?) =
         SQLExecutor.executeQuery(connection, query.sql, query.parameters, handler)
-    }
 
-    override fun executeUpdate(query: Query, handler: ResultSetHandler?) {
+    override fun executeUpdate(query: Query, handler: ResultSetHandler?) =
         SQLExecutor.executeUpdate(connection, query.sql, query.parameters, handler)
-    }
 
     private val transactionManager by lazy {
         ManagedTransactionQueryExecutor(connection, this)

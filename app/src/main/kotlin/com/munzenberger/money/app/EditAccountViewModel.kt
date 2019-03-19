@@ -4,6 +4,7 @@ import com.munzenberger.money.app.property.ReadOnlyAsyncObjectProperty
 import com.munzenberger.money.app.property.SimpleAsyncObjectProperty
 import com.munzenberger.money.core.Account
 import com.munzenberger.money.core.AccountType
+import com.munzenberger.money.core.Bank
 import com.munzenberger.money.core.MoneyDatabase
 import javafx.beans.property.SimpleBooleanProperty
 import javafx.beans.property.SimpleObjectProperty
@@ -15,11 +16,14 @@ class EditAccountViewModel {
     private lateinit var account: Account
 
     private val accountTypes = SimpleAsyncObjectProperty<List<AccountType>>()
+    private val banks = SimpleAsyncObjectProperty<List<Bank>>()
 
     val accountNameProperty = SimpleStringProperty()
     val accountTypesProperty: ReadOnlyAsyncObjectProperty<List<AccountType>> = accountTypes
     val selectedAccountTypeProperty = SimpleObjectProperty<AccountType?>()
     val accountNumberProperty = SimpleStringProperty()
+    val banksProperty: ReadOnlyAsyncObjectProperty<List<Bank>> = banks
+    val selectedBankProperty = SimpleObjectProperty<Bank?>()
     val notValidProperty = SimpleBooleanProperty()
 
     fun start(database: MoneyDatabase, account: Account) {
@@ -37,6 +41,10 @@ class EditAccountViewModel {
         selectedAccountTypeProperty.value = account.accountType
 
         accountNumberProperty.value = account.number
+
+        banks.subscribe(Bank.getAll(database))
+
+        selectedBankProperty.value = account.bank
 
         notValidProperty.bind(accountNameProperty.isEmpty.or(selectedAccountTypeProperty.isNull))
     }

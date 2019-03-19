@@ -10,10 +10,10 @@ object SQLExecutor {
 
     private val logger = Logger.getLogger(SQLExecutor::class.java.name)
 
-    fun execute(connection: Connection, sql: String, parameters: List<Any?> = emptyList()) {
+    fun execute(connection: Connection, sql: String, parameters: List<Any?> = emptyList()): Boolean {
         logger.log(Level.FINE, toString(sql, parameters))
 
-        connection.prepareStatement(sql).use {
+        return connection.prepareStatement(sql).use {
             it.setParameters(parameters)
             it.execute()
         }

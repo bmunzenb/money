@@ -2,11 +2,11 @@ package com.munzenberger.money.sql
 
 interface QueryExecutor {
 
-    fun execute(query: Query)
+    fun execute(query: Query): Boolean
 
     fun executeQuery(query: Query, handler: ResultSetHandler? = null)
 
-    fun executeUpdate(query: Query, handler: ResultSetHandler? = null)
+    fun executeUpdate(query: Query, handler: ResultSetHandler? = null): Int
 
     fun createTransaction(): TransactionQueryExecutor
 

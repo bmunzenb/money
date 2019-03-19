@@ -23,6 +23,7 @@ class AccountListController {
     @FXML fun onCreateAccount() {
 
         DialogBuilder.build(EditAccountController.LAYOUT) { stage, controller: EditAccountController ->
+            stage.title = "Create Account"
             stage.show()
             controller.start(stage, database, Account())
         }
