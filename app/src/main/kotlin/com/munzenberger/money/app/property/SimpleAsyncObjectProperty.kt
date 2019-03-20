@@ -2,8 +2,6 @@ package com.munzenberger.money.app.property
 
 import com.munzenberger.money.app.useDatabaseSchedulers
 import io.reactivex.Single
-import io.reactivex.rxjavafx.schedulers.JavaFxScheduler
-import io.reactivex.schedulers.Schedulers
 import javafx.beans.property.SimpleObjectProperty
 
 class SimpleAsyncObjectProperty<T>(value: AsyncObject<T> = AsyncObject.Pending())

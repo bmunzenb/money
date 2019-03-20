@@ -23,7 +23,7 @@ class ConnectionMoneyDatabase(
             connection.close()
             logger.info("closed connection to money database: $name")
         } catch (e: SQLException) {
-            logger.log(Level.WARNING, e) { "failed to close connection to money database: $name" }
+            logger.log(Level.WARNING, "failed to close connection to money database: $name", e)
         }
     }
 }
