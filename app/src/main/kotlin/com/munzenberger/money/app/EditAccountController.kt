@@ -1,5 +1,6 @@
 package com.munzenberger.money.app
 
+import com.munzenberger.money.app.control.ListLookupStringConverter
 import com.munzenberger.money.app.property.AsyncObject
 import com.munzenberger.money.app.property.bindAsync
 import com.munzenberger.money.core.Account
@@ -12,6 +13,7 @@ import javafx.scene.control.Button
 import javafx.scene.control.ComboBox
 import javafx.scene.control.TextField
 import javafx.stage.Stage
+import javafx.util.StringConverter
 import java.net.URL
 
 class EditAccountController {
@@ -55,11 +57,12 @@ class EditAccountController {
         bankComboBox.apply {
 
             cellFactory = ListCellFactory.string { it.name }
-            buttonCell = cellFactory.call(null)
 
             items = FXCollections.observableArrayList<Bank>().apply {
                 bindAsync(viewModel.banksProperty)
             }
+
+            converter = ListLookupStringConverter(items, { it.name }, { Bank().apply { name = it } })
 
             valueProperty().bindBidirectional(viewModel.selectedBankProperty)
             disableProperty().bindAsync(viewModel.banksProperty,

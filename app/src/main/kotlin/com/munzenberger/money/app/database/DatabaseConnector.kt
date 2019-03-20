@@ -12,8 +12,6 @@ import com.munzenberger.money.version.UnsupportedVersion
 import com.munzenberger.money.version.VersionStatus
 import io.reactivex.Completable
 import io.reactivex.Single
-import io.reactivex.rxjavafx.schedulers.JavaFxScheduler
-import io.reactivex.schedulers.Schedulers
 import java.sql.DriverManager
 
 typealias DatabaseConnectionHandler = (MoneyDatabase?) -> Unit
