@@ -26,12 +26,8 @@ class AccountTest : PersistableTest<Account>() {
     fun `optional fields`() {
 
         val account = Account().apply {
-            name = "Primary Savings"
-
-            accountType = AccountType().apply {
-                name = "Savings"
-                category = AccountType.Category.ASSETS
-            }
+            name = randomString()
+            accountType = AccountType().randomize()
         }
 
         account.save(database).test().assertComplete()
