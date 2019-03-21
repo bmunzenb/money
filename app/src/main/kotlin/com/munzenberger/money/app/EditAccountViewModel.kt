@@ -1,11 +1,11 @@
 package com.munzenberger.money.app
 
-import com.munzenberger.money.app.property.ReadOnlyAsyncObjectProperty
-import com.munzenberger.money.app.property.SimpleAsyncObjectProperty
+import com.munzenberger.money.app.property.*
 import com.munzenberger.money.core.Account
 import com.munzenberger.money.core.AccountType
 import com.munzenberger.money.core.Bank
 import com.munzenberger.money.core.MoneyDatabase
+import javafx.beans.property.ReadOnlyBooleanProperty
 import javafx.beans.property.SimpleBooleanProperty
 import javafx.beans.property.SimpleObjectProperty
 import javafx.beans.property.SimpleStringProperty
@@ -17,6 +17,8 @@ class EditAccountViewModel {
 
     private val accountTypes = SimpleAsyncObjectProperty<List<AccountType>>()
     private val banks = SimpleAsyncObjectProperty<List<Bank>>()
+    private val notValid = SimpleBooleanProperty()
+    private val saveStatus = SimpleAsyncStatusProperty()
 
     val accountNameProperty = SimpleStringProperty()
     val accountTypesProperty: ReadOnlyAsyncObjectProperty<List<AccountType>> = accountTypes
@@ -24,7 +26,8 @@ class EditAccountViewModel {
     val accountNumberProperty = SimpleStringProperty()
     val banksProperty: ReadOnlyAsyncObjectProperty<List<Bank>> = banks
     val selectedBankProperty = SimpleObjectProperty<Bank?>()
-    val notValidProperty = SimpleBooleanProperty()
+    val notValidProperty: ReadOnlyBooleanProperty = notValid
+    val saveStatusProperty: ReadOnlyAsyncStatusProperty = saveStatus
 
     fun start(database: MoneyDatabase, account: Account) {
 
@@ -46,6 +49,21 @@ class EditAccountViewModel {
 
         selectedBankProperty.value = account.bank
 
-        notValidProperty.bind(accountNameProperty.isEmpty.or(selectedAccountTypeProperty.isNull))
+        notValid.bind(accountNameProperty.isEmpty.or(selectedAccountTypeProperty.isNull))
+    }
+
+    fun save() {
+
+        saveStatus.set(AsyncObject.Executing())
+
+        account.apply {
+
+            name = accountNameProperty.value
+            accountType = selectedAccountTypeProperty.value
+            number = accountNumberProperty.value
+            bank = selectedBankProperty.value
+
+            saveStatus.subscribe(save(database))
+        }
     }
 }

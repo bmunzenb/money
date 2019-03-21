@@ -1,5 +1,6 @@
 package com.munzenberger.money.app.database
 
+import com.munzenberger.money.app.ErrorAlert
 import com.munzenberger.money.core.SQLiteDatabaseDialect
 import javafx.scene.control.Alert
 import java.lang.IllegalStateException
@@ -26,10 +27,6 @@ object MemoryDatabaseConnector : DatabaseConnector() {
 
     override fun onConnectError(error: Throwable) {
 
-        Alert(Alert.AlertType.ERROR).apply {
-            title = "Error"
-            headerText = "Could not start in-memory database."
-            contentText = error.message
-        }.showAndWait()
+        ErrorAlert.showAndWait(error)
     }
 }

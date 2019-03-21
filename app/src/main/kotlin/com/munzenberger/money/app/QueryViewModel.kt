@@ -15,7 +15,7 @@ class QueryViewModel {
 
     data class QueryResult(
             val columns: MutableList<String> = mutableListOf(),
-            val data: ObservableList<List<Any>> = FXCollections.observableArrayList(),
+            val data: ObservableList<List<Any?>> = FXCollections.observableArrayList(),
             var message: String? = null
     )
 
@@ -61,7 +61,7 @@ class QueryViewModel {
                 }
 
                 while (resultSet.next()) {
-                    val row = mutableListOf<Any>()
+                    val row = mutableListOf<Any?>()
                     for (i in 1..colCount) {
                         row.add(resultSet.getObject(i))
                     }

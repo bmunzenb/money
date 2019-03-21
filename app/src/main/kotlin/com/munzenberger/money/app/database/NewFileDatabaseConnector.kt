@@ -1,5 +1,6 @@
 package com.munzenberger.money.app.database
 
+import com.munzenberger.money.app.ErrorAlert
 import javafx.scene.control.Alert
 import javafx.stage.FileChooser
 import javafx.stage.Window
@@ -43,10 +44,6 @@ object NewFileDatabaseConnector : FileDatabaseConnector() {
 
     override fun onConnectError(error: Throwable) {
 
-        Alert(Alert.AlertType.ERROR).apply {
-            title = "Error"
-            headerText = "Could not create database file"
-            contentText = error.message
-        }.showAndWait()
+        ErrorAlert.showAndWait(error)
     }
 }

@@ -1,5 +1,6 @@
 package com.munzenberger.money.app.database
 
+import com.munzenberger.money.app.ErrorAlert
 import javafx.scene.control.Alert
 import javafx.scene.control.ButtonType
 import javafx.stage.FileChooser
@@ -38,10 +39,6 @@ object OpenFileDatabaseConnector : FileDatabaseConnector() {
 
     override fun onConnectError(error: Throwable) {
 
-        Alert(Alert.AlertType.ERROR).apply {
-            title = "Error"
-            headerText = "Could not open database file."
-            contentText = error.message
-        }.showAndWait()
+        ErrorAlert.showAndWait(error)
     }
 }

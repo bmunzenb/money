@@ -10,6 +10,8 @@ import javafx.beans.property.ReadOnlyObjectWrapper
 import javafx.scene.control.*
 import javafx.scene.paint.Color
 import javafx.scene.text.Text
+import java.util.logging.Level
+import java.util.logging.Logger
 
 
 class QueryController {
@@ -18,11 +20,13 @@ class QueryController {
         val LAYOUT: URL = NavigationController::class.java.getResource("QueryLayout.fxml")
     }
 
+    private val logger = Logger.getLogger(QueryController::class.java.name)
+
     @FXML lateinit var container: Node
     @FXML lateinit var queryTextArea: TextArea
     @FXML lateinit var queryButton: Button
     @FXML lateinit var updateButton: Button
-    @FXML lateinit var resultTableView: TableView<List<Any>>
+    @FXML lateinit var resultTableView: TableView<List<Any?>>
 
     private val viewModel = QueryViewModel()
 
@@ -76,7 +80,7 @@ class QueryController {
             columns.clear()
             items = result.data
             result.columns.forEachIndexed { index, s ->
-                val col = TableColumn<List<Any>, Any>().apply {
+                val col = TableColumn<List<Any?>, Any>().apply {
                     text = s
                     setCellValueFactory { ReadOnlyObjectWrapper(it.value[index]) }
                 }
@@ -95,5 +99,7 @@ class QueryController {
                 textFill = Color.RED
             }
         }
+
+        logger.log(Level.WARNING, "query failure", error)
     }
 }
