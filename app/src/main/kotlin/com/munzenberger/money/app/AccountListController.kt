@@ -1,6 +1,7 @@
 package com.munzenberger.money.app
 
 import com.munzenberger.money.app.model.FXAccount
+import com.munzenberger.money.app.model.FXAccountType
 import com.munzenberger.money.app.property.bindAsync
 import com.munzenberger.money.core.Account
 import com.munzenberger.money.core.MoneyDatabase
@@ -22,7 +23,7 @@ class AccountListController {
     @FXML lateinit var createAccountButton: Button
     @FXML lateinit var tableView: TableView<FXAccount>
     @FXML lateinit var nameColumn: TableColumn<FXAccount, String>
-    @FXML lateinit var typeColumn: TableColumn<FXAccount, String>
+    @FXML lateinit var typeColumn: TableColumn<FXAccount, FXAccountType>
     @FXML lateinit var numberColumn: TableColumn<FXAccount, String?>
     @FXML lateinit var balanceColumn: TableColumn<FXAccount, Long>
 
@@ -40,6 +41,16 @@ class AccountListController {
         nameColumn.apply {
             cellFactory = TableCellFactory.string { it }
             cellValueFactory = Callback { a -> a.value.nameProperty }
+        }
+
+        typeColumn.apply {
+            cellFactory = TableCellFactory.string { it?.nameProperty?.get() }
+            cellValueFactory = Callback { a -> a.value.typeProperty }
+        }
+
+        numberColumn.apply {
+            cellFactory = TableCellFactory.string { it?.sanitize() }
+            cellValueFactory = Callback { a -> a.value.numberProperty }
         }
     }
 
