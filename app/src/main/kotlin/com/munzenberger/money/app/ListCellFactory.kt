@@ -15,9 +15,10 @@ class ListCellFactory<T>(private val onItem: (ListCell<T>, T) -> Unit) : Callbac
 
     override fun call(param: ListView<T>?) = object : ListCell<T>() {
         override fun updateItem(item: T?, empty: Boolean) {
+            super.updateItem(item, empty)
+
             if (empty) onEmpty(this)
             else onItem.invoke(this, item!!)
-            super.updateItem(item, empty)
         }
     }
 

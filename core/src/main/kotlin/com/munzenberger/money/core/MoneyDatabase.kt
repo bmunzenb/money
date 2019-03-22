@@ -5,7 +5,7 @@ import com.munzenberger.money.sql.QueryExecutor
 abstract class MoneyDatabase(
         val name: String,
         val dialect: DatabaseDialect,
-        executor: QueryExecutor
+        private val executor: QueryExecutor
 ) : QueryExecutor by executor {
 
     abstract fun close()
