@@ -50,6 +50,11 @@ class AccountListController {
         viewModel.start(database)
     }
 
+    // TODO: find a nice way to call this when this controller is no longer loaded
+    fun clear() {
+        viewModel.clear()
+    }
+
     @FXML fun onCreateAccount() {
 
         DialogBuilder.build(EditAccountController.LAYOUT) { stage, controller: EditAccountController ->

@@ -19,6 +19,7 @@ class ConnectionMoneyDatabase(
     }
 
     override fun close() {
+        super.close()
         try {
             connection.close()
             logger.info("closed connection to money database: $name")
