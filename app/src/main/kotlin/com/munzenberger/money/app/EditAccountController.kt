@@ -10,12 +10,10 @@ import com.munzenberger.money.core.MoneyDatabase
 import javafx.collections.FXCollections
 import javafx.fxml.FXML
 import javafx.scene.Node
-import javafx.scene.control.Alert
 import javafx.scene.control.Button
 import javafx.scene.control.ComboBox
 import javafx.scene.control.TextField
 import javafx.stage.Stage
-import javafx.util.StringConverter
 import java.net.URL
 
 class EditAccountController {
@@ -41,7 +39,7 @@ class EditAccountController {
 
         accountTypeComboBox.apply {
 
-            cellFactory = ListCellFactory.string { it.name }
+            cellFactory = ListCellFactory.text { it.name }
             buttonCell = cellFactory.call(null)
 
             items = FXCollections.observableArrayList<AccountType>().apply {
@@ -60,7 +58,7 @@ class EditAccountController {
 
         bankComboBox.apply {
 
-            cellFactory = ListCellFactory.string { it.name }
+            cellFactory = ListCellFactory.text { it.name }
 
             items = FXCollections.observableArrayList<Bank>().apply {
                 bindAsync(viewModel.banksProperty)

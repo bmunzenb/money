@@ -18,7 +18,7 @@ class AccountListViewModel {
     fun start(database: MoneyDatabase) {
 
         val single = Account.getAll(database).map {
-            it.map { a -> FXAccount(a) }
+            it.map { a -> FXAccount(a, database) }
         }
 
         accounts.subscribe(single)

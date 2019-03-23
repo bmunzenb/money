@@ -7,7 +7,7 @@ import javafx.util.Callback
 class ListCellFactory<T>(private val onItem: (ListCell<T>, T) -> Unit) : Callback<ListView<T>, ListCell<T>> {
 
     companion object {
-        fun <T> string(block: (T) -> String?) = ListCellFactory<T> { listCell, item ->
+        fun <T> text(block: (T) -> String?) = ListCellFactory<T> { listCell, item ->
             listCell.text = block.invoke(item)
             listCell.graphic = null
         }
@@ -17,8 +17,8 @@ class ListCellFactory<T>(private val onItem: (ListCell<T>, T) -> Unit) : Callbac
         override fun updateItem(item: T?, empty: Boolean) {
             super.updateItem(item, empty)
 
-            if (empty) onEmpty(this)
-            else onItem.invoke(this, item!!)
+            if (empty || item == null) onEmpty(this)
+            else onItem.invoke(this, item)
         }
     }
 

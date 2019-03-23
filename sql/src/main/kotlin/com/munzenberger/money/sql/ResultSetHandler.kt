@@ -7,6 +7,7 @@ interface ResultSetHandler {
     fun onResultSet(resultSet: ResultSet)
 }
 
+@FunctionalInterface
 interface ResultSetMapper<out T> {
     fun map(resultSet: ResultSet): T
 }

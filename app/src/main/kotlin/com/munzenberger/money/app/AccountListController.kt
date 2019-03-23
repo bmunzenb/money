@@ -2,6 +2,7 @@ package com.munzenberger.money.app
 
 import com.munzenberger.money.app.model.FXAccount
 import com.munzenberger.money.app.model.FXAccountType
+import com.munzenberger.money.app.property.AsyncObject
 import com.munzenberger.money.app.property.bindAsync
 import com.munzenberger.money.core.Account
 import com.munzenberger.money.core.MoneyDatabase
@@ -25,7 +26,7 @@ class AccountListController {
     @FXML lateinit var nameColumn: TableColumn<FXAccount, String>
     @FXML lateinit var typeColumn: TableColumn<FXAccount, FXAccountType>
     @FXML lateinit var numberColumn: TableColumn<FXAccount, String?>
-    @FXML lateinit var balanceColumn: TableColumn<FXAccount, Long>
+    @FXML lateinit var balanceColumn: TableColumn<FXAccount, AsyncObject<Long>>
 
     private lateinit var stage: Stage
     private lateinit var database: MoneyDatabase
@@ -39,18 +40,23 @@ class AccountListController {
         }
 
         nameColumn.apply {
-            cellFactory = TableCellFactory.string { it }
+            cellFactory = TableCellFactory.text { it }
             cellValueFactory = Callback { a -> a.value.nameProperty }
         }
 
         typeColumn.apply {
-            cellFactory = TableCellFactory.string { it?.nameProperty?.get() }
+            cellFactory = TableCellFactory.text { it?.nameProperty?.get() }
             cellValueFactory = Callback { a -> a.value.typeProperty }
         }
 
         numberColumn.apply {
-            cellFactory = TableCellFactory.string { it?.sanitize() }
+            cellFactory = TableCellFactory.text { it?.sanitize() }
             cellValueFactory = Callback { a -> a.value.numberProperty }
+        }
+
+        balanceColumn.apply {
+            cellFactory = TableCellFactory.asyncObject { it.toString() }
+            cellValueFactory = Callback { a -> a.value.balanceProperty }
         }
     }
 

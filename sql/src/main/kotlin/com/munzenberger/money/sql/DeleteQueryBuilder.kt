@@ -13,7 +13,7 @@ class DeleteQueryBuilder(private val table: String) {
     fun build(): Query {
 
         val sb = StringBuilder("DELETE FROM $table")
-        val params = mutableListOf<Any>()
+        val params = mutableListOf<Any?>()
 
         where?.run {
             sb.append(" WHERE $clause")

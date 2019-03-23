@@ -45,7 +45,7 @@ class SelectQueryBuilder(private val table: String) {
     fun build(): Query {
 
         val sb = StringBuilder("SELECT ")
-        val params = mutableListOf<Any>()
+        val params = mutableListOf<Any?>()
 
         val selectColumns =
                 if (columns.isEmpty()) "*"

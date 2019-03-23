@@ -1,11 +1,9 @@
 package com.munzenberger.money.core
 
-import com.munzenberger.money.core.model.AccountModel
-import com.munzenberger.money.core.model.AccountTable
-import com.munzenberger.money.sql.QueryExecutor
-import com.munzenberger.money.sql.ResultSetMapper
-import com.munzenberger.money.sql.getLongOrNull
+import com.munzenberger.money.core.model.*
+import com.munzenberger.money.sql.*
 import io.reactivex.Completable
+import io.reactivex.Single
 import java.sql.ResultSet
 
 class Account internal constructor(model: AccountModel) : Persistable<AccountModel>(model, AccountTable) {
@@ -23,6 +21,31 @@ class Account internal constructor(model: AccountModel) : Persistable<AccountMod
     var accountType: AccountType? = null
 
     var bank: Bank? = null
+
+    fun balance(executor: QueryExecutor) = Single.fromCallable {
+
+        val creditsQuery = Query.selectFrom(TransferTable.name)
+                .cols("SUM(${TransferTable.amountColumn}) AS CREDITS")
+                .innerJoin(TransferTable.name, TransferTable.transactionColumn, TransactionTable.name, TransactionTable.identityColumn)
+                .where(Condition.eq(TransactionTable.accountColumn, identity))
+                .build()
+
+        val credits = executor.getFirst(creditsQuery, object : ResultSetMapper<Long> {
+            override fun map(resultSet: ResultSet) = resultSet.getLong("CREDITS")
+        })
+
+        val debitsQuery = Query.selectFrom(TransferTable.name)
+                .cols("SUM(${TransferTable.amountColumn}) AS DEBITS")
+                .innerJoin(TransferTable.name, TransferTable.categoryColumn, CategoryTable.name, CategoryTable.identityColumn)
+                .where(Condition.eq(CategoryTable.accountColumn, identity))
+                .build()
+
+        val debits = executor.getFirst(debitsQuery, object : ResultSetMapper<Long> {
+            override fun map(resultSet: ResultSet) = resultSet.getLong("DEBITS")
+        })
+
+        (credits ?: 0) - (debits ?: 0)
+    }
 
     override fun save(executor: QueryExecutor): Completable {
 

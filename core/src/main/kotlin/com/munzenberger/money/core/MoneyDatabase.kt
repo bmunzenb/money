@@ -34,14 +34,14 @@ abstract class MoneyDatabase(
 
 private class MoneyDatabaseTransactionExecutor(
         private val executor: TransactionQueryExecutor,
-        private val subject: Subject<Unit>
+        private val subject: Subject<Unit>? = null
 ) : TransactionQueryExecutor by executor {
 
     override fun createTransaction(): TransactionQueryExecutor =
-            MoneyDatabaseTransactionExecutor(executor.createTransaction(), subject)
+            MoneyDatabaseTransactionExecutor(executor.createTransaction())
 
     override fun commit() {
         executor.commit()
-        subject.onNext(Unit)
+        subject?.onNext(Unit)
     }
 }
