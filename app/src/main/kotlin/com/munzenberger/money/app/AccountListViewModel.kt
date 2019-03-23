@@ -5,6 +5,7 @@ import com.munzenberger.money.app.property.ReadOnlyAsyncObjectProperty
 import com.munzenberger.money.app.property.SimpleAsyncObjectProperty
 import com.munzenberger.money.app.property.bindAsync
 import com.munzenberger.money.core.Account
+import com.munzenberger.money.core.Money
 import com.munzenberger.money.core.MoneyDatabase
 import io.reactivex.Single
 import io.reactivex.disposables.CompositeDisposable
@@ -15,10 +16,10 @@ class AccountListViewModel {
     private val disposables = CompositeDisposable()
 
     private val accounts = SimpleAsyncObjectProperty<List<FXAccount>>()
-    private val totalBalance = SimpleAsyncObjectProperty<Long>()
+    private val totalBalance = SimpleAsyncObjectProperty<Money>()
 
     val accountsProperty: ReadOnlyAsyncObjectProperty<List<FXAccount>> = accounts
-    val totalBalanceProperty: ReadOnlyAsyncObjectProperty<Long> = totalBalance
+    val totalBalanceProperty: ReadOnlyAsyncObjectProperty<Money> = totalBalance
 
     fun start(database: MoneyDatabase) {
 
@@ -27,7 +28,7 @@ class AccountListViewModel {
             val balances = list.map { it.balanceObservable }
 
             val total = Single.zip(balances) {
-                it.fold(0L) { acc, b -> acc + (b as Long) }
+                it.fold(Money.valueOf(0)) { acc, b -> acc.add(b as Money) }
             }
 
             subscribe(total)

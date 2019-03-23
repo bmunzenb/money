@@ -6,6 +6,7 @@ import com.munzenberger.money.app.property.AsyncObject
 import com.munzenberger.money.app.property.bindAsync
 import com.munzenberger.money.app.property.bindAsyncStatus
 import com.munzenberger.money.core.Account
+import com.munzenberger.money.core.Money
 import com.munzenberger.money.core.MoneyDatabase
 import javafx.collections.FXCollections
 import javafx.fxml.FXML
@@ -25,7 +26,7 @@ class AccountListController {
     @FXML lateinit var nameColumn: TableColumn<FXAccount, String>
     @FXML lateinit var typeColumn: TableColumn<FXAccount, FXAccountType>
     @FXML lateinit var numberColumn: TableColumn<FXAccount, String?>
-    @FXML lateinit var balanceColumn: TableColumn<FXAccount, AsyncObject<Long>>
+    @FXML lateinit var balanceColumn: TableColumn<FXAccount, AsyncObject<Money>>
     @FXML lateinit var totalBalanceProgress: ProgressIndicator
     @FXML lateinit var totalBalanceLabel: Label
 

@@ -5,6 +5,7 @@ import com.munzenberger.money.sql.*
 import io.reactivex.Completable
 import io.reactivex.Single
 import java.sql.ResultSet
+import kotlin.random.Random
 
 class Account internal constructor(model: AccountModel) : Persistable<AccountModel>(model, AccountTable) {
 
@@ -44,7 +45,9 @@ class Account internal constructor(model: AccountModel) : Persistable<AccountMod
             override fun map(resultSet: ResultSet) = resultSet.getLong("DEBITS")
         })
 
-        (credits ?: 0) - (debits ?: 0)
+        val balance = (credits ?: 0) - (debits ?: 0)
+
+        Money.valueOf(balance)
     }
 
     override fun save(executor: QueryExecutor): Completable {
