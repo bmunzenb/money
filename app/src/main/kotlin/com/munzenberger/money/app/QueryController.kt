@@ -1,7 +1,7 @@
 package com.munzenberger.money.app
 
 import com.munzenberger.money.app.property.AsyncObject
-import com.munzenberger.money.app.property.bindAsync
+import com.munzenberger.money.app.property.bindAsyncStatus
 import com.munzenberger.money.core.MoneyDatabase
 import javafx.fxml.FXML
 import javafx.scene.Node
@@ -34,9 +34,9 @@ class QueryController {
 
         resultTableView.placeholder = Text("Execute a statement to see results.")
 
-        queryTextArea.disableProperty().bindAsync(viewModel.resultProperty, AsyncObject.Status.EXECUTING)
-        queryButton.disableProperty().bindAsync(viewModel.resultProperty, AsyncObject.Status.EXECUTING)
-        updateButton.disableProperty().bindAsync(viewModel.resultProperty, AsyncObject.Status.EXECUTING)
+        queryTextArea.disableProperty().bindAsyncStatus(viewModel.resultProperty, AsyncObject.Status.EXECUTING)
+        queryButton.disableProperty().bindAsyncStatus(viewModel.resultProperty, AsyncObject.Status.EXECUTING)
+        updateButton.disableProperty().bindAsyncStatus(viewModel.resultProperty, AsyncObject.Status.EXECUTING)
 
         viewModel.queryProperty.bind(queryTextArea.textProperty())
         viewModel.selectedQueryProperty.bind(queryTextArea.selectedTextProperty())

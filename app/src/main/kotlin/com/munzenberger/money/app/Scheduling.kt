@@ -7,7 +7,7 @@ import io.reactivex.schedulers.Schedulers
 import java.util.concurrent.TimeUnit
 
 fun <T> Single<T>.useDatabaseSchedulers() = this
-        //.delay(1, TimeUnit.SECONDS)
+        //.delay(2, TimeUnit.SECONDS)
         .subscribeOn(Schedulers.single())
         .observeOn(JavaFxScheduler.platform())
 

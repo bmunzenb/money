@@ -4,13 +4,12 @@ import com.munzenberger.money.app.model.FXAccount
 import com.munzenberger.money.app.model.FXAccountType
 import com.munzenberger.money.app.property.AsyncObject
 import com.munzenberger.money.app.property.bindAsync
+import com.munzenberger.money.app.property.bindAsyncStatus
 import com.munzenberger.money.core.Account
 import com.munzenberger.money.core.MoneyDatabase
 import javafx.collections.FXCollections
 import javafx.fxml.FXML
-import javafx.scene.control.Button
-import javafx.scene.control.TableColumn
-import javafx.scene.control.TableView
+import javafx.scene.control.*
 import javafx.stage.Stage
 import javafx.util.Callback
 import java.net.URL
@@ -27,6 +26,8 @@ class AccountListController {
     @FXML lateinit var typeColumn: TableColumn<FXAccount, FXAccountType>
     @FXML lateinit var numberColumn: TableColumn<FXAccount, String?>
     @FXML lateinit var balanceColumn: TableColumn<FXAccount, AsyncObject<Long>>
+    @FXML lateinit var totalBalanceProgress: ProgressIndicator
+    @FXML lateinit var totalBalanceLabel: Label
 
     private lateinit var stage: Stage
     private lateinit var database: MoneyDatabase
@@ -55,9 +56,19 @@ class AccountListController {
         }
 
         balanceColumn.apply {
-            cellFactory = TableCellFactory.asyncObject { it.toString() }
+            cellFactory = AsyncTableViewCellFactory.text { it?.toString() }
             cellValueFactory = Callback { a -> a.value.balanceProperty }
         }
+
+        totalBalanceProgress.visibleProperty().bindAsyncStatus(viewModel.totalBalanceProperty,
+                AsyncObject.Status.PENDING,
+                AsyncObject.Status.EXECUTING)
+
+        totalBalanceLabel.visibleProperty().bindAsyncStatus(viewModel.totalBalanceProperty,
+                AsyncObject.Status.COMPLETE,
+                AsyncObject.Status.ERROR)
+
+        totalBalanceLabel.textProperty().bindAsync(viewModel.totalBalanceProperty) { "Total Account Balance: $it" }
     }
 
     fun start(stage: Stage, database: MoneyDatabase) {

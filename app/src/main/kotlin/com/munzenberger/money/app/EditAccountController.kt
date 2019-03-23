@@ -3,6 +3,7 @@ package com.munzenberger.money.app
 import com.munzenberger.money.app.control.ListLookupStringConverter
 import com.munzenberger.money.app.property.AsyncObject
 import com.munzenberger.money.app.property.bindAsync
+import com.munzenberger.money.app.property.bindAsyncStatus
 import com.munzenberger.money.core.Account
 import com.munzenberger.money.core.AccountType
 import com.munzenberger.money.core.Bank
@@ -48,7 +49,7 @@ class EditAccountController {
 
             valueProperty().bindBidirectional(viewModel.selectedAccountTypeProperty)
 
-            disableProperty().bindAsync(viewModel.accountTypesProperty,
+            disableProperty().bindAsyncStatus(viewModel.accountTypesProperty,
                     AsyncObject.Status.PENDING,
                     AsyncObject.Status.EXECUTING,
                     AsyncObject.Status.ERROR)
@@ -68,7 +69,7 @@ class EditAccountController {
 
             valueProperty().bindBidirectional(viewModel.selectedBankProperty)
 
-            disableProperty().bindAsync(viewModel.banksProperty,
+            disableProperty().bindAsyncStatus(viewModel.banksProperty,
                     AsyncObject.Status.PENDING,
                     AsyncObject.Status.EXECUTING,
                     AsyncObject.Status.ERROR)
@@ -76,7 +77,7 @@ class EditAccountController {
 
         saveButton.disableProperty().bind(viewModel.notValidProperty)
 
-        container.disableProperty().bindAsync(viewModel.saveStatusProperty, AsyncObject.Status.EXECUTING)
+        container.disableProperty().bindAsyncStatus(viewModel.saveStatusProperty, AsyncObject.Status.EXECUTING)
 
         viewModel.saveStatusProperty.addListener { _, _, status ->
             when (status) {

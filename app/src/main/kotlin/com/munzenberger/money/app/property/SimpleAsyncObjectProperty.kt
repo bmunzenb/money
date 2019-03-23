@@ -6,9 +6,9 @@ import io.reactivex.Single
 import javafx.beans.property.SimpleObjectProperty
 
 open class SimpleAsyncObjectProperty<T>(value: AsyncObject<T> = AsyncObject.Pending())
-    : SimpleObjectProperty<AsyncObject<T>>(value), ReadOnlyAsyncObjectProperty<T> {
+    : SimpleObjectProperty<AsyncObject<T>>(value), AsyncObjectProperty<T> {
 
-    fun subscribe(single: Single<T>) {
+    override fun subscribe(single: Single<T>) {
 
         set(AsyncObject.Executing())
 
@@ -18,9 +18,9 @@ open class SimpleAsyncObjectProperty<T>(value: AsyncObject<T> = AsyncObject.Pend
 }
 
 class SimpleAsyncStatusProperty(value: AsyncObject<Unit> = AsyncObject.Pending())
-    : SimpleAsyncObjectProperty<Unit>(value), ReadOnlyAsyncStatusProperty {
+    : SimpleAsyncObjectProperty<Unit>(value), AsyncStatusProperty {
 
-    fun subscribe(completable: Completable) {
+    override fun subscribe(completable: Completable) {
 
         set(AsyncObject.Executing())
 
