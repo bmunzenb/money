@@ -1,5 +1,6 @@
 package com.munzenberger.money.app
 
+import com.munzenberger.money.app.navigation.LayoutControllerNavigation
 import com.munzenberger.money.app.navigation.Navigation
 import com.munzenberger.money.app.navigation.Navigator
 import com.munzenberger.money.core.MoneyDatabase
@@ -21,11 +22,11 @@ class NavigationController {
 
     private val navigator = Navigator { borderPane.center = it }
 
-    private val accountsNavigation = Navigation(AccountListController.LAYOUT) {
+    private val accountsNavigation = LayoutControllerNavigation(AccountListController.LAYOUT) {
         controller: AccountListController -> controller.start(stage, database)
     }
 
-    private val queryNavigation = Navigation(QueryController.LAYOUT) {
+    private val queryNavigation = LayoutControllerNavigation(QueryController.LAYOUT) {
         controller: QueryController -> controller.start(database)
     }
 

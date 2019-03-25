@@ -8,15 +8,15 @@ import java.util.concurrent.Callable
 
 class Navigator(private val consumer: (Node) -> Unit) {
 
-    private val backHistory = SimpleListProperty<Callable<Node>>(FXCollections.observableArrayList())
-    private val forwardHistory = SimpleListProperty<Callable<Node>>(FXCollections.observableArrayList())
+    private val backHistory = SimpleListProperty<Navigation>(FXCollections.observableArrayList())
+    private val forwardHistory = SimpleListProperty<Navigation>(FXCollections.observableArrayList())
 
-    private var lastNavigation: Callable<Node>? = null
+    private var lastNavigation: Navigation? = null
 
-    val backHistoryProperty: ReadOnlyListProperty<Callable<Node>> = backHistory
-    val forwardHistoryProperty: ReadOnlyListProperty<Callable<Node>> = forwardHistory
+    val backHistoryProperty: ReadOnlyListProperty<Navigation> = backHistory
+    val forwardHistoryProperty: ReadOnlyListProperty<Navigation> = forwardHistory
 
-    fun goTo(navigation: Callable<Node>) {
+    fun goTo(navigation: Navigation) {
 
         if (navigate(navigation, backHistory)) {
             forwardHistory.clear()
@@ -33,7 +33,7 @@ class Navigator(private val consumer: (Node) -> Unit) {
         goHistory(forwardHistory, backHistory)
     }
 
-    private fun navigate(to: Callable<Node>, history: SimpleListProperty<Callable<Node>>): Boolean {
+    private fun navigate(to: Navigation, history: SimpleListProperty<Navigation>): Boolean {
 
         consumer.invoke(to.call())
 
@@ -50,7 +50,7 @@ class Navigator(private val consumer: (Node) -> Unit) {
         return changed
     }
 
-    private fun goHistory(from: SimpleListProperty<Callable<Node>>, to: SimpleListProperty<Callable<Node>>) {
+    private fun goHistory(from: SimpleListProperty<Navigation>, to: SimpleListProperty<Navigation>) {
 
         val callable = from.removeAt(0)
         navigate(callable, to)

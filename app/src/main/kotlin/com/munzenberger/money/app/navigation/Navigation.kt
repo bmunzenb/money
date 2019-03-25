@@ -5,7 +5,9 @@ import javafx.scene.Node
 import java.net.URL
 import java.util.concurrent.Callable
 
-class Navigation<T>(private val layoutLocation: URL, private val start: (T) -> Unit) : Callable<Node> {
+interface Navigation : Callable<Node>
+
+class LayoutControllerNavigation<T>(private val layoutLocation: URL, private val start: (T) -> Unit) : Navigation {
 
     private var node: Node? = null
 
