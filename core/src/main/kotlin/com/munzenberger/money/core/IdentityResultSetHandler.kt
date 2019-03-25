@@ -10,7 +10,7 @@ class IdentityResultSetHandler : ResultSetHandler {
     val identity: Long
         get() = mutableIdentity!!
 
-    override fun onResultSet(resultSet: ResultSet) {
+    override fun accept(resultSet: ResultSet) {
 
         if (resultSet.next()) {
             mutableIdentity = resultSet.getLong(1)

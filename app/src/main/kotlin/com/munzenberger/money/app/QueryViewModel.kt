@@ -51,7 +51,7 @@ class QueryViewModel {
         val result = QueryResult()
 
         database.executeQuery(Query(input), object : ResultSetHandler {
-            override fun onResultSet(resultSet: ResultSet) {
+            override fun accept(resultSet: ResultSet) {
 
                 val md = resultSet.metaData
                 val colCount = md.columnCount

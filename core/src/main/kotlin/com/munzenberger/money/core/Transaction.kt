@@ -47,7 +47,7 @@ class Transaction internal constructor(model: TransactionModel) : Persistable<Tr
 
 class TransactionResultSetMapper : ResultSetMapper<Transaction> {
 
-    override fun map(resultSet: ResultSet): Transaction {
+    override fun apply(resultSet: ResultSet): Transaction {
 
         val model = TransactionModel().apply {
             identity = resultSet.getLong(TransactionTable.identityColumn)
@@ -58,8 +58,8 @@ class TransactionResultSetMapper : ResultSetMapper<Transaction> {
         }
 
         return Transaction(model).apply {
-            account = model.account?.let { AccountResultSetMapper().map(resultSet) }
-            payee = model.payee?.let { PayeeResultSetMapper().map(resultSet) }
+            account = model.account?.let { AccountResultSetMapper().apply(resultSet) }
+            payee = model.payee?.let { PayeeResultSetMapper().apply(resultSet) }
         }
     }
 }

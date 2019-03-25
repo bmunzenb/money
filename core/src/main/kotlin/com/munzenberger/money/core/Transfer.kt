@@ -50,7 +50,7 @@ class Transfer internal constructor(model: TransferModel) : Persistable<Transfer
 
 class TransferResultSetMapper : ResultSetMapper<Transfer> {
 
-    override fun map(resultSet: ResultSet): Transfer {
+    override fun apply(resultSet: ResultSet): Transfer {
 
         val model = TransferModel().apply {
             identity = resultSet.getLong(TransferTable.identityColumn)
@@ -61,7 +61,7 @@ class TransferResultSetMapper : ResultSetMapper<Transfer> {
         }
 
         return Transfer(model).apply {
-            category = model.category?.let { CategoryResultSetMapper().map(resultSet) }
+            category = model.category?.let { CategoryResultSetMapper().apply(resultSet) }
         }
     }
 }

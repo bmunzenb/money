@@ -26,7 +26,7 @@ class Bank internal constructor(model: BankModel) : Persistable<BankModel>(model
 
 class BankResultSetMapper : ResultSetMapper<Bank> {
 
-    override fun map(resultSet: ResultSet): Bank {
+    override fun apply(resultSet: ResultSet): Bank {
 
         val model = BankModel().apply {
             identity = resultSet.getLong(BankTable.identityColumn)

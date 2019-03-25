@@ -25,7 +25,7 @@ object SQLExecutor {
         connection.prepareStatement(sql).use {
             it.setParameters(parameters)
             val resultSet = it.executeQuery()
-            handler?.onResultSet(resultSet)
+            handler?.accept(resultSet)
         }
     }
 
@@ -36,7 +36,7 @@ object SQLExecutor {
             it.setParameters(parameters)
             val updated = it.executeUpdate()
             handler?.run {
-                onResultSet(it.generatedKeys)
+                accept(it.generatedKeys)
             }
             updated
         }

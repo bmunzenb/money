@@ -39,7 +39,7 @@ class Category internal constructor(model: CategoryModel) : Persistable<Category
 
 class CategoryResultSetMapper : ResultSetMapper<Category> {
 
-    override fun map(resultSet: ResultSet): Category {
+    override fun apply(resultSet: ResultSet): Category {
 
         val model = CategoryModel().apply {
             identity = resultSet.getLong(CategoryTable.identityColumn)
@@ -48,7 +48,7 @@ class CategoryResultSetMapper : ResultSetMapper<Category> {
         }
 
         return Category(model).apply {
-            account = model.account?.let { AccountResultSetMapper().map(resultSet) }
+            account = model.account?.let { AccountResultSetMapper().apply(resultSet) }
         }
     }
 }

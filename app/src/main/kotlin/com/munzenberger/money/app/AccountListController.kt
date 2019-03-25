@@ -42,7 +42,7 @@ class AccountListController {
         }
 
         nameColumn.apply {
-            cellFactory = TableCellFactory.text { it }
+            cellFactory = TableCellFactory.hyperlink(action = {})
             cellValueFactory = Callback { a -> a.value.nameProperty }
         }
 
@@ -57,7 +57,7 @@ class AccountListController {
         }
 
         balanceColumn.apply {
-            cellFactory = AsyncTableViewCellFactory.text { it.toString() }
+            cellFactory = AsyncTableViewCellFactory.text()
             cellValueFactory = Callback { a -> a.value.balanceProperty }
         }
 

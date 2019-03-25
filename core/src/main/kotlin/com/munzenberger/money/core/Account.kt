@@ -32,7 +32,7 @@ class Account internal constructor(model: AccountModel) : Persistable<AccountMod
                 .build()
 
         val credits = executor.getFirst(creditsQuery, object : ResultSetMapper<Long> {
-            override fun map(resultSet: ResultSet) = resultSet.getLong("CREDITS")
+            override fun apply(resultSet: ResultSet) = resultSet.getLong("CREDITS")
         })
 
         val debitsQuery = Query.selectFrom(TransferTable.name)
@@ -42,7 +42,7 @@ class Account internal constructor(model: AccountModel) : Persistable<AccountMod
                 .build()
 
         val debits = executor.getFirst(debitsQuery, object : ResultSetMapper<Long> {
-            override fun map(resultSet: ResultSet) = resultSet.getLong("DEBITS")
+            override fun apply(resultSet: ResultSet) = resultSet.getLong("DEBITS")
         })
 
         val balance = (credits ?: 0) - (debits ?: 0)
@@ -72,7 +72,7 @@ class Account internal constructor(model: AccountModel) : Persistable<AccountMod
 
 class AccountResultSetMapper : ResultSetMapper<Account> {
 
-    override fun map(resultSet: ResultSet): Account {
+    override fun apply(resultSet: ResultSet): Account {
 
         val model = AccountModel().apply {
             identity = resultSet.getLong(AccountTable.identityColumn)
@@ -83,8 +83,8 @@ class AccountResultSetMapper : ResultSetMapper<Account> {
         }
 
         return Account(model).apply {
-            accountType = model.accountType?.let { AccountTypeResultSetMapper().map(resultSet) }
-            bank = model.bank?.let { BankResultSetMapper().map(resultSet) }
+            accountType = model.accountType?.let { AccountTypeResultSetMapper().apply(resultSet) }
+            bank = model.bank?.let { BankResultSetMapper().apply(resultSet) }
         }
     }
 }

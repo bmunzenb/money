@@ -26,7 +26,7 @@ class Payee internal constructor(model: PayeeModel) : Persistable<PayeeModel>(mo
 
 class PayeeResultSetMapper : ResultSetMapper<Payee> {
 
-    override fun map(resultSet: ResultSet): Payee {
+    override fun apply(resultSet: ResultSet): Payee {
 
         val model = PayeeModel().apply {
             identity = resultSet.getLong(PayeeTable.identityColumn)

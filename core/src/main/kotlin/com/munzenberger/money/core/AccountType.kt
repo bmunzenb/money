@@ -47,7 +47,7 @@ class AccountType internal constructor(model: AccountTypeModel) : Persistable<Ac
 
 class AccountTypeResultSetMapper : ResultSetMapper<AccountType> {
 
-    override fun map(resultSet: ResultSet): AccountType {
+    override fun apply(resultSet: ResultSet): AccountType {
 
         val model = AccountTypeModel().apply {
             identity = resultSet.getLong(AccountTypeTable.identityColumn)
