@@ -83,6 +83,7 @@ class EditAccountController {
             when (status) {
                 is AsyncObject.Complete -> stage.close()
                 is AsyncObject.Error -> ErrorAlert.showAndWait(status.error)
+                else -> {}
             }
         }
     }

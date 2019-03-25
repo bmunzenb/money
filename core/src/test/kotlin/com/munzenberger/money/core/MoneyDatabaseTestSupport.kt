@@ -38,6 +38,7 @@ open class MoneyDatabaseTestSupport {
         val status = MoneyCoreVersionManager().getVersionStatus(database)
         when (status) {
             is PendingUpgrades -> status.apply()
+            else -> {}
         }
     }
 

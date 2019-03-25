@@ -4,12 +4,14 @@ import javafx.scene.control.ListCell
 import javafx.scene.control.ListView
 import javafx.util.Callback
 
-class ListCellFactory<T>(private val onItem: (ListCell<T>, T) -> Unit) : Callback<ListView<T>, ListCell<T>> {
+abstract class ListCellFactory<T> : Callback<ListView<T>, ListCell<T>> {
 
     companion object {
-        fun <T> text(block: (T) -> String?) = ListCellFactory<T> { listCell, item ->
-            listCell.text = block.invoke(item)
-            listCell.graphic = null
+        fun <T> text(block: (T) -> String? = { it.toString() }) = object : ListCellFactory<T>() {
+            override fun onItem(listCell: ListCell<T>, item: T) {
+                listCell.text = block.invoke(item)
+                listCell.graphic = null
+            }
         }
     }
 
@@ -18,11 +20,13 @@ class ListCellFactory<T>(private val onItem: (ListCell<T>, T) -> Unit) : Callbac
             super.updateItem(item, empty)
 
             if (empty || item == null) onEmpty(this)
-            else onItem.invoke(this, item)
+            else onItem(this, item)
         }
     }
 
-    private fun onEmpty(listCell: ListCell<T>) {
+    abstract fun onItem(listCell: ListCell<T>, item: T)
+
+    open fun onEmpty(listCell: ListCell<T>) {
         listCell.text = null
         listCell.graphic = null
     }

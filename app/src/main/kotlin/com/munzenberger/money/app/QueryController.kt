@@ -46,6 +46,7 @@ class QueryController {
                 is AsyncObject.Executing -> onExecuting()
                 is AsyncObject.Complete -> onResult(value.value)
                 is AsyncObject.Error -> onError(value.error)
+                else -> {}
             }
         }
     }

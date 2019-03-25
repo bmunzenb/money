@@ -57,7 +57,7 @@ class AccountListController {
         }
 
         balanceColumn.apply {
-            cellFactory = AsyncTableViewCellFactory.text { it?.toString() }
+            cellFactory = AsyncTableViewCellFactory.text { it.toString() }
             cellValueFactory = Callback { a -> a.value.balanceProperty }
         }
 

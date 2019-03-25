@@ -4,12 +4,14 @@ import javafx.scene.control.TableCell
 import javafx.scene.control.TableColumn
 import javafx.util.Callback
 
-class TableCellFactory<S, T>(private val onItem: (TableCell<S, T>, T?) -> Unit) : Callback<TableColumn<S, T>, TableCell<S, T>> {
+abstract class TableCellFactory<S, T> : Callback<TableColumn<S, T>, TableCell<S, T>> {
 
     companion object {
-        fun <S, T> text(block: (T?) -> String?) = TableCellFactory<S, T> { tableCell, item ->
-            tableCell.text = block.invoke(item)
-            tableCell.graphic = null
+        fun <S, T> text(block: (T) -> String? = { it.toString() }) = object : TableCellFactory<S, T>() {
+            override fun onItem(tableCell: TableCell<S, T>, item: T) {
+                tableCell.text = block.invoke(item)
+                tableCell.graphic = null
+            }
         }
     }
 
@@ -18,11 +20,13 @@ class TableCellFactory<S, T>(private val onItem: (TableCell<S, T>, T?) -> Unit) 
             super.updateItem(item, empty)
 
             if (empty || item == null) onEmpty(this)
-            else onItem.invoke(this, item)
+            else onItem(this, item)
         }
     }
 
-    private fun onEmpty(tableCell: TableCell<S, T>) {
+    abstract fun onItem(tableCell: TableCell<S, T>, item: T)
+
+    open fun onEmpty(tableCell: TableCell<S, T>) {
         tableCell.text = null
         tableCell.graphic = null
     }
