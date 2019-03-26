@@ -23,7 +23,7 @@ class NavigationController : AutoCloseable {
     private val navigator = Navigator { borderPane.center = it }
 
     private val accountsNavigation = LayoutControllerNavigation(AccountListController.LAYOUT) {
-        controller: AccountListController -> controller.start(stage, database)
+        controller: AccountListController -> controller.start(stage, database, navigator)
     }
 
     private val queryNavigation = LayoutControllerNavigation(QueryController.LAYOUT) {

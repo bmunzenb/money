@@ -16,11 +16,12 @@ abstract class TableCellFactory<S, T> : Callback<TableColumn<S, T>, TableCell<S,
             }
         }
 
-        fun <S, T> hyperlink(block: (T) -> String? = { it.toString() }, action: (T) -> Unit) = object : TableCellFactory<S, T>() {
+        fun <S, T> hyperlink(block: (T) -> String? = { it.toString() }, action: (S) -> Unit) = object : TableCellFactory<S, T>() {
             override fun onItem(tableCell: TableCell<S, T>, item: T) {
                 tableCell.text = null
                 tableCell.graphic = Hyperlink(block.invoke(item)).apply {
-                    onAction = EventHandler { _ -> action.invoke(item) }
+                    val obj = tableCell.tableRow.item
+                    onAction = EventHandler { _ -> action.invoke(obj) }
                 }
             }
         }

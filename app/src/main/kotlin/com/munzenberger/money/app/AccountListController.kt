@@ -2,6 +2,7 @@ package com.munzenberger.money.app
 
 import com.munzenberger.money.app.model.FXAccount
 import com.munzenberger.money.app.model.FXAccountType
+import com.munzenberger.money.app.navigation.Navigator
 import com.munzenberger.money.app.property.AsyncObject
 import com.munzenberger.money.app.property.bindAsync
 import com.munzenberger.money.app.property.bindAsyncStatus
@@ -33,6 +34,7 @@ class AccountListController : AutoCloseable {
 
     private lateinit var stage: Stage
     private lateinit var database: MoneyDatabase
+    private lateinit var navigator: Navigator
 
     private val viewModel = AccountListViewModel()
 
@@ -43,7 +45,9 @@ class AccountListController : AutoCloseable {
         }
 
         nameColumn.apply {
-            cellFactory = TableCellFactory.hyperlink(action = {})
+            cellFactory = TableCellFactory.hyperlink(action = {
+                navigator.goTo(AccountRegisterController.navigation(it))
+            })
             cellValueFactory = Callback { a -> a.value.nameProperty }
         }
 
@@ -73,9 +77,10 @@ class AccountListController : AutoCloseable {
         totalBalanceLabel.textProperty().bindAsync(viewModel.totalBalanceProperty) { "Total Account Balance: $it" }
     }
 
-    fun start(stage: Stage, database: MoneyDatabase) {
+    fun start(stage: Stage, database: MoneyDatabase, navigator: Navigator) {
         this.stage = stage
         this.database = database
+        this.navigator = navigator
 
         viewModel.start(database)
     }
