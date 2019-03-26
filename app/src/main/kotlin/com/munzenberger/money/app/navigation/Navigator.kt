@@ -6,7 +6,7 @@ import javafx.collections.FXCollections
 import javafx.scene.Node
 import java.util.concurrent.Callable
 
-class Navigator(private val consumer: (Node) -> Unit) {
+class Navigator(private val consumer: (Node) -> Unit) : AutoCloseable {
 
     private val backHistory = SimpleListProperty<Navigation>(FXCollections.observableArrayList())
     private val forwardHistory = SimpleListProperty<Navigation>(FXCollections.observableArrayList())
@@ -35,24 +35,27 @@ class Navigator(private val consumer: (Node) -> Unit) {
 
     private fun navigate(to: Navigation, history: SimpleListProperty<Navigation>): Boolean {
 
+        if (lastNavigation == to) {
+            return false
+        }
+
+        lastNavigation?.close()
         consumer.invoke(to.call())
-
-        val changed =
-                if (lastNavigation != null && lastNavigation != to) {
-                    history.add(0, lastNavigation!!)
-                    true
-                } else {
-                    false
-                }
-
+        history.add(0, lastNavigation)
         lastNavigation = to
 
-        return changed
+        return true
     }
 
     private fun goHistory(from: SimpleListProperty<Navigation>, to: SimpleListProperty<Navigation>) {
 
         val callable = from.removeAt(0)
         navigate(callable, to)
+    }
+
+    override fun close() {
+        lastNavigation?.close()
+        backHistory.clear()
+        forwardHistory.clear()
     }
 }

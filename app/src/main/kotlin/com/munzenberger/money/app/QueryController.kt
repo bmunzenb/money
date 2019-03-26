@@ -14,7 +14,7 @@ import java.util.logging.Level
 import java.util.logging.Logger
 
 
-class QueryController {
+class QueryController : AutoCloseable {
 
     companion object {
         val LAYOUT: URL = NavigationController::class.java.getResource("QueryLayout.fxml")
@@ -102,5 +102,9 @@ class QueryController {
         }
 
         logger.log(Level.WARNING, "query failure", error)
+    }
+
+    override fun close() {
+        // nothing to close
     }
 }

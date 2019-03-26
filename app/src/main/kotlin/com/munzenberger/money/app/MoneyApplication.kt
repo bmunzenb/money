@@ -36,6 +36,6 @@ class MoneyApplication : Application() {
     }
 
     override fun stop() {
-        controller.shutdown()
+        controller.close()
     }
 }

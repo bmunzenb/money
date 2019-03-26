@@ -9,7 +9,7 @@ import javafx.application.Platform
 import javafx.beans.property.*
 import javafx.stage.Window
 
-class ApplicationViewModel {
+class ApplicationViewModel : AutoCloseable {
 
     companion object {
         const val DEFAULT_TITLE = "Money"
@@ -66,7 +66,7 @@ class ApplicationViewModel {
         Platform.exit()
     }
 
-    fun shutdown() {
+    override fun close() {
         connectedDatabase.value?.close()
     }
 }

@@ -12,7 +12,7 @@ import javafx.scene.layout.VBox
 import javafx.stage.Stage
 import java.net.URL
 
-class ApplicationController : DatabaseConnectorDelegate {
+class ApplicationController : DatabaseConnectorDelegate, AutoCloseable {
 
     companion object {
         val LAYOUT: URL = ApplicationController::class.java.getResource("ApplicationLayout.fxml")
@@ -22,6 +22,7 @@ class ApplicationController : DatabaseConnectorDelegate {
     @FXML lateinit var contentPane: AnchorPane
 
     private val viewModel = ApplicationViewModel()
+    private var activeController: AutoCloseable? = null
 
     private lateinit var stage: Stage
 
@@ -64,15 +65,16 @@ class ApplicationController : DatabaseConnectorDelegate {
         viewModel.exit()
     }
 
-    fun shutdown() {
-        viewModel.shutdown()
+    override fun close() {
+        activeController?.close()
+        viewModel.close()
     }
 
     private fun presentWelcome() {
 
         FXMLLoader(WelcomeController.LAYOUT).load { node: Node, controller: WelcomeController ->
             controller.start(this)
-            setContent(node)
+            setContent(node, controller)
         }
     }
 
@@ -80,11 +82,14 @@ class ApplicationController : DatabaseConnectorDelegate {
 
         FXMLLoader(NavigationController.LAYOUT).load { node: Node, controller: NavigationController ->
             controller.start(stage, database)
-            setContent(node)
+            setContent(node, controller)
         }
     }
 
-    private fun setContent(content: Node) {
+    private fun setContent(content: Node, controller: AutoCloseable) {
+
+        activeController?.close()
+        activeController = controller
 
         contentPane.children.also {
             it.clear()

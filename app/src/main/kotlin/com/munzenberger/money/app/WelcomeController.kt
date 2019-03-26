@@ -3,7 +3,7 @@ package com.munzenberger.money.app
 import javafx.fxml.FXML
 import java.net.URL
 
-class WelcomeController {
+class WelcomeController : AutoCloseable {
 
     companion object {
         val LAYOUT: URL = ApplicationController::class.java.getResource("WelcomeLayout.fxml")
@@ -27,5 +27,9 @@ class WelcomeController {
 
     @FXML fun onMemoryDatabase() {
         databaseConnectorDelegate.onMemoryDatabase()
+    }
+
+    override fun close() {
+        // nothing to close
     }
 }

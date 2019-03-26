@@ -13,9 +13,10 @@ import javafx.fxml.FXML
 import javafx.scene.control.*
 import javafx.stage.Stage
 import javafx.util.Callback
+import java.io.Closeable
 import java.net.URL
 
-class AccountListController {
+class AccountListController : AutoCloseable {
 
     companion object {
         val LAYOUT: URL = AccountListController::class.java.getResource("AccountListLayout.fxml")
@@ -79,9 +80,8 @@ class AccountListController {
         viewModel.start(database)
     }
 
-    // TODO: find a nice way to call this when this controller is no longer loaded
-    fun clear() {
-        viewModel.clear()
+    override fun close() {
+        viewModel.close()
     }
 
     @FXML fun onCreateAccount() {

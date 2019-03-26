@@ -11,7 +11,7 @@ import io.reactivex.Single
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.rxjavafx.schedulers.JavaFxScheduler
 
-class AccountListViewModel {
+class AccountListViewModel : AutoCloseable {
 
     private val disposables = CompositeDisposable()
 
@@ -49,7 +49,7 @@ class AccountListViewModel {
         disposables.add(disposable)
     }
 
-    fun clear() {
+    override fun close() {
         disposables.clear()
     }
 }

@@ -10,7 +10,7 @@ import javafx.scene.layout.BorderPane
 import javafx.stage.Stage
 import java.net.URL
 
-class NavigationController {
+class NavigationController : AutoCloseable {
 
     companion object {
         val LAYOUT: URL = NavigationController::class.java.getResource("NavigationLayout.fxml")
@@ -60,5 +60,9 @@ class NavigationController {
 
     @FXML fun onQueryButton() {
         navigator.goTo(queryNavigation)
+    }
+
+    override fun close() {
+        navigator.close()
     }
 }

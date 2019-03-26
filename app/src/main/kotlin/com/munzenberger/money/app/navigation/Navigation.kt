@@ -5,11 +5,12 @@ import javafx.scene.Node
 import java.net.URL
 import java.util.concurrent.Callable
 
-interface Navigation : Callable<Node>
+interface Navigation : Callable<Node>, AutoCloseable
 
-class LayoutControllerNavigation<T>(private val layoutLocation: URL, private val start: (T) -> Unit) : Navigation {
+class LayoutControllerNavigation<T : AutoCloseable>(private val layoutLocation: URL, private val start: (T) -> Unit) : Navigation {
 
     private var node: Node? = null
+    private var controller: T? = null
 
     override fun call(): Node {
 
@@ -17,11 +18,15 @@ class LayoutControllerNavigation<T>(private val layoutLocation: URL, private val
 
             val loader = FXMLLoader(layoutLocation)
             node = loader.load()
-
-            val controller: T = loader.getController()
-            start.invoke(controller)
+            controller = loader.getController()
         }
 
+        start.invoke(controller!!)
+
         return node!!
+    }
+
+    override fun close() {
+        controller?.close()
     }
 }
