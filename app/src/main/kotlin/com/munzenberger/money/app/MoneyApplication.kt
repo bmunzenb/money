@@ -21,7 +21,11 @@ class MoneyApplication : Application() {
             this.controller = controller.apply { start(primaryStage) }
 
             primaryStage.apply {
-                scene = Scene(root)
+
+                scene = Scene(root).apply {
+                    stylesheets.add(MoneyApplication::class.java.getResource("money.css").toExternalForm())
+                }
+
                 width = 640.0
                 height = 480.0
                 minWidth = width
