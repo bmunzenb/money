@@ -14,7 +14,6 @@ import javafx.fxml.FXML
 import javafx.scene.control.*
 import javafx.stage.Stage
 import javafx.util.Callback
-import java.io.Closeable
 import java.net.URL
 
 class AccountListController : AutoCloseable {
@@ -46,7 +45,7 @@ class AccountListController : AutoCloseable {
 
         nameColumn.apply {
             cellFactory = TableCellFactory.hyperlink(action = {
-                navigator.goTo(AccountRegisterController.navigation(it))
+                navigator.goTo(AccountRegisterController.navigation(stage, database, it.identity))
             })
             cellValueFactory = Callback { a -> a.value.nameProperty }
         }

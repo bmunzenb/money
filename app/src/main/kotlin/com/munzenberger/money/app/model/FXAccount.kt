@@ -13,6 +13,8 @@ import javafx.beans.property.SimpleStringProperty
 
 class FXAccount(account: Account, database: MoneyDatabase) {
 
+    val identity = account.identity!!
+
     val nameProperty: ReadOnlyStringProperty = SimpleStringProperty(account.name)
     val typeProperty: ReadOnlyObjectProperty<FXAccountType> = SimpleObjectProperty(account.accountType?.let { FXAccountType(it) })
     val numberProperty: ReadOnlyStringProperty = SimpleStringProperty(account.number)
