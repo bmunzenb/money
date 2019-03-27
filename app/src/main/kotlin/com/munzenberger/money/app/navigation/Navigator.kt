@@ -4,7 +4,6 @@ import javafx.beans.property.ReadOnlyListProperty
 import javafx.beans.property.SimpleListProperty
 import javafx.collections.FXCollections
 import javafx.scene.Node
-import java.util.concurrent.Callable
 
 class Navigator(private val consumer: (Node) -> Unit) : AutoCloseable {
 
@@ -39,9 +38,12 @@ class Navigator(private val consumer: (Node) -> Unit) : AutoCloseable {
             return false
         }
 
-        lastNavigation?.close()
+        lastNavigation?.run {
+            close()
+            history.add(0, this)
+        }
+
         consumer.invoke(to.call())
-        history.add(0, lastNavigation)
         lastNavigation = to
 
         return true
