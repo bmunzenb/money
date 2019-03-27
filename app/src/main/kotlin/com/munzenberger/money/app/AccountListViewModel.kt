@@ -27,8 +27,11 @@ class AccountListViewModel : AutoCloseable {
 
             val balances = list.map { it.balanceObservable }
 
-            val total = Single.zip(balances) {
-                it.fold(Money.valueOf(0)) { acc, b -> acc.add(b as Money) }
+            val total = when {
+                balances.isEmpty() -> Single.just(Money.ZERO)
+                else -> Single.zip(balances) {
+                    it.fold(Money.valueOf(0)) { acc, b -> acc.add(b as Money) }
+                }
             }
 
             subscribe(total)

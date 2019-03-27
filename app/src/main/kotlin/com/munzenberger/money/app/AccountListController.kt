@@ -4,6 +4,7 @@ import com.munzenberger.money.app.model.FXAccount
 import com.munzenberger.money.app.model.FXAccountType
 import com.munzenberger.money.app.navigation.Navigator
 import com.munzenberger.money.app.property.AsyncObject
+import com.munzenberger.money.app.property.AsyncObjectMapper
 import com.munzenberger.money.app.property.bindAsync
 import com.munzenberger.money.app.property.bindAsyncStatus
 import com.munzenberger.money.core.Account
@@ -11,7 +12,9 @@ import com.munzenberger.money.core.Money
 import com.munzenberger.money.core.MoneyDatabase
 import javafx.collections.FXCollections
 import javafx.fxml.FXML
+import javafx.scene.Node
 import javafx.scene.control.*
+import javafx.scene.paint.Color
 import javafx.stage.Stage
 import javafx.util.Callback
 import java.net.URL
@@ -39,8 +42,29 @@ class AccountListController : AutoCloseable {
 
     fun initialize() {
 
-        tableView.items = FXCollections.observableArrayList<FXAccount>().apply {
-            bindAsync(viewModel.accountsProperty)
+        tableView.apply {
+
+            items = FXCollections.observableArrayList<FXAccount>().apply {
+                bindAsync(viewModel.accountsProperty)
+            }
+
+            placeholderProperty().bindAsync(viewModel.accountsProperty, object : AsyncObjectMapper<List<FXAccount>, Node> {
+
+                override fun pending() = executing()
+
+                override fun executing() = ProgressIndicator().apply {
+                    setPrefSize(60.0, 60.0)
+                    setMaxSize(60.0, 60.0)
+                }
+
+                override fun complete(obj: List<FXAccount>) = Hyperlink("Create an account to get started.").apply {
+                    setOnAction { onCreateAccount() }
+                }
+
+                override fun error(error: Throwable) = Label(error.message).apply {
+                    textFill = Color.RED
+                }
+            })
         }
 
         nameColumn.apply {

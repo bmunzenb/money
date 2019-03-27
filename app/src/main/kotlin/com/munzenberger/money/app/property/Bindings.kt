@@ -1,8 +1,30 @@
 package com.munzenberger.money.app.property
 
 import javafx.beans.property.BooleanProperty
+import javafx.beans.property.ObjectProperty
 import javafx.beans.property.StringProperty
 import javafx.collections.ObservableList
+
+interface AsyncObjectMapper<T, R> {
+    fun pending(): R
+    fun executing(): R
+    fun complete(obj: T): R
+    fun error(error: Throwable): R
+}
+
+fun <T, R> ObjectProperty<R>.bindAsync(asyncObjectProperty: ReadOnlyAsyncObjectProperty<T>, mapper: AsyncObjectMapper<T, R>) {
+
+    val listener = { obj: AsyncObject<T> -> when (obj) {
+        is AsyncObject.Pending -> set(mapper.pending())
+        is AsyncObject.Executing -> set(mapper.executing())
+        is AsyncObject.Complete -> set(mapper.complete(obj.value))
+        is AsyncObject.Error -> set(mapper.error(obj.error))
+    }}
+
+    asyncObjectProperty.addListener { _, _, obj -> listener.invoke(obj) }
+
+    listener.invoke(asyncObjectProperty.value)
+}
 
 fun <T> ObservableList<T>.bindAsync(asyncObjectProperty: ReadOnlyAsyncObjectProperty<List<T>>) {
 

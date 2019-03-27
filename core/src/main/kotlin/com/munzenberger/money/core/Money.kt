@@ -10,6 +10,8 @@ class Money private constructor(private val currency: Currency, val value: Long)
 
     companion object {
 
+        val ZERO = Money.valueOf(0)
+
         fun valueOf(value: Long) = Money(Currency.getInstance(Locale.getDefault()), value)
 
         fun valueOfFraction(fraction: String): Money {
