@@ -21,7 +21,7 @@ class AccountListViewModel : AutoCloseable {
     val accountsProperty: ReadOnlyAsyncObjectProperty<List<FXAccount>> = accounts
     val totalBalanceProperty: ReadOnlyAsyncObjectProperty<Money> = totalBalance
 
-    fun start(database: MoneyDatabase) {
+    init {
 
         totalBalance.bindAsync(accountsProperty) { list ->
 
@@ -30,12 +30,15 @@ class AccountListViewModel : AutoCloseable {
             val total = when {
                 balances.isEmpty() -> Single.just(Money.ZERO)
                 else -> Single.zip(balances) {
-                    it.fold(Money.valueOf(0)) { acc, b -> acc.add(b as Money) }
+                    it.fold(Money.ZERO) { acc, b -> acc.add(b as Money) }
                 }
             }
 
             subscribe(total)
         }
+    }
+
+    fun start(database: MoneyDatabase) {
 
         val getAccounts = Account.getAll(database).map {
             it.map { a -> FXAccount(a, database) }
