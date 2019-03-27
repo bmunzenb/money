@@ -69,8 +69,8 @@ class QueryController : AutoCloseable {
             columns.clear()
             items = null
             placeholder = ProgressIndicator().apply {
-                minWidth = 60.0
-                minHeight = 60.0
+                setPrefSize(60.0, 60.0)
+                setMaxSize(60.0, 60.0)
             }
         }
     }
