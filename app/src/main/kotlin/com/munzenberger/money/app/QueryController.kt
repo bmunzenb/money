@@ -7,6 +7,7 @@ import javafx.fxml.FXML
 import javafx.scene.Node
 import java.net.URL
 import javafx.beans.property.ReadOnlyObjectWrapper
+import javafx.beans.value.ChangeListener
 import javafx.scene.control.*
 import javafx.scene.paint.Color
 import javafx.scene.text.Text
@@ -29,14 +30,15 @@ class QueryController : AutoCloseable {
     @FXML lateinit var resultTableView: TableView<List<Any?>>
 
     private val viewModel = QueryViewModel()
+    private val retainListeners = mutableListOf<ChangeListener<*>>()
 
     fun initialize() {
 
         resultTableView.placeholder = Text("Execute a statement to see results.")
 
-        queryTextArea.disableProperty().bindAsyncStatus(viewModel.resultProperty, AsyncObject.Status.EXECUTING)
-        queryButton.disableProperty().bindAsyncStatus(viewModel.resultProperty, AsyncObject.Status.EXECUTING)
-        updateButton.disableProperty().bindAsyncStatus(viewModel.resultProperty, AsyncObject.Status.EXECUTING)
+        retainListeners += queryTextArea.disableProperty().bindAsyncStatus(viewModel.resultProperty, AsyncObject.Status.EXECUTING)
+        retainListeners += queryButton.disableProperty().bindAsyncStatus(viewModel.resultProperty, AsyncObject.Status.EXECUTING)
+        retainListeners += updateButton.disableProperty().bindAsyncStatus(viewModel.resultProperty, AsyncObject.Status.EXECUTING)
 
         viewModel.queryProperty.bind(queryTextArea.textProperty())
         viewModel.selectedQueryProperty.bind(queryTextArea.selectedTextProperty())

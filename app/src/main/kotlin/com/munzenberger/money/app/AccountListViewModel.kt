@@ -10,10 +10,12 @@ import com.munzenberger.money.core.MoneyDatabase
 import io.reactivex.Single
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.rxjavafx.schedulers.JavaFxScheduler
+import javafx.beans.value.ChangeListener
 
 class AccountListViewModel : AutoCloseable {
 
     private val disposables = CompositeDisposable()
+    private val retainListeners = mutableListOf<ChangeListener<*>>()
 
     private val accounts = SimpleAsyncObjectProperty<List<FXAccount>>()
     private val totalBalance = SimpleAsyncObjectProperty<Money>()
@@ -23,7 +25,7 @@ class AccountListViewModel : AutoCloseable {
 
     init {
 
-        totalBalance.bindAsync(accountsProperty) { list ->
+        retainListeners += totalBalance.bindAsync(accountsProperty) { list ->
 
             val balances = list.map { it.balanceObservable }
 

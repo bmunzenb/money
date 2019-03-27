@@ -10,6 +10,7 @@ import com.munzenberger.money.app.property.bindAsyncStatus
 import com.munzenberger.money.core.Account
 import com.munzenberger.money.core.Money
 import com.munzenberger.money.core.MoneyDatabase
+import javafx.beans.value.ChangeListener
 import javafx.collections.FXCollections
 import javafx.fxml.FXML
 import javafx.scene.Node
@@ -39,16 +40,17 @@ class AccountListController : AutoCloseable {
     private lateinit var navigator: Navigator
 
     private val viewModel = AccountListViewModel()
+    private val retainListeners = mutableListOf<ChangeListener<*>>()
 
     fun initialize() {
 
         tableView.apply {
 
             items = FXCollections.observableArrayList<FXAccount>().apply {
-                bindAsync(viewModel.accountsProperty)
+                retainListeners += bindAsync(viewModel.accountsProperty)
             }
 
-            placeholderProperty().bindAsync(viewModel.accountsProperty, object : AsyncObjectMapper<List<FXAccount>, Node> {
+            retainListeners += placeholderProperty().bindAsync(viewModel.accountsProperty, object : AsyncObjectMapper<List<FXAccount>, Node> {
 
                 override fun pending() = executing()
 
@@ -89,15 +91,15 @@ class AccountListController : AutoCloseable {
             cellValueFactory = Callback { a -> a.value.balanceProperty }
         }
 
-        totalBalanceProgress.visibleProperty().bindAsyncStatus(viewModel.totalBalanceProperty,
+        retainListeners += totalBalanceProgress.visibleProperty().bindAsyncStatus(viewModel.totalBalanceProperty,
                 AsyncObject.Status.PENDING,
                 AsyncObject.Status.EXECUTING)
 
-        totalBalanceLabel.visibleProperty().bindAsyncStatus(viewModel.totalBalanceProperty,
+        retainListeners += totalBalanceLabel.visibleProperty().bindAsyncStatus(viewModel.totalBalanceProperty,
                 AsyncObject.Status.COMPLETE,
                 AsyncObject.Status.ERROR)
 
-        totalBalanceLabel.textProperty().bindAsync(viewModel.totalBalanceProperty) { "Total Account Balance: $it" }
+        retainListeners += totalBalanceLabel.textProperty().bindAsync(viewModel.totalBalanceProperty) { "Total Account Balance: $it" }
     }
 
     fun start(stage: Stage, database: MoneyDatabase, navigator: Navigator) {
