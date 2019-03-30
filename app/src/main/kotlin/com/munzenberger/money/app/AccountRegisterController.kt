@@ -7,6 +7,7 @@ import com.munzenberger.money.app.property.bindAsyncStatus
 import com.munzenberger.money.core.MoneyDatabase
 import javafx.beans.value.ChangeListener
 import javafx.fxml.FXML
+import javafx.scene.control.Button
 import javafx.scene.control.Label
 import javafx.scene.control.ProgressIndicator
 import javafx.stage.Stage
@@ -24,6 +25,7 @@ class AccountRegisterController : AutoCloseable {
 
     @FXML lateinit var accountNameProgress: ProgressIndicator
     @FXML lateinit var accountNameLabel: Label
+    @FXML lateinit var editAccountButton: Button
 
     private lateinit var stage: Stage
     private lateinit var database: MoneyDatabase
@@ -42,6 +44,11 @@ class AccountRegisterController : AutoCloseable {
             retainListeners += textProperty().bindAsync(viewModel.accountProperty) { "Account Register : ${it.name}" }
             // TODO: what to display if there's an error?
         }
+
+        retainListeners += editAccountButton.disableProperty().bindAsyncStatus(viewModel.accountProperty,
+                AsyncObject.Status.PENDING,
+                AsyncObject.Status.EXECUTING,
+                AsyncObject.Status.ERROR)
     }
 
     fun start(stage: Stage, database: MoneyDatabase, accountIdentity: Long) {
@@ -49,6 +56,16 @@ class AccountRegisterController : AutoCloseable {
         this.database = database
 
         viewModel.start(database, accountIdentity)
+    }
+
+    @FXML fun onEditAccount() {
+        viewModel.getAccount {
+            DialogBuilder.build(EditAccountController.LAYOUT) { stage, controller: EditAccountController ->
+                stage.title = editAccountButton.text
+                stage.show()
+                controller.start(stage, database, it)
+            }
+        }
     }
 
     override fun close() {

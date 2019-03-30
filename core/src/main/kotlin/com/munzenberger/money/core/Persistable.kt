@@ -4,7 +4,6 @@ import com.munzenberger.money.core.model.Model
 import com.munzenberger.money.core.model.Table
 import com.munzenberger.money.sql.QueryExecutor
 import com.munzenberger.money.sql.ResultSetMapper
-import com.munzenberger.money.sql.TransactionQueryExecutor
 import io.reactivex.Completable
 import io.reactivex.Single
 import kotlin.reflect.KClass
@@ -42,6 +41,24 @@ abstract class Persistable<M : Model>(
         executor.executeUpdate(query)
 
         model.identity = null
+    }
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as Persistable<*>
+
+        if (model != other.model) return false
+        if (table != other.table) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var result = model.hashCode()
+        result = 31 * result + table.hashCode()
+        return result
     }
 
     companion object {

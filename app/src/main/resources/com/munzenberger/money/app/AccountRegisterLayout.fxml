@@ -40,7 +40,7 @@
       </TableView>
       <VBox minHeight="0.0" minWidth="0.0" spacing="8.0" GridPane.rowIndex="1" GridPane.rowSpan="2147483647" GridPane.valignment="TOP">
          <children>
-            <Button maxWidth="1.7976931348623157E308" mnemonicParsing="false" text="Edit Account" />
+            <Button fx:id="editAccountButton" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#onEditAccount" text="Edit Account" />
             <Button maxWidth="1.7976931348623157E308" mnemonicParsing="false" text="Add Transaction" />
          </children>
          <padding>

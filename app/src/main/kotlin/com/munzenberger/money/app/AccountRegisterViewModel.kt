@@ -1,5 +1,6 @@
 package com.munzenberger.money.app
 
+import com.munzenberger.money.app.property.AsyncObject
 import com.munzenberger.money.app.property.ReadOnlyAsyncObjectProperty
 import com.munzenberger.money.app.property.SimpleAsyncObjectProperty
 import com.munzenberger.money.core.Account
@@ -26,6 +27,12 @@ class AccountRegisterViewModel : AutoCloseable {
                 .subscribe { account.subscribe(single) }
 
         disposables.add(disposable)
+    }
+
+    fun getAccount(block: (Account) -> Unit) = account.get().let {
+        when (it) {
+            is AsyncObject.Complete -> block.invoke(it.value)
+        }
     }
 
     override fun close() {
