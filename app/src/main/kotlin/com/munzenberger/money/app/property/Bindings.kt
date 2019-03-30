@@ -66,7 +66,7 @@ fun BooleanProperty.bindAsyncStatus(asyncObjectProperty: ReadOnlyAsyncObjectProp
     return listener
 }
 
-fun <T> StringProperty.bindAsync(asyncObjectProperty: ReadOnlyAsyncObjectProperty<T>, toString: (T?) -> String? = { it?.toString() }) =
+fun <T> StringProperty.bindAsync(asyncObjectProperty: ReadOnlyAsyncObjectProperty<T>, toString: (T) -> String? = { it?.toString() }) =
         bindAsync(asyncObjectProperty, object : AsyncObjectMapper<T, String?> {
             override fun pending(): String? = null
             override fun executing(): String? = null

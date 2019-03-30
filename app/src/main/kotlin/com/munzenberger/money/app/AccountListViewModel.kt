@@ -50,9 +50,7 @@ class AccountListViewModel : AutoCloseable {
 
         val disposable = database.updateObservable
                 .observeOn(JavaFxScheduler.platform())
-                .subscribe {
-                    accounts.subscribe(getAccounts)
-                }
+                .subscribe { accounts.subscribe(getAccounts) }
 
         disposables.add(disposable)
     }

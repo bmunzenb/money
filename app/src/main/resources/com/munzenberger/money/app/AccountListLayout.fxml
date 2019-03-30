@@ -42,7 +42,7 @@
       </TableView>
       <VBox minHeight="0.0" minWidth="0.0" GridPane.rowIndex="1" GridPane.rowSpan="2147483647" GridPane.valignment="TOP">
          <children>
-            <Button fx:id="createAccountButton" mnemonicParsing="false" onAction="#onCreateAccount" text="Create Account" />
+            <Button fx:id="createAccountButton" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#onCreateAccount" text="Create Account" />
          </children>
          <padding>
             <Insets right="6.0" />
@@ -50,7 +50,7 @@
       </VBox>
       <StackPane maxWidth="1.7976931348623157E308" GridPane.columnIndex="1" GridPane.rowIndex="2">
          <children>
-            <Label fx:id="totalBalanceLabel" StackPane.alignment="CENTER_RIGHT">
+            <Label fx:id="totalBalanceLabel" text="Total Account Balance" StackPane.alignment="CENTER_RIGHT">
                <font>
                   <Font name="System Bold" size="12.0" />
                </font>

@@ -95,11 +95,11 @@ class AccountListController : AutoCloseable {
                 AsyncObject.Status.PENDING,
                 AsyncObject.Status.EXECUTING)
 
-        retainListeners += totalBalanceLabel.visibleProperty().bindAsyncStatus(viewModel.totalBalanceProperty,
-                AsyncObject.Status.COMPLETE,
-                AsyncObject.Status.ERROR)
-
-        retainListeners += totalBalanceLabel.textProperty().bindAsync(viewModel.totalBalanceProperty) { "Total Account Balance: $it" }
+        totalBalanceLabel.apply {
+            retainListeners += visibleProperty().bindAsyncStatus(viewModel.totalBalanceProperty, AsyncObject.Status.COMPLETE)
+            retainListeners += textProperty().bindAsync(viewModel.totalBalanceProperty) { "Total Account Balance: $it" }
+            // TODO: what to display if there's an error?
+        }
     }
 
     fun start(stage: Stage, database: MoneyDatabase, navigator: Navigator) {
