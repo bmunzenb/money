@@ -1,12 +1,14 @@
 package com.munzenberger.money.app
 
 import javafx.scene.control.Alert
+import javafx.scene.control.ButtonType
 import javafx.scene.control.Label
 import javafx.scene.control.TextArea
 import javafx.scene.layout.GridPane
 import javafx.scene.layout.Priority
 import java.io.PrintWriter
 import java.io.StringWriter
+import java.util.*
 
 class ErrorAlert(error: Throwable) : Alert(AlertType.ERROR) {
 
@@ -45,6 +47,6 @@ class ErrorAlert(error: Throwable) : Alert(AlertType.ERROR) {
 
     companion object {
 
-        fun showAndWait(error: Throwable) = ErrorAlert(error).showAndWait()
+        fun showAndWait(error: Throwable): Optional<ButtonType> = ErrorAlert(error).showAndWait()
     }
 }

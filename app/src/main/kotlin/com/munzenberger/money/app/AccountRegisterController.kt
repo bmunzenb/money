@@ -26,6 +26,7 @@ class AccountRegisterController : AutoCloseable {
     @FXML lateinit var accountNameProgress: ProgressIndicator
     @FXML lateinit var accountNameLabel: Label
     @FXML lateinit var editAccountButton: Button
+    @FXML lateinit var addTransactionButton: Button
 
     private lateinit var stage: Stage
     private lateinit var database: MoneyDatabase
@@ -65,6 +66,14 @@ class AccountRegisterController : AutoCloseable {
                 stage.show()
                 controller.start(stage, database, it)
             }
+        }
+    }
+
+    @FXML fun addTransaction() {
+        DialogBuilder.build(EditTransactionController.LAYOUT) { stage, controller: EditTransactionController ->
+            stage.title = addTransactionButton.text
+            stage.show()
+            controller.start(stage)
         }
     }
 
