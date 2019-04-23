@@ -1,6 +1,6 @@
 package com.munzenberger.money.app.database
 
-import com.munzenberger.money.app.useDatabaseSchedulers
+import com.munzenberger.money.app.SchedulerProvider
 import com.munzenberger.money.core.ConnectionMoneyDatabase
 import com.munzenberger.money.core.DatabaseDialect
 import com.munzenberger.money.core.MoneyDatabase
@@ -16,7 +16,7 @@ import java.sql.DriverManager
 
 typealias DatabaseConnectionHandler = (MoneyDatabase?) -> Unit
 
-abstract class DatabaseConnector {
+abstract class DatabaseConnector(private val schedulers: SchedulerProvider = SchedulerProvider.Default) {
 
     protected fun connect(
             name: String,
@@ -44,14 +44,16 @@ abstract class DatabaseConnector {
 
             it.onSuccess(database)
         }
-                .useDatabaseSchedulers()
+                .subscribeOn(schedulers.single)
+                .observeOn(schedulers.main)
                 .subscribe({ onConnectSuccess(it, complete) }, { onConnectError(it); complete.invoke(null) })
     }
 
     private fun onConnectSuccess(database: MoneyDatabase, complete: DatabaseConnectionHandler) {
 
         Single.fromCallable { MoneyCoreVersionManager().getVersionStatus(database) }
-                .useDatabaseSchedulers()
+                .subscribeOn(schedulers.single)
+                .observeOn(schedulers.main)
                 .doOnError { database.close() }
                 .subscribe({ onVersionStatus(database, it, complete) }, { onConnectError(it); complete.invoke(null) })
     }
@@ -76,7 +78,8 @@ abstract class DatabaseConnector {
     private fun applyPendingUpgrades(database: MoneyDatabase, upgrades: PendingUpgrades, complete: DatabaseConnectionHandler) {
 
         Completable.fromRunnable { upgrades.apply() }
-                .useDatabaseSchedulers()
+                .subscribeOn(schedulers.single)
+                .observeOn(schedulers.main)
                 .doOnError { database.close() }
                 .subscribe({ complete.invoke(database) }, { onConnectError(it); complete.invoke(null) })
     }
