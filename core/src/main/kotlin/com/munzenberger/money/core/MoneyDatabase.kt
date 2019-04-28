@@ -5,8 +5,8 @@ import com.munzenberger.money.sql.QueryExecutor
 import com.munzenberger.money.sql.ResultSetHandler
 import com.munzenberger.money.sql.TransactionQueryExecutor
 import io.reactivex.Observable
+import io.reactivex.Observer
 import io.reactivex.subjects.PublishSubject
-import io.reactivex.subjects.Subject
 
 abstract class MoneyDatabase(
         val name: String,
@@ -34,7 +34,7 @@ abstract class MoneyDatabase(
 
 private class MoneyDatabaseTransactionExecutor(
         private val executor: TransactionQueryExecutor,
-        private val subject: Subject<Unit>? = null
+        private val subject: Observer<Unit>? = null
 ) : TransactionQueryExecutor by executor {
 
     override fun createTransaction(): TransactionQueryExecutor =
