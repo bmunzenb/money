@@ -36,13 +36,13 @@ class QueryViewModel {
 
     fun executeQuery() {
         queryString?.run {
-            result.subscribe(observableQuery(this))
+            result.subscribeTo(observableQuery(this))
         }
     }
 
     fun executeUpdate() {
         queryString?.run {
-            result.subscribe(observableUpdate(this))
+            result.subscribeTo(observableUpdate(this))
         }
     }
 

@@ -5,7 +5,6 @@ import com.munzenberger.money.sql.*
 import io.reactivex.Completable
 import io.reactivex.Single
 import java.sql.ResultSet
-import kotlin.random.Random
 
 class Account internal constructor(model: AccountModel) : Persistable<AccountModel>(model, AccountTable) {
 
@@ -54,19 +53,19 @@ class Account internal constructor(model: AccountModel) : Persistable<AccountMod
 
         val tx = executor.createTransaction()
 
-        val accountTypeIdentity = Persistable.getIdentity(accountType, tx) { model.accountType = it }
-        val bankIdentity = Persistable.getIdentity(bank, tx) { model.bank = it }
+        val getAccountTypeIdentity = getIdentity(accountType, tx) { model.accountType = it }
+        val getBankIdentity = getIdentity(bank, tx) { model.bank = it }
 
-        return concatAll(accountTypeIdentity, bankIdentity, super.save(tx)).withTransaction(tx)
+        return Completable.concatArray(getAccountTypeIdentity, getBankIdentity, super.save(tx)).withTransaction(tx)
     }
 
     companion object {
 
         fun getAll(executor: QueryExecutor) =
-                Persistable.getAll(executor, AccountTable, AccountResultSetMapper())
+                getAll(executor, AccountTable, AccountResultSetMapper())
 
         fun get(identity: Long, executor: QueryExecutor) =
-                Persistable.get(identity, executor, AccountTable, AccountResultSetMapper(), Account::class)
+                get(identity, executor, AccountTable, AccountResultSetMapper(), Account::class)
     }
 }
 

@@ -12,9 +12,9 @@ interface ReadOnlyAsyncObjectProperty<T> : ReadOnlyProperty<AsyncObject<T>>
 interface ReadOnlyAsyncStatusProperty : ReadOnlyAsyncObjectProperty<Unit>
 
 interface AsyncObjectProperty<T> : Property<AsyncObject<T>>, ReadOnlyAsyncObjectProperty<T> {
-    fun subscribe(single: Single<T>, schedulers: SchedulerProvider = SchedulerProvider.Default): Disposable
+    fun subscribeTo(single: Single<T>, schedulers: SchedulerProvider = SchedulerProvider.Default): Disposable
 }
 
 interface AsyncStatusProperty : AsyncObjectProperty<Unit>, ReadOnlyAsyncStatusProperty {
-    fun subscribe(completable: Completable, schedulers: SchedulerProvider = SchedulerProvider.Default): Disposable
+    fun subscribeTo(completable: Completable, schedulers: SchedulerProvider = SchedulerProvider.Default): Disposable
 }

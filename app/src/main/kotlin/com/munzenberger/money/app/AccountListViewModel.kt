@@ -27,16 +27,16 @@ class AccountListViewModel : AutoCloseable {
 
         retainListeners += totalBalance.bindAsync(accountsProperty) { list ->
 
-            val balances = list.map { it.balanceObservable }
+            val balanceObservables = list.map { it.balanceObservable }
 
-            val total = when {
-                balances.isEmpty() -> Single.just(Money.ZERO)
-                else -> Single.zip(balances) {
+            val totalObservable = when {
+                balanceObservables.isEmpty() -> Single.just(Money.ZERO)
+                else -> Single.zip(balanceObservables) {
                     it.fold(Money.ZERO) { acc, b -> acc.add(b as Money) }
                 }
             }
 
-            subscribe(total)
+            subscribeTo(totalObservable).also { disposables.add(it) }
         }
     }
 
@@ -46,13 +46,12 @@ class AccountListViewModel : AutoCloseable {
             it.map { a -> FXAccount(a, database) }
         }
 
-        accounts.subscribe(getAccounts)
+        accounts.subscribeTo(getAccounts)
 
-        val disposable = database.updateObservable
+        database.updateObservable
                 .observeOn(JavaFxScheduler.platform())
-                .subscribe { accounts.subscribe(getAccounts) }
-
-        disposables.add(disposable)
+                .subscribe { accounts.subscribeTo(getAccounts) }
+                .also { disposables.add(it) }
     }
 
     override fun close() {

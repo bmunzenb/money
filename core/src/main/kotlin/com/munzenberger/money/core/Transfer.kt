@@ -22,20 +22,20 @@ class Transfer internal constructor(model: TransferModel) : Persistable<Transfer
 
     var category: Category? = null
 
-    private val transaction = PersistableIdentityReference()
+    private val transactionRef = PersistableIdentityReference()
 
     fun setTransaction(transaction: Transaction) {
-        this.transaction.set(transaction)
+        this.transactionRef.set(transaction)
     }
 
     override fun save(executor: QueryExecutor): Completable {
 
         val tx = executor.createTransaction()
 
-        val transactionIdentity = transaction.getIdentity(tx) { model.transaction = it }
-        val categoryIdentity = Persistable.getIdentity(category, tx) { model.category = it }
+        val getTransactionIdentity = transactionRef.getIdentity(tx) { model.transaction = it }
+        val getCategoryIdentity = getIdentity(category, tx) { model.category = it }
 
-        return concatAll(transactionIdentity, categoryIdentity, super.save(tx)).withTransaction(tx)
+        return Completable.concatArray(getTransactionIdentity, getCategoryIdentity, super.save(tx)).withTransaction(tx)
     }
 
     companion object {

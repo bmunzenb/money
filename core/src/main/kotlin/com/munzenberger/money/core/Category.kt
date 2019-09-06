@@ -22,18 +22,18 @@ class Category internal constructor(model: CategoryModel) : Persistable<Category
 
         val tx = executor.createTransaction()
 
-        val accountIdentity = Persistable.getIdentity(account, tx) { model.account = it }
+        val getAccountIdentity = getIdentity(account, tx) { model.account = it }
 
-        return concatAll(accountIdentity, super.save(tx)).withTransaction(tx)
+        return Completable.concatArray(getAccountIdentity, super.save(tx)).withTransaction(tx)
     }
 
     companion object {
 
         fun getAll(executor: QueryExecutor) =
-                Persistable.getAll(executor, CategoryTable, CategoryResultSetMapper())
+                getAll(executor, CategoryTable, CategoryResultSetMapper())
 
         fun get(identity: Long, executor: QueryExecutor) =
-                Persistable.get(identity, executor, CategoryTable, CategoryResultSetMapper(), Category::class)
+                get(identity, executor, CategoryTable, CategoryResultSetMapper(), Category::class)
     }
 }
 

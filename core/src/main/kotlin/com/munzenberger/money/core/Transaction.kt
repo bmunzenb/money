@@ -29,19 +29,19 @@ class Transaction internal constructor(model: TransactionModel) : Persistable<Tr
 
         val tx = executor.createTransaction()
 
-        val accountIdentity = Persistable.getIdentity(account, tx) { model.account = it }
-        val payeeIdentity = Persistable.getIdentity(payee, tx) { model.payee = it }
+        val getAccountIdentity = getIdentity(account, tx) { model.account = it }
+        val getPayeeIdentity = getIdentity(payee, tx) { model.payee = it }
 
-        return concatAll(accountIdentity, payeeIdentity, super.save(tx)).withTransaction(tx)
+        return Completable.concatArray(getAccountIdentity, getPayeeIdentity, super.save(tx)).withTransaction(tx)
     }
 
     companion object {
 
         fun getAll(executor: QueryExecutor) =
-                Persistable.getAll(executor, TransactionTable, TransactionResultSetMapper())
+                getAll(executor, TransactionTable, TransactionResultSetMapper())
 
         fun get(identity: Long, executor: QueryExecutor) =
-                Persistable.get(identity, executor, TransactionTable, TransactionResultSetMapper(), Transaction::class)
+                get(identity, executor, TransactionTable, TransactionResultSetMapper(), Transaction::class)
     }
 }
 

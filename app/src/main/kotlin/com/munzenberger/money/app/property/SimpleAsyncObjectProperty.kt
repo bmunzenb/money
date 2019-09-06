@@ -9,7 +9,7 @@ import javafx.beans.property.SimpleObjectProperty
 open class SimpleAsyncObjectProperty<T>(value: AsyncObject<T> = AsyncObject.Pending())
     : SimpleObjectProperty<AsyncObject<T>>(value), AsyncObjectProperty<T> {
 
-    override fun subscribe(single: Single<T>, schedulers: SchedulerProvider): Disposable {
+    override fun subscribeTo(single: Single<T>, schedulers: SchedulerProvider): Disposable {
 
         set(AsyncObject.Executing())
 
@@ -23,7 +23,7 @@ open class SimpleAsyncObjectProperty<T>(value: AsyncObject<T> = AsyncObject.Pend
 class SimpleAsyncStatusProperty(value: AsyncObject<Unit> = AsyncObject.Pending())
     : SimpleAsyncObjectProperty<Unit>(value), AsyncStatusProperty {
 
-    override fun subscribe(completable: Completable, schedulers: SchedulerProvider): Disposable {
+    override fun subscribeTo(completable: Completable, schedulers: SchedulerProvider): Disposable {
 
         set(AsyncObject.Executing())
 

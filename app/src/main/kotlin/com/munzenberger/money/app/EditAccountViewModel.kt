@@ -36,7 +36,7 @@ class EditAccountViewModel {
 
         accountNameProperty.value = account.name
 
-        accountTypes.subscribe(AccountType.getAllForCategories(
+        accountTypes.subscribeTo(AccountType.getAllForCategories(
                 database,
                 AccountType.Category.ASSETS,
                 AccountType.Category.LIABILITIES))
@@ -45,7 +45,7 @@ class EditAccountViewModel {
 
         accountNumberProperty.value = account.number
 
-        banks.subscribe(Bank.getAll(database))
+        banks.subscribeTo(Bank.getAll(database))
 
         selectedBankProperty.value = account.bank
 
@@ -63,7 +63,7 @@ class EditAccountViewModel {
             number = accountNumberProperty.value
             bank = selectedBankProperty.value
 
-            saveStatus.subscribe(save(database))
+            saveStatus.subscribeTo(save(database))
         }
     }
 }

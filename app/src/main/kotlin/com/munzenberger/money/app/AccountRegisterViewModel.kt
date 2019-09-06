@@ -20,13 +20,12 @@ class AccountRegisterViewModel : AutoCloseable {
 
         val single = Account.get(accountIdentity, database)
 
-        account.subscribe(single)
+        account.subscribeTo(single)
 
-        val disposable = database.updateObservable
+        database.updateObservable
                 .observeOn(JavaFxScheduler.platform())
-                .subscribe { account.subscribe(single) }
-
-        disposables.add(disposable)
+                .subscribe { account.subscribeTo(single) }
+                .also { disposables.add(it) }
     }
 
     fun getAccount(block: (Account) -> Unit) = account.get().let {
