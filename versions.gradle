@@ -5,8 +5,7 @@ versions.junit = '4.12'
 versions.rxjava = '2.2.12'
 versions.h2 = '1.4.199'
 versions.sqlite = '3.28.0'
-versions.javafxplugin = '0.0.8'
 versions.javafx = '11.0.2'
-versions.rxjavafx = '2.2.2'
+versions.rxjavafx = '2.11.0-RC33'
 
 ext.versions = versions
