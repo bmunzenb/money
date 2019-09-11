@@ -19,6 +19,12 @@ allprojects {
 subprojects {
     apply plugin: 'kotlin'
 
+    compileKotlin {
+        kotlinOptions {
+            jvmTarget = "11"
+        }
+    }
+
     dependencies {
         implementation "org.jetbrains.kotlin:kotlin-stdlib"
 
