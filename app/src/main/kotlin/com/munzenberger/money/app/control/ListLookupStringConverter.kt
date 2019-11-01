@@ -12,6 +12,8 @@ class ListLookupStringConverter<T>(
             obj?.let { toString.invoke(it) } ?: ""
 
     override fun fromString(string: String?): T? =
-            if (string.isNullOrBlank()) null
-            else list.find { toString.invoke(it) == string } ?: toObject.invoke(string)
+            when {
+                string.isNullOrBlank() -> null
+                else -> list.find { toString.invoke(it) == string } ?: toObject.invoke(string)
+            }
 }

@@ -2,6 +2,7 @@ package com.munzenberger.money.app
 
 import com.munzenberger.money.app.navigation.LayoutControllerNavigation
 import com.munzenberger.money.app.property.AsyncObject
+import com.munzenberger.money.app.property.AsyncStatusProperty
 import com.munzenberger.money.app.property.bindAsync
 import com.munzenberger.money.app.property.bindAsyncStatus
 import com.munzenberger.money.core.MoneyDatabase
@@ -30,6 +31,7 @@ class AccountRegisterController : AutoCloseable {
 
     private lateinit var stage: Stage
     private lateinit var database: MoneyDatabase
+    private var accountIdentity: Long = -1
 
     private val viewModel = AccountRegisterViewModel()
     private val retainListeners = mutableListOf<ChangeListener<*>>()
@@ -50,11 +52,17 @@ class AccountRegisterController : AutoCloseable {
                 AsyncObject.Status.PENDING,
                 AsyncObject.Status.EXECUTING,
                 AsyncObject.Status.ERROR)
+
+        retainListeners += addTransactionButton.disableProperty().bindAsyncStatus(viewModel.accountProperty,
+                AsyncObject.Status.PENDING,
+                AsyncObject.Status.EXECUTING,
+                AsyncObject.Status.ERROR)
     }
 
     fun start(stage: Stage, database: MoneyDatabase, accountIdentity: Long) {
         this.stage = stage
         this.database = database
+        this.accountIdentity = accountIdentity
 
         viewModel.start(database, accountIdentity)
     }
@@ -70,10 +78,12 @@ class AccountRegisterController : AutoCloseable {
     }
 
     @FXML fun addTransaction() {
-        DialogBuilder.build(EditTransactionController.LAYOUT) { stage, controller: EditTransactionController ->
-            stage.title = addTransactionButton.text
-            stage.show()
-            controller.start(stage)
+        viewModel.getAccount {
+            DialogBuilder.build(EditTransactionController.LAYOUT) { stage, controller: EditTransactionController ->
+                stage.title = addTransactionButton.text
+                stage.show()
+                controller.start(stage, database, it)
+            }
         }
     }
 
