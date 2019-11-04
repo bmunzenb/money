@@ -4,6 +4,7 @@ import com.munzenberger.money.core.model.PayeeModel
 import com.munzenberger.money.core.model.PayeeTable
 import com.munzenberger.money.sql.QueryExecutor
 import com.munzenberger.money.sql.ResultSetMapper
+import io.reactivex.Single
 import java.sql.ResultSet
 
 class Payee internal constructor(model: PayeeModel) : Persistable<PayeeModel>(model, PayeeTable) {
@@ -17,10 +18,13 @@ class Payee internal constructor(model: PayeeModel) : Persistable<PayeeModel>(mo
     companion object {
 
         fun getAll(executor: QueryExecutor) =
-                Persistable.getAll(executor, PayeeTable, PayeeResultSetMapper())
+                getAll(executor, PayeeTable, PayeeResultSetMapper())
+
+        fun getAll(executor: QueryExecutor, orderBy: String, descending: Boolean = false) =
+                getAll(executor, PayeeTable, PayeeResultSetMapper(), orderBy, descending)
 
         fun get(identity: Long, executor: QueryExecutor) =
-                Persistable.get(identity, executor, PayeeTable, PayeeResultSetMapper(), Payee::class)
+                get(identity, executor, PayeeTable, PayeeResultSetMapper(), Payee::class)
     }
 }
 

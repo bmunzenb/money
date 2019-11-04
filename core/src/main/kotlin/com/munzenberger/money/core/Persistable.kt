@@ -66,12 +66,13 @@ abstract class Persistable<M : Model>(
         internal fun <M : Model, P : Persistable<M>> getAll(
                 executor: QueryExecutor,
                 table: Table<M>,
-                mapper: ResultSetMapper<P>
+                mapper: ResultSetMapper<P>,
+                orderBy: String = table.identityColumn,
+                descending: Boolean = false
         ) = Single.fromCallable {
-
-            val query = table.select().orderBy(table.identityColumn).build()
-
-            executor.getList(query, mapper)
+            table.select().orderBy(orderBy, descending).build().let {
+                executor.getList(it, mapper)
+            }
         }
 
         internal fun <M : Model, P : Persistable<M>> get(
@@ -83,9 +84,8 @@ abstract class Persistable<M : Model>(
         ) = Single.create<P> {
 
             val query = table.select(identity).build()
-            val persistable = executor.getFirst(query, mapper)
 
-            when (persistable) {
+            when (val persistable = executor.getFirst(query, mapper)) {
                 is P -> it.onSuccess(persistable)
                 else -> it.onError(PersistableNotFoundException(clazz, identity))
             }

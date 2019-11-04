@@ -13,6 +13,7 @@ import javafx.fxml.FXML
 import javafx.scene.Node
 import javafx.scene.control.Button
 import javafx.scene.control.ComboBox
+import javafx.scene.control.DatePicker
 import javafx.stage.Stage
 import java.net.URL
 
@@ -24,6 +25,8 @@ class EditTransactionController {
 
     @FXML lateinit var container: Node
     @FXML lateinit var accountComboBox: ComboBox<Account>
+    @FXML lateinit var typeComboBox: ComboBox<TransactionType>
+    @FXML lateinit var datePicker: DatePicker
     @FXML lateinit var payeeComboBox: ComboBox<Payee>
     @FXML lateinit var saveButton: Button
     @FXML lateinit var cancelButton: Button
@@ -51,6 +54,18 @@ class EditTransactionController {
                     AsyncObject.Status.EXECUTING,
                     AsyncObject.Status.ERROR)
         }
+
+        typeComboBox.apply {
+
+            cellFactory = ListCellFactory.text { it.name }
+            buttonCell = cellFactory.call(null)
+
+            items = viewModel.typesProperty
+
+            valueProperty().bindBidirectional(viewModel.selectedTypeProperty)
+        }
+
+        datePicker.valueProperty().bindBidirectional(viewModel.date)
 
         payeeComboBox.apply {
 

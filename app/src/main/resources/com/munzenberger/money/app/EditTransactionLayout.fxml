@@ -12,7 +12,7 @@
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.RowConstraints?>
 
-<GridPane fx:id="container" hgap="12.0" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" vgap="12.0" xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/11.0.1" fx:controller="com.munzenberger.money.app.EditTransactionController">
+<GridPane fx:id="container" hgap="12.0" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" vgap="12.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.munzenberger.money.app.EditTransactionController">
   <columnConstraints>
     <ColumnConstraints fillWidth="false" hgrow="NEVER" />
     <ColumnConstraints hgrow="SOMETIMES" prefWidth="400.0" />
@@ -31,9 +31,9 @@
       <Label text="Account:" />
       <ComboBox fx:id="accountComboBox" maxWidth="1.7976931348623157E308" GridPane.columnIndex="1" />
       <Label text="Type:" GridPane.rowIndex="1" />
-      <ComboBox GridPane.columnIndex="1" GridPane.rowIndex="1" />
+      <ComboBox fx:id="typeComboBox" GridPane.columnIndex="1" GridPane.rowIndex="1" />
       <Label text="Date:" GridPane.rowIndex="2" />
-      <DatePicker GridPane.columnIndex="1" GridPane.rowIndex="2" />
+      <DatePicker fx:id="datePicker" GridPane.columnIndex="1" GridPane.rowIndex="2" />
       <Label text="Payee:" GridPane.rowIndex="3" />
       <ComboBox fx:id="payeeComboBox" editable="true" maxWidth="1.7976931348623157E308" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS" GridPane.rowIndex="3" />
       <Label text="Category:" GridPane.rowIndex="4" />
