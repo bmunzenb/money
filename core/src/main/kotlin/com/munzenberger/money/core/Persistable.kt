@@ -15,7 +15,10 @@ abstract class Persistable<M : Model>(
     val identity: Long?
         get() = model.identity
 
-    open fun save(executor: QueryExecutor) = if (model.identity == null) insert(executor) else update(executor)
+    open fun save(executor: QueryExecutor) = when (model.identity) {
+        null -> insert(executor)
+        else -> update(executor)
+    }
 
     private fun insert(executor: QueryExecutor) = Completable.fromAction {
 

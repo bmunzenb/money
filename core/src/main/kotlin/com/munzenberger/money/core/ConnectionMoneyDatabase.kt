@@ -15,16 +15,16 @@ class ConnectionMoneyDatabase(
     private val logger = Logger.getLogger(ConnectionMoneyDatabase::class.java.simpleName)
 
     init {
-        logger.info("connected to money database: $name")
+        logger.info("Connected to money database: $name")
     }
 
     override fun close() {
         super.close()
         try {
             connection.close()
-            logger.info("closed connection to money database: $name")
+            logger.info("Closed connection to money database: $name")
         } catch (e: SQLException) {
-            logger.log(Level.WARNING, "failed to close connection to money database: $name", e)
+            logger.log(Level.WARNING, "Failed to close connection to money database: $name", e)
         }
     }
 }

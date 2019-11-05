@@ -11,7 +11,7 @@ object SQLExecutor {
     private val logger = Logger.getLogger(SQLExecutor::class.java.name)
 
     fun execute(connection: Connection, sql: String, parameters: List<Any?> = emptyList()): Boolean {
-        logger.log(Level.FINE, toString(sql, parameters))
+        logger.fine(toString(sql, parameters))
 
         return connection.prepareStatement(sql).use {
             it.setParameters(parameters)
@@ -30,7 +30,7 @@ object SQLExecutor {
     }
 
     fun executeUpdate(connection: Connection, sql: String, parameters: List<Any?> = emptyList(), handler: ResultSetHandler? = null): Int {
-        logger.log(Level.FINE, toString(sql, parameters))
+        logger.fine(toString(sql, parameters))
 
         return connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS).use {
             it.setParameters(parameters)
