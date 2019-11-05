@@ -18,13 +18,11 @@ class Category internal constructor(model: CategoryModel) : Persistable<Category
 
     var account: Account? = null
 
-    override fun save(executor: QueryExecutor): Completable {
-
-        val tx = executor.createTransaction()
+    override fun save(executor: QueryExecutor) = executor.transaction { tx ->
 
         val getAccountIdentity = getIdentity(account, tx) { model.account = it }
 
-        return Completable.concatArray(getAccountIdentity, super.save(tx)).withTransaction(tx)
+        Completable.concatArray(getAccountIdentity, super.save(tx))
     }
 
     companion object {

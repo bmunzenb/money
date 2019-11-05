@@ -28,23 +28,21 @@ class Transfer internal constructor(model: TransferModel) : Persistable<Transfer
         this.transactionRef.set(transaction)
     }
 
-    override fun save(executor: QueryExecutor): Completable {
-
-        val tx = executor.createTransaction()
+    override fun save(executor: QueryExecutor) = executor.transaction { tx ->
 
         val getTransactionIdentity = transactionRef.getIdentity(tx) { model.transaction = it }
         val getCategoryIdentity = getIdentity(category, tx) { model.category = it }
 
-        return Completable.concatArray(getTransactionIdentity, getCategoryIdentity, super.save(tx)).withTransaction(tx)
+        Completable.concatArray(getTransactionIdentity, getCategoryIdentity, super.save(tx))
     }
 
     companion object {
 
         fun getAll(executor: QueryExecutor) =
-                Persistable.getAll(executor, TransferTable, TransferResultSetMapper())
+                getAll(executor, TransferTable, TransferResultSetMapper())
 
         fun get(identity: Long, executor: QueryExecutor) =
-                Persistable.get(identity, executor, TransferTable, TransferResultSetMapper(), Transfer::class)
+                get(identity, executor, TransferTable, TransferResultSetMapper(), Transfer::class)
     }
 }
 

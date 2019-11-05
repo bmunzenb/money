@@ -49,14 +49,12 @@ class Account internal constructor(model: AccountModel) : Persistable<AccountMod
         Money.valueOf(balance)
     }
 
-    override fun save(executor: QueryExecutor): Completable {
-
-        val tx = executor.createTransaction()
+    override fun save(executor: QueryExecutor) = executor.transaction { tx ->
 
         val getAccountTypeIdentity = getIdentity(accountType, tx) { model.accountType = it }
         val getBankIdentity = getIdentity(bank, tx) { model.bank = it }
 
-        return Completable.concatArray(getAccountTypeIdentity, getBankIdentity, super.save(tx)).withTransaction(tx)
+        Completable.concatArray(getAccountTypeIdentity, getBankIdentity, super.save(tx))
     }
 
     companion object {
