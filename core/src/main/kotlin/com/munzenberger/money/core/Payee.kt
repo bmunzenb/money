@@ -4,7 +4,6 @@ import com.munzenberger.money.core.model.PayeeModel
 import com.munzenberger.money.core.model.PayeeTable
 import com.munzenberger.money.sql.QueryExecutor
 import com.munzenberger.money.sql.ResultSetMapper
-import io.reactivex.Single
 import java.sql.ResultSet
 
 class Payee internal constructor(model: PayeeModel) : Persistable<PayeeModel>(model, PayeeTable) {

@@ -20,7 +20,7 @@ subprojects {
     apply plugin: 'kotlin'
 
     dependencies {
-        implementation "org.jetbrains.kotlin:kotlin-stdlib"
+        implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
 
         testImplementation "junit:junit:$versions.junit"
     }
