@@ -30,10 +30,10 @@ class Transfer internal constructor(model: TransferModel) : Persistable<Transfer
 
     override fun save(executor: QueryExecutor) = executor.transaction { tx ->
 
-        val getTransactionIdentity = transactionRef.getIdentity(tx) { model.transaction = it }
-        val getCategoryIdentity = getIdentity(category, tx) { model.category = it }
-
-        Completable.concatArray(getTransactionIdentity, getCategoryIdentity, super.save(tx))
+        Completable.concatArray(
+                transactionRef.getIdentity(tx) { model.transaction = it },
+                category.getIdentity(tx) { model.category = it },
+                super.save(tx))
     }
 
     companion object {

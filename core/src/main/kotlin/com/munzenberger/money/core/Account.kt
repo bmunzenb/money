@@ -51,10 +51,10 @@ class Account internal constructor(model: AccountModel) : Persistable<AccountMod
 
     override fun save(executor: QueryExecutor) = executor.transaction { tx ->
 
-        val getAccountTypeIdentity = getIdentity(accountType, tx) { model.accountType = it }
-        val getBankIdentity = getIdentity(bank, tx) { model.bank = it }
-
-        Completable.concatArray(getAccountTypeIdentity, getBankIdentity, super.save(tx))
+        Completable.concatArray(
+                accountType.getIdentity(tx) { model.accountType = it },
+                bank.getIdentity(tx) { model.bank = it },
+                super.save(tx))
     }
 
     companion object {

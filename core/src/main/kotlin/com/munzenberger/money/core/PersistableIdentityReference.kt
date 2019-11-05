@@ -14,7 +14,7 @@ internal class PersistableIdentityReference {
     }
 
     fun getIdentity(executor: QueryExecutor, block: (Long?) -> Unit): Completable = when {
-        updated -> Persistable.getIdentity(value, executor, block)
+        updated -> value.getIdentity(executor, block)
         else -> Completable.complete()
     }
 }

@@ -27,10 +27,10 @@ class Transaction internal constructor(model: TransactionModel) : Persistable<Tr
 
     override fun save(executor: QueryExecutor) = executor.transaction { tx ->
 
-        val getAccountIdentity = getIdentity(account, tx) { model.account = it }
-        val getPayeeIdentity = getIdentity(payee, tx) { model.payee = it }
-
-        Completable.concatArray(getAccountIdentity, getPayeeIdentity, super.save(tx))
+        Completable.concatArray(
+                account.getIdentity(tx) { model.account = it },
+                payee.getIdentity(tx) { model.payee = it },
+                super.save(tx))
     }
 
     companion object {

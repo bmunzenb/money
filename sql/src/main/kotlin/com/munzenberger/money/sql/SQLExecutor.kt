@@ -9,9 +9,10 @@ import java.util.logging.Logger
 object SQLExecutor {
 
     private val logger = Logger.getLogger(SQLExecutor::class.java.name)
+    private val level = Level.INFO
 
     fun execute(connection: Connection, sql: String, parameters: List<Any?> = emptyList()): Boolean {
-        logger.fine(toString(sql, parameters))
+        logger.log(level, toString(sql, parameters))
 
         return connection.prepareStatement(sql).use {
             it.setParameters(parameters)
@@ -20,7 +21,7 @@ object SQLExecutor {
     }
 
     fun executeQuery(connection: Connection, sql: String, parameters: List<Any?> = emptyList(), handler: ResultSetHandler? = null) {
-        logger.log(Level.FINE, toString(sql, parameters))
+        logger.log(level, toString(sql, parameters))
 
         connection.prepareStatement(sql).use {
             it.setParameters(parameters)
@@ -30,7 +31,7 @@ object SQLExecutor {
     }
 
     fun executeUpdate(connection: Connection, sql: String, parameters: List<Any?> = emptyList(), handler: ResultSetHandler? = null): Int {
-        logger.fine(toString(sql, parameters))
+        logger.log(level, toString(sql, parameters))
 
         return connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS).use {
             it.setParameters(parameters)

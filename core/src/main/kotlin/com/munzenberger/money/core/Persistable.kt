@@ -15,12 +15,14 @@ abstract class Persistable<M : Model>(
     val identity: Long?
         get() = model.identity
 
-    open fun save(executor: QueryExecutor) = when (model.identity) {
-        null -> insert(executor)
-        else -> update(executor)
+    open fun save(executor: QueryExecutor) = Completable.fromAction {
+        when (model.identity) {
+            null -> insert(executor)
+            else -> update(executor)
+        }
     }
 
-    private fun insert(executor: QueryExecutor) = Completable.fromAction {
+    private fun insert(executor: QueryExecutor) {
 
         val query = table.insert(model).build()
         val handler = IdentityResultSetHandler()
@@ -30,14 +32,14 @@ abstract class Persistable<M : Model>(
         model.identity = handler.identity
     }
 
-    private fun update(executor: QueryExecutor) = Completable.fromAction {
+    private fun update(executor: QueryExecutor) {
 
         val query = table.update(model).build()
 
         executor.executeUpdate(query)
     }
 
-    fun delete(executor: QueryExecutor) = Completable.fromAction {
+    open fun delete(executor: QueryExecutor) = Completable.fromAction {
 
         val query = table.delete(model).build()
 
@@ -93,17 +95,17 @@ abstract class Persistable<M : Model>(
                 else -> it.onError(PersistableNotFoundException(clazz, identity))
             }
         }
-
-        internal fun getIdentity(persistable: Persistable<*>?, executor: QueryExecutor, block: (Long?) -> Unit) = when {
-
-            persistable == null ->
-                Completable.complete().doOnComplete { block(null) }
-
-            persistable.identity == null ->
-                persistable.save(executor).doOnComplete { block(persistable.identity) }
-
-            else ->
-                Completable.complete().doOnComplete { block(persistable.identity) }
-        }
     }
+}
+
+fun Persistable<*>?.getIdentity(executor: QueryExecutor, block: (Long?) -> Unit): Completable = when {
+
+    this == null ->
+        Completable.complete().doOnComplete { block.invoke(null) }
+
+    identity == null ->
+        save(executor).doOnComplete { block.invoke(identity) }
+
+    else ->
+        Completable.complete().doOnComplete { block.invoke(identity) }
 }

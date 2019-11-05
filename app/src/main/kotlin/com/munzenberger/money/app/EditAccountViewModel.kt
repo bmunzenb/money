@@ -1,10 +1,7 @@
 package com.munzenberger.money.app
 
 import com.munzenberger.money.app.property.*
-import com.munzenberger.money.core.Account
-import com.munzenberger.money.core.AccountType
-import com.munzenberger.money.core.Bank
-import com.munzenberger.money.core.MoneyDatabase
+import com.munzenberger.money.core.*
 import javafx.beans.property.ReadOnlyBooleanProperty
 import javafx.beans.property.SimpleBooleanProperty
 import javafx.beans.property.SimpleObjectProperty
@@ -54,16 +51,24 @@ class EditAccountViewModel {
 
     fun save() {
 
-        saveStatus.set(AsyncObject.Executing())
-
         account.apply {
-
             name = accountNameProperty.value
             accountType = selectedAccountTypeProperty.value
             number = accountNumberProperty.value
             bank = selectedBankProperty.value
-
-            saveStatus.subscribeTo(save(database))
         }
+
+        val save = when (account.identity) {
+            null -> {
+                // if the account doesn't already exist, create it via
+                // a category to support transfers between accounts
+                val category = Category()
+                category.account = account
+                category.save(database)
+            }
+            else -> account.save(database)
+        }
+
+        saveStatus.subscribeTo(save)
     }
 }

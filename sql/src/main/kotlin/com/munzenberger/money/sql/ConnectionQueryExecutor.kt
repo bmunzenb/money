@@ -2,6 +2,7 @@ package com.munzenberger.money.sql
 
 import java.sql.Connection
 import java.util.concurrent.atomic.AtomicInteger
+import java.util.logging.Level
 import java.util.logging.Logger
 
 open class ConnectionQueryExecutor(private val connection: Connection) : QueryExecutor {
@@ -28,6 +29,7 @@ private class ManagedTransactionQueryExecutor(
 ) : TransactionQueryExecutor, QueryExecutor by executor {
 
     private val logger = Logger.getLogger(ManagedTransactionQueryExecutor::class.java.name)
+    private val level = Level.INFO
 
     private var autoCommit = connection.autoCommit
     private var semaphore = AtomicInteger(0)
@@ -37,11 +39,11 @@ private class ManagedTransactionQueryExecutor(
 
         when (val n = semaphore.getAndIncrement()) {
             0 -> {
-                logger.fine("Start transaction")
+                logger.log(level, "Start transaction")
                 autoCommit = connection.autoCommit
                 connection.autoCommit = false
             }
-            else -> logger.fine("Start nested transaction: $n")
+            else -> logger.log(level, "Start nested transaction: $n")
         }
 
         return this
@@ -52,11 +54,11 @@ private class ManagedTransactionQueryExecutor(
 
         when (val n = semaphore.decrementAndGet()) {
             0 -> {
-                logger.fine("Commit transaction")
+                logger.log(level, "Commit transaction")
                 connection.commit()
                 connection.autoCommit = autoCommit
             }
-            else -> logger.fine("Delayed commit for nested transaction: $n")
+            else -> logger.log(level, "Delayed commit for nested transaction: $n")
         }
     }
 
@@ -65,11 +67,11 @@ private class ManagedTransactionQueryExecutor(
 
         when (val n = semaphore.decrementAndGet()) {
             0 -> {
-                logger.fine("Rollback transaction")
+                logger.log(level, "Rollback transaction")
                 connection.rollback()
                 connection.autoCommit = autoCommit
             }
-            else -> logger.fine("Delayed rollback for nested transaction: $n")
+            else -> logger.log(level, "Delayed rollback for nested transaction: $n")
         }
     }
 }
