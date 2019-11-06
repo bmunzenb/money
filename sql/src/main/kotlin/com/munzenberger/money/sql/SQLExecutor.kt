@@ -9,7 +9,7 @@ import java.util.logging.Logger
 object SQLExecutor {
 
     private val logger = Logger.getLogger(SQLExecutor::class.java.name)
-    private val level = Level.INFO
+    private val level = Level.FINE
 
     fun execute(connection: Connection, sql: String, parameters: List<Any?> = emptyList()): Boolean {
         logger.log(level, toString(sql, parameters))

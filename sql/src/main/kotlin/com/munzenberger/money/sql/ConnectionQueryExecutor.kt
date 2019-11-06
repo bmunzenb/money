@@ -29,7 +29,7 @@ private class ManagedTransactionQueryExecutor(
 ) : TransactionQueryExecutor, QueryExecutor by executor {
 
     private val logger = Logger.getLogger(ManagedTransactionQueryExecutor::class.java.name)
-    private val level = Level.INFO
+    private val level = Level.FINE
 
     private var autoCommit = connection.autoCommit
     private var semaphore = AtomicInteger(0)
