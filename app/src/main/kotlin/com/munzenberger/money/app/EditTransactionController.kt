@@ -5,6 +5,7 @@ import com.munzenberger.money.app.property.AsyncObject
 import com.munzenberger.money.app.property.bindAsync
 import com.munzenberger.money.app.property.bindAsyncStatus
 import com.munzenberger.money.core.Account
+import com.munzenberger.money.core.Category
 import com.munzenberger.money.core.MoneyDatabase
 import com.munzenberger.money.core.Payee
 import javafx.beans.value.ChangeListener
@@ -28,6 +29,7 @@ class EditTransactionController {
     @FXML lateinit var typeComboBox: ComboBox<TransactionType>
     @FXML lateinit var datePicker: DatePicker
     @FXML lateinit var payeeComboBox: ComboBox<Payee>
+    @FXML lateinit var categoryComboBox: ComboBox<Category>
     @FXML lateinit var saveButton: Button
     @FXML lateinit var cancelButton: Button
 
@@ -65,7 +67,7 @@ class EditTransactionController {
             valueProperty().bindBidirectional(viewModel.selectedTypeProperty)
         }
 
-        datePicker.valueProperty().bindBidirectional(viewModel.date)
+        datePicker.valueProperty().bindBidirectional(viewModel.dateProperty)
 
         payeeComboBox.apply {
 
@@ -80,7 +82,25 @@ class EditTransactionController {
 
             valueProperty().bindBidirectional(viewModel.selectedPayeeProperty)
 
-            retainListeners += disableProperty().bindAsyncStatus(viewModel.accountsProperty,
+            retainListeners += disableProperty().bindAsyncStatus(viewModel.payeesProperty,
+                    AsyncObject.Status.PENDING,
+                    AsyncObject.Status.EXECUTING,
+                    AsyncObject.Status.ERROR)
+        }
+
+        categoryComboBox.apply {
+
+            // TODO: properly format the category
+            cellFactory = ListCellFactory.text { "${it.account?.name} : ${it.name}" }
+            buttonCell = cellFactory.call(null)
+
+            items = FXCollections.observableArrayList<Category>().apply {
+                retainListeners += bindAsync(viewModel.categoriesProperty)
+            }
+
+            valueProperty().bindBidirectional(viewModel.selectedCategoryProperty)
+
+            retainListeners += disableProperty().bindAsyncStatus(viewModel.categoriesProperty,
                     AsyncObject.Status.PENDING,
                     AsyncObject.Status.EXECUTING,
                     AsyncObject.Status.ERROR)
@@ -102,6 +122,7 @@ class EditTransactionController {
     }
 
     @FXML fun onCancelButton() {
+        viewModel.close()
         stage.close()
     }
 }

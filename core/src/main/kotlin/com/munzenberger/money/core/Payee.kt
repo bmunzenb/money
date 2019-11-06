@@ -19,9 +19,6 @@ class Payee internal constructor(model: PayeeModel) : Persistable<PayeeModel>(mo
         fun getAll(executor: QueryExecutor) =
                 getAll(executor, PayeeTable, PayeeResultSetMapper())
 
-        fun getAll(executor: QueryExecutor, orderBy: String, descending: Boolean = false) =
-                getAll(executor, PayeeTable, PayeeResultSetMapper(), orderBy, descending)
-
         fun get(identity: Long, executor: QueryExecutor) =
                 get(identity, executor, PayeeTable, PayeeResultSetMapper(), Payee::class)
     }

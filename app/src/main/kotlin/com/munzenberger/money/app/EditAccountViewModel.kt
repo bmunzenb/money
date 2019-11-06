@@ -42,7 +42,9 @@ class EditAccountViewModel {
 
         accountNumberProperty.value = account.number
 
-        banks.subscribeTo(Bank.getAll(database))
+        banks.subscribeTo(Bank.getAll(database).map {
+            it.sortedBy { b -> b.name }
+        })
 
         selectedBankProperty.value = account.bank
 
