@@ -5,6 +5,7 @@ import com.munzenberger.money.app.property.ReadOnlyAsyncObjectProperty
 import com.munzenberger.money.app.property.SimpleAsyncObjectProperty
 import com.munzenberger.money.app.property.bindAsync
 import com.munzenberger.money.core.Account
+import com.munzenberger.money.core.AccountType
 import com.munzenberger.money.core.Money
 import com.munzenberger.money.core.MoneyDatabase
 import io.reactivex.Single
@@ -42,9 +43,7 @@ class AccountListViewModel : AutoCloseable {
 
     fun start(database: MoneyDatabase) {
 
-        val getAccounts = Account.getAll(database).map {
-            it.map { a -> FXAccount(a, database) }
-        }
+        val getAccounts = FXAccount.getAssetsAndLiabilities(database)
 
         accounts.subscribeTo(getAccounts)
 

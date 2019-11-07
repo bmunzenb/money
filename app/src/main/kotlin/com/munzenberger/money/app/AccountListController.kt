@@ -46,6 +46,7 @@ class AccountListController : AutoCloseable {
 
         tableView.apply {
 
+            // TODO: keep the data in the table sorted when it's refreshed
             items = FXCollections.observableArrayList<FXAccount>().apply {
                 retainListeners += bindAsync(viewModel.accountsProperty)
             }

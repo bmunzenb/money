@@ -1,5 +1,6 @@
 package com.munzenberger.money.app
 
+import com.munzenberger.money.app.model.getAllSorted
 import com.munzenberger.money.app.property.*
 import com.munzenberger.money.core.*
 import javafx.beans.property.ReadOnlyBooleanProperty
@@ -42,9 +43,7 @@ class EditAccountViewModel {
 
         accountNumberProperty.value = account.number
 
-        banks.subscribeTo(Bank.getAll(database).map {
-            it.sortedBy { b -> b.name }
-        })
+        banks.subscribeTo(Bank.getAllSorted(database))
 
         selectedBankProperty.value = account.bank
 

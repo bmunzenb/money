@@ -61,8 +61,8 @@ fun String.isNotNull() = Condition.isNotNull(this)
 
 fun String.inGroup(values: List<Any>) = Condition.inGroup(this, values)
 
-fun String.inGroup(vararg values: Any) = Condition.inGroup(this, values)
+fun String.inGroup(vararg values: Any) = Condition.inGroup(this, *values)
 
 fun String.notInGroup(values: List<Any>) = Condition.notInGroup(this, values)
 
-fun String.notInGroup(vararg values: Any) = Condition.notInGroup(this, values)
+fun String.notInGroup(vararg values: Any) = Condition.notInGroup(this, *values)

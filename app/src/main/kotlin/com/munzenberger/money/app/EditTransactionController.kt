@@ -1,6 +1,7 @@
 package com.munzenberger.money.app
 
 import com.munzenberger.money.app.control.ListLookupStringConverter
+import com.munzenberger.money.app.model.FXCategory
 import com.munzenberger.money.app.property.AsyncObject
 import com.munzenberger.money.app.property.bindAsync
 import com.munzenberger.money.app.property.bindAsyncStatus
@@ -29,7 +30,7 @@ class EditTransactionController {
     @FXML lateinit var typeComboBox: ComboBox<TransactionType>
     @FXML lateinit var datePicker: DatePicker
     @FXML lateinit var payeeComboBox: ComboBox<Payee>
-    @FXML lateinit var categoryComboBox: ComboBox<Category>
+    @FXML lateinit var categoryComboBox: ComboBox<FXCategory>
     @FXML lateinit var saveButton: Button
     @FXML lateinit var cancelButton: Button
 
@@ -90,11 +91,10 @@ class EditTransactionController {
 
         categoryComboBox.apply {
 
-            // TODO: properly format the category
-            cellFactory = ListCellFactory.text { "${it.account?.name} : ${it.name}" }
+            cellFactory = ListCellFactory.text { it.transactionalName }
             buttonCell = cellFactory.call(null)
 
-            items = FXCollections.observableArrayList<Category>().apply {
+            items = FXCollections.observableArrayList<FXCategory>().apply {
                 retainListeners += bindAsync(viewModel.categoriesProperty)
             }
 
@@ -105,6 +105,8 @@ class EditTransactionController {
                     AsyncObject.Status.EXECUTING,
                     AsyncObject.Status.ERROR)
         }
+
+        saveButton.disableProperty().bind(viewModel.notValidProperty)
     }
 
     fun start(stage: Stage, database: MoneyDatabase, account: Account) {
