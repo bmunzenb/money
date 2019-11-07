@@ -1,5 +1,7 @@
 package com.munzenberger.money.app
 
+import com.munzenberger.money.app.model.DelayedCategory
+import com.munzenberger.money.app.model.RealCategory
 import com.munzenberger.money.app.model.getAllSorted
 import com.munzenberger.money.app.model.getAssetsAndLiabilities
 import com.munzenberger.money.app.property.ReadOnlyAsyncObjectProperty
@@ -14,7 +16,7 @@ class EditTransactionViewModel : AutoCloseable {
     private val accounts = SimpleAsyncObjectProperty<List<Account>>()
     private val payees = SimpleAsyncObjectProperty<List<Payee>>()
     private val types = FXCollections.observableArrayList<TransactionType>()
-    private val categories = SimpleAsyncObjectProperty<List<Category>>()
+    private val categories = SimpleAsyncObjectProperty<List<DelayedCategory>>()
     private val notValid = SimpleBooleanProperty()
 
     val accountsProperty: ReadOnlyAsyncObjectProperty<List<Account>> = accounts
@@ -24,8 +26,8 @@ class EditTransactionViewModel : AutoCloseable {
     val dateProperty = SimpleObjectProperty<LocalDate>()
     val payeesProperty: ReadOnlyAsyncObjectProperty<List<Payee>> = payees
     val selectedPayeeProperty = SimpleObjectProperty<Payee?>()
-    val categoriesProperty: ReadOnlyAsyncObjectProperty<List<Category>> = categories
-    val selectedCategoryProperty = SimpleObjectProperty<Category?>()
+    val categoriesProperty: ReadOnlyAsyncObjectProperty<List<DelayedCategory>> = categories
+    val selectedCategoryProperty = SimpleObjectProperty<DelayedCategory?>()
     val amountProperty = SimpleObjectProperty<Money>()
     val notValidProperty: ReadOnlyBooleanProperty = notValid
 
@@ -49,7 +51,9 @@ class EditTransactionViewModel : AutoCloseable {
 
         payees.subscribeTo(Payee.getAllSorted(database))
 
-        categories.subscribeTo(Category.getAll(database))
+        categories.subscribeTo(Category.getAll(database).map {
+            it.map { c -> RealCategory(c) }
+        })
     }
 
     override fun close() {

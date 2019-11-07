@@ -1,11 +1,12 @@
 package com.munzenberger.money.app
 
 import com.munzenberger.money.app.control.ListLookupStringConverter
+import com.munzenberger.money.app.model.DelayedCategory
+import com.munzenberger.money.app.model.PendingCategory
 import com.munzenberger.money.app.property.AsyncObject
 import com.munzenberger.money.app.property.bindAsync
 import com.munzenberger.money.app.property.bindAsyncStatus
 import com.munzenberger.money.core.Account
-import com.munzenberger.money.core.Category
 import com.munzenberger.money.core.MoneyDatabase
 import com.munzenberger.money.core.Payee
 import javafx.beans.value.ChangeListener
@@ -29,7 +30,7 @@ class EditTransactionController {
     @FXML lateinit var typeComboBox: ComboBox<TransactionType>
     @FXML lateinit var datePicker: DatePicker
     @FXML lateinit var payeeComboBox: ComboBox<Payee>
-    @FXML lateinit var categoryComboBox: ComboBox<Category>
+    @FXML lateinit var categoryComboBox: ComboBox<DelayedCategory>
     @FXML lateinit var categorySplitButton: Button
     @FXML lateinit var saveButton: Button
     @FXML lateinit var cancelButton: Button
@@ -37,7 +38,6 @@ class EditTransactionController {
     private lateinit var stage: Stage
 
     private val viewModel = EditTransactionViewModel()
-    private val categoryStringConverter = TransactionCategoryStringConverter()
     private val retainListeners = mutableListOf<ChangeListener<*>>()
 
     fun initialize() {
@@ -92,14 +92,14 @@ class EditTransactionController {
 
         categoryComboBox.apply {
 
-            cellFactory = ListCellFactory.text { categoryStringConverter.toString(it) }
+            cellFactory = ListCellFactory.text { it.name }
             buttonCell = cellFactory.call(null)
 
-            items = FXCollections.observableArrayList<Category>().apply {
+            items = FXCollections.observableArrayList<DelayedCategory>().apply {
                 retainListeners += bindAsync(viewModel.categoriesProperty)
             }
 
-            converter = ListLookupStringConverter(items, categoryStringConverter)
+            converter = ListLookupStringConverter(items, { it.name }, { PendingCategory(it) })
 
             valueProperty().bindBidirectional(viewModel.selectedCategoryProperty)
 
@@ -123,8 +123,6 @@ class EditTransactionController {
         stage.minWidth = stage.width
         stage.minHeight = stage.height
         stage.maxHeight = stage.height
-
-        this.categoryStringConverter.database = database
 
         viewModel.start(database, account)
     }
