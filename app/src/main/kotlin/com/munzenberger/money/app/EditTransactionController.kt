@@ -1,7 +1,6 @@
 package com.munzenberger.money.app
 
 import com.munzenberger.money.app.control.ListLookupStringConverter
-import com.munzenberger.money.app.model.FXCategory
 import com.munzenberger.money.app.property.AsyncObject
 import com.munzenberger.money.app.property.bindAsync
 import com.munzenberger.money.app.property.bindAsyncStatus
@@ -30,13 +29,15 @@ class EditTransactionController {
     @FXML lateinit var typeComboBox: ComboBox<TransactionType>
     @FXML lateinit var datePicker: DatePicker
     @FXML lateinit var payeeComboBox: ComboBox<Payee>
-    @FXML lateinit var categoryComboBox: ComboBox<FXCategory>
+    @FXML lateinit var categoryComboBox: ComboBox<Category>
+    @FXML lateinit var categorySplitButton: Button
     @FXML lateinit var saveButton: Button
     @FXML lateinit var cancelButton: Button
 
     private lateinit var stage: Stage
 
     private val viewModel = EditTransactionViewModel()
+    private val categoryStringConverter = TransactionCategoryStringConverter()
     private val retainListeners = mutableListOf<ChangeListener<*>>()
 
     fun initialize() {
@@ -91,12 +92,14 @@ class EditTransactionController {
 
         categoryComboBox.apply {
 
-            cellFactory = ListCellFactory.text { it.transactionalName }
+            cellFactory = ListCellFactory.text { categoryStringConverter.toString(it) }
             buttonCell = cellFactory.call(null)
 
-            items = FXCollections.observableArrayList<FXCategory>().apply {
+            items = FXCollections.observableArrayList<Category>().apply {
                 retainListeners += bindAsync(viewModel.categoriesProperty)
             }
+
+            converter = ListLookupStringConverter(items, categoryStringConverter)
 
             valueProperty().bindBidirectional(viewModel.selectedCategoryProperty)
 
@@ -105,6 +108,11 @@ class EditTransactionController {
                     AsyncObject.Status.EXECUTING,
                     AsyncObject.Status.ERROR)
         }
+
+        retainListeners += categorySplitButton.disableProperty().bindAsyncStatus(viewModel.categoriesProperty,
+                AsyncObject.Status.PENDING,
+                AsyncObject.Status.EXECUTING,
+                AsyncObject.Status.ERROR)
 
         saveButton.disableProperty().bind(viewModel.notValidProperty)
     }
@@ -116,7 +124,13 @@ class EditTransactionController {
         stage.minHeight = stage.height
         stage.maxHeight = stage.height
 
+        this.categoryStringConverter.database = database
+
         viewModel.start(database, account)
+    }
+
+    @FXML fun onCategorySplitButton() {
+
     }
 
     @FXML fun onSaveButton() {
