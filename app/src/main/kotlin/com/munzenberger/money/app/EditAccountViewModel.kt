@@ -1,6 +1,7 @@
 package com.munzenberger.money.app
 
 import com.munzenberger.money.app.model.getAllSorted
+import com.munzenberger.money.app.model.getForCategories
 import com.munzenberger.money.app.property.*
 import com.munzenberger.money.core.*
 import javafx.beans.property.ReadOnlyBooleanProperty
@@ -34,7 +35,7 @@ class EditAccountViewModel {
 
         accountNameProperty.value = account.name
 
-        accountTypes.subscribeTo(AccountType.getAllForCategories(
+        accountTypes.subscribeTo(AccountType.getForCategories(
                 database,
                 AccountType.Category.ASSETS,
                 AccountType.Category.LIABILITIES))

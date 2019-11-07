@@ -11,8 +11,10 @@ import io.reactivex.Single
 
 fun Account.Companion.getAssetsAndLiabilities(database: MoneyDatabase) = Single.fromCallable {
 
+    val categories = listOf(AccountType.Category.ASSETS, AccountType.Category.LIABILITIES).map { it.name }
+
     val query = AccountTable.select()
-            .where(AccountTypeTable.categoryColumn.inGroup(AccountType.Category.ASSETS, AccountType.Category.LIABILITIES))
+            .where(AccountTypeTable.categoryColumn.inGroup(categories))
             .orderBy(AccountTable.nameColumn)
             .build()
 
