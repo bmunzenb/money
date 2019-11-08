@@ -1,5 +1,7 @@
 package com.munzenberger.money.app
 
+import com.munzenberger.money.app.control.AsyncTableViewCellFactory
+import com.munzenberger.money.app.control.TableCellFactory
 import com.munzenberger.money.app.model.FXAccount
 import com.munzenberger.money.app.model.FXAccountType
 import com.munzenberger.money.app.navigation.Navigator

@@ -1,5 +1,6 @@
 package com.munzenberger.money.app
 
+import com.munzenberger.money.app.control.ListCellFactory
 import com.munzenberger.money.app.control.ListLookupStringConverter
 import com.munzenberger.money.app.model.DelayedCategory
 import com.munzenberger.money.app.model.PendingCategory

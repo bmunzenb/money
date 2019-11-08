@@ -1,4 +1,4 @@
-package com.munzenberger.money.app
+package com.munzenberger.money.app.control
 
 import javafx.scene.control.ListCell
 import javafx.scene.control.ListView

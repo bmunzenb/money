@@ -1,4 +1,4 @@
-package com.munzenberger.money.app
+package com.munzenberger.money.app.control
 
 import com.munzenberger.money.app.property.AsyncObject
 import javafx.scene.control.Label
