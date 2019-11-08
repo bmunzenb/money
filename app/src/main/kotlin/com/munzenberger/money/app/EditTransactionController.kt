@@ -138,6 +138,16 @@ class EditTransactionController {
         memoTextField.textProperty().bindBidirectional(viewModel.memoProperty)
 
         saveButton.disableProperty().bind(viewModel.notValidProperty)
+
+        container.disableProperty().bindAsyncStatus(viewModel.saveStatusProperty, AsyncObject.Status.EXECUTING)
+
+        viewModel.saveStatusProperty.addListener { _, _, status ->
+            when (status) {
+                is AsyncObject.Complete -> onCancelButton()
+                is AsyncObject.Error -> ErrorAlert.showAndWait(status.error)
+                else -> {}
+            }
+        }
     }
 
     fun start(stage: Stage, database: MoneyDatabase, account: Account) {
@@ -155,7 +165,7 @@ class EditTransactionController {
     }
 
     @FXML fun onSaveButton() {
-
+        viewModel.save()
     }
 
     @FXML fun onCancelButton() {

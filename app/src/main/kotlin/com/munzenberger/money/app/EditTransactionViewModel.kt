@@ -1,11 +1,10 @@
 package com.munzenberger.money.app
 
-import com.munzenberger.money.app.model.DelayedCategory
-import com.munzenberger.money.app.model.RealCategory
-import com.munzenberger.money.app.model.getAllSorted
-import com.munzenberger.money.app.model.getAssetsAndLiabilities
+import com.munzenberger.money.app.model.*
 import com.munzenberger.money.app.property.ReadOnlyAsyncObjectProperty
+import com.munzenberger.money.app.property.ReadOnlyAsyncStatusProperty
 import com.munzenberger.money.app.property.SimpleAsyncObjectProperty
+import com.munzenberger.money.app.property.SimpleAsyncStatusProperty
 import com.munzenberger.money.core.*
 import javafx.beans.property.*
 import javafx.collections.FXCollections
@@ -17,6 +16,7 @@ class EditTransactionViewModel : AutoCloseable {
     private val payees = SimpleAsyncObjectProperty<List<Payee>>()
     private val types = FXCollections.observableArrayList<TransactionType>()
     private val categories = SimpleAsyncObjectProperty<List<DelayedCategory>>()
+    private val saveStatus = SimpleAsyncStatusProperty()
     private val notValid = SimpleBooleanProperty()
 
     val accountsProperty: ReadOnlyAsyncObjectProperty<List<Account>> = accounts
@@ -30,7 +30,11 @@ class EditTransactionViewModel : AutoCloseable {
     val selectedCategoryProperty = SimpleObjectProperty<DelayedCategory?>()
     val amountProperty = SimpleObjectProperty<Money>()
     val memoProperty = SimpleStringProperty()
+    val saveStatusProperty: ReadOnlyAsyncStatusProperty = saveStatus
     val notValidProperty: ReadOnlyBooleanProperty = notValid
+
+    private lateinit var database: MoneyDatabase
+    private lateinit var transaction: Transaction
 
     init {
         notValid.bind(selectedAccountProperty.isNull
@@ -41,6 +45,9 @@ class EditTransactionViewModel : AutoCloseable {
     }
 
     fun start(database: MoneyDatabase, account: Account) {
+
+        this.database = database
+        this.transaction = Transaction()
 
         selectedAccountProperty.value = account
 
@@ -55,6 +62,18 @@ class EditTransactionViewModel : AutoCloseable {
         categories.subscribeTo(Category.getAll(database).map {
             it.map { c -> RealCategory(c) }
         })
+    }
+
+    fun save() {
+
+        transaction.apply {
+            account = selectedAccountProperty.value
+            date = dateProperty.value.toDate()
+            payee = selectedPayeeProperty.value
+            memo = memoProperty.value
+        }
+
+        saveStatus.subscribeTo(transaction.save(database))
     }
 
     override fun close() {
