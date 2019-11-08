@@ -4,7 +4,7 @@ import javafx.util.StringConverter
 
 class BlockStringConverter<T>(
         private val toString: (T) -> String?,
-        private val toObject: (String) -> T
+        private val toObject: (String) -> T?
 ) : StringConverter<T>() {
 
     override fun toString(obj: T?): String =

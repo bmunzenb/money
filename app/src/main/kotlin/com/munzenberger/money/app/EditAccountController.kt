@@ -43,7 +43,7 @@ class EditAccountController {
 
         accountTypeComboBox.apply {
 
-            cellFactory = ListCellFactory.text { it.name }
+            cellFactory = ListCellFactory.text(AccountType::name)
             buttonCell = cellFactory.call(null)
 
             items.bindAsync(viewModel.accountTypesProperty)
@@ -60,9 +60,9 @@ class EditAccountController {
 
         bankComboBox.apply {
 
-            val bankConverter = BlockStringConverter({ it.name }, { Bank().apply { name = it } })
+            val bankConverter = BlockStringConverter(Bank::name) { Bank().apply { name = it } }
 
-            cellFactory = ListCellFactory.text { bankConverter.toString(it) }
+            cellFactory = ListCellFactory.text(bankConverter::toString)
 
             items.bindAsync(viewModel.banksProperty)
 

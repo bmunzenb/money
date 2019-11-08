@@ -10,15 +10,15 @@ import com.munzenberger.money.app.property.AsyncObject
 import com.munzenberger.money.app.property.bindAsync
 import com.munzenberger.money.app.property.bindAsyncStatus
 import com.munzenberger.money.core.Account
+import com.munzenberger.money.core.Money
 import com.munzenberger.money.core.MoneyDatabase
 import com.munzenberger.money.core.Payee
 import javafx.fxml.FXML
 import javafx.scene.Node
-import javafx.scene.control.Button
-import javafx.scene.control.ComboBox
-import javafx.scene.control.DatePicker
+import javafx.scene.control.*
 import javafx.stage.Stage
 import java.net.URL
+import java.text.ParseException
 
 class EditTransactionController {
 
@@ -33,6 +33,8 @@ class EditTransactionController {
     @FXML lateinit var payeeComboBox: ComboBox<Payee>
     @FXML lateinit var categoryComboBox: ComboBox<DelayedCategory>
     @FXML lateinit var categorySplitButton: Button
+    @FXML lateinit var amountTextField: TextField
+    @FXML lateinit var memoTextField: TextField
     @FXML lateinit var saveButton: Button
     @FXML lateinit var cancelButton: Button
 
@@ -44,7 +46,7 @@ class EditTransactionController {
 
         accountComboBox.apply {
 
-            cellFactory = ListCellFactory.text { it.name }
+            cellFactory = ListCellFactory.text(Account::name)
             buttonCell = cellFactory.call(null)
 
             items.bindAsync(viewModel.accountsProperty)
@@ -59,7 +61,7 @@ class EditTransactionController {
 
         typeComboBox.apply {
 
-            cellFactory = ListCellFactory.text { it.name }
+            cellFactory = ListCellFactory.text(TransactionType::name)
             buttonCell = cellFactory.call(null)
 
             items = viewModel.typesProperty
@@ -71,9 +73,9 @@ class EditTransactionController {
 
         payeeComboBox.apply {
 
-            val payeeConverter = BlockStringConverter( { it.name }, { Payee().apply { name = it } })
+            val payeeConverter = BlockStringConverter(Payee::name) { Payee().apply { name = it } }
 
-            cellFactory = ListCellFactory.text { payeeConverter.toString(it) }
+            cellFactory = ListCellFactory.text(payeeConverter::toString)
             buttonCell = cellFactory.call(null)
 
             items.bindAsync(viewModel.payeesProperty)
@@ -92,9 +94,9 @@ class EditTransactionController {
 
         categoryComboBox.apply {
 
-            val categoryConverter = BlockStringConverter<DelayedCategory>( { it.name }, { PendingCategory(it) })
+            val categoryConverter = BlockStringConverter<DelayedCategory>(DelayedCategory::name) { PendingCategory(it) }
 
-            cellFactory = ListCellFactory.text { categoryConverter.toString(it) }
+            cellFactory = ListCellFactory.text(categoryConverter::toString)
             buttonCell = cellFactory.call(null)
 
             items.bindAsync(viewModel.categoriesProperty)
@@ -115,6 +117,25 @@ class EditTransactionController {
                 AsyncObject.Status.PENDING,
                 AsyncObject.Status.EXECUTING,
                 AsyncObject.Status.ERROR)
+
+        amountTextField.apply {
+
+            val toMoney: (String) -> Money? = {
+                try {
+                    Money.valueOfFraction(it)
+                } catch (e: ParseException) {
+                    null
+                }
+            }
+
+            val moneyConverter = BlockStringConverter(Money::toStringWithoutCurrency, toMoney)
+
+            textFormatter = TextFormatter(moneyConverter).apply {
+                valueProperty().bindBidirectional(viewModel.amountProperty)
+            }
+        }
+
+        memoTextField.textProperty().bindBidirectional(viewModel.memoProperty)
 
         saveButton.disableProperty().bind(viewModel.notValidProperty)
     }

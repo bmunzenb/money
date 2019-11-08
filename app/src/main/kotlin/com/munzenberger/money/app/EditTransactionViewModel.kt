@@ -29,6 +29,7 @@ class EditTransactionViewModel : AutoCloseable {
     val categoriesProperty: ReadOnlyAsyncObjectProperty<List<DelayedCategory>> = categories
     val selectedCategoryProperty = SimpleObjectProperty<DelayedCategory?>()
     val amountProperty = SimpleObjectProperty<Money>()
+    val memoProperty = SimpleStringProperty()
     val notValidProperty: ReadOnlyBooleanProperty = notValid
 
     init {

@@ -44,12 +44,12 @@
          </children>
       </HBox>
       <Label text="Amount:" GridPane.rowIndex="5" />
-      <TextField maxWidth="1.7976931348623157E308" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS" GridPane.rowIndex="5" />
+      <TextField fx:id="amountTextField" maxWidth="1.7976931348623157E308" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS" GridPane.rowIndex="5" />
       <Label text="Memo:" GridPane.rowIndex="6" />
-      <TextField maxWidth="1.7976931348623157E308" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS" GridPane.rowIndex="6" />
+      <TextField fx:id="memoTextField" maxWidth="1.7976931348623157E308" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS" GridPane.rowIndex="6" />
       <ButtonBar GridPane.columnSpan="2147483647" GridPane.halignment="RIGHT" GridPane.rowIndex="7">
         <buttons>
-          <Button fx:id="saveButton" defaultButton="true" mnemonicParsing="false" text="Save" />
+          <Button fx:id="saveButton" defaultButton="true" mnemonicParsing="false" onAction="#onSaveButton" text="Save" />
             <Button fx:id="cancelButton" cancelButton="true" mnemonicParsing="false" onAction="#onCancelButton" text="Cancel" />
         </buttons>
       </ButtonBar>

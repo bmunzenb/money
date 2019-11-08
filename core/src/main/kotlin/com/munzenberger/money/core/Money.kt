@@ -17,7 +17,7 @@ class Money private constructor(private val currency: Currency, val value: Long)
         fun valueOfFraction(fraction: String): Money {
 
             val locale = Locale.getDefault()
-            return Companion.valueOfFraction(locale, Currency.getInstance(locale), fraction)
+            return valueOfFraction(locale, Currency.getInstance(locale), fraction)
         }
 
         private fun valueOfFraction(locale: Locale, currency: Currency, fraction: String): Money {
