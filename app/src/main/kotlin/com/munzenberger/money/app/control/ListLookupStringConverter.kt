@@ -7,9 +7,6 @@ class ListLookupStringConverter<T>(
         private val converter: StringConverter<T>
 ) : StringConverter<T>() {
 
-    constructor(list: List<T>, toString: (T) -> String?, toObject: (String) -> T) :
-            this(list, BlockStringConverter(toString, toObject))
-
     override fun toString(obj: T?): String =
             converter.toString(obj)
 

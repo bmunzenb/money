@@ -1,7 +1,6 @@
 package com.munzenberger.money.app
 
-import com.munzenberger.money.app.control.ListCellFactory
-import com.munzenberger.money.app.control.ListLookupStringConverter
+import com.munzenberger.money.app.control.*
 import com.munzenberger.money.app.model.DelayedCategory
 import com.munzenberger.money.app.model.PendingCategory
 import com.munzenberger.money.app.property.AsyncObject
@@ -17,6 +16,7 @@ import javafx.scene.Node
 import javafx.scene.control.Button
 import javafx.scene.control.ComboBox
 import javafx.scene.control.DatePicker
+import javafx.scene.control.TextFormatter
 import javafx.stage.Stage
 import java.net.URL
 
@@ -74,14 +74,18 @@ class EditTransactionController {
 
         payeeComboBox.apply {
 
-            cellFactory = ListCellFactory.text { it.name }
+            val payeeConverter = BlockStringConverter( { it.name }, { Payee().apply { name = it } })
+
+            cellFactory = ListCellFactory.text { payeeConverter.toString(it) }
             buttonCell = cellFactory.call(null)
 
             items = FXCollections.observableArrayList<Payee>().apply {
                 retainListeners += bindAsync(viewModel.payeesProperty)
             }
 
-            converter = ListLookupStringConverter(items, { it.name }, { Payee().apply { name = it } })
+            editor.textFormatter = autoCompleteTextFormatter(items, payeeConverter)
+
+            converter = ListLookupStringConverter(items, payeeConverter)
 
             valueProperty().bindBidirectional(viewModel.selectedPayeeProperty)
 
@@ -93,14 +97,18 @@ class EditTransactionController {
 
         categoryComboBox.apply {
 
-            cellFactory = ListCellFactory.text { it.name }
+            val categoryConverter = BlockStringConverter<DelayedCategory>( { it.name }, { PendingCategory(it) })
+
+            cellFactory = ListCellFactory.text { categoryConverter.toString(it) }
             buttonCell = cellFactory.call(null)
 
             items = FXCollections.observableArrayList<DelayedCategory>().apply {
                 retainListeners += bindAsync(viewModel.categoriesProperty)
             }
 
-            converter = ListLookupStringConverter(items, { it.name }, { PendingCategory(it) })
+            editor.textFormatter = autoCompleteTextFormatter(items, categoryConverter)
+
+            converter = ListLookupStringConverter(items, categoryConverter)
 
             valueProperty().bindBidirectional(viewModel.selectedCategoryProperty)
 

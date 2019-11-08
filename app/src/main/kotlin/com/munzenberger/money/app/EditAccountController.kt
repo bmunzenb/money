@@ -1,7 +1,6 @@
 package com.munzenberger.money.app
 
-import com.munzenberger.money.app.control.ListCellFactory
-import com.munzenberger.money.app.control.ListLookupStringConverter
+import com.munzenberger.money.app.control.*
 import com.munzenberger.money.app.property.AsyncObject
 import com.munzenberger.money.app.property.bindAsync
 import com.munzenberger.money.app.property.bindAsyncStatus
@@ -16,6 +15,7 @@ import javafx.scene.Node
 import javafx.scene.control.Button
 import javafx.scene.control.ComboBox
 import javafx.scene.control.TextField
+import javafx.scene.control.TextFormatter
 import javafx.stage.Stage
 import java.net.URL
 
@@ -63,13 +63,17 @@ class EditAccountController {
 
         bankComboBox.apply {
 
-            cellFactory = ListCellFactory.text { it.name }
+            val bankConverter = BlockStringConverter({ it.name }, { Bank().apply { name = it } })
+
+            cellFactory = ListCellFactory.text { bankConverter.toString(it) }
 
             items = FXCollections.observableArrayList<Bank>().apply {
                 retainListeners += bindAsync(viewModel.banksProperty)
             }
 
-            converter = ListLookupStringConverter(items, { it.name }, { Bank().apply { name = it } })
+            editor.textFormatter = autoCompleteTextFormatter(items, bankConverter)
+
+            converter = ListLookupStringConverter(items, bankConverter)
 
             valueProperty().bindBidirectional(viewModel.selectedBankProperty)
 
