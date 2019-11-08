@@ -12,8 +12,6 @@ import com.munzenberger.money.app.property.bindAsyncStatus
 import com.munzenberger.money.core.Account
 import com.munzenberger.money.core.Money
 import com.munzenberger.money.core.MoneyDatabase
-import javafx.beans.value.ChangeListener
-import javafx.collections.FXCollections
 import javafx.fxml.FXML
 import javafx.scene.Node
 import javafx.scene.control.*
@@ -42,18 +40,15 @@ class AccountListController : AutoCloseable {
     private lateinit var navigator: Navigator
 
     private val viewModel = AccountListViewModel()
-    private val retainListeners = mutableListOf<ChangeListener<*>>()
 
     fun initialize() {
 
         tableView.apply {
 
             // TODO: keep the data in the table sorted when it's refreshed
-            items = FXCollections.observableArrayList<FXAccount>().apply {
-                retainListeners += bindAsync(viewModel.accountsProperty)
-            }
+            items.bindAsync(viewModel.accountsProperty)
 
-            retainListeners += placeholderProperty().bindAsync(viewModel.accountsProperty, object : AsyncObjectMapper<List<FXAccount>, Node> {
+            placeholderProperty().bindAsync(viewModel.accountsProperty, object : AsyncObjectMapper<List<FXAccount>, Node> {
 
                 override fun pending() = executing()
 
@@ -94,13 +89,13 @@ class AccountListController : AutoCloseable {
             cellValueFactory = Callback { a -> a.value.balanceProperty }
         }
 
-        retainListeners += totalBalanceProgress.visibleProperty().bindAsyncStatus(viewModel.totalBalanceProperty,
+        totalBalanceProgress.visibleProperty().bindAsyncStatus(viewModel.totalBalanceProperty,
                 AsyncObject.Status.PENDING,
                 AsyncObject.Status.EXECUTING)
 
         totalBalanceLabel.apply {
-            retainListeners += visibleProperty().bindAsyncStatus(viewModel.totalBalanceProperty, AsyncObject.Status.COMPLETE)
-            retainListeners += textProperty().bindAsync(viewModel.totalBalanceProperty) { "Total Account Balance: $it" }
+            visibleProperty().bindAsyncStatus(viewModel.totalBalanceProperty, AsyncObject.Status.COMPLETE)
+            textProperty().bindAsync(viewModel.totalBalanceProperty) { "Total Account Balance: $it" }
             // TODO: what to display if there's an error?
         }
     }

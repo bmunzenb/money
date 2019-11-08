@@ -1,6 +1,9 @@
 package com.munzenberger.money.app
 
-import com.munzenberger.money.app.control.*
+import com.munzenberger.money.app.control.BlockStringConverter
+import com.munzenberger.money.app.control.ListCellFactory
+import com.munzenberger.money.app.control.ListLookupStringConverter
+import com.munzenberger.money.app.control.autoCompleteTextFormatter
 import com.munzenberger.money.app.property.AsyncObject
 import com.munzenberger.money.app.property.bindAsync
 import com.munzenberger.money.app.property.bindAsyncStatus
@@ -8,14 +11,11 @@ import com.munzenberger.money.core.Account
 import com.munzenberger.money.core.AccountType
 import com.munzenberger.money.core.Bank
 import com.munzenberger.money.core.MoneyDatabase
-import javafx.beans.value.ChangeListener
-import javafx.collections.FXCollections
 import javafx.fxml.FXML
 import javafx.scene.Node
 import javafx.scene.control.Button
 import javafx.scene.control.ComboBox
 import javafx.scene.control.TextField
-import javafx.scene.control.TextFormatter
 import javafx.stage.Stage
 import java.net.URL
 
@@ -36,7 +36,6 @@ class EditAccountController {
     private lateinit var stage: Stage
 
     private val viewModel = EditAccountViewModel()
-    private val retainListeners = mutableListOf<ChangeListener<*>>()
 
     fun initialize() {
 
@@ -47,13 +46,11 @@ class EditAccountController {
             cellFactory = ListCellFactory.text { it.name }
             buttonCell = cellFactory.call(null)
 
-            items = FXCollections.observableArrayList<AccountType>().apply {
-                retainListeners += bindAsync(viewModel.accountTypesProperty)
-            }
+            items.bindAsync(viewModel.accountTypesProperty)
 
             valueProperty().bindBidirectional(viewModel.selectedAccountTypeProperty)
 
-            retainListeners += disableProperty().bindAsyncStatus(viewModel.accountTypesProperty,
+            disableProperty().bindAsyncStatus(viewModel.accountTypesProperty,
                     AsyncObject.Status.PENDING,
                     AsyncObject.Status.EXECUTING,
                     AsyncObject.Status.ERROR)
@@ -67,9 +64,7 @@ class EditAccountController {
 
             cellFactory = ListCellFactory.text { bankConverter.toString(it) }
 
-            items = FXCollections.observableArrayList<Bank>().apply {
-                retainListeners += bindAsync(viewModel.banksProperty)
-            }
+            items.bindAsync(viewModel.banksProperty)
 
             editor.textFormatter = autoCompleteTextFormatter(items, bankConverter)
 
@@ -77,7 +72,7 @@ class EditAccountController {
 
             valueProperty().bindBidirectional(viewModel.selectedBankProperty)
 
-            retainListeners += disableProperty().bindAsyncStatus(viewModel.banksProperty,
+            disableProperty().bindAsyncStatus(viewModel.banksProperty,
                     AsyncObject.Status.PENDING,
                     AsyncObject.Status.EXECUTING,
                     AsyncObject.Status.ERROR)
@@ -85,7 +80,7 @@ class EditAccountController {
 
         saveButton.disableProperty().bind(viewModel.notValidProperty)
 
-        retainListeners += container.disableProperty().bindAsyncStatus(viewModel.saveStatusProperty, AsyncObject.Status.EXECUTING)
+        container.disableProperty().bindAsyncStatus(viewModel.saveStatusProperty, AsyncObject.Status.EXECUTING)
 
         viewModel.saveStatusProperty.addListener { _, _, status ->
             when (status) {

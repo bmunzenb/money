@@ -1,11 +1,9 @@
 package com.munzenberger.money.app.property
 
 import javafx.beans.property.BooleanProperty
-import javafx.beans.property.ObjectProperty
 import javafx.beans.property.Property
 import javafx.beans.property.StringProperty
 import javafx.beans.value.ChangeListener
-import javafx.beans.value.WeakChangeListener
 import javafx.collections.ObservableList
 
 interface AsyncObjectMapper<T, R> {
@@ -15,7 +13,7 @@ interface AsyncObjectMapper<T, R> {
     fun error(error: Throwable): R
 }
 
-fun <T, R> Property<R>.bindAsync(asyncObjectProperty: ReadOnlyAsyncObjectProperty<T>, mapper: AsyncObjectMapper<T, R>): ChangeListener<AsyncObject<T>> {
+fun <T, R> Property<R>.bindAsync(asyncObjectProperty: ReadOnlyAsyncObjectProperty<T>, mapper: AsyncObjectMapper<T, R>) {
 
     val callable = { obj: AsyncObject<T> -> when (obj) {
         is AsyncObject.Pending -> setValue(mapper.pending())
@@ -28,12 +26,10 @@ fun <T, R> Property<R>.bindAsync(asyncObjectProperty: ReadOnlyAsyncObjectPropert
 
     val listener = ChangeListener { _, _, obj: AsyncObject<T> -> callable.invoke(obj) }
 
-    asyncObjectProperty.addListener(WeakChangeListener(listener))
-
-    return listener
+    asyncObjectProperty.addListener(listener)
 }
 
-fun <T> ObservableList<T>.bindAsync(asyncObjectProperty: ReadOnlyAsyncObjectProperty<List<T>>): ChangeListener<AsyncObject<List<T>>> {
+fun <T> ObservableList<T>.bindAsync(asyncObjectProperty: ReadOnlyAsyncObjectProperty<List<T>>) {
 
     val callable = { obj: AsyncObject<List<T>> -> when (obj) {
         is AsyncObject.Pending -> clear()
@@ -46,12 +42,10 @@ fun <T> ObservableList<T>.bindAsync(asyncObjectProperty: ReadOnlyAsyncObjectProp
 
     val listener = ChangeListener { _, _, obj: AsyncObject<List<T>> -> callable.invoke(obj) }
 
-    asyncObjectProperty.addListener(WeakChangeListener(listener))
-
-    return listener
+    asyncObjectProperty.addListener(listener)
 }
 
-fun BooleanProperty.bindAsyncStatus(asyncObjectProperty: ReadOnlyAsyncObjectProperty<*>, vararg status: AsyncObject.Status): ChangeListener<AsyncObject<*>> {
+fun BooleanProperty.bindAsyncStatus(asyncObjectProperty: ReadOnlyAsyncObjectProperty<*>, vararg status: AsyncObject.Status) {
 
     val callable = { obj: AsyncObject<*> ->
         set(obj.status in status)
@@ -61,9 +55,7 @@ fun BooleanProperty.bindAsyncStatus(asyncObjectProperty: ReadOnlyAsyncObjectProp
 
     val listener = ChangeListener { _, _, obj: AsyncObject<*> -> callable.invoke(obj) }
 
-    asyncObjectProperty.addListener(WeakChangeListener(listener))
-
-    return listener
+    asyncObjectProperty.addListener(listener)
 }
 
 fun <T> StringProperty.bindAsync(asyncObjectProperty: ReadOnlyAsyncObjectProperty<T>, toString: (T) -> String? = { it?.toString() }) =
@@ -74,7 +66,7 @@ fun <T> StringProperty.bindAsync(asyncObjectProperty: ReadOnlyAsyncObjectPropert
             override fun error(error: Throwable): String? = null
         })
 
-fun <T, R> AsyncObjectProperty<R>.bindAsync(asyncObjectProperty: ReadOnlyAsyncObjectProperty<T>, block: AsyncObjectProperty<R>.(T) -> Unit): ChangeListener<AsyncObject<T>> {
+fun <T, R> AsyncObjectProperty<R>.bindAsync(asyncObjectProperty: ReadOnlyAsyncObjectProperty<T>, block: AsyncObjectProperty<R>.(T) -> Unit) {
 
     val callable = { obj: AsyncObject<T> -> when (obj) {
         is AsyncObject.Pending -> setValue(AsyncObject.Pending())
@@ -87,7 +79,5 @@ fun <T, R> AsyncObjectProperty<R>.bindAsync(asyncObjectProperty: ReadOnlyAsyncOb
 
     val listener = ChangeListener { _, _, obj: AsyncObject<T> -> callable.invoke(obj) }
 
-    asyncObjectProperty.addListener(WeakChangeListener(listener))
-
-    return listener
+    asyncObjectProperty.addListener(listener)
 }

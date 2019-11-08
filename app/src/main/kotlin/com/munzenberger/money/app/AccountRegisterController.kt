@@ -2,11 +2,9 @@ package com.munzenberger.money.app
 
 import com.munzenberger.money.app.navigation.LayoutControllerNavigation
 import com.munzenberger.money.app.property.AsyncObject
-import com.munzenberger.money.app.property.AsyncStatusProperty
 import com.munzenberger.money.app.property.bindAsync
 import com.munzenberger.money.app.property.bindAsyncStatus
 import com.munzenberger.money.core.MoneyDatabase
-import javafx.beans.value.ChangeListener
 import javafx.fxml.FXML
 import javafx.scene.control.Button
 import javafx.scene.control.Label
@@ -34,26 +32,25 @@ class AccountRegisterController : AutoCloseable {
     private var accountIdentity: Long = -1
 
     private val viewModel = AccountRegisterViewModel()
-    private val retainListeners = mutableListOf<ChangeListener<*>>()
 
     fun initialize() {
 
-        retainListeners += accountNameProgress.visibleProperty().bindAsyncStatus(viewModel.accountProperty,
+        accountNameProgress.visibleProperty().bindAsyncStatus(viewModel.accountProperty,
                 AsyncObject.Status.PENDING,
                 AsyncObject.Status.EXECUTING)
 
         accountNameLabel.apply {
-            retainListeners += visibleProperty().bindAsyncStatus(viewModel.accountProperty, AsyncObject.Status.COMPLETE)
-            retainListeners += textProperty().bindAsync(viewModel.accountProperty) { "Account Register : ${it.name}" }
+            visibleProperty().bindAsyncStatus(viewModel.accountProperty, AsyncObject.Status.COMPLETE)
+            textProperty().bindAsync(viewModel.accountProperty) { "Account Register : ${it.name}" }
             // TODO: what to display if there's an error?
         }
 
-        retainListeners += editAccountButton.disableProperty().bindAsyncStatus(viewModel.accountProperty,
+        editAccountButton.disableProperty().bindAsyncStatus(viewModel.accountProperty,
                 AsyncObject.Status.PENDING,
                 AsyncObject.Status.EXECUTING,
                 AsyncObject.Status.ERROR)
 
-        retainListeners += addTransactionButton.disableProperty().bindAsyncStatus(viewModel.accountProperty,
+        addTransactionButton.disableProperty().bindAsyncStatus(viewModel.accountProperty,
                 AsyncObject.Status.PENDING,
                 AsyncObject.Status.EXECUTING,
                 AsyncObject.Status.ERROR)

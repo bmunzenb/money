@@ -1,6 +1,9 @@
 package com.munzenberger.money.app
 
-import com.munzenberger.money.app.control.*
+import com.munzenberger.money.app.control.BlockStringConverter
+import com.munzenberger.money.app.control.ListCellFactory
+import com.munzenberger.money.app.control.ListLookupStringConverter
+import com.munzenberger.money.app.control.autoCompleteTextFormatter
 import com.munzenberger.money.app.model.DelayedCategory
 import com.munzenberger.money.app.model.PendingCategory
 import com.munzenberger.money.app.property.AsyncObject
@@ -9,14 +12,11 @@ import com.munzenberger.money.app.property.bindAsyncStatus
 import com.munzenberger.money.core.Account
 import com.munzenberger.money.core.MoneyDatabase
 import com.munzenberger.money.core.Payee
-import javafx.beans.value.ChangeListener
-import javafx.collections.FXCollections
 import javafx.fxml.FXML
 import javafx.scene.Node
 import javafx.scene.control.Button
 import javafx.scene.control.ComboBox
 import javafx.scene.control.DatePicker
-import javafx.scene.control.TextFormatter
 import javafx.stage.Stage
 import java.net.URL
 
@@ -39,7 +39,6 @@ class EditTransactionController {
     private lateinit var stage: Stage
 
     private val viewModel = EditTransactionViewModel()
-    private val retainListeners = mutableListOf<ChangeListener<*>>()
 
     fun initialize() {
 
@@ -48,13 +47,11 @@ class EditTransactionController {
             cellFactory = ListCellFactory.text { it.name }
             buttonCell = cellFactory.call(null)
 
-            items = FXCollections.observableArrayList<Account>().apply {
-                retainListeners += bindAsync(viewModel.accountsProperty)
-            }
+            items.bindAsync(viewModel.accountsProperty)
 
             valueProperty().bindBidirectional(viewModel.selectedAccountProperty)
 
-            retainListeners += disableProperty().bindAsyncStatus(viewModel.accountsProperty,
+            disableProperty().bindAsyncStatus(viewModel.accountsProperty,
                     AsyncObject.Status.PENDING,
                     AsyncObject.Status.EXECUTING,
                     AsyncObject.Status.ERROR)
@@ -79,9 +76,7 @@ class EditTransactionController {
             cellFactory = ListCellFactory.text { payeeConverter.toString(it) }
             buttonCell = cellFactory.call(null)
 
-            items = FXCollections.observableArrayList<Payee>().apply {
-                retainListeners += bindAsync(viewModel.payeesProperty)
-            }
+            items.bindAsync(viewModel.payeesProperty)
 
             editor.textFormatter = autoCompleteTextFormatter(items, payeeConverter)
 
@@ -89,7 +84,7 @@ class EditTransactionController {
 
             valueProperty().bindBidirectional(viewModel.selectedPayeeProperty)
 
-            retainListeners += disableProperty().bindAsyncStatus(viewModel.payeesProperty,
+            disableProperty().bindAsyncStatus(viewModel.payeesProperty,
                     AsyncObject.Status.PENDING,
                     AsyncObject.Status.EXECUTING,
                     AsyncObject.Status.ERROR)
@@ -102,9 +97,7 @@ class EditTransactionController {
             cellFactory = ListCellFactory.text { categoryConverter.toString(it) }
             buttonCell = cellFactory.call(null)
 
-            items = FXCollections.observableArrayList<DelayedCategory>().apply {
-                retainListeners += bindAsync(viewModel.categoriesProperty)
-            }
+            items.bindAsync(viewModel.categoriesProperty)
 
             editor.textFormatter = autoCompleteTextFormatter(items, categoryConverter)
 
@@ -112,13 +105,13 @@ class EditTransactionController {
 
             valueProperty().bindBidirectional(viewModel.selectedCategoryProperty)
 
-            retainListeners += disableProperty().bindAsyncStatus(viewModel.categoriesProperty,
+            disableProperty().bindAsyncStatus(viewModel.categoriesProperty,
                     AsyncObject.Status.PENDING,
                     AsyncObject.Status.EXECUTING,
                     AsyncObject.Status.ERROR)
         }
 
-        retainListeners += categorySplitButton.disableProperty().bindAsyncStatus(viewModel.categoriesProperty,
+        categorySplitButton.disableProperty().bindAsyncStatus(viewModel.categoriesProperty,
                 AsyncObject.Status.PENDING,
                 AsyncObject.Status.EXECUTING,
                 AsyncObject.Status.ERROR)

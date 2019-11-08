@@ -30,15 +30,14 @@ class QueryController : AutoCloseable {
     @FXML lateinit var resultTableView: TableView<List<Any?>>
 
     private val viewModel = QueryViewModel()
-    private val retainListeners = mutableListOf<ChangeListener<*>>()
 
     fun initialize() {
 
         resultTableView.placeholder = Text("Execute a statement to see results.")
 
-        retainListeners += queryTextArea.disableProperty().bindAsyncStatus(viewModel.resultProperty, AsyncObject.Status.EXECUTING)
-        retainListeners += queryButton.disableProperty().bindAsyncStatus(viewModel.resultProperty, AsyncObject.Status.EXECUTING)
-        retainListeners += updateButton.disableProperty().bindAsyncStatus(viewModel.resultProperty, AsyncObject.Status.EXECUTING)
+        queryTextArea.disableProperty().bindAsyncStatus(viewModel.resultProperty, AsyncObject.Status.EXECUTING)
+        queryButton.disableProperty().bindAsyncStatus(viewModel.resultProperty, AsyncObject.Status.EXECUTING)
+        updateButton.disableProperty().bindAsyncStatus(viewModel.resultProperty, AsyncObject.Status.EXECUTING)
 
         viewModel.queryProperty.bind(queryTextArea.textProperty())
         viewModel.selectedQueryProperty.bind(queryTextArea.selectedTextProperty())
