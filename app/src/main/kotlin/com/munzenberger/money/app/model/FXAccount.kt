@@ -3,6 +3,7 @@ package com.munzenberger.money.app.model
 import com.munzenberger.money.app.property.AsyncObject
 import com.munzenberger.money.app.property.ReadOnlyAsyncObjectProperty
 import com.munzenberger.money.app.property.SimpleAsyncObjectProperty
+import com.munzenberger.money.app.sanitize
 import com.munzenberger.money.core.Account
 import com.munzenberger.money.core.Money
 import com.munzenberger.money.core.MoneyDatabase
@@ -17,7 +18,7 @@ class FXAccount(account: Account, database: MoneyDatabase) {
 
     val nameProperty: ReadOnlyStringProperty = SimpleStringProperty(account.name)
     val typeProperty: ReadOnlyObjectProperty<FXAccountType> = SimpleObjectProperty(account.accountType?.let { FXAccountType(it) })
-    val numberProperty: ReadOnlyStringProperty = SimpleStringProperty(account.number)
+    val numberProperty: ReadOnlyStringProperty = SimpleStringProperty(account.number?.sanitize())
 
     private val balance = SimpleAsyncObjectProperty<Money>()
     val balanceProperty: ReadOnlyAsyncObjectProperty<Money> = balance

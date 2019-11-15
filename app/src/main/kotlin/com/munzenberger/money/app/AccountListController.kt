@@ -1,9 +1,8 @@
 package com.munzenberger.money.app
 
-import com.munzenberger.money.app.control.AsyncTableViewCellFactory
-import com.munzenberger.money.app.control.TableCellFactory
+import com.munzenberger.money.app.control.AsyncTableCellFactory
+import com.munzenberger.money.app.control.HyperlinkTableCellFactory
 import com.munzenberger.money.app.model.FXAccount
-import com.munzenberger.money.app.model.FXAccountType
 import com.munzenberger.money.app.navigation.Navigator
 import com.munzenberger.money.app.property.AsyncObject
 import com.munzenberger.money.app.property.AsyncObjectMapper
@@ -12,6 +11,8 @@ import com.munzenberger.money.app.property.bindAsyncStatus
 import com.munzenberger.money.core.Account
 import com.munzenberger.money.core.Money
 import com.munzenberger.money.core.MoneyDatabase
+import javafx.collections.FXCollections
+import javafx.collections.transformation.SortedList
 import javafx.fxml.FXML
 import javafx.scene.Node
 import javafx.scene.control.*
@@ -29,7 +30,7 @@ class AccountListController : AutoCloseable {
     @FXML lateinit var createAccountButton: Button
     @FXML lateinit var tableView: TableView<FXAccount>
     @FXML lateinit var nameColumn: TableColumn<FXAccount, String>
-    @FXML lateinit var typeColumn: TableColumn<FXAccount, FXAccountType>
+    @FXML lateinit var typeColumn: TableColumn<FXAccount, String>
     @FXML lateinit var numberColumn: TableColumn<FXAccount, String?>
     @FXML lateinit var balanceColumn: TableColumn<FXAccount, AsyncObject<Money>>
     @FXML lateinit var totalBalanceProgress: ProgressIndicator
@@ -45,8 +46,16 @@ class AccountListController : AutoCloseable {
 
         tableView.apply {
 
-            // TODO: keep the data in the table sorted when it's refreshed
-            items.bindAsync(viewModel.accountsProperty)
+            val accountsList = FXCollections.observableArrayList<FXAccount>().apply {
+                bindAsync(viewModel.accountsProperty)
+            }
+
+            val sortedList = SortedList(accountsList)
+
+            // keep the table sorted when the contents change
+            sortedList.comparatorProperty().bind(comparatorProperty())
+
+            items = sortedList
 
             placeholderProperty().bindAsync(viewModel.accountsProperty, object : AsyncObjectMapper<List<FXAccount>, Node> {
 
@@ -68,24 +77,22 @@ class AccountListController : AutoCloseable {
         }
 
         nameColumn.apply {
-            cellFactory = TableCellFactory.hyperlink(action = {
+            cellFactory = HyperlinkTableCellFactory {
                 navigator.goTo(AccountRegisterController.navigation(stage, database, it.identity))
-            })
+            }
             cellValueFactory = Callback { a -> a.value.nameProperty }
         }
 
         typeColumn.apply {
-            cellFactory = TableCellFactory.text { it?.nameProperty?.get() }
-            cellValueFactory = Callback { a -> a.value.typeProperty }
+            cellValueFactory = Callback { a -> a.value.typeProperty.get().nameProperty }
         }
 
         numberColumn.apply {
-            cellFactory = TableCellFactory.text { it?.sanitize() }
             cellValueFactory = Callback { a -> a.value.numberProperty }
         }
 
         balanceColumn.apply {
-            cellFactory = AsyncTableViewCellFactory.text()
+            cellFactory = AsyncTableCellFactory()
             cellValueFactory = Callback { a -> a.value.balanceProperty }
         }
 

@@ -33,7 +33,7 @@
         <columns>
           <TableColumn fx:id="nameColumn" editable="false" prefWidth="75.0" style="-fx-alignment: CENTER-LEFT;" text="Account" />
             <TableColumn fx:id="typeColumn" prefWidth="75.0" style="-fx-alignment: CENTER-LEFT;" text="Account Type" />
-          <TableColumn fx:id="numberColumn" editable="false" prefWidth="75.0" style="-fx-alignment: CENTER-LEFT;" text="Account Number" />
+          <TableColumn fx:id="numberColumn" editable="false" prefWidth="75.0" sortable="false" style="-fx-alignment: CENTER-LEFT;" text="Account Number" />
             <TableColumn fx:id="balanceColumn" editable="false" prefWidth="75.0" style="-fx-alignment: CENTER-RIGHT;" text="Balance" />
         </columns>
          <columnResizePolicy>
