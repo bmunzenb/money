@@ -1,9 +1,6 @@
 package com.munzenberger.money.app
 
-import com.munzenberger.money.app.control.BlockStringConverter
-import com.munzenberger.money.app.control.ListCellFactory
-import com.munzenberger.money.app.control.ListLookupStringConverter
-import com.munzenberger.money.app.control.autoCompleteTextFormatter
+import com.munzenberger.money.app.control.*
 import com.munzenberger.money.app.property.AsyncObject
 import com.munzenberger.money.app.property.bindAsync
 import com.munzenberger.money.app.property.bindAsyncStatus
@@ -43,7 +40,7 @@ class EditAccountController {
 
         accountTypeComboBox.apply {
 
-            cellFactory = ListCellFactory.text(AccountType::name)
+            cellFactory = TextListCellFactory(AccountType::name)
             buttonCell = cellFactory.call(null)
 
             items.bindAsync(viewModel.accountTypesProperty)
@@ -62,7 +59,7 @@ class EditAccountController {
 
             val bankConverter = BlockStringConverter(Bank::name) { Bank().apply { name = it } }
 
-            cellFactory = ListCellFactory.text(bankConverter::toString)
+            cellFactory = TextListCellFactory(bankConverter::toString)
 
             items.bindAsync(viewModel.banksProperty)
 

@@ -1,9 +1,6 @@
 package com.munzenberger.money.app
 
-import com.munzenberger.money.app.control.BlockStringConverter
-import com.munzenberger.money.app.control.ListCellFactory
-import com.munzenberger.money.app.control.ListLookupStringConverter
-import com.munzenberger.money.app.control.autoCompleteTextFormatter
+import com.munzenberger.money.app.control.*
 import com.munzenberger.money.app.model.DelayedCategory
 import com.munzenberger.money.app.model.PendingCategory
 import com.munzenberger.money.app.property.AsyncObject
@@ -46,7 +43,7 @@ class EditTransactionController {
 
         accountComboBox.apply {
 
-            cellFactory = ListCellFactory.text(Account::name)
+            cellFactory = TextListCellFactory(Account::name)
             buttonCell = cellFactory.call(null)
 
             items.bindAsync(viewModel.accountsProperty)
@@ -61,7 +58,7 @@ class EditTransactionController {
 
         typeComboBox.apply {
 
-            cellFactory = ListCellFactory.text(TransactionType::name)
+            cellFactory = TextListCellFactory(TransactionType::name)
             buttonCell = cellFactory.call(null)
 
             items = viewModel.typesProperty
@@ -75,7 +72,7 @@ class EditTransactionController {
 
             val payeeConverter = BlockStringConverter(Payee::name) { Payee().apply { name = it } }
 
-            cellFactory = ListCellFactory.text(payeeConverter::toString)
+            cellFactory = TextListCellFactory(payeeConverter::toString)
             buttonCell = cellFactory.call(null)
 
             items.bindAsync(viewModel.payeesProperty)
@@ -96,7 +93,7 @@ class EditTransactionController {
 
             val categoryConverter = BlockStringConverter<DelayedCategory>(DelayedCategory::name) { PendingCategory(it) }
 
-            cellFactory = ListCellFactory.text(categoryConverter::toString)
+            cellFactory = TextListCellFactory(categoryConverter::toString)
             buttonCell = cellFactory.call(null)
 
             items.bindAsync(viewModel.categoriesProperty)

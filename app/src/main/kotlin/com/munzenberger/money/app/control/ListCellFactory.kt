@@ -4,30 +4,29 @@ import javafx.scene.control.ListCell
 import javafx.scene.control.ListView
 import javafx.util.Callback
 
-abstract class ListCellFactory<T> : Callback<ListView<T>, ListCell<T>> {
+class TextListCell<T>(private val toString: (T) -> String? = { it.toString() }) : ListCell<T>() {
 
-    companion object {
-        fun <T> text(block: (T) -> String? = { it.toString() }) = object : ListCellFactory<T>() {
-            override fun onItem(listCell: ListCell<T>, item: T) {
-                listCell.text = block.invoke(item)
-                listCell.graphic = null
-            }
+    override fun updateItem(item: T, empty: Boolean) {
+        super.updateItem(item, empty)
+
+        when {
+            empty || item == null -> onEmpty()
+            else -> onItem(item)
         }
     }
 
-    override fun call(param: ListView<T>?) = object : ListCell<T>() {
-        override fun updateItem(item: T?, empty: Boolean) {
-            super.updateItem(item, empty)
-
-            if (empty || item == null) onEmpty(this)
-            else onItem(this, item)
-        }
+    private fun onEmpty() {
+        text = null
+        graphic = null
     }
 
-    abstract fun onItem(listCell: ListCell<T>, item: T)
-
-    open fun onEmpty(listCell: ListCell<T>) {
-        listCell.text = null
-        listCell.graphic = null
+    private fun onItem(item: T) {
+        text = toString.invoke(item)
+        graphic = null
     }
+}
+
+class TextListCellFactory<T>(private val toString: (T) -> String? = { it.toString() }) : Callback<ListView<T>, ListCell<T>> {
+
+    override fun call(param: ListView<T>?) = TextListCell(toString)
 }
