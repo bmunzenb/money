@@ -44,7 +44,7 @@ abstract class DatabaseConnector(private val schedulers: SchedulerProvider = Sch
 
             it.onSuccess(database)
         }
-                .subscribeOn(schedulers.single)
+                .subscribeOn(schedulers.database)
                 .observeOn(schedulers.main)
                 .subscribe({ onConnectSuccess(it, complete) }, { onConnectError(it); complete.invoke(null) })
     }
@@ -52,7 +52,7 @@ abstract class DatabaseConnector(private val schedulers: SchedulerProvider = Sch
     private fun onConnectSuccess(database: MoneyDatabase, complete: DatabaseConnectionHandler) {
 
         Single.fromCallable { MoneyCoreVersionManager().getVersionStatus(database) }
-                .subscribeOn(schedulers.single)
+                .subscribeOn(schedulers.database)
                 .observeOn(schedulers.main)
                 .doOnError { database.close() }
                 .subscribe({ onVersionStatus(database, it, complete) }, { onConnectError(it); complete.invoke(null) })
@@ -78,7 +78,7 @@ abstract class DatabaseConnector(private val schedulers: SchedulerProvider = Sch
     private fun applyPendingUpgrades(database: MoneyDatabase, upgrades: PendingUpgrades, complete: DatabaseConnectionHandler) {
 
         Completable.fromRunnable { upgrades.apply() }
-                .subscribeOn(schedulers.single)
+                .subscribeOn(schedulers.database)
                 .observeOn(schedulers.main)
                 .doOnError { database.close() }
                 .subscribe({ complete.invoke(database) }, { onConnectError(it); complete.invoke(null) })

@@ -35,6 +35,7 @@ class EditTransactionViewModel : AutoCloseable {
 
     private lateinit var database: MoneyDatabase
     private lateinit var transaction: Transaction
+    private lateinit var transfers: List<Transfer>
 
     init {
         notValid.bind(selectedAccountProperty.isNull
@@ -44,7 +45,7 @@ class EditTransactionViewModel : AutoCloseable {
                 .or(amountProperty.isNull))
     }
 
-    fun start(database: MoneyDatabase, account: Account) {
+    fun start(database: MoneyDatabase, account: Account, schedulers: SchedulerProvider = SchedulerProvider.Default) {
 
         this.database = database
         this.transaction = Transaction()
@@ -62,6 +63,15 @@ class EditTransactionViewModel : AutoCloseable {
         categories.subscribeTo(Category.getAll(database).map {
             it.map { c -> RealCategory(c) }
         })
+
+        transaction.getTransfers(database)
+                .subscribeOn(schedulers.database)
+                .observeOn(schedulers.main)
+                .subscribe(::onTransfers)
+    }
+
+    private fun onTransfers(transfers: List<Transfer>) {
+        this.transfers = transfers
     }
 
     fun save() {

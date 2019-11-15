@@ -14,7 +14,7 @@ open class SimpleAsyncObjectProperty<T>(value: AsyncObject<T> = AsyncObject.Pend
         set(AsyncObject.Executing())
 
         return single
-                .subscribeOn(schedulers.single)
+                .subscribeOn(schedulers.database)
                 .observeOn(schedulers.main)
                 .subscribe({ set(AsyncObject.Complete(it)) }, { set(AsyncObject.Error(it)) })
     }
@@ -28,7 +28,7 @@ class SimpleAsyncStatusProperty(value: AsyncObject<Unit> = AsyncObject.Pending()
         set(AsyncObject.Executing())
 
         return completable
-                .subscribeOn(schedulers.single)
+                .subscribeOn(schedulers.database)
                 .observeOn(schedulers.main)
                 .subscribe({ set(AsyncObject.Complete(Unit)) }, { set(AsyncObject.Error(it)) })
     }

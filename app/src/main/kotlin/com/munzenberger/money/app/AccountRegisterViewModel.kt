@@ -6,7 +6,6 @@ import com.munzenberger.money.app.property.SimpleAsyncObjectProperty
 import com.munzenberger.money.core.Account
 import com.munzenberger.money.core.MoneyDatabase
 import io.reactivex.disposables.CompositeDisposable
-import io.reactivex.rxjavafx.schedulers.JavaFxScheduler
 
 class AccountRegisterViewModel : AutoCloseable {
 
@@ -16,14 +15,14 @@ class AccountRegisterViewModel : AutoCloseable {
 
     val accountProperty: ReadOnlyAsyncObjectProperty<Account> = account
 
-    fun start(database: MoneyDatabase, accountIdentity: Long) {
+    fun start(database: MoneyDatabase, accountIdentity: Long, schedulers: SchedulerProvider = SchedulerProvider.Default) {
 
         val single = Account.get(accountIdentity, database)
 
         account.subscribeTo(single)
 
         database.updateObservable
-                .observeOn(JavaFxScheduler.platform())
+                .observeOn(schedulers.main)
                 .subscribe { account.subscribeTo(single) }
                 .also { disposables.add(it) }
     }

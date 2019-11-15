@@ -8,7 +8,6 @@ import com.munzenberger.money.core.Money
 import com.munzenberger.money.core.MoneyDatabase
 import io.reactivex.Single
 import io.reactivex.disposables.CompositeDisposable
-import io.reactivex.rxjavafx.schedulers.JavaFxScheduler
 
 class AccountListViewModel : AutoCloseable {
 
@@ -37,14 +36,14 @@ class AccountListViewModel : AutoCloseable {
         }
     }
 
-    fun start(database: MoneyDatabase) {
+    fun start(database: MoneyDatabase, schedulers: SchedulerProvider = SchedulerProvider.Default) {
 
         val getAccounts = FXAccount.getAssetsAndLiabilities(database)
 
         accounts.subscribeTo(getAccounts)
 
         database.updateObservable
-                .observeOn(JavaFxScheduler.platform())
+                .observeOn(schedulers.main)
                 .subscribe { accounts.subscribeTo(getAccounts) }
                 .also { disposables.add(it) }
     }
