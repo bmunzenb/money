@@ -15,7 +15,7 @@ fun Account.Companion.getAssetsAndLiabilities(database: MoneyDatabase) = Single.
 
     val query = AccountTable.select()
             .where(AccountTypeTable.categoryColumn.inGroup(categories))
-            .orderBy(AccountTable.nameColumn)
+            .orderBy(AccountTable.identityColumn)
             .build()
 
     database.getList(query, AccountResultSetMapper())

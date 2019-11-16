@@ -55,3 +55,8 @@ class PendingCategory(string: String) : DelayedCategory {
         name = DelayedCategory.name(accountName = accountName, categoryName = categoryName)
     }
 }
+
+object SplitCategory : DelayedCategory {
+
+    override val name = "Split"
+}

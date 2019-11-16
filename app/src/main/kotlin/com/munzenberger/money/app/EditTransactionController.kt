@@ -64,6 +64,8 @@ class EditTransactionController {
             items = viewModel.typesProperty
 
             valueProperty().bindBidirectional(viewModel.selectedTypeProperty)
+
+            disableProperty().bind(viewModel.typeDisabledProperty)
         }
 
         datePicker.valueProperty().bindBidirectional(viewModel.dateProperty)
@@ -104,16 +106,10 @@ class EditTransactionController {
 
             valueProperty().bindBidirectional(viewModel.selectedCategoryProperty)
 
-            disableProperty().bindAsyncStatus(viewModel.categoriesProperty,
-                    AsyncObject.Status.PENDING,
-                    AsyncObject.Status.EXECUTING,
-                    AsyncObject.Status.ERROR)
+            disableProperty().bind(viewModel.categoryDisabledProperty)
         }
 
-        categorySplitButton.disableProperty().bindAsyncStatus(viewModel.categoriesProperty,
-                AsyncObject.Status.PENDING,
-                AsyncObject.Status.EXECUTING,
-                AsyncObject.Status.ERROR)
+        categorySplitButton.disableProperty().bind(viewModel.splitDisabledProperty)
 
         amountTextField.apply {
 
@@ -130,6 +126,8 @@ class EditTransactionController {
             textFormatter = TextFormatter(moneyConverter).apply {
                 valueProperty().bindBidirectional(viewModel.amountProperty)
             }
+
+            disableProperty().bind(viewModel.amountDisabledProperty)
         }
 
         memoTextField.textProperty().bindBidirectional(viewModel.memoProperty)

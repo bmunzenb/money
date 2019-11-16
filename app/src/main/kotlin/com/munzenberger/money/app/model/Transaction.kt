@@ -14,7 +14,11 @@ fun Transaction.getTransfers(database: MoneyDatabase) = Single.fromCallable {
             emptyList()
 
         else -> {
-            val query = TransferTable.select().where(TransferTable.transactionColumn.eq(id)).build()
+            val query = TransferTable.select()
+                    .where(TransferTable.transactionColumn.eq(id))
+                    .orderBy(TransferTable.identityColumn)
+                    .build()
+
             database.getList(query, TransferResultSetMapper())
         }
     }

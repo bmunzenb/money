@@ -15,4 +15,8 @@ sealed class TransactionType {
     object Debit : TransactionType() {
         override val name = "Debit"
     }
+
+    object Split : TransactionType() {
+        override val name = "Split"
+    }
 }
