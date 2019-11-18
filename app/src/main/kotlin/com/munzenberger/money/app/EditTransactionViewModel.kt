@@ -6,11 +6,9 @@ import com.munzenberger.money.app.property.ReadOnlyAsyncStatusProperty
 import com.munzenberger.money.app.property.SimpleAsyncObjectProperty
 import com.munzenberger.money.app.property.SimpleAsyncStatusProperty
 import com.munzenberger.money.core.*
-import javafx.beans.InvalidationListener
+import io.reactivex.Completable
 import javafx.beans.property.*
 import javafx.collections.FXCollections
-import javafx.collections.ListChangeListener
-import javafx.collections.ObservableList
 import java.time.LocalDate
 
 class EditTransactionViewModel : AutoCloseable {
@@ -21,7 +19,6 @@ class EditTransactionViewModel : AutoCloseable {
     private val typeDisabled = SimpleBooleanProperty(true)
     private val categories = SimpleAsyncObjectProperty<List<DelayedCategory>>()
     private val categoryDisabled = SimpleBooleanProperty(true)
-    private val transferViewModels = FXCollections.observableArrayList<EditTransferViewModel>()
     private val splitDisabled = SimpleBooleanProperty(true)
     private val amountDisabled = SimpleBooleanProperty(true)
     private val saveStatus = SimpleAsyncStatusProperty()
@@ -45,9 +42,16 @@ class EditTransactionViewModel : AutoCloseable {
     val saveStatusProperty: ReadOnlyAsyncStatusProperty = saveStatus
     val notValidProperty: ReadOnlyBooleanProperty = notValid
 
+    private val transfersViewModel = EditTransfersViewModel(
+            typeDisabled = typeDisabled,
+            selectedType = selectedTypeProperty,
+            categoryDisabled = categoryDisabled,
+            selectedCategory = selectedCategoryProperty,
+            amountDisabled = amountDisabled,
+            amount = amountProperty)
+
     private lateinit var database: MoneyDatabase
     private lateinit var transaction: Transaction
-    private lateinit var transfers: List<Transfer>
 
     init {
         notValid.bind(selectedAccountProperty.isNull
@@ -79,38 +83,8 @@ class EditTransactionViewModel : AutoCloseable {
         transaction.getTransfers(database)
                 .subscribeOn(schedulers.database)
                 .observeOn(schedulers.main)
-                .subscribe(::onTransfers)
-    }
-
-    private fun onTransfers(transfers: List<Transfer>) {
-        this.transfers = when {
-            // initialize with an empty transfer
-            transfers.isEmpty() -> listOf(Transfer())
-            else -> transfers
-        }
-
-        transferViewModels.addListener(ListChangeListener {
-            when {
-                it.list.size == 1 -> {
-                    // single transfer transaction
-                    categoryDisabled.value = false
-                    amountDisabled.value = false
-                    typeDisabled.value = false
-                }
-                it.list.size > 1 -> {
-                    // split transaction
-                    categoryDisabled.value = true
-                    amountDisabled.value = true
-                    typeDisabled.value = true
-                    selectedTypeProperty.value = TransactionType.Split
-                    selectedCategoryProperty.value = SplitCategory
-                }
-            }
-        })
-
-        transferViewModels.setAll(this.transfers.map { EditTransferViewModel(it) })
-
-        splitDisabled.value = false
+                .doOnSuccess { splitDisabled.value = false }
+                .subscribe(transfersViewModel::setTransfers)
     }
 
     fun save() {
@@ -122,7 +96,13 @@ class EditTransactionViewModel : AutoCloseable {
             memo = memoProperty.value
         }
 
-        saveStatus.subscribeTo(transaction.save(database))
+        val save = database.transaction { tx ->
+            Completable.concatArray(
+                    transaction.save(tx),
+                    transfersViewModel.save(transaction, tx))
+        }
+
+        saveStatus.subscribeTo(save)
     }
 
     override fun close() {
