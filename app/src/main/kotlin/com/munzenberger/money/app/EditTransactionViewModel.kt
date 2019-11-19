@@ -6,12 +6,18 @@ import com.munzenberger.money.app.property.ReadOnlyAsyncStatusProperty
 import com.munzenberger.money.app.property.SimpleAsyncObjectProperty
 import com.munzenberger.money.app.property.SimpleAsyncStatusProperty
 import com.munzenberger.money.core.*
-import io.reactivex.Completable
 import javafx.beans.property.*
 import javafx.collections.FXCollections
 import java.time.LocalDate
 
-class EditTransactionViewModel : AutoCloseable {
+abstract class EditTransferViewModel {
+
+    val selectedCategoryProperty = SimpleObjectProperty<DelayedCategory?>()
+    val amountProperty = SimpleObjectProperty<Money>()
+    val memoProperty = SimpleStringProperty()
+}
+
+class EditTransactionViewModel : EditTransferViewModel(), AutoCloseable {
 
     private val accounts = SimpleAsyncObjectProperty<List<Account>>()
     private val payees = SimpleAsyncObjectProperty<List<Payee>>()
@@ -34,24 +40,14 @@ class EditTransactionViewModel : AutoCloseable {
     val selectedPayeeProperty = SimpleObjectProperty<Payee?>()
     val categoriesProperty: ReadOnlyAsyncObjectProperty<List<DelayedCategory>> = categories
     val categoryDisabledProperty: ReadOnlyBooleanProperty = categoryDisabled
-    val selectedCategoryProperty = SimpleObjectProperty<DelayedCategory?>()
     val splitDisabledProperty: ReadOnlyBooleanProperty = splitDisabled
-    val amountProperty = SimpleObjectProperty<Money>()
     val amountDisabledProperty: ReadOnlyBooleanProperty = amountDisabled
-    val memoProperty = SimpleStringProperty()
     val saveStatusProperty: ReadOnlyAsyncStatusProperty = saveStatus
     val notValidProperty: ReadOnlyBooleanProperty = notValid
 
-    private val transfersViewModel = EditTransfersViewModel(
-            typeDisabled = typeDisabled,
-            selectedType = selectedTypeProperty,
-            categoryDisabled = categoryDisabled,
-            selectedCategory = selectedCategoryProperty,
-            amountDisabled = amountDisabled,
-            amount = amountProperty)
-
     private lateinit var database: MoneyDatabase
     private lateinit var transaction: Transaction
+    private lateinit var transfers: List<Transfer>
 
     init {
         notValid.bind(selectedAccountProperty.isNull
@@ -83,8 +79,18 @@ class EditTransactionViewModel : AutoCloseable {
         transaction.getTransfers(database)
                 .subscribeOn(schedulers.database)
                 .observeOn(schedulers.main)
-                .doOnSuccess { splitDisabled.value = false }
-                .subscribe(transfersViewModel::setTransfers)
+                .subscribe(::onTransfers)
+    }
+
+    private fun onTransfers(transfers: List<Transfer>) {
+
+        this.transfers = when {
+            // make sure there's at least one transfer
+            transfers.isEmpty() -> listOf(Transfer())
+            else -> transfers
+        }
+
+        splitDisabled.value = false
     }
 
     fun save() {
@@ -96,13 +102,7 @@ class EditTransactionViewModel : AutoCloseable {
             memo = memoProperty.value
         }
 
-        val save = database.transaction { tx ->
-            Completable.concatArray(
-                    transaction.save(tx),
-                    transfersViewModel.save(transaction, tx))
-        }
-
-        saveStatus.subscribeTo(save)
+        saveStatus.subscribeTo(transaction.save(database))
     }
 
     override fun close() {
