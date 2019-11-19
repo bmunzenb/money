@@ -1,3 +1,5 @@
+apply plugin: "com.github.ben-manes.versions"
+
 buildscript {
     apply from: 'versions.gradle'
     
@@ -7,6 +9,7 @@ buildscript {
 
     dependencies {
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$versions.kotlin"
+        classpath "com.github.ben-manes:gradle-versions-plugin:$versions.gradle_versions"
     }
 }
 
