@@ -5,6 +5,7 @@ import com.munzenberger.money.core.model.Table
 import com.munzenberger.money.sql.QueryExecutor
 import com.munzenberger.money.sql.ResultSetMapper
 import io.reactivex.Completable
+import io.reactivex.Maybe
 import io.reactivex.Single
 import kotlin.reflect.KClass
 
@@ -103,9 +104,11 @@ fun Persistable<*>?.getIdentity(executor: QueryExecutor, block: (Long?) -> Unit)
     this == null ->
         Completable.complete().doOnComplete { block.invoke(null) }
 
-    identity == null ->
-        save(executor).doOnComplete { block.invoke(identity) }
-
     else ->
-        Completable.complete().doOnComplete { block.invoke(identity) }
+        Completable.defer {
+            when (identity) {
+                null -> save(executor)
+                else -> Completable.complete()
+            }
+        }.doOnComplete { block.invoke(identity) }
 }
