@@ -94,11 +94,25 @@ class EditTransactionViewModel : EditTransferBase(), AutoCloseable {
         this.database = database
         this.transaction = Transaction()
 
+        selectedAccountProperty.addListener { _, _, newValue ->
+
+            val selectedType = selectedTypeProperty.value
+
+            when (newValue) {
+                null -> types.clear()
+                else -> types.setAll(TransactionType.getTypes(newValue.accountType!!))
+            }
+
+            selectedTypeProperty.value = when (selectedType) {
+                is TransactionType.Credit -> types.find { it is TransactionType.Credit }
+                is TransactionType.Debit -> types.find { it is TransactionType.Debit }
+                else -> null
+            }
+        }
+
         selectedAccountProperty.value = transaction.account
 
         accounts.subscribeTo(Account.getAssetsAndLiabilities(database))
-
-        types.addAll(TransactionType.getTypes())
 
         dateProperty.value = transaction.date?.toLocalDate() ?: LocalDate.now()
 
