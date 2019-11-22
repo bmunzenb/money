@@ -1,6 +1,7 @@
 package com.munzenberger.money.app
 
 import com.munzenberger.money.app.control.*
+import com.munzenberger.money.app.model.name
 import com.munzenberger.money.app.property.AsyncObject
 import com.munzenberger.money.app.property.bindAsync
 import com.munzenberger.money.app.property.bindAsyncStatus
@@ -40,7 +41,7 @@ class EditAccountController {
 
         accountTypeComboBox.apply {
 
-            cellFactory = TextListCellFactory(AccountType::name)
+            cellFactory = TextListCellFactory { it.name }
             buttonCell = cellFactory.call(null)
 
             items.bindAsync(viewModel.accountTypesProperty)

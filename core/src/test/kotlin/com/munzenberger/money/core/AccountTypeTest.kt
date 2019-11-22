@@ -15,8 +15,8 @@ class AccountTypeTest : PersistableTest<AccountType>() {
     }
 
     override fun assertPersistablePropertiesAreEquals(p1: AccountType, p2: AccountType) {
-        assertEquals(p1.name, p2.name)
         assertEquals(p1.category, p2.category)
+        assertEquals(p1.variant, p2.variant)
     }
 
     override fun `can store and retrieve a list of persistables`() {

@@ -17,13 +17,24 @@ class AccountType internal constructor(model: AccountTypeModel) : Persistable<Ac
         EXPENSES
     }
 
-    var name: String?
-        get() = model.name
-        set(value) { model.name = value }
+    enum class Variant {
+        SAVINGS,
+        CHECKING,
+        ASSET,
+        CASH,
+        CREDIT,
+        LOAN,
+        INCOME,
+        EXPENSE
+    }
 
     var category: Category?
         get() = model.category?.let { Category.valueOf(it) }
         set(value) { model.category = value?.name }
+
+    var variant: Variant?
+        get() = model.variant?.let { Variant.valueOf(it) }
+        set(value) { model.variant = value?.name }
 
     companion object {
 
@@ -41,8 +52,8 @@ class AccountTypeResultSetMapper : ResultSetMapper<AccountType> {
 
         val model = AccountTypeModel().apply {
             identity = resultSet.getLong(AccountTypeTable.identityColumn)
-            name = resultSet.getString(AccountTypeTable.nameColumn)
             category = resultSet.getString(AccountTypeTable.categoryColumn)
+            variant = resultSet.getString(AccountTypeTable.variantColumn)
         }
 
         return AccountType(model)

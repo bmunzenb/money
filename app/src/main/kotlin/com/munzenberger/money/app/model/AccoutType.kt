@@ -7,6 +7,19 @@ import com.munzenberger.money.core.model.AccountTypeTable
 import com.munzenberger.money.sql.inGroup
 import io.reactivex.Single
 
+val AccountType.name: String?
+    get() = when (variant) {
+        AccountType.Variant.SAVINGS -> "Savings"
+        AccountType.Variant.CHECKING -> "Checking"
+        AccountType.Variant.ASSET -> "Asset"
+        AccountType.Variant.CASH -> "Cash"
+        AccountType.Variant.CREDIT -> "Credit Card"
+        AccountType.Variant.LOAN -> "Loan"
+        AccountType.Variant.INCOME -> "Income"
+        AccountType.Variant.EXPENSE -> "Expense"
+        null -> null
+    }
+
 fun AccountType.Companion.getForCategories(database: MoneyDatabase, vararg categories: AccountType.Category) = Single.fromCallable {
 
     val query = AccountTypeTable.select()

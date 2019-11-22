@@ -19,9 +19,10 @@ class MoneyCoreVersion_1 : ApplicableVersion<MoneyDatabase> {
 
         obj.execute(Query.createTable(AccountTypeTable.name)
                 .column(AccountTypeTable.identityColumn, obj.dialect.identityColumnType)
-                .column(AccountTypeTable.nameColumn, "TEXT NOT NULL")
                 .column(AccountTypeTable.categoryColumn, "TEXT NOT NULL")
+                .column(AccountTypeTable.variantColumn, "TEXT NOT NULL")
                 .constraint("ACCOUNT_TYPE_CATEGORY_CONSTRAINT", "CHECK (${AccountTypeTable.categoryColumn} IN ('${AccountType.Category.ASSETS.name}', '${AccountType.Category.LIABILITIES.name}', '${AccountType.Category.INCOME.name}', '${AccountType.Category.EXPENSES.name}'))")
+                .constraint("ACCOUNT_TYPE_VARIANT_CONSTRAINT", "CHECK (${AccountTypeTable.variantColumn} IN ('${AccountType.Variant.SAVINGS.name}', '${AccountType.Variant.CHECKING.name}', '${AccountType.Variant.ASSET.name}', '${AccountType.Variant.CASH.name}', '${AccountType.Variant.CREDIT.name}', '${AccountType.Variant.LOAN.name}', '${AccountType.Variant.INCOME.name}', '${AccountType.Variant.EXPENSE.name}'))")
                 .build())
 
         obj.execute(Query.createTable(PayeeTable.name)
@@ -60,43 +61,43 @@ class MoneyCoreVersion_1 : ApplicableVersion<MoneyDatabase> {
                 .build())
 
         obj.executeUpdate(Query.insertInto(AccountTypeTable.name)
-                .set(AccountTypeTable.nameColumn, "Savings")
                 .set(AccountTypeTable.categoryColumn, AccountType.Category.ASSETS.name)
+                .set(AccountTypeTable.variantColumn, AccountType.Variant.SAVINGS.name)
                 .build())
 
         obj.executeUpdate(Query.insertInto(AccountTypeTable.name)
-                .set(AccountTypeTable.nameColumn, "Checking")
                 .set(AccountTypeTable.categoryColumn, AccountType.Category.ASSETS.name)
+                .set(AccountTypeTable.variantColumn, AccountType.Variant.CHECKING.name)
                 .build())
 
         obj.executeUpdate(Query.insertInto(AccountTypeTable.name)
-                .set(AccountTypeTable.nameColumn, "Asset")
                 .set(AccountTypeTable.categoryColumn, AccountType.Category.ASSETS.name)
+                .set(AccountTypeTable.variantColumn, AccountType.Variant.ASSET.name)
                 .build())
 
         obj.executeUpdate(Query.insertInto(AccountTypeTable.name)
-                .set(AccountTypeTable.nameColumn, "Cash")
                 .set(AccountTypeTable.categoryColumn, AccountType.Category.ASSETS.name)
+                .set(AccountTypeTable.variantColumn, AccountType.Variant.CASH.name)
                 .build())
 
         obj.executeUpdate(Query.insertInto(AccountTypeTable.name)
-                .set(AccountTypeTable.nameColumn, "Credit Card")
                 .set(AccountTypeTable.categoryColumn, AccountType.Category.LIABILITIES.name)
+                .set(AccountTypeTable.variantColumn, AccountType.Variant.CREDIT.name)
                 .build())
 
         obj.executeUpdate(Query.insertInto(AccountTypeTable.name)
-                .set(AccountTypeTable.nameColumn, "Loan")
                 .set(AccountTypeTable.categoryColumn, AccountType.Category.LIABILITIES.name)
+                .set(AccountTypeTable.variantColumn, AccountType.Variant.LOAN.name)
                 .build())
 
         obj.executeUpdate(Query.insertInto(AccountTypeTable.name)
-                .set(AccountTypeTable.nameColumn, "Income")
                 .set(AccountTypeTable.categoryColumn, AccountType.Category.INCOME.name)
+                .set(AccountTypeTable.variantColumn, AccountType.Variant.INCOME.name)
                 .build())
 
         obj.executeUpdate(Query.insertInto(AccountTypeTable.name)
-                .set(AccountTypeTable.nameColumn, "Expense")
                 .set(AccountTypeTable.categoryColumn, AccountType.Category.EXPENSES.name)
+                .set(AccountTypeTable.variantColumn, AccountType.Variant.EXPENSE.name)
                 .build())
     }
 }
