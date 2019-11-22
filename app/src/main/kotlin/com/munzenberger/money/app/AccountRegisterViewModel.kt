@@ -5,6 +5,7 @@ import com.munzenberger.money.app.property.ReadOnlyAsyncObjectProperty
 import com.munzenberger.money.app.property.SimpleAsyncObjectProperty
 import com.munzenberger.money.core.Account
 import com.munzenberger.money.core.MoneyDatabase
+import com.munzenberger.money.core.observableGet
 import io.reactivex.disposables.CompositeDisposable
 
 class AccountRegisterViewModel : AutoCloseable {
@@ -17,7 +18,7 @@ class AccountRegisterViewModel : AutoCloseable {
 
     fun start(database: MoneyDatabase, accountIdentity: Long, schedulers: SchedulerProvider = SchedulerProvider.Default) {
 
-        val single = Account.get(accountIdentity, database)
+        val single = Account.observableGet(accountIdentity, database)
 
         account.subscribeTo(single)
 

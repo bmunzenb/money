@@ -24,3 +24,14 @@ interface QueryExecutor {
         }
     }
 }
+
+fun QueryExecutor.doInTransaction(block: (tx: TransactionQueryExecutor) -> Unit) {
+    val tx = createTransaction()
+    try {
+        block.invoke(tx)
+        tx.commit()
+    } catch (e: Throwable) {
+        tx.rollback()
+        throw e
+    }
+}

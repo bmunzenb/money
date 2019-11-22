@@ -27,9 +27,9 @@ abstract class PersistableTest<P : Persistable<*>> : MoneyDatabaseTestSupport() 
     @Test
     fun `can delete an unsaved persistable`() {
 
-        val p = createPersistable().apply { save(database).test().assertComplete() }
+        val p = createPersistable().apply { observableSave(database).test().assertComplete() }
 
-        p.delete(database).test().assertComplete()
+        p.observableDelete(database).test().assertComplete()
     }
 
     @Test
@@ -38,7 +38,7 @@ abstract class PersistableTest<P : Persistable<*>> : MoneyDatabaseTestSupport() 
         val p = createPersistable()
         assertNull(p.identity)
 
-        p.save(database).test().assertComplete()
+        p.observableSave(database).test().assertComplete()
         assertNotNull(p.identity)
 
         getPersistable(p.identity!!).test().assertComplete().apply {
@@ -53,7 +53,7 @@ abstract class PersistableTest<P : Persistable<*>> : MoneyDatabaseTestSupport() 
         val list = listOf(createPersistable(), createPersistable(), createPersistable())
 
         list.forEach {
-            it.save(database).test().assertComplete()
+            it.observableSave(database).test().assertComplete()
         }
 
         getAllPersistables().test().assertComplete().apply {
@@ -68,10 +68,10 @@ abstract class PersistableTest<P : Persistable<*>> : MoneyDatabaseTestSupport() 
     @Test
     fun `can store and delete a persistable`() {
 
-        val p = createPersistable().apply { save(database).test().assertComplete() }
+        val p = createPersistable().apply { observableSave(database).test().assertComplete() }
         val identity = p.identity!!
 
-        p.delete(database).test().assertComplete()
+        p.observableDelete(database).test().assertComplete()
         assertNull(p.identity)
 
         getPersistable(identity)
@@ -82,11 +82,11 @@ abstract class PersistableTest<P : Persistable<*>> : MoneyDatabaseTestSupport() 
     @Test
     fun `can store and update a persistable`() {
 
-        val p = createPersistable().apply { save(database).test().assertComplete() }
+        val p = createPersistable().apply { observableSave(database).test().assertComplete() }
 
         updatePersistable(p)
 
-        p.save(database).test().assertComplete()
+        p.observableSave(database).test().assertComplete()
 
         getPersistable(p.identity!!).test().assertComplete().apply {
             assertValue { it.identity == p.identity }

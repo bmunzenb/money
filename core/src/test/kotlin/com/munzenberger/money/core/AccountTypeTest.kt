@@ -6,9 +6,9 @@ class AccountTypeTest : PersistableTest<AccountType>() {
 
     override fun createPersistable() = AccountType().randomize()
 
-    override fun getPersistable(identity: Long) = AccountType.get(identity, database)
+    override fun getPersistable(identity: Long) = AccountType.observableGet(identity, database)
 
-    override fun getAllPersistables() = AccountType.getAll(database)
+    override fun getAllPersistables() = AccountType.observableGetAll(database)
 
     override fun updatePersistable(persistable: AccountType) {
         persistable.randomize()

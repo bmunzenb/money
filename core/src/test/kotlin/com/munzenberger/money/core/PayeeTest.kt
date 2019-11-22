@@ -6,9 +6,9 @@ class PayeeTest : PersistableTest<Payee>() {
 
     override fun createPersistable() = Payee().randomize()
 
-    override fun getPersistable(identity: Long) = Payee.get(identity, database)
+    override fun getPersistable(identity: Long) = Payee.observableGet(identity, database)
 
-    override fun getAllPersistables() = Payee.getAll(database)
+    override fun getAllPersistables() = Payee.observableGetAll(database)
 
     override fun updatePersistable(persistable: Payee) {
         persistable.randomize()

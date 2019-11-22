@@ -4,6 +4,7 @@ import com.munzenberger.money.core.model.AccountTypeModel
 import com.munzenberger.money.core.model.AccountTypeTable
 import com.munzenberger.money.sql.QueryExecutor
 import com.munzenberger.money.sql.ResultSetMapper
+import io.reactivex.Single
 import java.sql.ResultSet
 
 class AccountType internal constructor(model: AccountTypeModel) : Persistable<AccountTypeModel>(model, AccountTypeTable) {
@@ -42,7 +43,7 @@ class AccountType internal constructor(model: AccountTypeModel) : Persistable<Ac
                 getAll(executor, AccountTypeTable, AccountTypeResultSetMapper())
 
         fun get(identity: Long, executor: QueryExecutor) =
-                get(identity, executor, AccountTypeTable, AccountTypeResultSetMapper(), AccountType::class)
+                get(identity, executor, AccountTypeTable, AccountTypeResultSetMapper())
     }
 }
 
@@ -59,3 +60,12 @@ class AccountTypeResultSetMapper : ResultSetMapper<AccountType> {
         return AccountType(model)
     }
 }
+
+fun AccountType.Companion.observableGet(identity: Long, executor: QueryExecutor) = Single.create<AccountType> {
+    when (val value = get(identity, executor)) {
+        null -> it.onError(PersistableNotFoundException(AccountType::class, identity))
+        else -> it.onSuccess(value)
+    }
+}
+
+fun AccountType.Companion.observableGetAll(executor: QueryExecutor) = Single.fromCallable { getAll(executor) }

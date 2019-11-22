@@ -7,9 +7,9 @@ class AccountTest : PersistableTest<Account>() {
 
     override fun createPersistable() = Account().randomize()
 
-    override fun getPersistable(identity: Long) = Account.get(identity, database)
+    override fun getPersistable(identity: Long) = Account.observableGet(identity, database)
 
-    override fun getAllPersistables() = Account.getAll(database)
+    override fun getAllPersistables() = Account.observableGetAll(database)
 
     override fun updatePersistable(persistable: Account) {
         persistable.randomize()
@@ -30,9 +30,9 @@ class AccountTest : PersistableTest<Account>() {
             accountType = AccountType().randomize()
         }
 
-        account.save(database).test().assertComplete()
+        account.observableSave(database).test().assertComplete()
 
-        Account.get(account.identity!!, database).test().assertComplete().apply {
+        Account.observableGet(account.identity!!, database).test().assertComplete().apply {
             assertValue { it.bank == null }
             assertValue { it.number == null }
         }

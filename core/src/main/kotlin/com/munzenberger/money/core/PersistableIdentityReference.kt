@@ -13,8 +13,10 @@ internal class PersistableIdentityReference {
         this.updated = true
     }
 
-    fun getIdentity(executor: QueryExecutor, block: (Long?) -> Unit): Completable = when {
-        updated -> value.getIdentity(executor, block)
-        else -> Completable.complete()
+    fun getIdentity(executor: QueryExecutor, block: (Long?) -> Unit) {
+        if (updated) {
+            val identity = value.getIdentity(executor)
+            block.invoke(identity)
+        }
     }
 }

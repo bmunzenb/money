@@ -5,9 +5,6 @@ import com.munzenberger.money.core.model.Table
 import com.munzenberger.money.sql.QueryExecutor
 import com.munzenberger.money.sql.ResultSetMapper
 import io.reactivex.Completable
-import io.reactivex.Maybe
-import io.reactivex.Single
-import kotlin.reflect.KClass
 
 abstract class Persistable<M : Model>(
         protected val model: M,
@@ -16,7 +13,7 @@ abstract class Persistable<M : Model>(
     val identity: Long?
         get() = model.identity
 
-    open fun save(executor: QueryExecutor) = Completable.fromAction {
+    open fun save(executor: QueryExecutor) {
         when (model.identity) {
             null -> insert(executor)
             else -> update(executor)
@@ -40,7 +37,7 @@ abstract class Persistable<M : Model>(
         executor.executeUpdate(query)
     }
 
-    open fun delete(executor: QueryExecutor) = Completable.fromAction {
+    open fun delete(executor: QueryExecutor) {
 
         val query = table.delete(model).build()
 
@@ -75,40 +72,29 @@ abstract class Persistable<M : Model>(
                 mapper: ResultSetMapper<P>,
                 orderBy: String = table.identityColumn,
                 descending: Boolean = false
-        ) = Single.fromCallable {
-            table.select().orderBy(orderBy, descending).build().let {
-                executor.getList(it, mapper)
-            }
-        }
+        ) = table.select().orderBy(orderBy, descending).build().let { executor.getList(it, mapper) }
 
         internal fun <M : Model, P : Persistable<M>> get(
                 identity: Long,
                 executor: QueryExecutor,
                 table: Table<M>,
-                mapper: ResultSetMapper<P>,
-                clazz: KClass<P>
-        ) = Single.create<P> {
-
-            val query = table.select(identity).build()
-
-            when (val persistable = executor.getFirst(query, mapper)) {
-                is P -> it.onSuccess(persistable)
-                else -> it.onError(PersistableNotFoundException(clazz, identity))
-            }
-        }
+                mapper: ResultSetMapper<P>
+        ) = table.select(identity).build().let { executor.getFirst(it, mapper) }
     }
 }
 
-fun Persistable<*>?.getIdentity(executor: QueryExecutor, block: (Long?) -> Unit): Completable = when {
+fun Persistable<*>?.getIdentity(executor: QueryExecutor) = when {
+        this == null ->
+            null
 
-    this == null ->
-        Completable.complete().doOnComplete { block.invoke(null) }
+        identity == null -> {
+            save(executor)
+            identity
+        }
 
-    else ->
-        Completable.defer {
-            when (identity) {
-                null -> save(executor)
-                else -> Completable.complete()
-            }
-        }.doOnComplete { block.invoke(identity) }
-}
+        else ->
+            identity
+    }
+
+fun Persistable<*>.observableSave(executor: QueryExecutor) = Completable.fromAction { save(executor) }
+fun Persistable<*>.observableDelete(executor: QueryExecutor) = Completable.fromAction { delete(executor) }

@@ -49,12 +49,10 @@ class Account internal constructor(model: AccountModel) : Persistable<AccountMod
         Money.valueOf(balance)
     }
 
-    override fun save(executor: QueryExecutor) = executor.transaction { tx ->
-
-        Completable.concatArray(
-                accountType.getIdentity(tx) { model.accountType = it },
-                bank.getIdentity(tx) { model.bank = it },
-                super.save(tx))
+    override fun save(executor: QueryExecutor) = executor.doInTransaction { tx ->
+        model.accountType = accountType.getIdentity(tx)
+        model.bank = bank.getIdentity(tx)
+        super.save(tx)
     }
 
     companion object {
@@ -63,7 +61,7 @@ class Account internal constructor(model: AccountModel) : Persistable<AccountMod
                 getAll(executor, AccountTable, AccountResultSetMapper())
 
         fun get(identity: Long, executor: QueryExecutor) =
-                get(identity, executor, AccountTable, AccountResultSetMapper(), Account::class)
+                get(identity, executor, AccountTable, AccountResultSetMapper())
     }
 }
 
@@ -85,3 +83,12 @@ class AccountResultSetMapper : ResultSetMapper<Account> {
         }
     }
 }
+
+fun Account.Companion.observableGet(identity: Long, executor: QueryExecutor) = Single.create<Account> {
+    when (val value = get(identity, executor)) {
+        null -> it.onError(PersistableNotFoundException(Account::class, identity))
+        else -> it.onSuccess(value)
+    }
+}
+
+fun Account.Companion.observableGetAll(executor: QueryExecutor) = Single.fromCallable { getAll(executor) }

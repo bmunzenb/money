@@ -6,9 +6,9 @@ class TransferTest : PersistableTest<Transfer>() {
 
     override fun createPersistable() = Transfer().randomize()
 
-    override fun getPersistable(identity: Long) = Transfer.get(identity, database)
+    override fun getPersistable(identity: Long) = Transfer.observableGet(identity, database)
 
-    override fun getAllPersistables() = Transfer.getAll(database)
+    override fun getAllPersistables() = Transfer.observableGetAll(database)
 
     override fun updatePersistable(persistable: Transfer) {
         persistable.randomize()

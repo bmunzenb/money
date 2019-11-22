@@ -120,7 +120,7 @@ class EditTransactionViewModel : EditTransferBase(), AutoCloseable {
 
         payees.subscribeTo(Payee.getAllSorted(database))
 
-        categories.subscribeTo(Category.getAll(database).map {
+        categories.subscribeTo(Category.observableGetAll(database).map {
             it.map { c -> RealCategory(c) }
         })
 
@@ -158,7 +158,7 @@ class EditTransactionViewModel : EditTransferBase(), AutoCloseable {
                 memo = memoProperty.value
             }
 
-            completables.add(transaction.save(tx))
+            completables.add(transaction.observableSave(tx))
 
             editTransfers.forEachIndexed { index, editTransfer ->
                 val transfer = when {
@@ -168,11 +168,11 @@ class EditTransactionViewModel : EditTransferBase(), AutoCloseable {
                     else -> Transfer().apply { setTransaction(transaction) }
                 }
                 editTransfer.update(transfer)
-                completables.add(transfer.save(tx))
+                completables.add(transfer.observableSave(tx))
             }
 
             // delete any transfers in excess of the number being updated/created
-            completables.addAll(transfers.drop(editTransfers.size).map { it.delete(tx) })
+            completables.addAll(transfers.drop(editTransfers.size).map { it.observableDelete(tx) })
 
             Completable.concat(completables)
         }

@@ -4,8 +4,10 @@ import com.munzenberger.money.core.model.TransferModel
 import com.munzenberger.money.core.model.TransferTable
 import com.munzenberger.money.sql.QueryExecutor
 import com.munzenberger.money.sql.ResultSetMapper
+import com.munzenberger.money.sql.doInTransaction
 import com.munzenberger.money.sql.getLongOrNull
 import io.reactivex.Completable
+import io.reactivex.Single
 import java.sql.ResultSet
 
 class Transfer internal constructor(model: TransferModel) : Persistable<TransferModel>(model, TransferTable) {
@@ -28,12 +30,10 @@ class Transfer internal constructor(model: TransferModel) : Persistable<Transfer
         this.transactionRef.set(transaction)
     }
 
-    override fun save(executor: QueryExecutor) = executor.transaction { tx ->
-
-        Completable.concatArray(
-                transactionRef.getIdentity(tx) { model.transaction = it },
-                category.getIdentity(tx) { model.category = it },
-                super.save(tx))
+    override fun save(executor: QueryExecutor) = executor.doInTransaction { tx ->
+        transactionRef.getIdentity(tx) { model.transaction = it }
+        model.category = category.getIdentity(tx)
+        super.save(tx)
     }
 
     companion object {
@@ -42,7 +42,7 @@ class Transfer internal constructor(model: TransferModel) : Persistable<Transfer
                 getAll(executor, TransferTable, TransferResultSetMapper())
 
         fun get(identity: Long, executor: QueryExecutor) =
-                get(identity, executor, TransferTable, TransferResultSetMapper(), Transfer::class)
+                get(identity, executor, TransferTable, TransferResultSetMapper())
     }
 }
 
@@ -63,3 +63,12 @@ class TransferResultSetMapper : ResultSetMapper<Transfer> {
         }
     }
 }
+
+fun Transfer.Companion.observableGet(identity: Long, executor: QueryExecutor) = Single.create<Transfer> {
+    when (val value = get(identity, executor)) {
+        null -> it.onError(PersistableNotFoundException(Transfer::class, identity))
+        else -> it.onSuccess(value)
+    }
+}
+
+fun Transfer.Companion.observableGetAll(executor: QueryExecutor) = Single.fromCallable { getAll(executor) }

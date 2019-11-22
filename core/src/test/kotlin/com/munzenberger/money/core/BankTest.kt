@@ -6,9 +6,9 @@ class BankTest : PersistableTest<Bank>() {
 
     override fun createPersistable() = Bank().randomize()
 
-    override fun getPersistable(identity: Long) = Bank.get(identity, database)
+    override fun getPersistable(identity: Long) = Bank.observableGet(identity, database)
 
-    override fun getAllPersistables() = Bank.getAll(database)
+    override fun getAllPersistables() = Bank.observableGetAll(database)
 
     override fun updatePersistable(persistable: Bank) {
         persistable.randomize()

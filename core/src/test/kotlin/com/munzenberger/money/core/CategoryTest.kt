@@ -6,9 +6,9 @@ class CategoryTest : PersistableTest<Category>() {
 
     override fun createPersistable() = Category().randomize()
 
-    override fun getPersistable(identity: Long) = Category.get(identity, database)
+    override fun getPersistable(identity: Long) = Category.observableGet(identity, database)
 
-    override fun getAllPersistables() = Category.getAll(database)
+    override fun getAllPersistables() = Category.observableGetAll(database)
 
     override fun updatePersistable(persistable: Category) {
         persistable.randomize()

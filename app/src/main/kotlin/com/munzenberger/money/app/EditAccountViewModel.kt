@@ -66,9 +66,9 @@ class EditAccountViewModel {
                 // a category to support transfers between accounts
                 val category = Category()
                 category.account = account
-                category.save(database)
+                category.observableSave(database)
             }
-            else -> account.save(database)
+            else -> account.observableSave(database)
         }
 
         saveStatus.subscribeTo(save)
