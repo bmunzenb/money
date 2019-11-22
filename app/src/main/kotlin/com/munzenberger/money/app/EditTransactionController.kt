@@ -6,10 +6,7 @@ import com.munzenberger.money.app.model.PendingCategory
 import com.munzenberger.money.app.property.AsyncObject
 import com.munzenberger.money.app.property.bindAsync
 import com.munzenberger.money.app.property.bindAsyncStatus
-import com.munzenberger.money.core.Account
-import com.munzenberger.money.core.Money
-import com.munzenberger.money.core.MoneyDatabase
-import com.munzenberger.money.core.Payee
+import com.munzenberger.money.core.*
 import javafx.fxml.FXML
 import javafx.scene.Node
 import javafx.scene.control.*
@@ -145,14 +142,14 @@ class EditTransactionController {
         }
     }
 
-    fun start(stage: Stage, database: MoneyDatabase, account: Account) {
+    fun start(stage: Stage, database: MoneyDatabase, transaction: Transaction) {
         this.stage = stage
 
         stage.minWidth = stage.width
         stage.minHeight = stage.height
         stage.maxHeight = stage.height
 
-        viewModel.start(database, account)
+        viewModel.start(database, transaction)
     }
 
     @FXML fun onCategorySplitButton() {

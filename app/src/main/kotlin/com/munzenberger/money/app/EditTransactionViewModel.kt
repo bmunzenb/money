@@ -55,16 +55,19 @@ class EditTransactionViewModel : EditTransferBase(), AutoCloseable {
     private val editTransfers = FXCollections.observableArrayList<EditTransfer>().apply {
         addListener(ListChangeListener {
 
-            val first = it.list.first()
-            selectedTypeProperty.unbindBidirectional(first.selectedTypeProperty)
-            selectedCategoryProperty.unbindBidirectional(first.selectedCategoryProperty)
-            amountProperty.unbindBidirectional(first.amountProperty)
+            it.list.firstOrNull()?.let { first ->
+                selectedTypeProperty.unbindBidirectional(first.selectedTypeProperty)
+                selectedCategoryProperty.unbindBidirectional(first.selectedCategoryProperty)
+                amountProperty.unbindBidirectional(first.amountProperty)
+            }
 
             when (it.list.size){
                 1 -> {
-                    selectedTypeProperty.bindBidirectional(first.selectedTypeProperty)
-                    selectedCategoryProperty.bindBidirectional(first.selectedCategoryProperty)
-                    amountProperty.bindBidirectional(first.amountProperty)
+                    it.list.first().let { first ->
+                        selectedTypeProperty.bindBidirectional(first.selectedTypeProperty)
+                        selectedCategoryProperty.bindBidirectional(first.selectedCategoryProperty)
+                        amountProperty.bindBidirectional(first.amountProperty)
+                    }
                     typeDisabled.value = false
                     categoryDisabled.value = false
                     amountDisabled.value = false
@@ -86,18 +89,20 @@ class EditTransactionViewModel : EditTransferBase(), AutoCloseable {
                 .or(amountProperty.isNull))
     }
 
-    fun start(database: MoneyDatabase, account: Account, schedulers: SchedulerProvider = SchedulerProvider.Default) {
+    fun start(database: MoneyDatabase, transaction: Transaction, schedulers: SchedulerProvider = SchedulerProvider.Default) {
 
         this.database = database
         this.transaction = Transaction()
 
-        selectedAccountProperty.value = account
+        selectedAccountProperty.value = transaction.account
 
         accounts.subscribeTo(Account.getAssetsAndLiabilities(database))
 
         types.addAll(TransactionType.getTypes())
 
-        dateProperty.value = LocalDate.now()
+        dateProperty.value = transaction.date?.toLocalDate() ?: LocalDate.now()
+
+        selectedPayeeProperty.value = transaction.payee
 
         payees.subscribeTo(Payee.getAllSorted(database))
 
