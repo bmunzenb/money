@@ -35,10 +35,8 @@ open class MoneyDatabaseTestSupport {
 
         database = ConnectionMoneyDatabase(configuration::class.java.simpleName, configuration.dialect, connection)
 
-        val status = MoneyCoreVersionManager().getVersionStatus(database)
-        when (status) {
+        when (val status = MoneyCoreVersionManager().getVersionStatus(database)) {
             is PendingUpgrades -> status.apply()
-            else -> {}
         }
     }
 

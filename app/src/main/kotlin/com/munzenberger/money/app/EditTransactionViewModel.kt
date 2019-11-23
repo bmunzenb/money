@@ -102,7 +102,7 @@ class EditTransactionViewModel : EditTransferBase(), AutoCloseable {
     fun start(database: MoneyDatabase, transaction: Transaction, schedulers: SchedulerProvider = SchedulerProvider.Default) {
 
         this.database = database
-        this.transaction = Transaction()
+        this.transaction = transaction
 
         selectedAccountProperty.addListener { _, _, newValue ->
 
@@ -178,7 +178,7 @@ class EditTransactionViewModel : EditTransferBase(), AutoCloseable {
                 }
 
                 transfer.apply {
-                    this.amount = edit.getAmount(transactionType!!)
+                    this.amount = edit.getAmountValue(transactionType!!)
                     this.category = edit.getRealCategory()
                     this.memo = edit.memo
                     save(tx)
@@ -202,10 +202,19 @@ class EditTransactionViewModel : EditTransferBase(), AutoCloseable {
 class EditTransfer(transfer: Transfer? = null) : EditTransferBase() {
 
     init {
-        // TODO: initialize the properties
+
+        this.category = when (val c = transfer?.category) {
+            null -> null
+            else -> RealCategory(c)
+        }
+
+        // TODO: determine the transaction type
+        amountProperty.value = transfer?.amount?.let { Money.valueOf(it) }
+
+        memoProperty.value = transfer?.memo
     }
 
-    fun getAmount(transactionType: TransactionType) = when (transactionType) {
+    fun getAmountValue(transactionType: TransactionType) = when (transactionType) {
         is TransactionType.Credit -> amountProperty.value.value
         is TransactionType.Debit -> -amountProperty.value.value
     }
