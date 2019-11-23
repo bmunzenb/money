@@ -7,9 +7,11 @@ import com.munzenberger.money.app.property.SimpleAsyncObjectProperty
 import com.munzenberger.money.app.property.SimpleAsyncStatusProperty
 import com.munzenberger.money.core.*
 import com.munzenberger.money.core.rx.observableGetAll
+import com.munzenberger.money.core.rx.observableTransaction
 import javafx.beans.property.*
 import javafx.collections.FXCollections
 import javafx.collections.ListChangeListener
+import java.lang.IllegalStateException
 import java.time.LocalDate
 
 abstract class EditTransferBase {
@@ -18,6 +20,14 @@ abstract class EditTransferBase {
     val selectedCategoryProperty = SimpleObjectProperty<DelayedCategory>()
     val amountProperty = SimpleObjectProperty<Money>()
     val memoProperty = SimpleStringProperty()
+
+    var transactionType: TransactionType?
+        get() = selectedTypeProperty.value
+        set(value) { selectedTypeProperty.value = value }
+
+    var category: DelayedCategory?
+        get() = selectedCategoryProperty.value
+        set(value) { selectedCategoryProperty.value = value }
 }
 
 class EditTransactionViewModel : EditTransferBase(), AutoCloseable {
@@ -96,14 +106,14 @@ class EditTransactionViewModel : EditTransferBase(), AutoCloseable {
 
         selectedAccountProperty.addListener { _, _, newValue ->
 
-            val selectedType = selectedTypeProperty.value
+            val selectedType = transactionType
 
             when (newValue) {
                 null -> types.clear()
                 else -> types.setAll(TransactionType.getTypes(newValue.accountType!!))
             }
 
-            selectedTypeProperty.value = when (selectedType) {
+            transactionType = when (selectedType) {
                 is TransactionType.Credit -> types.find { it is TransactionType.Credit }
                 is TransactionType.Debit -> types.find { it is TransactionType.Debit }
                 else -> null
@@ -147,40 +157,45 @@ class EditTransactionViewModel : EditTransferBase(), AutoCloseable {
 
     fun save() {
 
-        /*
-        val save = database.transaction { tx ->
-
-            val completables = mutableListOf<Completable>()
+        val save = database.observableTransaction { tx ->
 
             transaction.apply {
                 account = selectedAccountProperty.value
                 date = dateProperty.value.toDate()
                 payee = selectedPayeeProperty.value
                 memo = memoProperty.value
+                save(tx)
             }
 
-            completables.add(transaction.observableSave(tx))
+            editTransfers.forEachIndexed { index, edit ->
 
-            editTransfers.forEachIndexed { index, editTransfer ->
+                // convert any pending categories to real categories
+                when (val c = edit.category) {
+                    is PendingCategory -> edit.category = c.toRealCategory(tx, transactionType!!)
+                }
+
                 val transfer = when {
                     // update existing transfer
                     index < transfers.size -> transfers[index]
                     // create new transfer
                     else -> Transfer().apply { setTransaction(transaction) }
                 }
-                editTransfer.update(transfer)
-                completables.add(transfer.observableSave(tx))
+
+                transfer.apply {
+                    this.amount = edit.getAmount(transactionType!!)
+                    this.category = edit.getRealCategory()
+                    this.memo = edit.memo
+                    save(tx)
+                }
             }
 
-            // delete any transfers in excess of the number being updated/created
-            completables.addAll(transfers.drop(editTransfers.size).map { it.observableDelete(tx) })
-
-            Completable.concat(completables)
+            // delete any transfers in excess of the number updated/created
+            transfers.drop(editTransfers.size).forEach {
+                it.delete(tx)
+            }
         }
 
         saveStatus.subscribeTo(save)
-
-         */
     }
 
     override fun close() {
@@ -194,9 +209,16 @@ class EditTransfer(transfer: Transfer? = null) : EditTransferBase() {
         // TODO: initialize the properties
     }
 
-    fun update(transfer: Transfer) {
-        transfer.apply {
-
-        }
+    fun getAmount(transactionType: TransactionType) = when (transactionType) {
+        is TransactionType.Credit -> amountProperty.value.value
+        is TransactionType.Debit -> -amountProperty.value.value
     }
+
+    fun getRealCategory() = when (val c = category) {
+        is RealCategory -> c.category
+        else -> throw IllegalStateException("Category not a RealCategory: $c")
+    }
+
+    val memo: String?
+        get() = memoProperty.value
 }

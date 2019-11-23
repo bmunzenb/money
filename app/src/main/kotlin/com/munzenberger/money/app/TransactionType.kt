@@ -28,8 +28,4 @@ sealed class TransactionType {
             AccountType.Variant.INCOME, AccountType.Variant.EXPENSE, null -> "Debit"
         }
     }
-
-    object Split : TransactionType() {
-        override val name = "Split"
-    }
 }

@@ -1,7 +1,12 @@
 package com.munzenberger.money.app.model
 
-import com.munzenberger.money.core.AccountType
-import com.munzenberger.money.core.Category
+import com.munzenberger.money.app.TransactionType
+import com.munzenberger.money.core.*
+import com.munzenberger.money.core.model.AccountTable
+import com.munzenberger.money.core.model.AccountTypeTable
+import com.munzenberger.money.core.model.CategoryTable
+import com.munzenberger.money.sql.QueryExecutor
+import com.munzenberger.money.sql.eq
 
 private const val delimiter = ":"
 
@@ -24,7 +29,7 @@ interface DelayedCategory {
     }
 }
 
-class RealCategory(category: Category) : DelayedCategory {
+class RealCategory(val category: Category) : DelayedCategory {
 
     override val name: String
 
@@ -53,6 +58,56 @@ class PendingCategory(string: String) : DelayedCategory {
         categoryName = if (values.size > 1) values[1].trim() else null
 
         name = DelayedCategory.name(accountName = accountName, categoryName = categoryName)
+    }
+
+    fun toRealCategory(executor: QueryExecutor, transactionType: TransactionType): RealCategory {
+
+        lateinit var category: Category
+
+        var account = AccountTable.select().where(AccountTable.nameColumn.eq(accountName)).build().let {
+            executor.getFirst(it, AccountResultSetMapper())
+        }
+
+        if (account == null) {
+
+            val variant = when (transactionType) {
+                is TransactionType.Credit -> AccountType.Variant.INCOME
+                is TransactionType.Debit -> AccountType.Variant.EXPENSE
+            }
+
+            // find the account type that matches the transaction type
+            val accountType = AccountTypeTable.select().where(AccountTypeTable.variantColumn.eq(variant.name)).build().let {
+                executor.getFirst(it, AccountTypeResultSetMapper())
+            }
+
+            account = Account().apply {
+                this.name = accountName
+                this.accountType = accountType
+            }
+
+            category = Category().apply {
+                this.account = account
+                save(executor)
+            }
+        }
+
+        if (categoryName != null) {
+
+            val c = CategoryTable.select().where(CategoryTable.accountColumn.eq(account.identity!!).and(CategoryTable.nameColumn.eq(categoryName))).build().let {
+                executor.getFirst(it, CategoryResultSetMapper())
+            }
+
+            category = when (c) {
+                null -> Category().apply {
+                    this.account = account
+                    this.name = categoryName
+                    save(executor)
+                }
+                else -> c
+            }
+        }
+
+        return RealCategory(category)
     }
 }
 
