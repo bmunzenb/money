@@ -1,7 +1,6 @@
 package com.munzenberger.money.core
 
 import com.munzenberger.money.sql.QueryExecutor
-import io.reactivex.Completable
 
 internal class PersistableIdentityReference {
 

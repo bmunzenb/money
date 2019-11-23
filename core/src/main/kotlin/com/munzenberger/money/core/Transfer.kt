@@ -6,8 +6,6 @@ import com.munzenberger.money.sql.QueryExecutor
 import com.munzenberger.money.sql.ResultSetMapper
 import com.munzenberger.money.sql.doInTransaction
 import com.munzenberger.money.sql.getLongOrNull
-import io.reactivex.Completable
-import io.reactivex.Single
 import java.sql.ResultSet
 
 class Transfer internal constructor(model: TransferModel) : Persistable<TransferModel>(model, TransferTable) {
@@ -64,11 +62,3 @@ class TransferResultSetMapper : ResultSetMapper<Transfer> {
     }
 }
 
-fun Transfer.Companion.observableGet(identity: Long, executor: QueryExecutor) = Single.create<Transfer> {
-    when (val value = get(identity, executor)) {
-        null -> it.onError(PersistableNotFoundException(Transfer::class, identity))
-        else -> it.onSuccess(value)
-    }
-}
-
-fun Transfer.Companion.observableGetAll(executor: QueryExecutor) = Single.fromCallable { getAll(executor) }

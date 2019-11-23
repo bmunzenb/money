@@ -4,7 +4,6 @@ import com.munzenberger.money.core.model.Model
 import com.munzenberger.money.core.model.Table
 import com.munzenberger.money.sql.QueryExecutor
 import com.munzenberger.money.sql.ResultSetMapper
-import io.reactivex.Completable
 
 abstract class Persistable<M : Model>(
         protected val model: M,
@@ -39,11 +38,14 @@ abstract class Persistable<M : Model>(
 
     open fun delete(executor: QueryExecutor) {
 
-        val query = table.delete(model).build()
+        if (model.identity != null) {
 
-        executor.executeUpdate(query)
+            val query = table.delete(model).build()
 
-        model.identity = null
+            executor.executeUpdate(query)
+
+            model.identity = null
+        }
     }
 
     override fun equals(other: Any?): Boolean {
@@ -96,5 +98,3 @@ fun Persistable<*>?.getIdentity(executor: QueryExecutor) = when {
             identity
     }
 
-fun Persistable<*>.observableSave(executor: QueryExecutor) = Completable.fromAction { save(executor) }
-fun Persistable<*>.observableDelete(executor: QueryExecutor) = Completable.fromAction { delete(executor) }

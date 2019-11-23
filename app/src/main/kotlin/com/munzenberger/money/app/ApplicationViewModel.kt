@@ -5,6 +5,7 @@ import com.munzenberger.money.app.database.MemoryDatabaseConnector
 import com.munzenberger.money.app.database.NewFileDatabaseConnector
 import com.munzenberger.money.app.database.OpenFileDatabaseConnector
 import com.munzenberger.money.core.MoneyDatabase
+import com.munzenberger.money.core.rx.ObservableMoneyDatabase
 import javafx.application.Platform
 import javafx.beans.property.*
 import javafx.stage.Window
@@ -17,11 +18,11 @@ class ApplicationViewModel : AutoCloseable {
 
     private val title = SimpleStringProperty(DEFAULT_TITLE)
     private val isConnectionInProgress = SimpleBooleanProperty(false)
-    private val connectedDatabase = SimpleObjectProperty<MoneyDatabase?>()
+    private val connectedDatabase = SimpleObjectProperty<ObservableMoneyDatabase?>()
 
     val titleProperty: ReadOnlyStringProperty = title
     val isConnectionInProgressProperty: ReadOnlyBooleanProperty = isConnectionInProgress
-    val connectedDatabaseProperty: ReadOnlyObjectProperty<MoneyDatabase?> = connectedDatabase
+    val connectedDatabaseProperty: ReadOnlyObjectProperty<ObservableMoneyDatabase?> = connectedDatabase
 
     init {
         connectedDatabaseProperty.addListener { _, _, db ->

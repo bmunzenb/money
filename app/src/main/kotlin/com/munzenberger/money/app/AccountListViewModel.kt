@@ -5,7 +5,7 @@ import com.munzenberger.money.app.property.ReadOnlyAsyncObjectProperty
 import com.munzenberger.money.app.property.SimpleAsyncObjectProperty
 import com.munzenberger.money.app.property.bindAsync
 import com.munzenberger.money.core.Money
-import com.munzenberger.money.core.MoneyDatabase
+import com.munzenberger.money.core.rx.ObservableMoneyDatabase
 import io.reactivex.Single
 import io.reactivex.disposables.CompositeDisposable
 
@@ -36,7 +36,7 @@ class AccountListViewModel : AutoCloseable {
         }
     }
 
-    fun start(database: MoneyDatabase, schedulers: SchedulerProvider = SchedulerProvider.Default) {
+    fun start(database: ObservableMoneyDatabase, schedulers: SchedulerProvider = SchedulerProvider.Default) {
 
         val getAccounts = FXAccount.getAssetsAndLiabilities(database)
 

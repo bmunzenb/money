@@ -1,47 +1,12 @@
 package com.munzenberger.money.core
 
-import com.munzenberger.money.sql.Query
 import com.munzenberger.money.sql.QueryExecutor
-import com.munzenberger.money.sql.ResultSetHandler
-import com.munzenberger.money.sql.TransactionQueryExecutor
-import io.reactivex.Observable
-import io.reactivex.Observer
-import io.reactivex.subjects.PublishSubject
 
-abstract class MoneyDatabase(
-        val name: String,
-        val dialect: DatabaseDialect,
-        private val executor: QueryExecutor
-) : QueryExecutor by executor {
+interface MoneyDatabase : QueryExecutor {
 
-    private val updatePublisher = PublishSubject.create<Unit>()
+    val name: String
 
-    val updateObservable: Observable<Unit> = updatePublisher
+    val dialect: DatabaseDialect
 
-    override fun executeUpdate(query: Query, handler: ResultSetHandler?): Int {
-        return executor.executeUpdate(query, handler).also {
-            updatePublisher.onNext(Unit)
-        }
-    }
-
-    override fun createTransaction(): TransactionQueryExecutor =
-            MoneyDatabaseTransactionExecutor(executor.createTransaction(), updatePublisher)
-
-    open fun close() {
-        updatePublisher.onComplete()
-    }
-}
-
-private class MoneyDatabaseTransactionExecutor(
-        private val executor: TransactionQueryExecutor,
-        private val subject: Observer<Unit>? = null
-) : TransactionQueryExecutor by executor {
-
-    override fun createTransaction(): TransactionQueryExecutor =
-            MoneyDatabaseTransactionExecutor(executor.createTransaction())
-
-    override fun commit() {
-        executor.commit()
-        subject?.onNext(Unit)
-    }
+    fun close()
 }

@@ -6,6 +6,7 @@ import com.munzenberger.money.app.property.bindAsync
 import com.munzenberger.money.app.property.bindAsyncStatus
 import com.munzenberger.money.core.MoneyDatabase
 import com.munzenberger.money.core.Transaction
+import com.munzenberger.money.core.rx.ObservableMoneyDatabase
 import javafx.fxml.FXML
 import javafx.scene.control.Button
 import javafx.scene.control.Label
@@ -18,7 +19,7 @@ class AccountRegisterController : AutoCloseable {
     companion object {
         private val LAYOUT: URL = AccountListController::class.java.getResource("AccountRegisterLayout.fxml")
 
-        fun navigation(stage: Stage, database: MoneyDatabase, accountIdentity: Long) = LayoutControllerNavigation(LAYOUT) {
+        fun navigation(stage: Stage, database: ObservableMoneyDatabase, accountIdentity: Long) = LayoutControllerNavigation(LAYOUT) {
             controller: AccountRegisterController -> controller.start(stage, database, accountIdentity)
         }
     }
@@ -57,7 +58,7 @@ class AccountRegisterController : AutoCloseable {
                 AsyncObject.Status.ERROR)
     }
 
-    fun start(stage: Stage, database: MoneyDatabase, accountIdentity: Long) {
+    fun start(stage: Stage, database: ObservableMoneyDatabase, accountIdentity: Long) {
         this.stage = stage
         this.database = database
         this.accountIdentity = accountIdentity

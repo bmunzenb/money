@@ -7,6 +7,7 @@ import com.munzenberger.money.app.sanitize
 import com.munzenberger.money.core.Account
 import com.munzenberger.money.core.Money
 import com.munzenberger.money.core.MoneyDatabase
+import com.munzenberger.money.core.rx.observableBalance
 import javafx.beans.property.ReadOnlyObjectProperty
 import javafx.beans.property.ReadOnlyStringProperty
 import javafx.beans.property.SimpleObjectProperty
@@ -24,7 +25,7 @@ class FXAccount(account: Account, database: MoneyDatabase) {
     val balanceProperty: ReadOnlyAsyncObjectProperty<Money> = balance
 
     val balanceObservable by lazy {
-        account.balance(database)
+        account.observableBalance(database)
                 .doOnSubscribe { balance.set(AsyncObject.Executing()) }
                 .doOnSuccess { balance.set(AsyncObject.Complete(it)) }
                 .doOnError { balance.set(AsyncObject.Error(it)) }

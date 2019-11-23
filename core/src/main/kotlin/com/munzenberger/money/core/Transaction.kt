@@ -6,8 +6,6 @@ import com.munzenberger.money.sql.QueryExecutor
 import com.munzenberger.money.sql.ResultSetMapper
 import com.munzenberger.money.sql.doInTransaction
 import com.munzenberger.money.sql.getLongOrNull
-import io.reactivex.Completable
-import io.reactivex.Single
 import java.sql.ResultSet
 import java.util.*
 
@@ -62,11 +60,3 @@ class TransactionResultSetMapper : ResultSetMapper<Transaction> {
     }
 }
 
-fun Transaction.Companion.observableGet(identity: Long, executor: QueryExecutor) = Single.create<Transaction> {
-    when (val value = get(identity, executor)) {
-        null -> it.onError(PersistableNotFoundException(Transaction::class, identity))
-        else -> it.onSuccess(value)
-    }
-}
-
-fun Transaction.Companion.observableGetAll(executor: QueryExecutor) = Single.fromCallable { getAll(executor) }

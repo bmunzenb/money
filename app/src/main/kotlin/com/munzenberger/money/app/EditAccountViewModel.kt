@@ -4,6 +4,7 @@ import com.munzenberger.money.app.model.getAllSorted
 import com.munzenberger.money.app.model.getForCategories
 import com.munzenberger.money.app.property.*
 import com.munzenberger.money.core.*
+import com.munzenberger.money.core.rx.observableSave
 import javafx.beans.property.ReadOnlyBooleanProperty
 import javafx.beans.property.SimpleBooleanProperty
 import javafx.beans.property.SimpleObjectProperty

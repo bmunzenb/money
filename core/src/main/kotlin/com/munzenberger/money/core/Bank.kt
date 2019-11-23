@@ -4,7 +4,6 @@ import com.munzenberger.money.core.model.BankModel
 import com.munzenberger.money.core.model.BankTable
 import com.munzenberger.money.sql.QueryExecutor
 import com.munzenberger.money.sql.ResultSetMapper
-import io.reactivex.Single
 import java.sql.ResultSet
 
 class Bank internal constructor(model: BankModel) : Persistable<BankModel>(model, BankTable) {
@@ -38,11 +37,3 @@ class BankResultSetMapper : ResultSetMapper<Bank> {
     }
 }
 
-fun Bank.Companion.observableGet(identity: Long, executor: QueryExecutor) = Single.create<Bank> {
-    when (val value = get(identity, executor)) {
-        null -> it.onError(PersistableNotFoundException(Bank::class, identity))
-        else -> it.onSuccess(value)
-    }
-}
-
-fun Bank.Companion.observableGetAll(executor: QueryExecutor) = Single.fromCallable { getAll(executor) }

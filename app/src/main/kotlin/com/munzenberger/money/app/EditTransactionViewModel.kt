@@ -6,7 +6,7 @@ import com.munzenberger.money.app.property.ReadOnlyAsyncStatusProperty
 import com.munzenberger.money.app.property.SimpleAsyncObjectProperty
 import com.munzenberger.money.app.property.SimpleAsyncStatusProperty
 import com.munzenberger.money.core.*
-import io.reactivex.Completable
+import com.munzenberger.money.core.rx.observableGetAll
 import javafx.beans.property.*
 import javafx.collections.FXCollections
 import javafx.collections.ListChangeListener
@@ -147,6 +147,7 @@ class EditTransactionViewModel : EditTransferBase(), AutoCloseable {
 
     fun save() {
 
+        /*
         val save = database.transaction { tx ->
 
             val completables = mutableListOf<Completable>()
@@ -178,6 +179,8 @@ class EditTransactionViewModel : EditTransferBase(), AutoCloseable {
         }
 
         saveStatus.subscribeTo(save)
+
+         */
     }
 
     override fun close() {

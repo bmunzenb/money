@@ -2,8 +2,6 @@ package com.munzenberger.money.core
 
 import com.munzenberger.money.core.model.*
 import com.munzenberger.money.sql.*
-import io.reactivex.Completable
-import io.reactivex.Single
 import java.sql.ResultSet
 
 class Account internal constructor(model: AccountModel) : Persistable<AccountModel>(model, AccountTable) {
@@ -22,7 +20,7 @@ class Account internal constructor(model: AccountModel) : Persistable<AccountMod
 
     var bank: Bank? = null
 
-    fun balance(executor: QueryExecutor) = Single.fromCallable {
+    fun balance(executor: QueryExecutor): Money {
 
         val creditsQuery = Query.selectFrom(TransferTable.name)
                 .cols("SUM(${TransferTable.amountColumn}) AS CREDITS")
@@ -46,7 +44,7 @@ class Account internal constructor(model: AccountModel) : Persistable<AccountMod
 
         val balance = (credits ?: 0) - (debits ?: 0)
 
-        Money.valueOf(balance)
+        return Money.valueOf(balance)
     }
 
     override fun save(executor: QueryExecutor) = executor.doInTransaction { tx ->
@@ -84,11 +82,3 @@ class AccountResultSetMapper : ResultSetMapper<Account> {
     }
 }
 
-fun Account.Companion.observableGet(identity: Long, executor: QueryExecutor) = Single.create<Account> {
-    when (val value = get(identity, executor)) {
-        null -> it.onError(PersistableNotFoundException(Account::class, identity))
-        else -> it.onSuccess(value)
-    }
-}
-
-fun Account.Companion.observableGetAll(executor: QueryExecutor) = Single.fromCallable { getAll(executor) }

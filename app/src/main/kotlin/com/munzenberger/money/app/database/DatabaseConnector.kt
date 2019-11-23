@@ -3,7 +3,7 @@ package com.munzenberger.money.app.database
 import com.munzenberger.money.app.SchedulerProvider
 import com.munzenberger.money.core.ConnectionMoneyDatabase
 import com.munzenberger.money.core.DatabaseDialect
-import com.munzenberger.money.core.MoneyDatabase
+import com.munzenberger.money.core.rx.ObservableMoneyDatabase
 import com.munzenberger.money.core.version.MoneyCoreVersionManager
 import com.munzenberger.money.sql.Query
 import com.munzenberger.money.version.CurrentVersion
@@ -14,7 +14,7 @@ import io.reactivex.Completable
 import io.reactivex.Single
 import java.sql.DriverManager
 
-typealias DatabaseConnectionHandler = (MoneyDatabase?) -> Unit
+typealias DatabaseConnectionHandler = (ObservableMoneyDatabase?) -> Unit
 
 abstract class DatabaseConnector(private val schedulers: SchedulerProvider = SchedulerProvider.Default) {
 
@@ -28,12 +28,12 @@ abstract class DatabaseConnector(private val schedulers: SchedulerProvider = Sch
             complete: DatabaseConnectionHandler
     ) {
 
-        Single.create<MoneyDatabase> {
+        Single.create<ObservableMoneyDatabase> {
 
             Class.forName(driver)
 
             val connection = DriverManager.getConnection(connectionUrl, user, password)
-            val database = ConnectionMoneyDatabase(name, dialect, connection)
+            val database = ObservableMoneyDatabase(ConnectionMoneyDatabase(name, dialect, connection))
 
             when (driver) {
                 "org.sqlite.JDBC" ->
@@ -49,7 +49,7 @@ abstract class DatabaseConnector(private val schedulers: SchedulerProvider = Sch
                 .subscribe({ onConnectSuccess(it, complete) }, { onConnectError(it); complete.invoke(null) })
     }
 
-    private fun onConnectSuccess(database: MoneyDatabase, complete: DatabaseConnectionHandler) {
+    private fun onConnectSuccess(database: ObservableMoneyDatabase, complete: DatabaseConnectionHandler) {
 
         Single.fromCallable { MoneyCoreVersionManager().getVersionStatus(database) }
                 .subscribeOn(schedulers.database)
@@ -58,7 +58,7 @@ abstract class DatabaseConnector(private val schedulers: SchedulerProvider = Sch
                 .subscribe({ onVersionStatus(database, it, complete) }, { onConnectError(it); complete.invoke(null) })
     }
 
-    private fun onVersionStatus(database: MoneyDatabase, status: VersionStatus, complete: DatabaseConnectionHandler) {
+    private fun onVersionStatus(database: ObservableMoneyDatabase, status: VersionStatus, complete: DatabaseConnectionHandler) {
 
         when (status) {
 
@@ -75,7 +75,7 @@ abstract class DatabaseConnector(private val schedulers: SchedulerProvider = Sch
         }
     }
 
-    private fun applyPendingUpgrades(database: MoneyDatabase, upgrades: PendingUpgrades, complete: DatabaseConnectionHandler) {
+    private fun applyPendingUpgrades(database: ObservableMoneyDatabase, upgrades: PendingUpgrades, complete: DatabaseConnectionHandler) {
 
         Completable.fromRunnable { upgrades.apply() }
                 .subscribeOn(schedulers.database)

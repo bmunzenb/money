@@ -6,9 +6,9 @@ class TransactionTest : PersistableTest<Transaction>() {
 
     override fun createPersistable() = Transaction().randomize()
 
-    override fun getPersistable(identity: Long) = Transaction.observableGet(identity, database)
+    override fun getPersistable(identity: Long) = Transaction.get(identity, database)
 
-    override fun getAllPersistables() = Transaction.observableGetAll(database)
+    override fun getAllPersistables() = Transaction.getAll(database)
 
     override fun updatePersistable(persistable: Transaction) {
         persistable.randomize()

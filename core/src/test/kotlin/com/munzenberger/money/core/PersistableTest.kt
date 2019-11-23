@@ -1,6 +1,5 @@
 package com.munzenberger.money.core
 
-import io.reactivex.Single
 import org.junit.Assert.*
 import org.junit.Test
 
@@ -8,28 +7,26 @@ abstract class PersistableTest<P : Persistable<*>> : MoneyDatabaseTestSupport() 
 
     abstract fun createPersistable(): P
 
-    abstract fun getPersistable(identity: Long): Single<P>
+    abstract fun getPersistable(identity: Long): P?
 
-    abstract fun getAllPersistables(): Single<List<P>>
+    abstract fun getAllPersistables(): List<P>
 
     abstract fun updatePersistable(persistable : P)
 
     abstract fun assertPersistablePropertiesAreEquals(p1: P, p2: P)
 
     @Test
-    fun `retrieve invalid identity emits error`() {
+    fun `retrieve invalid identity returns null`() {
 
-        getPersistable(42L)
-                .test()
-                .assertError(PersistableNotFoundException::class.java)
+        assertNull(getPersistable(42L))
     }
 
     @Test
     fun `can delete an unsaved persistable`() {
 
-        val p = createPersistable().apply { observableSave(database).test().assertComplete() }
-
-        p.observableDelete(database).test().assertComplete()
+        createPersistable().apply {
+            delete(database)
+        }
     }
 
     @Test
@@ -38,12 +35,13 @@ abstract class PersistableTest<P : Persistable<*>> : MoneyDatabaseTestSupport() 
         val p = createPersistable()
         assertNull(p.identity)
 
-        p.observableSave(database).test().assertComplete()
+        p.save(database)
         assertNotNull(p.identity)
 
-        getPersistable(p.identity!!).test().assertComplete().apply {
-            assertValue { it.identity == p.identity }
-            assertPersistablePropertiesAreEquals(p, values().first())
+        getPersistable(p.identity!!).apply {
+            assertNotNull(this)
+            assertEquals(this!!.identity, p.identity)
+            assertPersistablePropertiesAreEquals(p, this)
         }
     }
 
@@ -53,12 +51,12 @@ abstract class PersistableTest<P : Persistable<*>> : MoneyDatabaseTestSupport() 
         val list = listOf(createPersistable(), createPersistable(), createPersistable())
 
         list.forEach {
-            it.observableSave(database).test().assertComplete()
+            it.save(database)
         }
 
-        getAllPersistables().test().assertComplete().apply {
-            assertValue { it.size == list.size }
-            values().first().zip(list).forEach {
+        getAllPersistables().apply {
+            assertEquals(this.size, list.size)
+            this.zip(list).forEach {
                 assertEquals(it.first.identity, it.second.identity)
                 assertPersistablePropertiesAreEquals(it.first, it.second)
             }
@@ -68,29 +66,28 @@ abstract class PersistableTest<P : Persistable<*>> : MoneyDatabaseTestSupport() 
     @Test
     fun `can store and delete a persistable`() {
 
-        val p = createPersistable().apply { observableSave(database).test().assertComplete() }
+        val p = createPersistable().apply { save(database) }
         val identity = p.identity!!
 
-        p.observableDelete(database).test().assertComplete()
+        p.delete(database)
         assertNull(p.identity)
 
-        getPersistable(identity)
-                .test()
-                .assertError(PersistableNotFoundException::class.java)
+        assertNull(getPersistable(identity))
     }
 
     @Test
     fun `can store and update a persistable`() {
 
-        val p = createPersistable().apply { observableSave(database).test().assertComplete() }
+        val p = createPersistable().apply { save(database) }
 
         updatePersistable(p)
 
-        p.observableSave(database).test().assertComplete()
+        p.save(database)
 
-        getPersistable(p.identity!!).test().assertComplete().apply {
-            assertValue { it.identity == p.identity }
-            assertPersistablePropertiesAreEquals(p, values().first())
+        getPersistable(p.identity!!).apply {
+            assertNotNull(this)
+            assertEquals(this!!.identity, p.identity)
+            assertPersistablePropertiesAreEquals(p, this)
         }
     }
 }

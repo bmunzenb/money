@@ -1,14 +1,15 @@
 package com.munzenberger.money.core
 
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
 
 class AccountTypeTest : PersistableTest<AccountType>() {
 
     override fun createPersistable() = AccountType().randomize()
 
-    override fun getPersistable(identity: Long) = AccountType.observableGet(identity, database)
+    override fun getPersistable(identity: Long) = AccountType.get(identity, database)
 
-    override fun getAllPersistables() = AccountType.observableGetAll(database)
+    override fun getAllPersistables() = AccountType.getAll(database)
 
     override fun updatePersistable(persistable: AccountType) {
         persistable.randomize()
@@ -23,8 +24,8 @@ class AccountTypeTest : PersistableTest<AccountType>() {
 
         // verify that the initial values are present
 
-        getAllPersistables().test().assertComplete().apply {
-            assertValue { it.isNotEmpty() }
+        getAllPersistables().apply {
+            assertTrue(isNotEmpty())
         }
     }
 }

@@ -3,8 +3,6 @@ dependencies {
     api project(':sql')
     api project(':version')
 
-    api "io.reactivex.rxjava2:rxjava:$versions.rxjava"
-
     testImplementation "com.h2database:h2:$versions.h2"
     testImplementation "org.xerial:sqlite-jdbc:$versions.sqlite"
 }

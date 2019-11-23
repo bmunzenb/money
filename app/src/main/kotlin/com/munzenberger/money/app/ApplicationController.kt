@@ -1,6 +1,7 @@
 package com.munzenberger.money.app
 
 import com.munzenberger.money.core.MoneyDatabase
+import com.munzenberger.money.core.rx.ObservableMoneyDatabase
 import javafx.fxml.FXML
 import javafx.fxml.FXMLLoader
 import javafx.scene.Node
@@ -75,7 +76,7 @@ class ApplicationController : DatabaseConnectorDelegate, AutoCloseable {
         }
     }
 
-    private fun presentNavigation(database: MoneyDatabase) {
+    private fun presentNavigation(database: ObservableMoneyDatabase) {
 
         FXMLLoader(NavigationController.LAYOUT).load { node: Node, controller: NavigationController ->
             controller.start(stage, database)

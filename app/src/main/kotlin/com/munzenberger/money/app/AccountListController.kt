@@ -11,6 +11,7 @@ import com.munzenberger.money.app.property.bindAsyncStatus
 import com.munzenberger.money.core.Account
 import com.munzenberger.money.core.Money
 import com.munzenberger.money.core.MoneyDatabase
+import com.munzenberger.money.core.rx.ObservableMoneyDatabase
 import javafx.collections.FXCollections
 import javafx.collections.transformation.SortedList
 import javafx.fxml.FXML
@@ -37,7 +38,7 @@ class AccountListController : AutoCloseable {
     @FXML lateinit var totalBalanceLabel: Label
 
     private lateinit var stage: Stage
-    private lateinit var database: MoneyDatabase
+    private lateinit var database: ObservableMoneyDatabase
     private lateinit var navigator: Navigator
 
     private val viewModel = AccountListViewModel()
@@ -107,7 +108,7 @@ class AccountListController : AutoCloseable {
         }
     }
 
-    fun start(stage: Stage, database: MoneyDatabase, navigator: Navigator) {
+    fun start(stage: Stage, database: ObservableMoneyDatabase, navigator: Navigator) {
         this.stage = stage
         this.database = database
         this.navigator = navigator

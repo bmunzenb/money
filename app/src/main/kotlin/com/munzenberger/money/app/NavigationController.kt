@@ -4,6 +4,7 @@ import com.munzenberger.money.app.navigation.LayoutControllerNavigation
 import com.munzenberger.money.app.navigation.Navigation
 import com.munzenberger.money.app.navigation.Navigator
 import com.munzenberger.money.core.MoneyDatabase
+import com.munzenberger.money.core.rx.ObservableMoneyDatabase
 import javafx.fxml.FXML
 import javafx.scene.control.Button
 import javafx.scene.layout.BorderPane
@@ -31,7 +32,7 @@ class NavigationController : AutoCloseable {
     }
 
     private lateinit var stage: Stage
-    private lateinit var database: MoneyDatabase
+    private lateinit var database: ObservableMoneyDatabase
 
     fun initialize() {
 
@@ -39,7 +40,7 @@ class NavigationController : AutoCloseable {
         forwardButton.disableProperty().bind(navigator.forwardHistoryProperty.emptyProperty())
     }
 
-    fun start(stage: Stage, database: MoneyDatabase) {
+    fun start(stage: Stage, database: ObservableMoneyDatabase) {
         this.stage = stage
         this.database = database
 
