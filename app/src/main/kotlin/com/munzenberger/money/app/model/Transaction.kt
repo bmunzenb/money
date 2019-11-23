@@ -7,7 +7,7 @@ import com.munzenberger.money.core.model.TransferTable
 import com.munzenberger.money.sql.eq
 import io.reactivex.Single
 
-fun Transaction.getTransfers(database: MoneyDatabase) = Single.fromCallable {
+fun Transaction.observableGetTransfers(database: MoneyDatabase) = Single.fromCallable {
 
     when (val id = identity) {
         null ->

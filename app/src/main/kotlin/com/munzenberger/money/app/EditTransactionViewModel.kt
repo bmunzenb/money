@@ -113,11 +113,7 @@ class EditTransactionViewModel : EditTransferBase(), AutoCloseable {
                 else -> types.setAll(TransactionType.getTypes(newValue.accountType!!))
             }
 
-            transactionType = when (selectedType) {
-                is TransactionType.Credit -> types.find { it is TransactionType.Credit }
-                is TransactionType.Debit -> types.find { it is TransactionType.Debit }
-                else -> null
-            }
+            transactionType = types.find { it.javaClass == selectedType?.javaClass }
         }
 
         selectedAccountProperty.value = transaction.account
@@ -134,7 +130,7 @@ class EditTransactionViewModel : EditTransferBase(), AutoCloseable {
             it.map { c -> RealCategory(c) }
         })
 
-        transaction.getTransfers(database)
+        transaction.observableGetTransfers(database)
                 .subscribeOn(schedulers.database)
                 .observeOn(schedulers.main)
                 .subscribe(::onTransfers)
