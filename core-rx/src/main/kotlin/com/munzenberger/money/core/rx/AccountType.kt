@@ -5,7 +5,6 @@ import com.munzenberger.money.core.PersistableNotFoundException
 import com.munzenberger.money.sql.QueryExecutor
 import io.reactivex.Single
 
-
 fun AccountType.Companion.observableGet(identity: Long, executor: QueryExecutor) = Single.create<AccountType> {
     when (val value = get(identity, executor)) {
         null -> it.onError(PersistableNotFoundException(AccountType::class, identity))

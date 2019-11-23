@@ -4,7 +4,7 @@ import com.munzenberger.money.core.model.TransferModel
 import com.munzenberger.money.core.model.TransferTable
 import com.munzenberger.money.sql.QueryExecutor
 import com.munzenberger.money.sql.ResultSetMapper
-import com.munzenberger.money.sql.doInTransaction
+import com.munzenberger.money.sql.transaction
 import com.munzenberger.money.sql.getLongOrNull
 import java.sql.ResultSet
 
@@ -28,7 +28,7 @@ class Transfer internal constructor(model: TransferModel) : Persistable<Transfer
         this.transactionRef.set(transaction)
     }
 
-    override fun save(executor: QueryExecutor) = executor.doInTransaction { tx ->
+    override fun save(executor: QueryExecutor) = executor.transaction { tx ->
         transactionRef.getIdentity(tx) { model.transaction = it }
         model.category = category.getIdentity(tx)
         super.save(tx)

@@ -5,7 +5,6 @@ import com.munzenberger.money.core.PersistableNotFoundException
 import com.munzenberger.money.sql.QueryExecutor
 import io.reactivex.Single
 
-
 fun Payee.Companion.observableGet(identity: Long, executor: QueryExecutor) = Single.create<Payee> {
     when (val value = get(identity, executor)) {
         null -> it.onError(PersistableNotFoundException(Payee::class, identity))

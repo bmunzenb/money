@@ -4,7 +4,7 @@ import com.munzenberger.money.core.model.TransactionModel
 import com.munzenberger.money.core.model.TransactionTable
 import com.munzenberger.money.sql.QueryExecutor
 import com.munzenberger.money.sql.ResultSetMapper
-import com.munzenberger.money.sql.doInTransaction
+import com.munzenberger.money.sql.transaction
 import com.munzenberger.money.sql.getLongOrNull
 import java.sql.ResultSet
 import java.util.*
@@ -25,7 +25,7 @@ class Transaction internal constructor(model: TransactionModel) : Persistable<Tr
 
     var payee: Payee? = null
 
-    override fun save(executor: QueryExecutor) = executor.doInTransaction { tx ->
+    override fun save(executor: QueryExecutor) = executor.transaction { tx ->
         model.account = account.getIdentity(tx)
         model.payee = payee.getIdentity(tx)
         super.save(tx)

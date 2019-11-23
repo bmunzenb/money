@@ -47,7 +47,7 @@ class Account internal constructor(model: AccountModel) : Persistable<AccountMod
         return Money.valueOf(balance)
     }
 
-    override fun save(executor: QueryExecutor) = executor.doInTransaction { tx ->
+    override fun save(executor: QueryExecutor) = executor.transaction { tx ->
         model.accountType = accountType.getIdentity(tx)
         model.bank = bank.getIdentity(tx)
         super.save(tx)

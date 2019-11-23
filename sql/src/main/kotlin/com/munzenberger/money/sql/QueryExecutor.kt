@@ -25,7 +25,7 @@ interface QueryExecutor {
     }
 }
 
-fun QueryExecutor.doInTransaction(block: (tx: TransactionQueryExecutor) -> Unit) {
+fun QueryExecutor.transaction(block: (tx: TransactionQueryExecutor) -> Unit) {
     val tx = createTransaction()
     try {
         block.invoke(tx)

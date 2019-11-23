@@ -4,7 +4,7 @@ import com.munzenberger.money.core.model.CategoryModel
 import com.munzenberger.money.core.model.CategoryTable
 import com.munzenberger.money.sql.QueryExecutor
 import com.munzenberger.money.sql.ResultSetMapper
-import com.munzenberger.money.sql.doInTransaction
+import com.munzenberger.money.sql.transaction
 import com.munzenberger.money.sql.getLongOrNull
 import java.sql.ResultSet
 
@@ -18,7 +18,7 @@ class Category internal constructor(model: CategoryModel) : Persistable<Category
 
     var account: Account? = null
 
-    override fun save(executor: QueryExecutor) = executor.doInTransaction { tx ->
+    override fun save(executor: QueryExecutor) = executor.transaction { tx ->
         model.account = account.getIdentity(tx)
         super.save(tx)
     }

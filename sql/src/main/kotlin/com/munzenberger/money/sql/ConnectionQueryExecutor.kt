@@ -5,7 +5,7 @@ import java.util.concurrent.atomic.AtomicInteger
 import java.util.logging.Level
 import java.util.logging.Logger
 
-open class ConnectionQueryExecutor(private val connection: Connection) : QueryExecutor {
+class ConnectionQueryExecutor(private val connection: Connection) : QueryExecutor {
 
     override fun execute(query: Query) =
         SQLExecutor.execute(connection, query.sql, query.parameters)

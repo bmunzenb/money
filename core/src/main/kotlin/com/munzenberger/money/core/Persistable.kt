@@ -85,16 +85,16 @@ abstract class Persistable<M : Model>(
     }
 }
 
-fun Persistable<*>?.getIdentity(executor: QueryExecutor) = when {
-        this == null ->
-            null
+fun Persistable<*>?.getIdentity(executor: QueryExecutor) =
+        when {
+            this == null ->
+                null
 
-        identity == null -> {
-            save(executor)
-            identity
+            identity == null -> {
+                save(executor)
+                identity
+            }
+
+            else ->
+                identity
         }
-
-        else ->
-            identity
-    }
-
