@@ -1,17 +1,34 @@
 package com.munzenberger.money.app
 
-import com.munzenberger.money.app.model.*
+import com.munzenberger.money.app.model.DelayedCategory
+import com.munzenberger.money.app.model.PendingCategory
+import com.munzenberger.money.app.model.RealCategory
+import com.munzenberger.money.app.model.getAllSorted
+import com.munzenberger.money.app.model.getAssetsAndLiabilities
+import com.munzenberger.money.app.model.observableGetTransfers
+import com.munzenberger.money.app.model.toDate
+import com.munzenberger.money.app.model.toLocalDate
 import com.munzenberger.money.app.property.ReadOnlyAsyncObjectProperty
 import com.munzenberger.money.app.property.ReadOnlyAsyncStatusProperty
 import com.munzenberger.money.app.property.SimpleAsyncObjectProperty
 import com.munzenberger.money.app.property.SimpleAsyncStatusProperty
-import com.munzenberger.money.core.*
+import com.munzenberger.money.core.Account
+import com.munzenberger.money.core.Category
+import com.munzenberger.money.core.Money
+import com.munzenberger.money.core.MoneyDatabase
+import com.munzenberger.money.core.Payee
+import com.munzenberger.money.core.Transaction
+import com.munzenberger.money.core.Transfer
 import com.munzenberger.money.core.rx.observableGetAll
 import com.munzenberger.money.core.rx.observableTransaction
-import javafx.beans.property.*
+import javafx.beans.property.ReadOnlyBooleanProperty
+import javafx.beans.property.ReadOnlyListProperty
+import javafx.beans.property.SimpleBooleanProperty
+import javafx.beans.property.SimpleListProperty
+import javafx.beans.property.SimpleObjectProperty
+import javafx.beans.property.SimpleStringProperty
 import javafx.collections.FXCollections
 import javafx.collections.ListChangeListener
-import java.lang.IllegalStateException
 import java.time.LocalDate
 
 abstract class EditTransferBase {
@@ -165,9 +182,9 @@ class EditTransactionViewModel : EditTransferBase(), AutoCloseable {
 
             editTransfers.forEachIndexed { index, edit ->
 
-                // convert any pending categories to real categories
+                // convert any pending categories into real categories
                 when (val c = edit.category) {
-                    is PendingCategory -> edit.category = c.toRealCategory(tx, transactionType!!)
+                    is PendingCategory -> edit.category = c.toRealCategory(tx, edit.transactionType!!)
                 }
 
                 val transfer = when {
@@ -178,8 +195,8 @@ class EditTransactionViewModel : EditTransferBase(), AutoCloseable {
                 }
 
                 transfer.apply {
-                    this.amount = edit.getAmountValue(transactionType!!)
-                    this.category = edit.getRealCategory()
+                    this.amount = edit.amountValue
+                    this.category = edit.realCategory
                     this.memo = edit.memo
                     save(tx)
                 }
@@ -209,20 +226,24 @@ class EditTransfer(transfer: Transfer? = null) : EditTransferBase() {
         }
 
         // TODO: determine the transaction type
+
         amountProperty.value = transfer?.amount?.let { Money.valueOf(it) }
 
         memoProperty.value = transfer?.memo
     }
 
-    fun getAmountValue(transactionType: TransactionType) = when (transactionType) {
-        is TransactionType.Credit -> amountProperty.value.value
-        is TransactionType.Debit -> -amountProperty.value.value
-    }
+    val amountValue: Long
+        get() = when (transactionType) {
+            is TransactionType.Credit -> amountProperty.value.value
+            is TransactionType.Debit -> -amountProperty.value.value
+            else -> throw IllegalStateException("TransactionType not set")
+        }
 
-    fun getRealCategory() = when (val c = category) {
-        is RealCategory -> c.category
-        else -> throw IllegalStateException("Category not a RealCategory: $c")
-    }
+    val realCategory: Category
+        get() = when (val c = category) {
+            is RealCategory -> c.category
+            else -> throw IllegalStateException("DelayedCategory not a RealCategory: $c")
+        }
 
     val memo: String?
         get() = memoProperty.value
