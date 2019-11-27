@@ -19,6 +19,7 @@ class ApplicationController : DatabaseConnectorDelegate, AutoCloseable {
     @FXML lateinit var menuBar: MenuBar
     @FXML lateinit var contentPane: AnchorPane
 
+    private val schedulers = SchedulerProvider.Default
     private val viewModel = ApplicationViewModel()
     private var activeController: AutoCloseable? = null
 
@@ -79,7 +80,7 @@ class ApplicationController : DatabaseConnectorDelegate, AutoCloseable {
     private fun presentNavigation(database: ObservableMoneyDatabase) {
 
         FXMLLoader(NavigationController.LAYOUT).load { node: Node, controller: NavigationController ->
-            controller.start(stage, database)
+            controller.start(stage, database, schedulers)
             setContent(node, controller)
         }
     }

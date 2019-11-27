@@ -8,6 +8,7 @@ class SelectQueryBuilder(private val table: String) {
     private var where: Condition? = null
     private val joins = mutableListOf<String>()
     private val orderBy = mutableListOf<String>()
+    private val groupBy = mutableListOf<String>()
 
     fun cols(columns: List<String>) = this.apply {
         this.columns.addAll(columns)
@@ -42,6 +43,11 @@ class SelectQueryBuilder(private val table: String) {
         orderBy.add("$column $dir")
     }
 
+    fun groupBy(vararg columns: String) = this.apply {
+        groupBy.clear()
+        groupBy.addAll(columns)
+    }
+
     fun build(): Query {
 
         val sb = StringBuilder("SELECT ")
@@ -64,6 +70,11 @@ class SelectQueryBuilder(private val table: String) {
         if (orderBy.isNotEmpty()) {
             sb.append(" ORDER BY ")
             sb.append(orderBy.joinToString(", "))
+        }
+
+        if (groupBy.isNotEmpty()) {
+            sb.append(" GROUP BY ")
+            sb.append(groupBy.joinToString(", "))
         }
 
         return Query(sb.toString(), params)

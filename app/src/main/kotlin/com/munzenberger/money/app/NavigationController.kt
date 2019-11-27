@@ -27,12 +27,17 @@ class NavigationController : AutoCloseable {
         controller: AccountListController -> controller.start(stage, database, navigator)
     }
 
+    private val payeesNavigation = LayoutControllerNavigation(PayeeListController.LAYOUT) {
+        controller: PayeeListController -> controller.start(database, schedulers)
+    }
+
     private val queryNavigation = LayoutControllerNavigation(QueryController.LAYOUT) {
         controller: QueryController -> controller.start(database)
     }
 
     private lateinit var stage: Stage
     private lateinit var database: ObservableMoneyDatabase
+    private lateinit var schedulers: SchedulerProvider
 
     fun initialize() {
 
@@ -40,9 +45,10 @@ class NavigationController : AutoCloseable {
         forwardButton.disableProperty().bind(navigator.forwardHistoryProperty.emptyProperty())
     }
 
-    fun start(stage: Stage, database: ObservableMoneyDatabase) {
+    fun start(stage: Stage, database: ObservableMoneyDatabase, schedulers: SchedulerProvider) {
         this.stage = stage
         this.database = database
+        this.schedulers = schedulers
 
         navigator.goTo(accountsNavigation)
     }
@@ -57,6 +63,10 @@ class NavigationController : AutoCloseable {
 
     @FXML fun onAccountsButton() {
         navigator.goTo(accountsNavigation)
+    }
+
+    @FXML fun onPayeesButton() {
+        navigator.goTo(payeesNavigation)
     }
 
     @FXML fun onQueryButton() {
