@@ -71,10 +71,8 @@ abstract class Persistable<M : Model>(
         internal fun <M : Model, P : Persistable<M>> getAll(
                 executor: QueryExecutor,
                 table: Table<M>,
-                mapper: ResultSetMapper<P>,
-                orderBy: String = table.identityColumn,
-                descending: Boolean = false
-        ) = table.select().orderBy(orderBy, descending).build().let { executor.getList(it, mapper) }
+                mapper: ResultSetMapper<P>
+        ) = table.select().orderBy(table.identityColumn).build().let { executor.getList(it, mapper) }
 
         internal fun <M : Model, P : Persistable<M>> get(
                 identity: Long,

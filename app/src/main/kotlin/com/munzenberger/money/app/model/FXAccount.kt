@@ -30,11 +30,4 @@ class FXAccount(account: Account, database: MoneyDatabase) {
                 .doOnSuccess { balance.set(AsyncObject.Complete(it)) }
                 .doOnError { balance.set(AsyncObject.Error(it)) }
     }
-
-    companion object {
-
-        fun getAssetsAndLiabilities(database: MoneyDatabase) = Account.getAssetsAndLiabilities(database).map {
-            it.map { a -> FXAccount(a, database) }
-        }
-    }
 }

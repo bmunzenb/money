@@ -3,7 +3,6 @@ package com.munzenberger.money.app
 import com.munzenberger.money.app.model.DelayedCategory
 import com.munzenberger.money.app.model.PendingCategory
 import com.munzenberger.money.app.model.RealCategory
-import com.munzenberger.money.app.model.getAllSorted
 import com.munzenberger.money.app.model.getAssetsAndLiabilities
 import com.munzenberger.money.app.model.observableGetTransfers
 import com.munzenberger.money.app.model.toDate
@@ -21,6 +20,7 @@ import com.munzenberger.money.core.Transaction
 import com.munzenberger.money.core.Transfer
 import com.munzenberger.money.core.rx.observableGetAll
 import com.munzenberger.money.core.rx.observableTransaction
+import com.munzenberger.money.core.rx.sortedBy
 import javafx.beans.property.ReadOnlyBooleanProperty
 import javafx.beans.property.ReadOnlyListProperty
 import javafx.beans.property.SimpleBooleanProperty
@@ -141,7 +141,7 @@ class EditTransactionViewModel : EditTransferBase(), AutoCloseable {
 
         selectedPayeeProperty.value = transaction.payee
 
-        payees.subscribeTo(Payee.getAllSorted(database))
+        payees.subscribeTo(Payee.observableGetAll(database).sortedBy { it.name })
 
         categories.subscribeTo(Category.observableGetAll(database).map {
             it.map { c -> RealCategory(c) }
