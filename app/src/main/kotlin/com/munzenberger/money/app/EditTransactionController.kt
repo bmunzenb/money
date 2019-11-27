@@ -1,15 +1,26 @@
 package com.munzenberger.money.app
 
-import com.munzenberger.money.app.control.*
+import com.munzenberger.money.app.control.BlockStringConverter
+import com.munzenberger.money.app.control.ListLookupStringConverter
+import com.munzenberger.money.app.control.TextListCellFactory
+import com.munzenberger.money.app.control.autoCompleteTextFormatter
 import com.munzenberger.money.app.model.DelayedCategory
 import com.munzenberger.money.app.model.PendingCategory
 import com.munzenberger.money.app.property.AsyncObject
 import com.munzenberger.money.app.property.bindAsync
 import com.munzenberger.money.app.property.bindAsyncStatus
-import com.munzenberger.money.core.*
+import com.munzenberger.money.core.Account
+import com.munzenberger.money.core.Money
+import com.munzenberger.money.core.MoneyDatabase
+import com.munzenberger.money.core.Payee
+import com.munzenberger.money.core.Transaction
 import javafx.fxml.FXML
 import javafx.scene.Node
-import javafx.scene.control.*
+import javafx.scene.control.Button
+import javafx.scene.control.ComboBox
+import javafx.scene.control.DatePicker
+import javafx.scene.control.TextField
+import javafx.scene.control.TextFormatter
 import javafx.stage.Stage
 import java.net.URL
 import java.text.ParseException
@@ -154,6 +165,11 @@ class EditTransactionController {
 
     @FXML fun onCategorySplitButton() {
 
+        DialogBuilder.build(EditTransfersController.LAYOUT) { stage, controller: EditTransfersController ->
+            stage.title = "Split Transaction"
+            stage.show()
+            controller.start(stage)
+        }
     }
 
     @FXML fun onSaveButton() {
