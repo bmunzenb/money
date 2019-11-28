@@ -2,6 +2,7 @@ package com.munzenberger.money.app
 
 import com.munzenberger.money.app.control.BlockStringConverter
 import com.munzenberger.money.app.control.ListLookupStringConverter
+import com.munzenberger.money.app.control.MoneyStringConverter
 import com.munzenberger.money.app.control.TextListCellFactory
 import com.munzenberger.money.app.control.autoCompleteTextFormatter
 import com.munzenberger.money.app.model.DelayedCategory
@@ -121,15 +122,7 @@ class EditTransactionController {
 
         amountTextField.apply {
 
-            val toMoney: (String) -> Money? = {
-                try {
-                    Money.valueOfFraction(it)
-                } catch (e: ParseException) {
-                    null
-                }
-            }
-
-            val moneyConverter = BlockStringConverter(Money::toStringWithoutCurrency, toMoney)
+            val moneyConverter = MoneyStringConverter()
 
             textFormatter = TextFormatter(moneyConverter).apply {
                 valueProperty().bindBidirectional(viewModel.amountProperty)
@@ -165,10 +158,12 @@ class EditTransactionController {
 
     @FXML fun onCategorySplitButton() {
 
-        DialogBuilder.build(EditTransfersController.LAYOUT) { stage, controller: EditTransfersController ->
-            stage.title = "Split Transaction"
-            stage.show()
-            controller.start(stage, viewModel.typesProperty, viewModel.editTransfers)
+        viewModel.prepareSplit { transfers, categories ->
+            DialogBuilder.build(EditTransfersController.LAYOUT) { stage, controller: EditTransfersController ->
+                stage.title = "Split Transaction"
+                stage.show()
+                controller.start(stage, transfers, categories)
+            }
         }
     }
 

@@ -7,6 +7,7 @@ import com.munzenberger.money.app.model.getAssetsAndLiabilities
 import com.munzenberger.money.app.model.observableGetTransfers
 import com.munzenberger.money.app.model.toDate
 import com.munzenberger.money.app.model.toLocalDate
+import com.munzenberger.money.app.property.AsyncObject
 import com.munzenberger.money.app.property.ReadOnlyAsyncObjectProperty
 import com.munzenberger.money.app.property.ReadOnlyAsyncStatusProperty
 import com.munzenberger.money.app.property.SimpleAsyncObjectProperty
@@ -80,7 +81,7 @@ class EditTransactionViewModel : EditTransferBase(), AutoCloseable {
     private lateinit var transaction: Transaction
     private lateinit var transfers: List<Transfer>
 
-    val editTransfers: ObservableList<EditTransfer> = FXCollections.observableArrayList<EditTransfer>().apply {
+    private val editTransfers: ObservableList<EditTransfer> = FXCollections.observableArrayList<EditTransfer>().apply {
         addListener(ListChangeListener {
 
             it.list.firstOrNull()?.let { first ->
@@ -131,7 +132,7 @@ class EditTransactionViewModel : EditTransferBase(), AutoCloseable {
                 else -> types.setAll(TransactionType.getTypes(newValue.accountType!!))
             }
 
-            transactionType = types.find { it.javaClass == selectedType?.javaClass }
+            transactionType = types.find { it.variant == selectedType?.variant }
         }
 
         selectedAccountProperty.value = transaction.account
@@ -164,7 +165,7 @@ class EditTransactionViewModel : EditTransferBase(), AutoCloseable {
             else -> transfers
         }
 
-        editTransfers.setAll(this.transfers.map { EditTransfer(it) })
+        editTransfers.setAll(this.transfers.map { EditTransfer.from(it, types) })
 
         splitDisabled.value = false
     }
@@ -212,31 +213,68 @@ class EditTransactionViewModel : EditTransferBase(), AutoCloseable {
         saveStatus.subscribeTo(save)
     }
 
+    fun prepareSplit(block: (ObservableList<EditTransfer>, List<DelayedCategory>) -> Unit) {
+
+        val c = categories.get()
+        if (c is AsyncObject.Complete) {
+
+            if (editTransfers.size == 1) {
+                editTransfers.first().memoProperty.value = memoProperty.value
+            }
+
+            block.invoke(editTransfers, c.value)
+        }
+    }
+
     override fun close() {
         // do nothing
     }
 }
 
-class EditTransfer(transfer: Transfer? = null) : EditTransferBase() {
+class EditTransfer : EditTransferBase() {
 
-    init {
+    companion object {
 
-        this.category = when (val c = transfer?.category) {
-            null -> null
-            else -> RealCategory(c)
+        fun from(transfer: Transfer, types: List<TransactionType>) = EditTransfer().apply {
+            category = when (val c = transfer.category) {
+                null -> null
+                else -> RealCategory(c)
+            }
+
+            // TODO: determine the transaction type
+            val a = transfer.amount
+            when {
+                a == null -> {
+                    // amount and type not set
+                }
+                a < 0 -> {
+                    // debit from this account
+                    amountProperty.value = Money.valueOf(-a)
+                    transactionType = types.find { it.variant == TransactionType.Variant.DEBIT }
+                }
+                a > 0 -> {
+                    // credit to this account
+                    amountProperty.value = Money.valueOf(a)
+                    transactionType = types.find { it.variant == TransactionType.Variant.CREDIT }
+                }
+            }
+
+            amountProperty.value = transfer.amount?.let { Money.valueOf(it) }
+            memoProperty.value = transfer.memo
         }
 
-        // TODO: determine the transaction type
-
-        amountProperty.value = transfer?.amount?.let { Money.valueOf(it) }
-
-        memoProperty.value = transfer?.memo
+        fun from(editTransfer: EditTransfer) = EditTransfer().apply {
+            transactionType = editTransfer.transactionType
+            category = editTransfer.category
+            amountProperty.value = editTransfer.amountProperty.value
+            memoProperty.value = editTransfer.memoProperty.value
+        }
     }
 
     val amountValue: Long
-        get() = when (transactionType) {
-            is TransactionType.Credit -> amountProperty.value.value
-            is TransactionType.Debit -> -amountProperty.value.value
+        get() = when (transactionType?.variant) {
+            TransactionType.Variant.CREDIT -> amountProperty.value.value
+            TransactionType.Variant.DEBIT -> -amountProperty.value.value
             else -> throw IllegalStateException("TransactionType not set")
         }
 

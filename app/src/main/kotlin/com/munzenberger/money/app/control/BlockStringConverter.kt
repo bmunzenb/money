@@ -2,7 +2,7 @@ package com.munzenberger.money.app.control
 
 import javafx.util.StringConverter
 
-class BlockStringConverter<T>(
+open class BlockStringConverter<T>(
         private val toString: (T) -> String?,
         private val toObject: (String) -> T?
 ) : StringConverter<T>() {

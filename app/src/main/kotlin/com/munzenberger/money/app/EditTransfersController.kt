@@ -1,11 +1,13 @@
 package com.munzenberger.money.app
 
+import com.munzenberger.money.app.model.DelayedCategory
+import javafx.collections.FXCollections
+import javafx.collections.ObservableList
 import javafx.fxml.FXML
 import javafx.fxml.FXMLLoader
 import javafx.scene.Node
 import javafx.scene.control.Button
-import javafx.scene.control.Tab
-import javafx.scene.control.TabPane
+import javafx.scene.layout.AnchorPane
 import javafx.stage.Stage
 import java.net.URL
 
@@ -15,10 +17,12 @@ class EditTransfersController {
         val LAYOUT: URL = EditTransfersController::class.java.getResource("EditTransfersLayout.fxml")
     }
 
-    @FXML private lateinit var tabPane: TabPane
+    @FXML private lateinit var anchorPane: AnchorPane
     @FXML private lateinit var doneButton: Button
 
     private lateinit var stage: Stage
+    private lateinit var transfers: ObservableList<EditTransfer>
+    private lateinit var copiedTransfers: ObservableList<EditTransfer>
 
     private val viewModel = EditTransfersViewModel()
     private val tableControllers = mutableListOf<TransfersTableController>()
@@ -28,39 +32,29 @@ class EditTransfersController {
         doneButton.disableProperty().bind(viewModel.doneDisabledProperty)
     }
 
-    fun start(stage: Stage, transactionTypes: List<TransactionType>, transfers: MutableList<EditTransfer>) {
+    fun start(stage: Stage, transfers: ObservableList<EditTransfer>, categories: List<DelayedCategory>) {
 
         this.stage = stage
+        this.transfers = transfers
 
         stage.minWidth = stage.width
         stage.minHeight = stage.height
 
-        transactionTypes.forEachIndexed { index, type ->
+        // operate on a copy of the transfer list and only apply the changes if the user clicks Done
+        copiedTransfers = transfers
+                .map { EditTransfer.from(it) }
+                .let { FXCollections.observableList(it) }
 
-            val transfersOfType = transfers.filter {
-                when (it.transactionType) {
-                    type -> true
-                    null -> index == 0
-                    else -> false
-                }
-            }
+        FXMLLoader(TransfersTableController.LAYOUT).load { node: Node, controller: TransfersTableController ->
+            AnchorPane.setLeftAnchor(node, 0.0)
+            AnchorPane.setTopAnchor(node, 0.0)
+            AnchorPane.setRightAnchor(node, 0.0)
+            AnchorPane.setBottomAnchor(node, 0.0)
 
-            val tab = Tab().apply {
-                text = type.name
-            }
-
-            FXMLLoader(TransfersTableController.LAYOUT).load { node: Node, controller: TransfersTableController ->
-                tab.content = node
-                controller.start(transfersOfType)
-                tableControllers.add(controller)
-            }
-
-            // TODO: add rows to the grid showing totals for each transaction type
-
-            tabPane.tabs.add(tab)
+            anchorPane.children.add(node)
+            controller.start(copiedTransfers, categories)
+            tableControllers.add(controller)
         }
-
-        // TODO: automatically select the tab with transfers
 
         viewModel.start()
     }

@@ -1,7 +1,12 @@
 package com.munzenberger.money.app.model
 
 import com.munzenberger.money.app.TransactionType
-import com.munzenberger.money.core.*
+import com.munzenberger.money.core.Account
+import com.munzenberger.money.core.AccountResultSetMapper
+import com.munzenberger.money.core.AccountType
+import com.munzenberger.money.core.AccountTypeResultSetMapper
+import com.munzenberger.money.core.Category
+import com.munzenberger.money.core.CategoryResultSetMapper
 import com.munzenberger.money.core.model.AccountTable
 import com.munzenberger.money.core.model.AccountTypeTable
 import com.munzenberger.money.core.model.CategoryTable
@@ -70,9 +75,9 @@ class PendingCategory(string: String) : DelayedCategory {
 
         if (account == null) {
 
-            val variant = when (transactionType) {
-                is TransactionType.Credit -> AccountType.Variant.INCOME
-                is TransactionType.Debit -> AccountType.Variant.EXPENSE
+            val variant = when (transactionType.variant) {
+                TransactionType.Variant.CREDIT -> AccountType.Variant.INCOME
+                TransactionType.Variant.DEBIT -> AccountType.Variant.EXPENSE
             }
 
             // find the account type that matches the transaction type
