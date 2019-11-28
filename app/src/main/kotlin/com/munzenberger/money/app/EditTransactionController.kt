@@ -168,7 +168,7 @@ class EditTransactionController {
         DialogBuilder.build(EditTransfersController.LAYOUT) { stage, controller: EditTransfersController ->
             stage.title = "Split Transaction"
             stage.show()
-            controller.start(stage)
+            controller.start(stage, viewModel.typesProperty, viewModel.editTransfers)
         }
     }
 

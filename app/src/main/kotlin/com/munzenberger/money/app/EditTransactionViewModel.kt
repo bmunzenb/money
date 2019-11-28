@@ -29,6 +29,7 @@ import javafx.beans.property.SimpleObjectProperty
 import javafx.beans.property.SimpleStringProperty
 import javafx.collections.FXCollections
 import javafx.collections.ListChangeListener
+import javafx.collections.ObservableList
 import java.time.LocalDate
 
 abstract class EditTransferBase {
@@ -79,7 +80,7 @@ class EditTransactionViewModel : EditTransferBase(), AutoCloseable {
     private lateinit var transaction: Transaction
     private lateinit var transfers: List<Transfer>
 
-    private val editTransfers = FXCollections.observableArrayList<EditTransfer>().apply {
+    val editTransfers: ObservableList<EditTransfer> = FXCollections.observableArrayList<EditTransfer>().apply {
         addListener(ListChangeListener {
 
             it.list.firstOrNull()?.let { first ->

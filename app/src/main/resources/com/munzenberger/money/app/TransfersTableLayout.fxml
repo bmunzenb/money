@@ -10,9 +10,9 @@
 <?import javafx.scene.layout.VBox?>
 
 
-<VBox maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.munzenberger.money.app.TransfersTableController">
+<VBox maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="0.0" minWidth="0.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.munzenberger.money.app.TransfersTableController">
    <children>
-      <TableView maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="0.0" minWidth="0.0" VBox.vgrow="ALWAYS">
+      <TableView fx:id="tableView" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="0.0" minWidth="0.0" VBox.vgrow="ALWAYS">
         <columns>
           <TableColumn editable="false" prefWidth="75.0" sortable="false" text="Category" />
           <TableColumn prefWidth="75.0" sortable="false" text="Memo" />
@@ -22,11 +22,11 @@
             <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
          </columnResizePolicy>
       </TableView>
-      <HBox fillHeight="false" spacing="6.0">
+      <HBox fillHeight="false" maxWidth="1.7976931348623157E308" minWidth="0.0" spacing="6.0" VBox.vgrow="NEVER">
          <children>
-            <ComboBox editable="true" maxWidth="1.7976931348623157E308" minWidth="-Infinity" prefWidth="200.0" promptText="Category" HBox.hgrow="SOMETIMES" />
-            <TextField maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity" prefWidth="200.0" promptText="Memo" HBox.hgrow="SOMETIMES" />
-            <TextField maxWidth="1.7976931348623157E308" minWidth="-Infinity" prefWidth="100.0" promptText="Amount" HBox.hgrow="SOMETIMES" />
+            <ComboBox editable="true" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="0.0" prefWidth="200.0" promptText="Category" HBox.hgrow="SOMETIMES" />
+            <TextField maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="0.0" prefWidth="200.0" promptText="Memo" HBox.hgrow="SOMETIMES" />
+            <TextField maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="0.0" prefWidth="100.0" promptText="Amount" HBox.hgrow="SOMETIMES" />
             <Button mnemonicParsing="false" text="Add" HBox.hgrow="NEVER" />
          </children>
          <padding>
