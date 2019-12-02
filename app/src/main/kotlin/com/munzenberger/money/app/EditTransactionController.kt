@@ -73,8 +73,6 @@ class EditTransactionController {
             items = viewModel.typesProperty
 
             valueProperty().bindBidirectional(viewModel.selectedTypeProperty)
-
-            disableProperty().bind(viewModel.typeDisabledProperty)
         }
 
         datePicker.valueProperty().bindBidirectional(viewModel.dateProperty)

@@ -35,14 +35,13 @@ import java.time.LocalDate
 
 abstract class EditTransferBase {
 
-    val selectedTypeProperty = SimpleObjectProperty<TransactionType>()
     val selectedCategoryProperty = SimpleObjectProperty<DelayedCategory>()
     val amountProperty = SimpleObjectProperty<Money>()
     val memoProperty = SimpleStringProperty()
 
-    var transactionType: TransactionType?
-        get() = selectedTypeProperty.value
-        set(value) { selectedTypeProperty.value = value }
+    var amount: Money?
+        get() = amountProperty.value
+        set(value) { amountProperty.value = value }
 
     var category: DelayedCategory?
         get() = selectedCategoryProperty.value
@@ -54,7 +53,6 @@ class EditTransactionViewModel : EditTransferBase(), AutoCloseable {
     private val accounts = SimpleAsyncObjectProperty<List<Account>>()
     private val payees = SimpleAsyncObjectProperty<List<Payee>>()
     private val types = FXCollections.observableArrayList<TransactionType>()
-    private val typeDisabled = SimpleBooleanProperty(true)
     private val categories = SimpleAsyncObjectProperty<List<DelayedCategory>>()
     private val categoryDisabled = SimpleBooleanProperty(true)
     private val splitDisabled = SimpleBooleanProperty(true)
@@ -65,7 +63,7 @@ class EditTransactionViewModel : EditTransferBase(), AutoCloseable {
     val accountsProperty: ReadOnlyAsyncObjectProperty<List<Account>> = accounts
     val selectedAccountProperty = SimpleObjectProperty<Account?>()
     val typesProperty: ReadOnlyListProperty<TransactionType> = SimpleListProperty(types)
-    val typeDisabledProperty: ReadOnlyBooleanProperty = typeDisabled
+    val selectedTypeProperty = SimpleObjectProperty<TransactionType>()
 
     val dateProperty = SimpleObjectProperty<LocalDate>()
     val payeesProperty: ReadOnlyAsyncObjectProperty<List<Payee>> = payees
@@ -81,11 +79,14 @@ class EditTransactionViewModel : EditTransferBase(), AutoCloseable {
     private lateinit var transaction: Transaction
     private lateinit var transfers: List<Transfer>
 
+    private var transactionType: TransactionType?
+        get() = selectedTypeProperty.value
+        set(value) { selectedTypeProperty.value = value }
+
     private val editTransfers: ObservableList<EditTransfer> = FXCollections.observableArrayList<EditTransfer>().apply {
         addListener(ListChangeListener {
 
             it.list.firstOrNull()?.let { first ->
-                selectedTypeProperty.unbindBidirectional(first.selectedTypeProperty)
                 selectedCategoryProperty.unbindBidirectional(first.selectedCategoryProperty)
                 amountProperty.unbindBidirectional(first.amountProperty)
             }
@@ -93,16 +94,13 @@ class EditTransactionViewModel : EditTransferBase(), AutoCloseable {
             when (it.list.size){
                 1 -> {
                     it.list.first().let { first ->
-                        selectedTypeProperty.bindBidirectional(first.selectedTypeProperty)
                         selectedCategoryProperty.bindBidirectional(first.selectedCategoryProperty)
                         amountProperty.bindBidirectional(first.amountProperty)
                     }
-                    typeDisabled.value = false
                     categoryDisabled.value = false
                     amountDisabled.value = false
                 }
                 else -> {
-                    typeDisabled.value = true
                     categoryDisabled.value = true
                     amountDisabled.value = true
                 }
@@ -165,7 +163,20 @@ class EditTransactionViewModel : EditTransferBase(), AutoCloseable {
             else -> transfers
         }
 
-        editTransfers.setAll(this.transfers.map { EditTransfer.from(it, types) })
+        val sum = transfers.fold(0L) { acc, t ->
+            when (val a= t.amount) {
+                null -> acc + 0L
+                else -> acc + a
+            }
+        }
+
+        transactionType = when {
+            sum > 0 -> types.find { it.variant == TransactionType.Variant.CREDIT }
+            sum < 0 -> types.find { it.variant == TransactionType.Variant.DEBIT }
+            else -> null
+        }
+
+        editTransfers.setAll(this.transfers.map { EditTransfer.from(it, transactionType) })
 
         splitDisabled.value = false
     }
@@ -186,7 +197,7 @@ class EditTransactionViewModel : EditTransferBase(), AutoCloseable {
 
                 // convert any pending categories into real categories
                 when (val c = edit.category) {
-                    is PendingCategory -> edit.category = c.toRealCategory(tx, edit.transactionType!!)
+                    is PendingCategory -> edit.category = c.toRealCategory(tx, transactionType!!)
                 }
 
                 val transfer = when {
@@ -197,7 +208,7 @@ class EditTransactionViewModel : EditTransferBase(), AutoCloseable {
                 }
 
                 transfer.apply {
-                    this.amount = edit.amountValue
+                    this.amount = edit.getAmountValue(transactionType!!)
                     this.category = edit.realCategory
                     this.memo = edit.memo
                     save(tx)
@@ -235,48 +246,36 @@ class EditTransfer : EditTransferBase() {
 
     companion object {
 
-        fun from(transfer: Transfer, types: List<TransactionType>) = EditTransfer().apply {
+        fun from(transfer: Transfer, transactionType: TransactionType?) = EditTransfer().apply {
             category = when (val c = transfer.category) {
                 null -> null
                 else -> RealCategory(c)
             }
 
-            // TODO: determine the transaction type
-            val a = transfer.amount
-            when {
-                a == null -> {
-                    // amount and type not set
+            amount = transfer.amount?.let {
+                val a= when (transactionType?.variant) {
+                    TransactionType.Variant.DEBIT -> -it
+                    else -> it
                 }
-                a < 0 -> {
-                    // debit from this account
-                    amountProperty.value = Money.valueOf(-a)
-                    transactionType = types.find { it.variant == TransactionType.Variant.DEBIT }
-                }
-                a > 0 -> {
-                    // credit to this account
-                    amountProperty.value = Money.valueOf(a)
-                    transactionType = types.find { it.variant == TransactionType.Variant.CREDIT }
-                }
+                a.let { i -> Money.valueOf(i) }
             }
 
-            amountProperty.value = transfer.amount?.let { Money.valueOf(it) }
             memoProperty.value = transfer.memo
         }
 
         fun from(editTransfer: EditTransfer) = EditTransfer().apply {
-            transactionType = editTransfer.transactionType
             category = editTransfer.category
-            amountProperty.value = editTransfer.amountProperty.value
+            amount = editTransfer.amount
             memoProperty.value = editTransfer.memoProperty.value
         }
     }
 
-    val amountValue: Long
-        get() = when (transactionType?.variant) {
-            TransactionType.Variant.CREDIT -> amountProperty.value.value
-            TransactionType.Variant.DEBIT -> -amountProperty.value.value
-            else -> throw IllegalStateException("TransactionType not set")
+    fun getAmountValue(transactionType: TransactionType): Long {
+        return when (transactionType.variant) {
+            TransactionType.Variant.CREDIT -> amount!!.value
+            TransactionType.Variant.DEBIT -> -amount!!.value
         }
+    }
 
     val realCategory: Category
         get() = when (val c = category) {

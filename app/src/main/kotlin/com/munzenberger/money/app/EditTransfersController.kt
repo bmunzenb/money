@@ -25,7 +25,7 @@ class EditTransfersController {
     private lateinit var copiedTransfers: ObservableList<EditTransfer>
 
     private val viewModel = EditTransfersViewModel()
-    private val tableControllers = mutableListOf<TransfersTableController>()
+    private lateinit var transfersTableController: TransfersTableController
 
     fun initialize() {
 
@@ -53,7 +53,7 @@ class EditTransfersController {
 
             anchorPane.children.add(node)
             controller.start(copiedTransfers, categories)
-            tableControllers.add(controller)
+            transfersTableController = controller
         }
 
         viewModel.start()
