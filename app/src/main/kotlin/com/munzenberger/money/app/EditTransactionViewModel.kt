@@ -57,6 +57,9 @@ abstract class EditTransferBase {
     var memo: String?
         get() = memoProperty.value
         set(value) { memoProperty.value = value }
+
+    val isValid: Boolean
+        get() = valid.value
 }
 
 class EditTransactionViewModel : EditTransferBase(), AutoCloseable {

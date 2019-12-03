@@ -6,12 +6,14 @@ import javafx.beans.property.ReadOnlyListProperty
 import javafx.beans.property.SimpleBooleanProperty
 import javafx.beans.property.SimpleListProperty
 import javafx.collections.FXCollections
+import javafx.collections.ListChangeListener
 import javafx.collections.ObservableList
+import javafx.util.Callback
 
 class EditTransfersViewModel : EditTransferBase() {
 
-    private val transfers: ObservableList<EditTransfer> = FXCollections.observableArrayList()
-    private val categories: ObservableList<DelayedCategory> = FXCollections.observableArrayList()
+    private val transfers = FXCollections.observableArrayList<EditTransfer> { t -> arrayOf(t.selectedCategoryProperty, t.amountProperty) }
+    private val categories = FXCollections.observableArrayList<DelayedCategory>()
     private val addDisabled = SimpleBooleanProperty(true)
     private val doneDisabled = SimpleBooleanProperty(true)
 
@@ -24,6 +26,10 @@ class EditTransfersViewModel : EditTransferBase() {
 
     init {
         addDisabled.bind(selectedCategoryProperty.isNull.or(amountProperty.isNull))
+
+        transfers.addListener(ListChangeListener {
+            doneDisabled.value = it.list.any { e -> !e.isValid }
+        })
     }
 
     fun start(transfers: ObservableList<EditTransfer>, categories: List<DelayedCategory>) {
@@ -49,5 +55,10 @@ class EditTransfersViewModel : EditTransferBase() {
         category = null
         memo = null
         amount = null
+    }
+
+    fun done() {
+
+        originalTransfers.setAll(transfers)
     }
 }

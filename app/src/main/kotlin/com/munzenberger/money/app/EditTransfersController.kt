@@ -134,7 +134,8 @@ class EditTransfersController {
     }
 
     @FXML fun onDoneButton() {
-
+        viewModel.done()
+        stage.close()
     }
 
     @FXML fun onCancelButton() {
