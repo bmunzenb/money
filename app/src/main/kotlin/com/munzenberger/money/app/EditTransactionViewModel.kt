@@ -35,16 +35,9 @@ import java.time.LocalDate
 
 abstract class EditTransferBase {
 
-    private val valid = SimpleBooleanProperty(false)
-
     val selectedCategoryProperty = SimpleObjectProperty<DelayedCategory>()
     val amountProperty = SimpleObjectProperty<Money>()
     val memoProperty = SimpleStringProperty()
-    val validProperty: ReadOnlyBooleanProperty = valid
-
-    init {
-        valid.bind(selectedCategoryProperty.isNotNull.and(amountProperty.isNotNull))
-    }
 
     var category: DelayedCategory?
         get() = selectedCategoryProperty.value
@@ -57,9 +50,6 @@ abstract class EditTransferBase {
     var memo: String?
         get() = memoProperty.value
         set(value) { memoProperty.value = value }
-
-    val isValid: Boolean
-        get() = valid.value
 }
 
 class EditTransactionViewModel : EditTransferBase(), AutoCloseable {
@@ -129,7 +119,8 @@ class EditTransactionViewModel : EditTransferBase(), AutoCloseable {
         notValid.bind(selectedAccountProperty.isNull
                 .or(selectedTypeProperty.isNull)
                 .or(dateProperty.isNull)
-                .or(validProperty.not()))
+                .or(selectedCategoryProperty.isNull)
+                .or(amountProperty.isNull))
     }
 
     fun start(database: MoneyDatabase, transaction: Transaction, schedulers: SchedulerProvider = SchedulerProvider.Default) {
@@ -286,6 +277,10 @@ class EditTransfer : EditTransferBase() {
         }
     }
 
+    private val valid = SimpleBooleanProperty(false).apply {
+        bind(selectedCategoryProperty.isNotNull.and(amountProperty.isNotNull))
+    }
+
     fun getAmountValue(transactionType: TransactionType): Long {
         return when (transactionType.variant) {
             TransactionType.Variant.CREDIT -> amount!!.value
@@ -298,4 +293,7 @@ class EditTransfer : EditTransferBase() {
             is RealCategory -> c.category
             else -> throw IllegalStateException("DelayedCategory not a RealCategory: $c")
         }
+
+    val isValid: Boolean
+        get() = valid.value
 }
