@@ -12,11 +12,11 @@
 
 <VBox maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.munzenberger.money.app.EditTransfersController">
    <children>
-      <TableView maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="0.0" minWidth="0.0" VBox.vgrow="ALWAYS">
+      <TableView fx:id="tableView" editable="true" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="0.0" minWidth="0.0" VBox.vgrow="ALWAYS">
         <columns>
-          <TableColumn prefWidth="75.0" sortable="false" text="Category" />
-          <TableColumn prefWidth="75.0" sortable="false" text="Memo" />
-            <TableColumn prefWidth="75.0" sortable="false" text="Amount" />
+          <TableColumn fx:id="categoryColumn" prefWidth="75.0" sortable="false" text="Category" />
+          <TableColumn fx:id="memoColumn" prefWidth="75.0" sortable="false" text="Memo" />
+            <TableColumn fx:id="amountColumn" prefWidth="75.0" sortable="false" style="-fx-alignment: CENTER-RIGHT;" text="Amount" />
         </columns>
          <columnResizePolicy>
             <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
@@ -27,10 +27,10 @@
       </TableView>
       <HBox fillHeight="false" maxWidth="1.7976931348623157E308" minWidth="0.0" spacing="8.0" VBox.vgrow="NEVER">
          <children>
-            <ComboBox editable="true" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minWidth="0.0" prefWidth="200.0" promptText="Category" HBox.hgrow="SOMETIMES" />
-            <TextField maxWidth="1.7976931348623157E308" minWidth="0.0" prefWidth="150.0" promptText="Memo" HBox.hgrow="SOMETIMES" />
-            <TextField maxWidth="1.7976931348623157E308" minWidth="0.0" prefWidth="100.0" promptText="Amount" HBox.hgrow="SOMETIMES" />
-            <Button mnemonicParsing="false" text="Add" HBox.hgrow="NEVER" />
+            <ComboBox fx:id="categoryComboBox" editable="true" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minWidth="0.0" prefWidth="200.0" promptText="Category" HBox.hgrow="SOMETIMES" />
+            <TextField fx:id="memoTextField" maxWidth="1.7976931348623157E308" minWidth="0.0" prefWidth="150.0" promptText="Memo" HBox.hgrow="SOMETIMES" />
+            <TextField fx:id="amountTextField" maxWidth="1.7976931348623157E308" minWidth="0.0" prefWidth="100.0" promptText="Amount" HBox.hgrow="SOMETIMES" />
+            <Button fx:id="addButton" mnemonicParsing="false" onAction="#onAddButton" text="Add" HBox.hgrow="NEVER" />
          </children>
       </HBox>
       <ButtonBar prefHeight="40.0" prefWidth="200.0" VBox.vgrow="NEVER">

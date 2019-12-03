@@ -11,7 +11,6 @@ import com.munzenberger.money.app.property.AsyncObject
 import com.munzenberger.money.app.property.bindAsync
 import com.munzenberger.money.app.property.bindAsyncStatus
 import com.munzenberger.money.core.Account
-import com.munzenberger.money.core.Money
 import com.munzenberger.money.core.MoneyDatabase
 import com.munzenberger.money.core.Payee
 import com.munzenberger.money.core.Transaction
@@ -24,7 +23,6 @@ import javafx.scene.control.TextField
 import javafx.scene.control.TextFormatter
 import javafx.stage.Stage
 import java.net.URL
-import java.text.ParseException
 
 class EditTransactionController {
 
@@ -73,6 +71,8 @@ class EditTransactionController {
             items = viewModel.typesProperty
 
             valueProperty().bindBidirectional(viewModel.selectedTypeProperty)
+
+            disableProperty().bind(viewModel.typeDisabledProperty)
         }
 
         datePicker.valueProperty().bindBidirectional(viewModel.dateProperty)

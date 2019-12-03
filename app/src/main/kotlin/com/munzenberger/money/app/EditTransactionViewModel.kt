@@ -35,17 +35,28 @@ import java.time.LocalDate
 
 abstract class EditTransferBase {
 
+    private val valid = SimpleBooleanProperty(false)
+
     val selectedCategoryProperty = SimpleObjectProperty<DelayedCategory>()
     val amountProperty = SimpleObjectProperty<Money>()
     val memoProperty = SimpleStringProperty()
+    val validProperty: ReadOnlyBooleanProperty = valid
+
+    init {
+        valid.bind(selectedCategoryProperty.isNotNull.and(amountProperty.isNotNull))
+    }
+
+    var category: DelayedCategory?
+        get() = selectedCategoryProperty.value
+        set(value) { selectedCategoryProperty.value = value }
 
     var amount: Money?
         get() = amountProperty.value
         set(value) { amountProperty.value = value }
 
-    var category: DelayedCategory?
-        get() = selectedCategoryProperty.value
-        set(value) { selectedCategoryProperty.value = value }
+    var memo: String?
+        get() = memoProperty.value
+        set(value) { memoProperty.value = value }
 }
 
 class EditTransactionViewModel : EditTransferBase(), AutoCloseable {
@@ -53,6 +64,7 @@ class EditTransactionViewModel : EditTransferBase(), AutoCloseable {
     private val accounts = SimpleAsyncObjectProperty<List<Account>>()
     private val payees = SimpleAsyncObjectProperty<List<Payee>>()
     private val types = FXCollections.observableArrayList<TransactionType>()
+    private val typeDisabled = SimpleBooleanProperty(true)
     private val categories = SimpleAsyncObjectProperty<List<DelayedCategory>>()
     private val categoryDisabled = SimpleBooleanProperty(true)
     private val splitDisabled = SimpleBooleanProperty(true)
@@ -63,8 +75,8 @@ class EditTransactionViewModel : EditTransferBase(), AutoCloseable {
     val accountsProperty: ReadOnlyAsyncObjectProperty<List<Account>> = accounts
     val selectedAccountProperty = SimpleObjectProperty<Account?>()
     val typesProperty: ReadOnlyListProperty<TransactionType> = SimpleListProperty(types)
+    val typeDisabledProperty: ReadOnlyBooleanProperty = typeDisabled
     val selectedTypeProperty = SimpleObjectProperty<TransactionType>()
-
     val dateProperty = SimpleObjectProperty<LocalDate>()
     val payeesProperty: ReadOnlyAsyncObjectProperty<List<Payee>> = payees
     val selectedPayeeProperty = SimpleObjectProperty<Payee?>()
@@ -86,7 +98,7 @@ class EditTransactionViewModel : EditTransferBase(), AutoCloseable {
     private val editTransfers: ObservableList<EditTransfer> = FXCollections.observableArrayList<EditTransfer>().apply {
         addListener(ListChangeListener {
 
-            it.list.firstOrNull()?.let { first ->
+            it.list.first().let { first ->
                 selectedCategoryProperty.unbindBidirectional(first.selectedCategoryProperty)
                 amountProperty.unbindBidirectional(first.amountProperty)
             }
@@ -101,6 +113,8 @@ class EditTransactionViewModel : EditTransferBase(), AutoCloseable {
                     amountDisabled.value = false
                 }
                 else -> {
+                    category = PendingCategory("Split")
+                    amount = it.list.fold(Money.ZERO) { acc, t -> acc.add(t.amount!!) }
                     categoryDisabled.value = true
                     amountDisabled.value = true
                 }
@@ -112,8 +126,7 @@ class EditTransactionViewModel : EditTransferBase(), AutoCloseable {
         notValid.bind(selectedAccountProperty.isNull
                 .or(selectedTypeProperty.isNull)
                 .or(dateProperty.isNull)
-                .or(selectedCategoryProperty.isNull)
-                .or(amountProperty.isNull))
+                .or(validProperty.not()))
     }
 
     fun start(database: MoneyDatabase, transaction: Transaction, schedulers: SchedulerProvider = SchedulerProvider.Default) {
@@ -157,9 +170,7 @@ class EditTransactionViewModel : EditTransferBase(), AutoCloseable {
 
         this.transfers = when {
             // make sure there's at least one transfer
-            transfers.isEmpty() -> listOf(Transfer().apply {
-                setTransaction(transaction)
-            })
+            transfers.isEmpty() -> listOf(Transfer().apply { setTransaction(transaction) })
             else -> transfers
         }
 
@@ -178,6 +189,7 @@ class EditTransactionViewModel : EditTransferBase(), AutoCloseable {
 
         editTransfers.setAll(this.transfers.map { EditTransfer.from(it, transactionType) })
 
+        typeDisabled.value = false
         splitDisabled.value = false
     }
 
@@ -230,7 +242,7 @@ class EditTransactionViewModel : EditTransferBase(), AutoCloseable {
         if (c is AsyncObject.Complete) {
 
             if (editTransfers.size == 1) {
-                editTransfers.first().memoProperty.value = memoProperty.value
+                editTransfers.first().memo = memo
             }
 
             block.invoke(editTransfers, c.value)
@@ -247,6 +259,7 @@ class EditTransfer : EditTransferBase() {
     companion object {
 
         fun from(transfer: Transfer, transactionType: TransactionType?) = EditTransfer().apply {
+
             category = when (val c = transfer.category) {
                 null -> null
                 else -> RealCategory(c)
@@ -260,13 +273,13 @@ class EditTransfer : EditTransferBase() {
                 a.let { i -> Money.valueOf(i) }
             }
 
-            memoProperty.value = transfer.memo
+            memo = transfer.memo
         }
 
         fun from(editTransfer: EditTransfer) = EditTransfer().apply {
             category = editTransfer.category
             amount = editTransfer.amount
-            memoProperty.value = editTransfer.memoProperty.value
+            memo = editTransfer.memo
         }
     }
 
@@ -282,7 +295,4 @@ class EditTransfer : EditTransferBase() {
             is RealCategory -> c.category
             else -> throw IllegalStateException("DelayedCategory not a RealCategory: $c")
         }
-
-    val memo: String?
-        get() = memoProperty.value
 }
