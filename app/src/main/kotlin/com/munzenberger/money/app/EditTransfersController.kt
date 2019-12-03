@@ -4,10 +4,7 @@ import com.munzenberger.money.app.model.DelayedCategory
 import javafx.collections.FXCollections
 import javafx.collections.ObservableList
 import javafx.fxml.FXML
-import javafx.fxml.FXMLLoader
-import javafx.scene.Node
 import javafx.scene.control.Button
-import javafx.scene.layout.AnchorPane
 import javafx.stage.Stage
 import java.net.URL
 
@@ -17,7 +14,6 @@ class EditTransfersController {
         val LAYOUT: URL = EditTransfersController::class.java.getResource("EditTransfersLayout.fxml")
     }
 
-    @FXML private lateinit var anchorPane: AnchorPane
     @FXML private lateinit var doneButton: Button
 
     private lateinit var stage: Stage
@@ -25,7 +21,6 @@ class EditTransfersController {
     private lateinit var copiedTransfers: ObservableList<EditTransfer>
 
     private val viewModel = EditTransfersViewModel()
-    private lateinit var transfersTableController: TransfersTableController
 
     fun initialize() {
 
@@ -44,17 +39,6 @@ class EditTransfersController {
         copiedTransfers = transfers
                 .map { EditTransfer.from(it) }
                 .let { FXCollections.observableList(it) }
-
-        FXMLLoader(TransfersTableController.LAYOUT).load { node: Node, controller: TransfersTableController ->
-            AnchorPane.setLeftAnchor(node, 0.0)
-            AnchorPane.setTopAnchor(node, 0.0)
-            AnchorPane.setRightAnchor(node, 0.0)
-            AnchorPane.setBottomAnchor(node, 0.0)
-
-            anchorPane.children.add(node)
-            controller.start(copiedTransfers, categories)
-            transfersTableController = controller
-        }
 
         viewModel.start()
     }
