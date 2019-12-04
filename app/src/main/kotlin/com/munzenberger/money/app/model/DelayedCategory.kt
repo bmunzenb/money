@@ -86,7 +86,7 @@ private class PendingCategory(string: String) : DelayedCategory {
 
     override fun getCategory(executor: QueryExecutor, transactionType: TransactionType): Category {
 
-        var category: Category? = null
+        var category: Category?
 
         var account = AccountTable.select().where(AccountTable.nameColumn.eq(accountName)).build().let {
             executor.getFirst(it, AccountResultSetMapper())

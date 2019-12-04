@@ -32,7 +32,7 @@ class EditTransfer : EditTransferBase() {
 
         fun from(transfer: Transfer, transactionType: TransactionType?) = EditTransfer().apply {
             category = transfer.category?.let { DelayedCategory.from(it) }
-            amount = transfer.amount?.let { value -> transactionType?.let { value.toMoney(it) } ?: Money.valueOf(value) }
+            amount = transfer.amount?.forTransactionType(transactionType)
             memo = transfer.memo
         }
 
@@ -47,8 +47,8 @@ class EditTransfer : EditTransferBase() {
         bind(selectedCategoryProperty.isNotNull.and(amountProperty.isNotNull))
     }
 
-    fun getAmountValue(transactionType: TransactionType): Long {
-        return amount!!.toValue(transactionType)
+    fun getAmountValue(transactionType: TransactionType): Money {
+        return amount!!.forTransactionType(transactionType)
     }
 
     val isValid: Boolean

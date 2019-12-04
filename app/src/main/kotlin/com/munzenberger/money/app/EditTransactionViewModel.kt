@@ -148,16 +148,16 @@ class EditTransactionViewModel : EditTransferBase(), AutoCloseable {
             else -> transfers
         }
 
-        val sum = transfers.fold(0L) { acc, t ->
+        val sum = transfers.fold(Money.ZERO) { acc, t ->
             when (val a = t.amount) {
-                null -> acc + 0L
-                else -> acc + a
+                null -> acc
+                else -> acc.add(a)
             }
         }
 
         transactionType = when {
-            sum > 0 -> types.find { it.variant == TransactionType.Variant.CREDIT }
-            sum < 0 -> types.find { it.variant == TransactionType.Variant.DEBIT }
+            sum.value > 0 -> types.find { it.variant == TransactionType.Variant.CREDIT }
+            sum.value < 0 -> types.find { it.variant == TransactionType.Variant.DEBIT }
             else -> null
         }
 

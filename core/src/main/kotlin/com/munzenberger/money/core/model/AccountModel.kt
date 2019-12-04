@@ -7,7 +7,8 @@ data class AccountModel(
         var name: String? = null,
         var number: String? = null,
         var accountType: Long? = null,
-        var bank: Long? = null
+        var bank: Long? = null,
+        var initialBalance: Long? = null
 ) : Model()
 
 object AccountTable : Table<AccountModel>() {
@@ -19,12 +20,14 @@ object AccountTable : Table<AccountModel>() {
     const val numberColumn = "ACCOUNT_NUMBER"
     const val accountTypeColumn = "ACCOUNT_TYPE_ID"
     const val bankColumn = "ACCOUNT_BANK_ID"
+    const val initialBalanceColumn = "ACCOUNT_INITIAL_BALANCE"
 
     override fun setValues(settable: SettableQueryBuilder<*>, model: AccountModel) {
         settable.set(nameColumn, model.name)
         settable.set(numberColumn, model.number)
         settable.set(accountTypeColumn, model.accountType)
         settable.set(bankColumn, model.bank)
+        settable.set(initialBalanceColumn, model.initialBalance)
     }
 
     override fun applyJoins(select: SelectQueryBuilder) {

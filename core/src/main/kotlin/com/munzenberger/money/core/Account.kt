@@ -29,6 +29,10 @@ class Account internal constructor(model: AccountModel) : Persistable<AccountMod
 
     var bank: Bank? = null
 
+    var initialBalance: Money?
+        get() = model.initialBalance?.let { Money.valueOf(it) }
+        set(value) { model.initialBalance = value?.value }
+
     fun balance(executor: QueryExecutor): Money {
 
         val creditsQuery = Query.selectFrom(TransferTable.name)
@@ -51,7 +55,7 @@ class Account internal constructor(model: AccountModel) : Persistable<AccountMod
             override fun apply(resultSet: ResultSet) = resultSet.getLong("DEBITS")
         })
 
-        val balance = (credits ?: 0) - (debits ?: 0)
+        val balance = (model.initialBalance ?: 0) + (credits ?: 0) - (debits ?: 0)
 
         return Money.valueOf(balance)
     }
@@ -82,6 +86,7 @@ class AccountResultSetMapper : ResultSetMapper<Account> {
             number = resultSet.getString(AccountTable.numberColumn)
             accountType = resultSet.getLongOrNull(AccountTable.accountTypeColumn)
             bank = resultSet.getLongOrNull(AccountTable.bankColumn)
+            initialBalance = resultSet.getLongOrNull(AccountTable.initialBalanceColumn)
         }
 
         return Account(model).apply {

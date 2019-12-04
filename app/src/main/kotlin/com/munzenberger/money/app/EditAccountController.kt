@@ -1,6 +1,10 @@
 package com.munzenberger.money.app
 
-import com.munzenberger.money.app.control.*
+import com.munzenberger.money.app.control.BlockStringConverter
+import com.munzenberger.money.app.control.ListLookupStringConverter
+import com.munzenberger.money.app.control.MoneyStringConverter
+import com.munzenberger.money.app.control.TextListCellFactory
+import com.munzenberger.money.app.control.autoCompleteTextFormatter
 import com.munzenberger.money.app.model.name
 import com.munzenberger.money.app.property.AsyncObject
 import com.munzenberger.money.app.property.bindAsync
@@ -14,6 +18,7 @@ import javafx.scene.Node
 import javafx.scene.control.Button
 import javafx.scene.control.ComboBox
 import javafx.scene.control.TextField
+import javafx.scene.control.TextFormatter
 import javafx.stage.Stage
 import java.net.URL
 
@@ -28,6 +33,7 @@ class EditAccountController {
     @FXML lateinit var accountTypeComboBox: ComboBox<AccountType>
     @FXML lateinit var accountNumberTextField: TextField
     @FXML lateinit var bankComboBox: ComboBox<Bank>
+    @FXML lateinit var initialBalanceTextField: TextField
     @FXML lateinit var saveButton: Button
     @FXML lateinit var cancelButton: Button
 
@@ -74,6 +80,15 @@ class EditAccountController {
                     AsyncObject.Status.PENDING,
                     AsyncObject.Status.EXECUTING,
                     AsyncObject.Status.ERROR)
+        }
+
+        initialBalanceTextField.apply {
+
+            val moneyConverter = MoneyStringConverter()
+
+            textFormatter = TextFormatter(moneyConverter).apply {
+                valueProperty().bindBidirectional(viewModel.initialBalanceProperty)
+            }
         }
 
         saveButton.disableProperty().bind(viewModel.notValidProperty)

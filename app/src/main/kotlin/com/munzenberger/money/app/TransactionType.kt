@@ -40,16 +40,9 @@ sealed class TransactionType {
     }
 }
 
-fun Money.toValue(transactionType: TransactionType): Long {
-    return when (transactionType.variant) {
-        TransactionType.Variant.CREDIT -> value
-        TransactionType.Variant.DEBIT -> -value
-    }
-}
-
-fun Long.toMoney(transactionType: TransactionType): Money {
-    return when (transactionType.variant) {
-        TransactionType.Variant.CREDIT -> Money.valueOf(this)
-        TransactionType.Variant.DEBIT -> Money.valueOf(-this)
+fun Money.forTransactionType(transactionType: TransactionType?): Money {
+    return when (transactionType?.variant) {
+        TransactionType.Variant.DEBIT -> neg()
+        else -> this
     }
 }

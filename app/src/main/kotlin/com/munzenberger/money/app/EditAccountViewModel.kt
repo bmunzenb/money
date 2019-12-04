@@ -9,6 +9,7 @@ import com.munzenberger.money.core.Account
 import com.munzenberger.money.core.AccountType
 import com.munzenberger.money.core.Bank
 import com.munzenberger.money.core.Category
+import com.munzenberger.money.core.Money
 import com.munzenberger.money.core.MoneyDatabase
 import com.munzenberger.money.core.rx.observableGetAll
 import com.munzenberger.money.core.rx.observableSave
@@ -34,6 +35,7 @@ class EditAccountViewModel {
     val accountNumberProperty = SimpleStringProperty()
     val banksProperty: ReadOnlyAsyncObjectProperty<List<Bank>> = banks
     val selectedBankProperty = SimpleObjectProperty<Bank?>()
+    val initialBalanceProperty = SimpleObjectProperty<Money?>()
     val notValidProperty: ReadOnlyBooleanProperty = notValid
     val saveStatusProperty: ReadOnlyAsyncStatusProperty = saveStatus
 
@@ -57,6 +59,8 @@ class EditAccountViewModel {
 
         selectedBankProperty.value = account.bank
 
+        initialBalanceProperty.value = account.initialBalance
+
         notValid.bind(accountNameProperty.isEmpty.or(selectedAccountTypeProperty.isNull))
     }
 
@@ -67,6 +71,7 @@ class EditAccountViewModel {
             accountType = selectedAccountTypeProperty.value
             number = accountNumberProperty.value
             bank = selectedBankProperty.value
+            initialBalance = initialBalanceProperty.value
         }
 
         val save = when (account.identity) {

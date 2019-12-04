@@ -27,6 +27,7 @@ fun Account.randomize() = this.apply {
     number = randomString()
     accountType = AccountType().randomize()
     bank = Bank().randomize()
+    initialBalance = Money.random()
 }
 
 fun Payee.randomize() = this.apply {
@@ -48,6 +49,8 @@ fun Transaction.randomize() = this.apply {
 fun Transfer.randomize() = this.apply {
     category = Category().randomize()
     setTransaction(Transaction().randomize())
-    amount = random.nextLong()
+    amount = Money.random()
     memo = randomString()
 }
+
+private fun Money.Companion.random() = valueOf(random.nextLong())

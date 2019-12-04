@@ -1,16 +1,16 @@
 package com.munzenberger.money.core
 
-import java.lang.UnsupportedOperationException
 import java.math.BigDecimal
 import java.text.DecimalFormat
 import java.text.NumberFormat
-import java.util.*
+import java.util.Currency
+import java.util.Locale
 
 class Money private constructor(private val currency: Currency, val value: Long): Comparable<Money> {
 
     companion object {
 
-        val ZERO = Money.valueOf(0)
+        val ZERO = valueOf(0)
 
         fun valueOf(value: Long) = Money(Currency.getInstance(Locale.getDefault()), value)
 
@@ -77,6 +77,8 @@ class Money private constructor(private val currency: Currency, val value: Long)
         val sum = value + money.value
         return Money(currency, sum)
     }
+
+    fun neg(): Money = valueOf(-value)
 
     override fun toString() = toString(Locale.getDefault())
 

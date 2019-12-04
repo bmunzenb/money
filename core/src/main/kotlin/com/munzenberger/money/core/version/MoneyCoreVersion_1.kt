@@ -36,6 +36,7 @@ class MoneyCoreVersion_1 : ApplicableVersion<MoneyDatabase> {
                 .column(AccountTable.numberColumn, "TEXT")
                 .columnWithReference(AccountTable.accountTypeColumn, obj.dialect.identityType("NOT NULL"), AccountTypeTable.name, AccountTypeTable.identityColumn)
                 .columnWithReference(AccountTable.bankColumn, obj.dialect.identityType, BankTable.name, BankTable.identityColumn)
+                .column(AccountTable.initialBalanceColumn, "BIGINT")
                 .build())
 
         obj.execute(Query.createTable(CategoryTable.name)

@@ -21,6 +21,7 @@
     <RowConstraints fillHeight="false" vgrow="NEVER" />
       <RowConstraints fillHeight="false" vgrow="NEVER" />
       <RowConstraints fillHeight="false" vgrow="NEVER" />
+      <RowConstraints fillHeight="false" vgrow="NEVER" />
   </rowConstraints>
    <children>
       <Label text="Accout name:" />
@@ -31,7 +32,9 @@
       <TextField fx:id="accountNumberTextField" maxWidth="1.7976931348623157E308" GridPane.columnIndex="1" GridPane.rowIndex="2" />
       <Label text="Financial institution:" GridPane.rowIndex="3" />
       <ComboBox fx:id="bankComboBox" editable="true" maxWidth="1.7976931348623157E308" GridPane.columnIndex="1" GridPane.rowIndex="3" />
-      <ButtonBar prefHeight="40.0" prefWidth="200.0" GridPane.columnSpan="2147483647" GridPane.halignment="RIGHT" GridPane.rowIndex="4">
+      <Label text="Initial balance:" GridPane.rowIndex="4" />
+      <TextField fx:id="initialBalanceTextField" maxWidth="1.7976931348623157E308" GridPane.columnIndex="1" GridPane.rowIndex="4" />
+      <ButtonBar prefHeight="40.0" prefWidth="200.0" GridPane.columnSpan="2147483647" GridPane.halignment="RIGHT" GridPane.rowIndex="5">
         <buttons>
           <Button fx:id="saveButton" defaultButton="true" mnemonicParsing="false" onAction="#onSaveButton" text="Save" />
             <Button fx:id="cancelButton" cancelButton="true" mnemonicParsing="false" onAction="#onCancelButton" text="Cancel" />

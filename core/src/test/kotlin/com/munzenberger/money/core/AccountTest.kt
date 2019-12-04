@@ -21,6 +21,7 @@ class AccountTest : PersistableTest<Account>() {
         assertEquals(p1.number, p2.number)
         assertEquals(p1.accountType?.identity, p2.accountType?.identity)
         assertEquals(p1.bank?.identity, p2.bank?.identity)
+        assertEquals(p1.initialBalance, p2.initialBalance)
     }
 
     @Test
@@ -44,6 +45,7 @@ class AccountTest : PersistableTest<Account>() {
 
         val account1 = Account().apply {
             randomize()
+            initialBalance = Money.valueOf(10)
             save(database)
         }
 
@@ -62,12 +64,13 @@ class AccountTest : PersistableTest<Account>() {
         Transfer().apply {
             this.setTransaction(transaction1)
             this.category = Category().apply { randomize() }
-            this.amount = 42
+            this.amount = Money.valueOf(42)
             save(database)
         }
 
         val account2 = Account().apply {
             randomize()
+            initialBalance = Money.valueOf(-10)
             save(database)
         }
 
@@ -81,14 +84,14 @@ class AccountTest : PersistableTest<Account>() {
        Transfer().apply {
             this.setTransaction(transaction2)
             this.category = accountCategory
-            this.amount = 88
+            this.amount = Money.valueOf(88)
             save(database)
         }
 
         val balance1 = account1.balance(database)
-        assertEquals("Account1 should have credit of 42 and debit of 88", Money.valueOf(42 - 88), balance1)
+        assertEquals("Account1 should have credit of 42 and debit of 88", Money.valueOf(10 + 42 - 88), balance1)
 
         val balance2 = account2.balance(database)
-        assertEquals("Account2 should have credit of 88", Money.valueOf(88), balance2)
+        assertEquals("Account2 should have credit of 88", Money.valueOf(-10 + 88), balance2)
     }
 }
