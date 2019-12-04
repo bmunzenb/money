@@ -12,12 +12,15 @@ import javafx.collections.ObservableList
 import javafx.fxml.FXML
 import javafx.scene.control.Button
 import javafx.scene.control.ComboBox
+import javafx.scene.control.SelectionMode
 import javafx.scene.control.TableColumn
 import javafx.scene.control.TableView
 import javafx.scene.control.TextField
 import javafx.scene.control.TextFormatter
 import javafx.scene.control.cell.ComboBoxTableCell
 import javafx.scene.control.cell.TextFieldTableCell
+import javafx.scene.input.KeyCode
+import javafx.scene.text.Text
 import javafx.stage.Stage
 import javafx.util.Callback
 import java.net.URL
@@ -48,32 +51,43 @@ class EditTransfersController {
 
             items = viewModel.transfersProperty
 
-            categoryColumn.apply {
+            selectionModel.selectionMode = SelectionMode.MULTIPLE
 
-                val converter = ListLookupStringConverter(
-                        viewModel.categoriesProperty,
-                        BlockStringConverter<DelayedCategory>(
-                                toString = { c -> c.name },
-                                toObject = { s -> PendingCategory(s) }))
-
-                cellFactory = Callback { _ ->
-                    ComboBoxTableCell<EditTransfer, DelayedCategory>(converter, viewModel.categoriesProperty).apply {
-                        isComboBoxEditable = true
-                    }
+            setOnKeyReleased {
+                when (it.code) {
+                    KeyCode.DELETE -> viewModel.delete(selectionModel.selectedItems)
+                    else -> { /* do nothing */ }
                 }
-
-                cellValueFactory = Callback { t -> t.value.selectedCategoryProperty }
             }
 
-            memoColumn.apply {
-                cellFactory = TextFieldTableCell.forTableColumn()
-                cellValueFactory = Callback { t -> t.value.memoProperty }
+            placeholder = Text("Use the form below to add transaction details.")
+        }
+
+        categoryColumn.apply {
+
+            val converter = ListLookupStringConverter(
+                    viewModel.categoriesProperty,
+                    BlockStringConverter<DelayedCategory>(
+                            toString = { c -> c.name },
+                            toObject = { s -> PendingCategory(s) }))
+
+            cellFactory = Callback { _ ->
+                ComboBoxTableCell<EditTransfer, DelayedCategory>(converter, viewModel.categoriesProperty).apply {
+                    isComboBoxEditable = true
+                }
             }
 
-            amountColumn.apply {
-                cellFactory = TextFieldTableCell.forTableColumn(MoneyStringConverter())
-                cellValueFactory = Callback { t -> t.value.amountProperty }
-            }
+            cellValueFactory = Callback { t -> t.value.selectedCategoryProperty }
+        }
+
+        memoColumn.apply {
+            cellFactory = TextFieldTableCell.forTableColumn()
+            cellValueFactory = Callback { t -> t.value.memoProperty }
+        }
+
+        amountColumn.apply {
+            cellFactory = TextFieldTableCell.forTableColumn(MoneyStringConverter())
+            cellValueFactory = Callback { t -> t.value.amountProperty }
         }
 
         categoryComboBox.apply {
@@ -120,13 +134,6 @@ class EditTransfersController {
         stage.minHeight = stage.height
 
         viewModel.start(transfers, categories)
-
-        if (transfers.size == 1) {
-            when {
-                transfers[0].category == null -> tableView.edit(0, categoryColumn)
-                transfers[0].amount == null -> tableView.edit(0, amountColumn)
-            }
-        }
     }
 
     @FXML fun onAddButton() {

@@ -14,7 +14,11 @@ class EditTransfersViewModel : EditTransferBase() {
 
     private val transfers = FXCollections.observableArrayList<EditTransfer> { t -> arrayOf(t.selectedCategoryProperty, t.amountProperty) }
     private val categories = FXCollections.observableArrayList<DelayedCategory>()
-    private val addDisabled = SimpleBooleanProperty(true)
+
+    private val addDisabled = SimpleBooleanProperty(true).apply {
+        bind(selectedCategoryProperty.isNull.or(amountProperty.isNull))
+    }
+
     private val doneDisabled = SimpleBooleanProperty(true)
 
     val transfersProperty: ReadOnlyListProperty<EditTransfer> = SimpleListProperty(transfers)
@@ -25,10 +29,8 @@ class EditTransfersViewModel : EditTransferBase() {
     private lateinit var originalTransfers: ObservableList<EditTransfer>
 
     init {
-        addDisabled.bind(selectedCategoryProperty.isNull.or(amountProperty.isNull))
-
         transfers.addListener(ListChangeListener {
-            doneDisabled.value = it.list.any { e -> !e.isValid }
+            doneDisabled.value = it.list.isEmpty() || it.list.any { e -> !e.isValid }
         })
     }
 
@@ -38,7 +40,12 @@ class EditTransfersViewModel : EditTransferBase() {
 
         // operate on a copy of the original transfers and
         // apply the changes when the user taps Done
-        this.transfers.addAll(transfers.map { EditTransfer.from(it) })
+
+        val copied = transfers
+                .filter { it.category != null || it.amount != null }
+                .map { EditTransfer.from(it) }
+
+        this.transfers.addAll(copied)
 
         this.categories.addAll(categories)
     }
@@ -55,6 +62,11 @@ class EditTransfersViewModel : EditTransferBase() {
         category = null
         memo = null
         amount = null
+    }
+
+    fun delete(items: List<EditTransfer>) {
+
+        transfers.removeAll(items)
     }
 
     fun done() {
