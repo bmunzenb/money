@@ -12,12 +12,15 @@ import com.munzenberger.money.core.model.AccountTypeTable
 import com.munzenberger.money.core.model.CategoryTable
 import com.munzenberger.money.sql.QueryExecutor
 import com.munzenberger.money.sql.eq
+import java.lang.UnsupportedOperationException
 
 private const val delimiter = ":"
 
 interface DelayedCategory {
 
     val name: String
+
+    fun getCategory(executor: QueryExecutor, transactionType: TransactionType): Category
 
     companion object {
 
@@ -31,10 +34,23 @@ interface DelayedCategory {
                 else -> "$accountName $delimiter $categoryName"
             }
         }
+
+        fun from(category: Category): DelayedCategory = RealCategory(category)
+
+        fun from(string: String): DelayedCategory = PendingCategory(string)
+
+        fun split(): DelayedCategory = object : DelayedCategory {
+
+            override val name = "Split/Multiple Categories"
+
+            override fun getCategory(executor: QueryExecutor, transactionType: TransactionType): Category {
+                throw UnsupportedOperationException()
+            }
+        }
     }
 }
 
-class RealCategory(val category: Category) : DelayedCategory {
+private class RealCategory(private val category: Category) : DelayedCategory {
 
     override val name: String
 
@@ -46,9 +62,11 @@ class RealCategory(val category: Category) : DelayedCategory {
 
         name = DelayedCategory.name(accountTypeCategory, accountName, categoryName)
     }
+
+    override fun getCategory(executor: QueryExecutor, transactionType: TransactionType) = category
 }
 
-class PendingCategory(string: String) : DelayedCategory {
+private class PendingCategory(string: String) : DelayedCategory {
 
     override val name: String
 
@@ -65,7 +83,7 @@ class PendingCategory(string: String) : DelayedCategory {
         name = DelayedCategory.name(accountName = accountName, categoryName = categoryName)
     }
 
-    fun toRealCategory(executor: QueryExecutor, transactionType: TransactionType): RealCategory {
+    override fun getCategory(executor: QueryExecutor, transactionType: TransactionType): Category {
 
         lateinit var category: Category
 
@@ -75,6 +93,7 @@ class PendingCategory(string: String) : DelayedCategory {
 
         if (account == null) {
 
+            // TODO: should also use the sign of the amount to determine variant
             val variant = when (transactionType.variant) {
                 TransactionType.Variant.CREDIT -> AccountType.Variant.INCOME
                 TransactionType.Variant.DEBIT -> AccountType.Variant.EXPENSE
@@ -112,11 +131,6 @@ class PendingCategory(string: String) : DelayedCategory {
             }
         }
 
-        return RealCategory(category)
+        return category
     }
-}
-
-object SplitCategory : DelayedCategory {
-
-    override val name = "Split"
 }

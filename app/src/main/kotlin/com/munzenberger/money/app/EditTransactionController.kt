@@ -6,7 +6,6 @@ import com.munzenberger.money.app.control.MoneyStringConverter
 import com.munzenberger.money.app.control.TextListCellFactory
 import com.munzenberger.money.app.control.autoCompleteTextFormatter
 import com.munzenberger.money.app.model.DelayedCategory
-import com.munzenberger.money.app.model.PendingCategory
 import com.munzenberger.money.app.property.AsyncObject
 import com.munzenberger.money.app.property.bindAsync
 import com.munzenberger.money.app.property.bindAsyncStatus
@@ -100,7 +99,7 @@ class EditTransactionController {
 
         categoryComboBox.apply {
 
-            val categoryConverter = BlockStringConverter<DelayedCategory>(DelayedCategory::name) { PendingCategory(it) }
+            val categoryConverter = BlockStringConverter<DelayedCategory>(DelayedCategory::name) { DelayedCategory.from(it) }
 
             cellFactory = TextListCellFactory(categoryConverter::toString)
             buttonCell = cellFactory.call(null)

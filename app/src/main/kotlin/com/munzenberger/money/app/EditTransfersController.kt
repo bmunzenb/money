@@ -6,7 +6,6 @@ import com.munzenberger.money.app.control.MoneyStringConverter
 import com.munzenberger.money.app.control.TextListCellFactory
 import com.munzenberger.money.app.control.autoCompleteTextFormatter
 import com.munzenberger.money.app.model.DelayedCategory
-import com.munzenberger.money.app.model.PendingCategory
 import com.munzenberger.money.core.Money
 import javafx.collections.ObservableList
 import javafx.fxml.FXML
@@ -69,7 +68,7 @@ class EditTransfersController {
                     viewModel.categoriesProperty,
                     BlockStringConverter<DelayedCategory>(
                             toString = { c -> c.name },
-                            toObject = { s -> PendingCategory(s) }))
+                            toObject = { s -> DelayedCategory.from(s) }))
 
             cellFactory = Callback { _ ->
                 ComboBoxTableCell<EditTransfer, DelayedCategory>(converter, viewModel.categoriesProperty).apply {
@@ -92,7 +91,7 @@ class EditTransfersController {
 
         categoryComboBox.apply {
 
-            val categoryConverter = BlockStringConverter<DelayedCategory>(DelayedCategory::name) { PendingCategory(it) }
+            val categoryConverter = BlockStringConverter(DelayedCategory::name) { DelayedCategory.from(it) }
 
             cellFactory = TextListCellFactory(categoryConverter::toString)
             buttonCell = cellFactory.call(null)

@@ -1,8 +1,6 @@
 package com.munzenberger.money.app
 
 import com.munzenberger.money.app.model.DelayedCategory
-import com.munzenberger.money.app.model.PendingCategory
-import com.munzenberger.money.app.model.RealCategory
 import com.munzenberger.money.app.model.getAssetsAndLiabilities
 import com.munzenberger.money.app.model.observableGetTransfers
 import com.munzenberger.money.app.model.toDate
@@ -106,7 +104,7 @@ class EditTransactionViewModel : EditTransferBase(), AutoCloseable {
                     amountDisabled.value = false
                 }
                 else -> {
-                    category = PendingCategory("Split")
+                    category = DelayedCategory.split()
                     amount = it.list.fold(Money.ZERO) { acc, t -> acc.add(t.amount!!) }
                     categoryDisabled.value = true
                     amountDisabled.value = true
@@ -151,7 +149,7 @@ class EditTransactionViewModel : EditTransferBase(), AutoCloseable {
         payees.subscribeTo(Payee.observableGetAll(database).sortedBy { it.name })
 
         categories.subscribeTo(Category.observableGetAll(database).map {
-            it.map { c -> RealCategory(c) }
+            it.map { c -> DelayedCategory.from(c) }
         })
 
         transaction.observableGetTransfers(database)
@@ -169,7 +167,7 @@ class EditTransactionViewModel : EditTransferBase(), AutoCloseable {
         }
 
         val sum = transfers.fold(0L) { acc, t ->
-            when (val a= t.amount) {
+            when (val a = t.amount) {
                 null -> acc + 0L
                 else -> acc + a
             }
@@ -201,11 +199,6 @@ class EditTransactionViewModel : EditTransferBase(), AutoCloseable {
 
             editTransfers.forEachIndexed { index, edit ->
 
-                // convert any pending categories into real categories
-                when (val c = edit.category) {
-                    is PendingCategory -> edit.category = c.toRealCategory(tx, transactionType!!)
-                }
-
                 val transfer = when {
                     // update existing transfer
                     index < transfers.size -> transfers[index]
@@ -215,7 +208,7 @@ class EditTransactionViewModel : EditTransferBase(), AutoCloseable {
 
                 transfer.apply {
                     this.amount = edit.getAmountValue(transactionType!!)
-                    this.category = edit.realCategory
+                    this.category = edit.category!!.getCategory(tx, transactionType!!)
                     this.memo = edit.memo
                     save(tx)
                 }
@@ -256,7 +249,7 @@ class EditTransfer : EditTransferBase() {
 
             category = when (val c = transfer.category) {
                 null -> null
-                else -> RealCategory(c)
+                else -> DelayedCategory.from(c)
             }
 
             amount = transfer.amount?.let {
@@ -287,12 +280,6 @@ class EditTransfer : EditTransferBase() {
             TransactionType.Variant.DEBIT -> -amount!!.value
         }
     }
-
-    val realCategory: Category
-        get() = when (val c = category) {
-            is RealCategory -> c.category
-            else -> throw IllegalStateException("DelayedCategory not a RealCategory: $c")
-        }
 
     val isValid: Boolean
         get() = valid.value
