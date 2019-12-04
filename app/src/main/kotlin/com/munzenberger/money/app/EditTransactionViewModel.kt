@@ -99,6 +99,7 @@ class EditTransactionViewModel : EditTransferBase(), AutoCloseable {
                     it.list.first().let { first ->
                         selectedCategoryProperty.bindBidirectional(first.selectedCategoryProperty)
                         amountProperty.bindBidirectional(first.amountProperty)
+                        memo = first.memo
                     }
                     categoryDisabled.value = false
                     amountDisabled.value = false
