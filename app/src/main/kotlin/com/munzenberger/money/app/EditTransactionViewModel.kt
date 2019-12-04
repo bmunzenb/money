@@ -25,30 +25,10 @@ import javafx.beans.property.ReadOnlyListProperty
 import javafx.beans.property.SimpleBooleanProperty
 import javafx.beans.property.SimpleListProperty
 import javafx.beans.property.SimpleObjectProperty
-import javafx.beans.property.SimpleStringProperty
 import javafx.collections.FXCollections
 import javafx.collections.ListChangeListener
 import javafx.collections.ObservableList
 import java.time.LocalDate
-
-abstract class EditTransferBase {
-
-    val selectedCategoryProperty = SimpleObjectProperty<DelayedCategory>()
-    val amountProperty = SimpleObjectProperty<Money>()
-    val memoProperty = SimpleStringProperty()
-
-    var category: DelayedCategory?
-        get() = selectedCategoryProperty.value
-        set(value) { selectedCategoryProperty.value = value }
-
-    var amount: Money?
-        get() = amountProperty.value
-        set(value) { amountProperty.value = value }
-
-    var memo: String?
-        get() = memoProperty.value
-        set(value) { memoProperty.value = value }
-}
 
 class EditTransactionViewModel : EditTransferBase(), AutoCloseable {
 
@@ -89,6 +69,7 @@ class EditTransactionViewModel : EditTransferBase(), AutoCloseable {
     private val editTransfers: ObservableList<EditTransfer> = FXCollections.observableArrayList<EditTransfer>().apply {
         addListener(ListChangeListener {
 
+            // TODO: this doesn't feel safe, consider keeping the values in the view model independent of those in this list
             it.list.first().let { first ->
                 selectedCategoryProperty.unbindBidirectional(first.selectedCategoryProperty)
                 amountProperty.unbindBidirectional(first.amountProperty)
@@ -240,48 +221,4 @@ class EditTransactionViewModel : EditTransferBase(), AutoCloseable {
     override fun close() {
         // do nothing
     }
-}
-
-class EditTransfer : EditTransferBase() {
-
-    companion object {
-
-        fun from(transfer: Transfer, transactionType: TransactionType?) = EditTransfer().apply {
-
-            category = when (val c = transfer.category) {
-                null -> null
-                else -> DelayedCategory.from(c)
-            }
-
-            amount = transfer.amount?.let {
-                val a= when (transactionType?.variant) {
-                    TransactionType.Variant.DEBIT -> -it
-                    else -> it
-                }
-                a.let { i -> Money.valueOf(i) }
-            }
-
-            memo = transfer.memo
-        }
-
-        fun from(editTransfer: EditTransfer) = EditTransfer().apply {
-            category = editTransfer.category
-            amount = editTransfer.amount
-            memo = editTransfer.memo
-        }
-    }
-
-    private val valid = SimpleBooleanProperty(false).apply {
-        bind(selectedCategoryProperty.isNotNull.and(amountProperty.isNotNull))
-    }
-
-    fun getAmountValue(transactionType: TransactionType): Long {
-        return when (transactionType.variant) {
-            TransactionType.Variant.CREDIT -> amount!!.value
-            TransactionType.Variant.DEBIT -> -amount!!.value
-        }
-    }
-
-    val isValid: Boolean
-        get() = valid.value
 }

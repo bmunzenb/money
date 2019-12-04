@@ -1,6 +1,7 @@
 package com.munzenberger.money.app
 
 import com.munzenberger.money.core.AccountType
+import com.munzenberger.money.core.Money
 
 sealed class TransactionType {
 
@@ -36,5 +37,19 @@ sealed class TransactionType {
             AccountType.Variant.CREDIT -> "Charge"
             else -> "Debit"
         }
+    }
+}
+
+fun Money.toValue(transactionType: TransactionType): Long {
+    return when (transactionType.variant) {
+        TransactionType.Variant.CREDIT -> value
+        TransactionType.Variant.DEBIT -> -value
+    }
+}
+
+fun Long.toMoney(transactionType: TransactionType): Money {
+    return when (transactionType.variant) {
+        TransactionType.Variant.CREDIT -> Money.valueOf(this)
+        TransactionType.Variant.DEBIT -> Money.valueOf(-this)
     }
 }
