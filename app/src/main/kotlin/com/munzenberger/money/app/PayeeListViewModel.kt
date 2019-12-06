@@ -16,7 +16,7 @@ class PayeeListViewModel : AutoCloseable {
 
     private val disposables = CompositeDisposable()
 
-    fun start(database: ObservableMoneyDatabase, schedulers: SchedulerProvider) {
+    fun start(database: ObservableMoneyDatabase, schedulers: SchedulerProvider = SchedulerProvider.Default) {
 
         val getPayees = Payee.getAllWithLastPaid(database)
                 .map { it.map { p -> FXPayee(p.first, p.second) } }

@@ -75,8 +75,8 @@ class PayeeListController : AutoCloseable {
         }
     }
 
-    fun start(database: ObservableMoneyDatabase, schedulers: SchedulerProvider) {
-        viewModel.start(database, schedulers)
+    fun start(database: ObservableMoneyDatabase) {
+        viewModel.start(database)
     }
 
     @FXML fun onAddPayee() {

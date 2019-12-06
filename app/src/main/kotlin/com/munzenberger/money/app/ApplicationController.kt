@@ -1,6 +1,5 @@
 package com.munzenberger.money.app
 
-import com.munzenberger.money.core.MoneyDatabase
 import com.munzenberger.money.core.rx.ObservableMoneyDatabase
 import javafx.fxml.FXML
 import javafx.fxml.FXMLLoader
@@ -19,7 +18,6 @@ class ApplicationController : DatabaseConnectorDelegate, AutoCloseable {
     @FXML lateinit var menuBar: MenuBar
     @FXML lateinit var contentPane: AnchorPane
 
-    private val schedulers = SchedulerProvider.Default
     private val viewModel = ApplicationViewModel()
     private var activeController: AutoCloseable? = null
 
@@ -80,7 +78,7 @@ class ApplicationController : DatabaseConnectorDelegate, AutoCloseable {
     private fun presentNavigation(database: ObservableMoneyDatabase) {
 
         FXMLLoader(NavigationController.LAYOUT).load { node: Node, controller: NavigationController ->
-            controller.start(stage, database, schedulers)
+            controller.start(stage, database)
             setContent(node, controller)
         }
     }

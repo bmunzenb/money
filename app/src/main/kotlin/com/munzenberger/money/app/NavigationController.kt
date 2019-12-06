@@ -1,9 +1,7 @@
 package com.munzenberger.money.app
 
 import com.munzenberger.money.app.navigation.LayoutControllerNavigation
-import com.munzenberger.money.app.navigation.Navigation
 import com.munzenberger.money.app.navigation.Navigator
-import com.munzenberger.money.core.MoneyDatabase
 import com.munzenberger.money.core.rx.ObservableMoneyDatabase
 import javafx.fxml.FXML
 import javafx.scene.control.Button
@@ -28,7 +26,7 @@ class NavigationController : AutoCloseable {
     }
 
     private val payeesNavigation = LayoutControllerNavigation(PayeeListController.LAYOUT) {
-        controller: PayeeListController -> controller.start(database, schedulers)
+        controller: PayeeListController -> controller.start(database)
     }
 
     private val queryNavigation = LayoutControllerNavigation(QueryController.LAYOUT) {
@@ -37,7 +35,6 @@ class NavigationController : AutoCloseable {
 
     private lateinit var stage: Stage
     private lateinit var database: ObservableMoneyDatabase
-    private lateinit var schedulers: SchedulerProvider
 
     fun initialize() {
 
@@ -45,10 +42,9 @@ class NavigationController : AutoCloseable {
         forwardButton.disableProperty().bind(navigator.forwardHistoryProperty.emptyProperty())
     }
 
-    fun start(stage: Stage, database: ObservableMoneyDatabase, schedulers: SchedulerProvider) {
+    fun start(stage: Stage, database: ObservableMoneyDatabase) {
         this.stage = stage
         this.database = database
-        this.schedulers = schedulers
 
         navigator.goTo(accountsNavigation)
     }
