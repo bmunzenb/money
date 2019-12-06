@@ -10,3 +10,9 @@ interface MoneyDatabase : QueryExecutor {
 
     fun close()
 }
+
+abstract class AbstractMoneyDatabase(
+        override val name: String,
+        override val dialect: DatabaseDialect,
+        executor: QueryExecutor
+) : MoneyDatabase, QueryExecutor by executor

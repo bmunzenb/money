@@ -20,6 +20,12 @@ class ObservableMoneyDatabase(private val database: MoneyDatabase) : MoneyDataba
         }
     }
 
+    override fun execute(query: Query): Boolean {
+        return database.execute(query).also {
+            when (it) { false -> updatePublisher.onNext(Unit) }
+        }
+    }
+
     override fun createTransaction(): TransactionQueryExecutor =
             ObservableTransactionQueryExecutor(database.createTransaction(), updatePublisher)
 
