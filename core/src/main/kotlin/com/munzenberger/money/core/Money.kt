@@ -12,13 +12,14 @@ class Money private constructor(private val currency: Currency, val value: Long)
 
         val ZERO = valueOf(0)
 
-        fun valueOf(value: Long) = Money(Currency.getInstance(Locale.getDefault()), value)
+        fun valueOf(value: Long, currency: Currency = Currency.getInstance(Locale.getDefault())) =
+                Money(currency, value)
 
-        fun valueOfFraction(fraction: String): Money {
-
-            val locale = Locale.getDefault()
-            return valueOfFraction(locale, Currency.getInstance(locale), fraction)
-        }
+        fun valueOfFraction(
+                fraction: String,
+                locale: Locale = Locale.getDefault(),
+                currency: Currency = Currency.getInstance(locale)
+        ) = valueOfFraction(locale, currency, fraction)
 
         private fun valueOfFraction(locale: Locale, currency: Currency, fraction: String): Money {
 
@@ -93,9 +94,7 @@ class Money private constructor(private val currency: Currency, val value: Long)
         return format.format(fraction)
     }
 
-    fun toStringWithoutCurrency() = toStringWithoutCurrency(Locale.getDefault())
-
-    fun toStringWithoutCurrency(locale: Locale): String {
+    fun toStringWithoutCurrency(locale: Locale = Locale.getDefault()): String {
 
         val fraction = valueToFraction(currency, value)
 
