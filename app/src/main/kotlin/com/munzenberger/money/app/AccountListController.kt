@@ -1,7 +1,7 @@
 package com.munzenberger.money.app
 
-import com.munzenberger.money.app.control.AsyncTableCellFactory
 import com.munzenberger.money.app.control.HyperlinkTableCellFactory
+import com.munzenberger.money.app.control.MoneyAsyncTableCellFactory
 import com.munzenberger.money.app.model.FXAccount
 import com.munzenberger.money.app.navigation.Navigator
 import com.munzenberger.money.app.property.AsyncObject
@@ -10,13 +10,17 @@ import com.munzenberger.money.app.property.bindAsync
 import com.munzenberger.money.app.property.bindAsyncStatus
 import com.munzenberger.money.core.Account
 import com.munzenberger.money.core.Money
-import com.munzenberger.money.core.MoneyDatabase
 import com.munzenberger.money.core.rx.ObservableMoneyDatabase
 import javafx.collections.FXCollections
 import javafx.collections.transformation.SortedList
 import javafx.fxml.FXML
 import javafx.scene.Node
-import javafx.scene.control.*
+import javafx.scene.control.Button
+import javafx.scene.control.Hyperlink
+import javafx.scene.control.Label
+import javafx.scene.control.ProgressIndicator
+import javafx.scene.control.TableColumn
+import javafx.scene.control.TableView
 import javafx.scene.paint.Color
 import javafx.stage.Stage
 import javafx.util.Callback
@@ -93,7 +97,7 @@ class AccountListController : AutoCloseable {
         }
 
         balanceColumn.apply {
-            cellFactory = AsyncTableCellFactory()
+            cellFactory = MoneyAsyncTableCellFactory()
             cellValueFactory = Callback { a -> a.value.balanceProperty }
         }
 
