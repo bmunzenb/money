@@ -4,17 +4,21 @@ import com.munzenberger.money.app.property.AsyncObject
 import com.munzenberger.money.core.Money
 import javafx.scene.control.TableCell
 import javafx.scene.control.TableColumn
-import javafx.scene.paint.Color
 import javafx.util.Callback
 
 class MoneyAsyncTableCell<S> : AsyncTableCell<S, Money>() {
 
+    companion object {
+        private const val NEGATIVE_STYLE_CLASS = "money-negative"
+    }
+
     override fun onComplete(value: Money) {
         super.onComplete(value)
-        // TODO: replace with css that properly handles highlighted color
-        textFill = when (value.value < 0) {
-            true -> Color.RED
-            else -> Color.BLACK
+
+        styleClass.remove(NEGATIVE_STYLE_CLASS)
+
+        if (value.value < 0) {
+            styleClass.add(NEGATIVE_STYLE_CLASS)
         }
     }
 }

@@ -23,6 +23,7 @@ import javafx.scene.control.ProgressIndicator
 import javafx.scene.control.TableColumn
 import javafx.scene.control.TableView
 import javafx.scene.paint.Color
+import javafx.scene.paint.Paint
 import javafx.stage.Stage
 import javafx.util.Callback
 import java.net.URL
@@ -110,7 +111,19 @@ class AccountListController : AutoCloseable {
         totalBalanceLabel.apply {
             visibleProperty().bindAsyncStatus(viewModel.totalBalanceProperty, AsyncObject.Status.COMPLETE)
             textProperty().bindAsync(viewModel.totalBalanceProperty) { "Total Account Balance: $it" }
-            // TODO: what to display if there's an error?
+        }
+
+        viewModel.totalBalanceProperty.addListener { _, _, newValue ->
+            val negativeStyleClass = "money-negative"
+            totalBalanceLabel.styleClass.remove(negativeStyleClass)
+            when (newValue) {
+                is AsyncObject.Complete<Money> -> {
+                    if (newValue.value.value < 0) {
+                        totalBalanceLabel.styleClass.add(negativeStyleClass)
+                    }
+                    tableView.sort()
+                }
+            }
         }
     }
 

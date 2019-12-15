@@ -1,3 +1,15 @@
 .table-row-cell:selected .table-cell .hyperlink {
     -fx-text-fill: -fx-text-background-color ;
 }
+
+.money-negative {
+    -fx-text-fill: #dd0000 ;
+}
+
+.table-row-cell .money-negative {
+    -fx-text-fill: #dd0000 ;
+}
+
+.table-row-cell:selected .money-negative {
+    -fx-text-fill: -fx-text-background-color ;
+}

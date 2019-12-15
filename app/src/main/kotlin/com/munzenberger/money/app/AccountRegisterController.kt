@@ -44,7 +44,6 @@ class AccountRegisterController : AutoCloseable {
         accountNameLabel.apply {
             visibleProperty().bindAsyncStatus(viewModel.accountProperty, AsyncObject.Status.COMPLETE)
             textProperty().bindAsync(viewModel.accountProperty) { "Account Register : ${it.name}" }
-            // TODO: what to display if there's an error?
         }
 
         editAccountButton.disableProperty().bindAsyncStatus(viewModel.accountProperty,
