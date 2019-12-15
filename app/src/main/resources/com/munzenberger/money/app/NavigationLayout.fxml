@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Separator?>
 <?import javafx.scene.control.ToolBar?>
 <?import javafx.scene.layout.BorderPane?>
 
@@ -10,8 +11,10 @@
         <items>
           <Button fx:id="backButton" mnemonicParsing="false" onAction="#onBackButton" text="&lt;" />
             <Button fx:id="forwardButton" mnemonicParsing="false" onAction="#onForwardButton" text="&gt;" />
+            <Separator orientation="VERTICAL" />
             <Button mnemonicParsing="false" onAction="#onAccountsButton" text="Accounts" />
             <Button mnemonicParsing="false" onAction="#onPayeesButton" text="Payees" />
+            <Separator orientation="VERTICAL" />
             <Button mnemonicParsing="false" onAction="#onQueryButton" text="Query" />
         </items>
       </ToolBar>
