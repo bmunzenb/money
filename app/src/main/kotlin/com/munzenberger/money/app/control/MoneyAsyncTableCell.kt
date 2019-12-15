@@ -11,6 +11,7 @@ class MoneyAsyncTableCell<S> : AsyncTableCell<S, Money>() {
 
     override fun onComplete(value: Money) {
         super.onComplete(value)
+        // TODO: replace with css that properly handles highlighted color
         textFill = when (value.value < 0) {
             true -> Color.RED
             else -> Color.BLACK

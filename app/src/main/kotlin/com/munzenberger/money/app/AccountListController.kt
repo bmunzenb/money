@@ -5,6 +5,7 @@ import com.munzenberger.money.app.control.MoneyAsyncTableCellFactory
 import com.munzenberger.money.app.model.FXAccount
 import com.munzenberger.money.app.navigation.Navigator
 import com.munzenberger.money.app.property.AsyncObject
+import com.munzenberger.money.app.property.AsyncObjectComparator
 import com.munzenberger.money.app.property.AsyncObjectMapper
 import com.munzenberger.money.app.property.bindAsync
 import com.munzenberger.money.app.property.bindAsyncStatus
@@ -99,6 +100,7 @@ class AccountListController : AutoCloseable {
         balanceColumn.apply {
             cellFactory = MoneyAsyncTableCellFactory()
             cellValueFactory = Callback { a -> a.value.balanceProperty }
+            comparator = AsyncObjectComparator()
         }
 
         totalBalanceProgress.visibleProperty().bindAsyncStatus(viewModel.totalBalanceProperty,
