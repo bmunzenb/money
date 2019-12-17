@@ -6,11 +6,12 @@ import java.text.NumberFormat
 import java.util.Currency
 import java.util.Locale
 
-class Money private constructor(private val currency: Currency, val value: Long): Comparable<Money> {
+class Money private constructor(private val currency: Currency, internal val value: Long): Comparable<Money> {
 
     companion object {
 
-        val ZERO = valueOf(0)
+        fun zero(currency: Currency = Currency.getInstance(Locale.getDefault())) =
+                valueOf(0, currency)
 
         fun valueOf(value: Long, currency: Currency = Currency.getInstance(Locale.getDefault())) =
                 Money(currency, value)
@@ -19,9 +20,7 @@ class Money private constructor(private val currency: Currency, val value: Long)
                 fraction: String,
                 locale: Locale = Locale.getDefault(),
                 currency: Currency = Currency.getInstance(locale)
-        ) = valueOfFraction(locale, currency, fraction)
-
-        private fun valueOfFraction(locale: Locale, currency: Currency, fraction: String): Money {
+        ): Money {
 
             val format = NumberFormat.getNumberInstance(locale) as DecimalFormat
             format.maximumFractionDigits = currency.defaultFractionDigits
@@ -63,6 +62,12 @@ class Money private constructor(private val currency: Currency, val value: Long)
         }
     }
 
+    val isZero = value == 0L
+
+    val isNegative = value < 0L
+
+    val isPositive = value > 0L
+
     override fun compareTo(other: Money) = when {
         other.value > this.value -> -1
         other.value < this.value -> 1
@@ -79,7 +84,7 @@ class Money private constructor(private val currency: Currency, val value: Long)
         return Money(currency, sum)
     }
 
-    fun neg(): Money = valueOf(-value)
+    fun negate(): Money = Money(currency, -value)
 
     override fun toString() = toString(Locale.getDefault())
 

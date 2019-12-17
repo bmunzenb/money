@@ -118,7 +118,7 @@ class AccountListController : AutoCloseable {
             totalBalanceLabel.styleClass.remove(negativeStyleClass)
             when (newValue) {
                 is AsyncObject.Complete<Money> -> {
-                    if (newValue.value.value < 0) {
+                    if (newValue.value.isNegative) {
                         totalBalanceLabel.styleClass.add(negativeStyleClass)
                     }
                     tableView.sort()

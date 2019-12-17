@@ -42,7 +42,7 @@ sealed class TransactionType {
 
 fun Money.forTransactionType(transactionType: TransactionType?): Money {
     return when (transactionType?.variant) {
-        TransactionType.Variant.DEBIT -> neg()
+        TransactionType.Variant.DEBIT -> negate()
         else -> this
     }
 }

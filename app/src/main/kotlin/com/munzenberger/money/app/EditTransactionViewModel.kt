@@ -87,7 +87,7 @@ class EditTransactionViewModel : EditTransferBase(), AutoCloseable {
                 }
                 else -> {
                     category = DelayedCategory.split()
-                    amount = it.list.fold(Money.ZERO) { acc, t -> acc.add(t.amount!!) }
+                    amount = it.list.fold(Money.zero()) { acc, t -> acc.add(t.amount!!) }
                     categoryDisabled.value = true
                     amountDisabled.value = true
                 }
@@ -148,7 +148,7 @@ class EditTransactionViewModel : EditTransferBase(), AutoCloseable {
             else -> transfers
         }
 
-        val sum = transfers.fold(Money.ZERO) { acc, t ->
+        val sum = transfers.fold(Money.zero()) { acc, t ->
             when (val a = t.amount) {
                 null -> acc
                 else -> acc.add(a)
@@ -156,8 +156,8 @@ class EditTransactionViewModel : EditTransferBase(), AutoCloseable {
         }
 
         transactionType = when {
-            sum.value > 0 -> types.find { it.variant == TransactionType.Variant.CREDIT }
-            sum.value < 0 -> types.find { it.variant == TransactionType.Variant.DEBIT }
+            sum.isPositive -> types.find { it.variant == TransactionType.Variant.CREDIT }
+            sum.isNegative -> types.find { it.variant == TransactionType.Variant.DEBIT }
             else -> null
         }
 

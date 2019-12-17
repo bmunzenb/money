@@ -17,7 +17,7 @@ class MoneyAsyncTableCell<S> : AsyncTableCell<S, Money>() {
 
         styleClass.remove(NEGATIVE_STYLE_CLASS)
 
-        if (value.value < 0) {
+        if (value.isNegative) {
             styleClass.add(NEGATIVE_STYLE_CLASS)
         }
     }
