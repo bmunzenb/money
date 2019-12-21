@@ -7,7 +7,7 @@ class MoneyStringConverter : BlockStringConverter<Money>(
         { money -> money.toStringWithoutCurrency() },
         { value ->
             try {
-                Money.valueOfFraction(value)
+                Money.valueOf(value)
             } catch (e: ParseException) {
                 null
             }

@@ -11,6 +11,7 @@ import com.munzenberger.money.app.property.bindAsync
 import com.munzenberger.money.app.property.bindAsyncStatus
 import com.munzenberger.money.core.Account
 import com.munzenberger.money.core.Money
+import com.munzenberger.money.core.isNegative
 import com.munzenberger.money.core.rx.ObservableMoneyDatabase
 import javafx.collections.FXCollections
 import javafx.collections.transformation.SortedList
@@ -23,7 +24,6 @@ import javafx.scene.control.ProgressIndicator
 import javafx.scene.control.TableColumn
 import javafx.scene.control.TableView
 import javafx.scene.paint.Color
-import javafx.scene.paint.Paint
 import javafx.stage.Stage
 import javafx.util.Callback
 import java.net.URL

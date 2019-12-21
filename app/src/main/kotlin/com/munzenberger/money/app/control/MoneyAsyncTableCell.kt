@@ -2,6 +2,7 @@ package com.munzenberger.money.app.control
 
 import com.munzenberger.money.app.property.AsyncObject
 import com.munzenberger.money.core.Money
+import com.munzenberger.money.core.isNegative
 import javafx.scene.control.TableCell
 import javafx.scene.control.TableColumn
 import javafx.util.Callback

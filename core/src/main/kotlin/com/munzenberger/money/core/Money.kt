@@ -6,7 +6,7 @@ import java.text.NumberFormat
 import java.util.Currency
 import java.util.Locale
 
-class Money private constructor(private val currency: Currency, internal val value: Long): Comparable<Money> {
+class Money private constructor(val currency: Currency, val value: Long): Comparable<Money> {
 
     companion object {
 
@@ -16,7 +16,7 @@ class Money private constructor(private val currency: Currency, internal val val
         fun valueOf(value: Long, currency: Currency = Currency.getInstance(Locale.getDefault())) =
                 Money(currency, value)
 
-        fun valueOfFraction(
+        fun valueOf(
                 fraction: String,
                 locale: Locale = Locale.getDefault(),
                 currency: Currency = Currency.getInstance(locale)
@@ -61,12 +61,6 @@ class Money private constructor(private val currency: Currency, internal val val
             return multiplier
         }
     }
-
-    val isZero = value == 0L
-
-    val isNegative = value < 0L
-
-    val isPositive = value > 0L
 
     override fun compareTo(other: Money) = when {
         other.value > this.value -> -1
@@ -129,3 +123,12 @@ class Money private constructor(private val currency: Currency, internal val val
         return result
     }
 }
+
+val Money.isZero: Boolean
+    get() = value == 0L
+
+val Money.isNegative: Boolean
+    get() = value < 0L
+
+val Money.isPositive: Boolean
+    get() = value > 0L

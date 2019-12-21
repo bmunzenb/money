@@ -17,6 +17,8 @@ import com.munzenberger.money.core.MoneyDatabase
 import com.munzenberger.money.core.Payee
 import com.munzenberger.money.core.Transaction
 import com.munzenberger.money.core.Transfer
+import com.munzenberger.money.core.isNegative
+import com.munzenberger.money.core.isPositive
 import com.munzenberger.money.core.rx.observableGetAll
 import com.munzenberger.money.core.rx.observableTransaction
 import com.munzenberger.money.core.rx.sortedBy
