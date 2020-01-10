@@ -2,10 +2,10 @@ def versions = [:]
 
 versions.kotlin = '1.3.61'
 versions.gradle_versions = '0.27.0'
-versions.junit = '4.12'
+versions.junit = '4.13'
 versions.rxjava = '2.2.16'
 versions.h2 = '1.4.200'
-versions.sqlite = '3.28.0'
+versions.sqlite = '3.30.1'
 versions.javafx = '11.0.2'
 versions.rxjavafx = '2.11.0-RC34'
 
