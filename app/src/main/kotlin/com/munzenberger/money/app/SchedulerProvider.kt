@@ -4,15 +4,11 @@ import io.reactivex.Scheduler
 import io.reactivex.rxjavafx.schedulers.JavaFxScheduler
 import io.reactivex.schedulers.Schedulers
 
-interface SchedulerProvider {
+object SchedulerProvider {
 
-    val database: Scheduler
-    val main: Scheduler
+    val database: Scheduler = Schedulers.single()
+    val main: Scheduler = JavaFxScheduler.platform()
 
-    companion object {
-        val Default = object : SchedulerProvider {
-            override val database = Schedulers.single()
-            override val main = JavaFxScheduler.platform()
-        }
-    }
+    @Deprecated("Use the object reference directly.")
+    val Default = this
 }

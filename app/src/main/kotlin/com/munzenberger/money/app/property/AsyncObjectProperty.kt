@@ -13,11 +13,12 @@ interface ReadOnlyAsyncObjectProperty<T> : ReadOnlyProperty<AsyncObject<T>>
 interface ReadOnlyAsyncStatusProperty : ReadOnlyAsyncObjectProperty<Unit>
 
 interface AsyncObjectProperty<T> : Property<AsyncObject<T>>, ReadOnlyAsyncObjectProperty<T> {
-    @Deprecated("Use Observable.subscribe(property)")
+    @Deprecated("Use Observable.subscribe(property).")
     fun subscribeTo(single: Single<T>, schedulers: SchedulerProvider = SchedulerProvider.Default): Disposable
 }
 
 interface AsyncStatusProperty : AsyncObjectProperty<Unit>, ReadOnlyAsyncStatusProperty {
+    @Deprecated("Use Observable.subscribe(property).")
     fun subscribeTo(completable: Completable, schedulers: SchedulerProvider = SchedulerProvider.Default): Disposable
 }
 

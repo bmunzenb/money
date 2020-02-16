@@ -24,32 +24,28 @@ class AccountListViewModel : AutoCloseable {
 
     init {
 
-        totalBalance.bindAsync(accountsProperty) { list ->
+        totalBalance.bindAsync(accountsProperty) { accounts ->
 
-            val observableBalances = list.map { it.observableBalance }
+            val observableBalances = accounts.map { it.observableBalance }
 
-            val observableTotal = when {
-                observableBalances.isEmpty() -> Observable.just(Money.zero())
-                else -> Observable.zip(observableBalances) {
-                    it.fold(Money.zero()) { acc, b -> acc.add(b as Money) }
-                }
+            val observableTotal = when (observableBalances.isEmpty()) {
+                true -> Observable.just(Money.zero())
+                else -> Observable.zip(observableBalances) { it.fold(Money.zero()) { acc, b -> acc.add(b as Money) } }
             }
 
-            val schedulers = SchedulerProvider.Default
-
-            observableTotal.subscribeOn(schedulers.database)
-                    .observeOn(schedulers.main)
-                    .subscribe(totalBalance)
+            observableTotal.subscribeOn(SchedulerProvider.database)
+                    .observeOn(SchedulerProvider.main)
+                    .subscribe(this)
                     .also { disposables.add(it) }
         }
     }
 
-    fun start(database: ObservableMoneyDatabase, schedulers: SchedulerProvider = SchedulerProvider.Default) {
+    fun start(database: ObservableMoneyDatabase) {
 
         Account.observableAssetsAndLiabilities(database)
-                .subscribeOn(schedulers.database)
+                .subscribeOn(SchedulerProvider.database)
                 .map { it.map { a -> FXAccount(a, database) } }
-                .observeOn(schedulers.main)
+                .observeOn(SchedulerProvider.main)
                 .subscribe(accounts)
                 .also { disposables.add(it) }
     }
