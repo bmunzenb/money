@@ -3,9 +3,10 @@ package com.munzenberger.money.app
 import com.munzenberger.money.app.property.AsyncObject
 import com.munzenberger.money.app.property.ReadOnlyAsyncObjectProperty
 import com.munzenberger.money.app.property.SimpleAsyncObjectProperty
+import com.munzenberger.money.app.property.subscribe
 import com.munzenberger.money.core.Account
 import com.munzenberger.money.core.rx.ObservableMoneyDatabase
-import com.munzenberger.money.core.rx.observableGet
+import com.munzenberger.money.core.rx.observableAccount
 import io.reactivex.disposables.CompositeDisposable
 
 class AccountRegisterViewModel : AutoCloseable {
@@ -18,13 +19,10 @@ class AccountRegisterViewModel : AutoCloseable {
 
     fun start(database: ObservableMoneyDatabase, accountIdentity: Long, schedulers: SchedulerProvider = SchedulerProvider.Default) {
 
-        val single = Account.observableGet(accountIdentity, database)
-
-        account.subscribeTo(single)
-
-        database.updateObservable
+        Account.observableAccount(accountIdentity, database)
+                .subscribeOn(schedulers.database)
                 .observeOn(schedulers.main)
-                .subscribe { account.subscribeTo(single) }
+                .subscribe(account)
                 .also { disposables.add(it) }
     }
 

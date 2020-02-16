@@ -23,7 +23,7 @@ class PayeeListViewModel : AutoCloseable {
 
         payees.subscribeTo(getPayees, schedulers)
 
-        database.updateObservable
+        database.onUpdate
                 .observeOn(schedulers.main)
                 .subscribe { payees.subscribeTo(getPayees, schedulers) }
                 .also { disposables.add(it) }

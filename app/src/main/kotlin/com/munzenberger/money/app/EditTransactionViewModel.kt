@@ -10,6 +10,7 @@ import com.munzenberger.money.app.property.ReadOnlyAsyncObjectProperty
 import com.munzenberger.money.app.property.ReadOnlyAsyncStatusProperty
 import com.munzenberger.money.app.property.SimpleAsyncObjectProperty
 import com.munzenberger.money.app.property.SimpleAsyncStatusProperty
+import com.munzenberger.money.app.property.subscribe
 import com.munzenberger.money.core.Account
 import com.munzenberger.money.core.Category
 import com.munzenberger.money.core.Money
@@ -22,6 +23,7 @@ import com.munzenberger.money.core.isPositive
 import com.munzenberger.money.core.rx.observableGetAll
 import com.munzenberger.money.core.rx.observableTransaction
 import com.munzenberger.money.core.rx.sortedBy
+import io.reactivex.Single
 import javafx.beans.property.ReadOnlyBooleanProperty
 import javafx.beans.property.ReadOnlyListProperty
 import javafx.beans.property.SimpleBooleanProperty
@@ -124,7 +126,10 @@ class EditTransactionViewModel : EditTransferBase(), AutoCloseable {
 
         selectedAccountProperty.value = transaction.account
 
-        accounts.subscribeTo(Account.getAssetsAndLiabilities(database))
+        Single.fromCallable { Account.getAssetsAndLiabilities(database) }
+                .subscribeOn(schedulers.database)
+                .observeOn(schedulers.main)
+                .subscribe(accounts)
 
         dateProperty.value = transaction.date?.toLocalDate() ?: LocalDate.now()
 

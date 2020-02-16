@@ -6,32 +6,32 @@ import com.munzenberger.money.sql.ResultSetHandler
 import com.munzenberger.money.sql.TransactionQueryExecutor
 import io.reactivex.Observable
 import io.reactivex.Observer
-import io.reactivex.subjects.PublishSubject
+import io.reactivex.subjects.BehaviorSubject
 
 class ObservableMoneyDatabase(private val database: MoneyDatabase) : MoneyDatabase by database {
 
-    private val updatePublisher = PublishSubject.create<Unit>()
+    private val updateSubject = BehaviorSubject.create<Unit>().apply { onNext(Unit) }
 
-    val updateObservable: Observable<Unit> = updatePublisher
+    val onUpdate: Observable<Unit> = updateSubject
 
     override fun executeUpdate(query: Query, handler: ResultSetHandler?): Int {
         return database.executeUpdate(query, handler).also {
-            updatePublisher.onNext(Unit)
+            updateSubject.onNext(Unit)
         }
     }
 
     override fun execute(query: Query): Boolean {
         return database.execute(query).also {
-            when (it) { false -> updatePublisher.onNext(Unit) }
+            when (it) { false -> updateSubject.onNext(Unit) }
         }
     }
 
     override fun createTransaction(): TransactionQueryExecutor =
-            ObservableTransactionQueryExecutor(database.createTransaction(), updatePublisher)
+            ObservableTransactionQueryExecutor(database.createTransaction(), updateSubject)
 
     override fun close() {
         database.close().also {
-            updatePublisher.onComplete()
+            updateSubject.onComplete()
         }
     }
 }
