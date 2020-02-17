@@ -2,7 +2,7 @@ package com.munzenberger.money.app
 
 import com.munzenberger.money.app.model.DelayedCategory
 import com.munzenberger.money.app.model.getAssetsAndLiabilities
-import com.munzenberger.money.app.model.observableGetTransfers
+import com.munzenberger.money.app.model.getTransfers
 import com.munzenberger.money.app.model.toDate
 import com.munzenberger.money.app.model.toLocalDate
 import com.munzenberger.money.app.property.AsyncObject
@@ -20,7 +20,6 @@ import com.munzenberger.money.core.Transaction
 import com.munzenberger.money.core.Transfer
 import com.munzenberger.money.core.isNegative
 import com.munzenberger.money.core.isPositive
-import com.munzenberger.money.core.rx.observableGetAll
 import com.munzenberger.money.core.rx.observableTransaction
 import com.munzenberger.money.core.rx.sortedBy
 import io.reactivex.Single
@@ -107,7 +106,7 @@ class EditTransactionViewModel : EditTransferBase(), AutoCloseable {
                 .or(amountProperty.isNull))
     }
 
-    fun start(database: MoneyDatabase, transaction: Transaction, schedulers: SchedulerProvider = SchedulerProvider.Default) {
+    fun start(database: MoneyDatabase, transaction: Transaction) {
 
         this.database = database
         this.transaction = transaction
@@ -127,8 +126,8 @@ class EditTransactionViewModel : EditTransferBase(), AutoCloseable {
         selectedAccountProperty.value = transaction.account
 
         Single.fromCallable { Account.getAssetsAndLiabilities(database) }
-                .subscribeOn(schedulers.database)
-                .observeOn(schedulers.main)
+                .subscribeOn(SchedulerProvider.database)
+                .observeOn(SchedulerProvider.main)
                 .subscribe(accounts)
 
         dateProperty.value = transaction.date?.toLocalDate() ?: LocalDate.now()
@@ -147,9 +146,9 @@ class EditTransactionViewModel : EditTransferBase(), AutoCloseable {
                 .observeOn(SchedulerProvider.main)
                 .subscribe(categories)
 
-        transaction.observableGetTransfers(database)
-                .subscribeOn(schedulers.database)
-                .observeOn(schedulers.main)
+        Single.fromCallable { transaction.getTransfers(database) }
+                .subscribeOn(SchedulerProvider.database)
+                .observeOn(SchedulerProvider.main)
                 .subscribe(::onTransfers)
     }
 
@@ -215,7 +214,9 @@ class EditTransactionViewModel : EditTransferBase(), AutoCloseable {
             }
         }
 
-        saveStatus.subscribeTo(save)
+        save.subscribeOn(SchedulerProvider.database)
+                .observeOn(SchedulerProvider.main)
+                .subscribe(saveStatus)
     }
 
     fun prepareSplit(block: (ObservableList<EditTransfer>, List<DelayedCategory>) -> Unit) {

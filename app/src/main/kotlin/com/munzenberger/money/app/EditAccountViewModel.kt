@@ -47,10 +47,10 @@ class EditAccountViewModel {
 
         accountNameProperty.value = account.name
 
-        accountTypes.subscribeTo(AccountType.getForCategories(
-                database,
-                AccountType.Category.ASSETS,
-                AccountType.Category.LIABILITIES))
+        Single.fromCallable { AccountType.getForCategories(database, AccountType.Category.ASSETS, AccountType.Category.LIABILITIES) }
+                .subscribeOn(SchedulerProvider.database)
+                .observeOn(SchedulerProvider.main)
+                .subscribe(accountTypes)
 
         selectedAccountTypeProperty.value = account.accountType
 
@@ -90,6 +90,8 @@ class EditAccountViewModel {
             else -> account.observableSave(database)
         }
 
-        saveStatus.subscribeTo(save)
+        save.subscribeOn(SchedulerProvider.database)
+                .observeOn(SchedulerProvider.main)
+                .subscribe(saveStatus)
     }
 }

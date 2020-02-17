@@ -2,14 +2,15 @@ package com.munzenberger.money.core.rx
 
 import com.munzenberger.money.core.PersistableNotFoundException
 import com.munzenberger.money.core.Transaction
-import com.munzenberger.money.sql.QueryExecutor
-import io.reactivex.Single
+import io.reactivex.Observable
 
-fun Transaction.Companion.observableGet(identity: Long, executor: QueryExecutor) = Single.create<Transaction> {
-    when (val value = get(identity, executor)) {
-        null -> it.onError(PersistableNotFoundException(Transaction::class, identity))
-        else -> it.onSuccess(value)
-    }
-}
+fun Transaction.Companion.observableTransaction(identity: Long, database: ObservableMoneyDatabase): Observable<Transaction> =
+        database.onUpdate.flatMap { Observable.create<Transaction> {
+            when (val value = get(identity, database)) {
+                null -> it.onError(PersistableNotFoundException(Transaction::class, identity))
+                else -> it.onNext(value)
+            }
+        } }
 
-fun Transaction.Companion.observableGetAll(executor: QueryExecutor) = Single.fromCallable { getAll(executor) }
+fun Transaction.Companion.observableTransactionList(database: ObservableMoneyDatabase): Observable<List<Transaction>> =
+        database.onUpdate.flatMap { Observable.fromCallable { getAll(database) } }

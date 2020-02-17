@@ -17,11 +17,11 @@ class AccountRegisterViewModel : AutoCloseable {
 
     val accountProperty: ReadOnlyAsyncObjectProperty<Account> = account
 
-    fun start(database: ObservableMoneyDatabase, accountIdentity: Long, schedulers: SchedulerProvider = SchedulerProvider.Default) {
+    fun start(database: ObservableMoneyDatabase, accountIdentity: Long) {
 
         Account.observableAccount(accountIdentity, database)
-                .subscribeOn(schedulers.database)
-                .observeOn(schedulers.main)
+                .subscribeOn(SchedulerProvider.database)
+                .observeOn(SchedulerProvider.main)
                 .subscribe(account)
                 .also { disposables.add(it) }
     }

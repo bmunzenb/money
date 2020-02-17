@@ -11,7 +11,7 @@ import io.reactivex.Single
 import java.sql.ResultSet
 import java.util.Date
 
-fun Payee.Companion.getAllWithLastPaid(database: MoneyDatabase) = Single.fromCallable {
+fun Payee.Companion.getAllWithLastPaid(database: MoneyDatabase): List<Pair<Payee, Date?>> {
 
     val query = Query.selectFrom(PayeeTable.name)
             .cols(PayeeTable.identityColumn, PayeeTable.nameColumn, "MAX(${TransactionTable.dateColumn}) AS LAST_PAID")
@@ -19,7 +19,7 @@ fun Payee.Companion.getAllWithLastPaid(database: MoneyDatabase) = Single.fromCal
             .groupBy(PayeeTable.identityColumn)
             .build()
 
-    database.getList(query, object : ResultSetMapper<Pair<Payee, Date?>> {
+    return database.getList(query, object : ResultSetMapper<Pair<Payee, Date?>> {
 
         private val payeeMapper = PayeeResultSetMapper()
 

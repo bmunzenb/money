@@ -2,13 +2,13 @@ package com.munzenberger.money.app.model
 
 import com.munzenberger.money.core.MoneyDatabase
 import com.munzenberger.money.core.Transaction
+import com.munzenberger.money.core.Transfer
 import com.munzenberger.money.core.TransferResultSetMapper
 import com.munzenberger.money.core.model.TransferTable
 import com.munzenberger.money.sql.eq
 import io.reactivex.Single
 
-fun Transaction.observableGetTransfers(database: MoneyDatabase) = Single.fromCallable {
-
+fun Transaction.getTransfers(database: MoneyDatabase): List<Transfer> =
     when (val id = identity) {
         null ->
             emptyList()
@@ -22,4 +22,3 @@ fun Transaction.observableGetTransfers(database: MoneyDatabase) = Single.fromCal
             database.getList(query, TransferResultSetMapper())
         }
     }
-}

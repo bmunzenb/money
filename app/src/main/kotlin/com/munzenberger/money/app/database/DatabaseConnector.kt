@@ -16,7 +16,7 @@ import java.sql.DriverManager
 
 typealias DatabaseConnectionHandler = (ObservableMoneyDatabase?) -> Unit
 
-abstract class DatabaseConnector(private val schedulers: SchedulerProvider = SchedulerProvider.Default) {
+abstract class DatabaseConnector {
 
     protected fun connect(
             name: String,
@@ -44,16 +44,16 @@ abstract class DatabaseConnector(private val schedulers: SchedulerProvider = Sch
 
             it.onSuccess(database)
         }
-                .subscribeOn(schedulers.database)
-                .observeOn(schedulers.main)
+                .subscribeOn(SchedulerProvider.database)
+                .observeOn(SchedulerProvider.main)
                 .subscribe({ onConnectSuccess(it, complete) }, { onConnectError(it); complete.invoke(null) })
     }
 
     private fun onConnectSuccess(database: ObservableMoneyDatabase, complete: DatabaseConnectionHandler) {
 
         Single.fromCallable { MoneyCoreVersionManager().getVersionStatus(database) }
-                .subscribeOn(schedulers.database)
-                .observeOn(schedulers.main)
+                .subscribeOn(SchedulerProvider.database)
+                .observeOn(SchedulerProvider.main)
                 .doOnError { database.close() }
                 .subscribe({ onVersionStatus(database, it, complete) }, { onConnectError(it); complete.invoke(null) })
     }
@@ -78,8 +78,8 @@ abstract class DatabaseConnector(private val schedulers: SchedulerProvider = Sch
     private fun applyPendingUpgrades(database: ObservableMoneyDatabase, upgrades: PendingUpgrades, complete: DatabaseConnectionHandler) {
 
         Completable.fromRunnable { upgrades.apply() }
-                .subscribeOn(schedulers.database)
-                .observeOn(schedulers.main)
+                .subscribeOn(SchedulerProvider.database)
+                .observeOn(SchedulerProvider.main)
                 .doOnError { database.close() }
                 .subscribe({ complete.invoke(database) }, { onConnectError(it); complete.invoke(null) })
     }

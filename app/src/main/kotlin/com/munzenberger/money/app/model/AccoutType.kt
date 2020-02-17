@@ -5,7 +5,6 @@ import com.munzenberger.money.core.AccountTypeResultSetMapper
 import com.munzenberger.money.core.MoneyDatabase
 import com.munzenberger.money.core.model.AccountTypeTable
 import com.munzenberger.money.sql.inGroup
-import io.reactivex.Single
 
 val AccountType.name: String?
     get() = when (variant) {
@@ -20,12 +19,12 @@ val AccountType.name: String?
         null -> null
     }
 
-fun AccountType.Companion.getForCategories(database: MoneyDatabase, vararg categories: AccountType.Category) = Single.fromCallable {
+fun AccountType.Companion.getForCategories(database: MoneyDatabase, vararg categories: AccountType.Category): List<AccountType> {
 
     val query = AccountTypeTable.select()
             .where(AccountTypeTable.categoryColumn.inGroup(categories.map { it.name }))
             .orderBy(AccountTypeTable.identityColumn)
             .build()
 
-    database.getList(query, AccountTypeResultSetMapper())
+    return database.getList(query, AccountTypeResultSetMapper())
 }

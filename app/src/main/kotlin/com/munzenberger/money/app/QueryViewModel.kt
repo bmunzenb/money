@@ -2,6 +2,7 @@ package com.munzenberger.money.app
 
 import com.munzenberger.money.app.property.ReadOnlyAsyncObjectProperty
 import com.munzenberger.money.app.property.SimpleAsyncObjectProperty
+import com.munzenberger.money.app.property.subscribe
 import com.munzenberger.money.core.MoneyDatabase
 import com.munzenberger.money.sql.Query
 import com.munzenberger.money.sql.ResultSetHandler
@@ -36,13 +37,19 @@ class QueryViewModel {
 
     fun executeQuery() {
         queryString?.run {
-            result.subscribeTo(observableQuery(this))
+            observableQuery(this)
+                    .subscribeOn(SchedulerProvider.database)
+                    .observeOn(SchedulerProvider.main)
+                    .subscribe(result)
         }
     }
 
     fun executeUpdate() {
         queryString?.run {
-            result.subscribeTo(observableUpdate(this))
+            observableUpdate(this)
+                    .subscribeOn(SchedulerProvider.database)
+                    .observeOn(SchedulerProvider.main)
+                    .subscribe(result)
         }
     }
 
