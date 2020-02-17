@@ -135,11 +135,17 @@ class EditTransactionViewModel : EditTransferBase(), AutoCloseable {
 
         selectedPayeeProperty.value = transaction.payee
 
-        payees.subscribeTo(Payee.observableGetAll(database).sortedBy { it.name })
+        Single.fromCallable { Payee.getAll(database) }
+                .sortedBy { it.name }
+                .subscribeOn(SchedulerProvider.database)
+                .observeOn(SchedulerProvider.main)
+                .subscribe(payees)
 
-        categories.subscribeTo(Category.observableGetAll(database).map {
-            it.map { c -> DelayedCategory.from(c) }
-        })
+        Single.fromCallable { Category.getAll(database) }
+                .map { it.map { c -> DelayedCategory.from(c) } }
+                .subscribeOn(SchedulerProvider.database)
+                .observeOn(SchedulerProvider.main)
+                .subscribe(categories)
 
         transaction.observableGetTransfers(database)
                 .subscribeOn(schedulers.database)

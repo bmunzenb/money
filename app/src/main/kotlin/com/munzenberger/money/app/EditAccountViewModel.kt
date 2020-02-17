@@ -5,15 +5,16 @@ import com.munzenberger.money.app.property.ReadOnlyAsyncObjectProperty
 import com.munzenberger.money.app.property.ReadOnlyAsyncStatusProperty
 import com.munzenberger.money.app.property.SimpleAsyncObjectProperty
 import com.munzenberger.money.app.property.SimpleAsyncStatusProperty
+import com.munzenberger.money.app.property.subscribe
 import com.munzenberger.money.core.Account
 import com.munzenberger.money.core.AccountType
 import com.munzenberger.money.core.Bank
 import com.munzenberger.money.core.Category
 import com.munzenberger.money.core.Money
 import com.munzenberger.money.core.MoneyDatabase
-import com.munzenberger.money.core.rx.observableGetAll
 import com.munzenberger.money.core.rx.observableSave
 import com.munzenberger.money.core.rx.sortedBy
+import io.reactivex.Single
 import javafx.beans.property.ReadOnlyBooleanProperty
 import javafx.beans.property.SimpleBooleanProperty
 import javafx.beans.property.SimpleObjectProperty
@@ -55,7 +56,11 @@ class EditAccountViewModel {
 
         accountNumberProperty.value = account.number
 
-        banks.subscribeTo(Bank.observableGetAll(database).sortedBy { it.name })
+        Single.fromCallable { Bank.getAll(database) }
+                .sortedBy { it.name }
+                .subscribeOn(SchedulerProvider.database)
+                .observeOn(SchedulerProvider.main)
+                .subscribe(banks)
 
         selectedBankProperty.value = account.bank
 
