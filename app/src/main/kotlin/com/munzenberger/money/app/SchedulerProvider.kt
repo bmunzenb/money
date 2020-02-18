@@ -5,10 +5,6 @@ import io.reactivex.rxjavafx.schedulers.JavaFxScheduler
 import io.reactivex.schedulers.Schedulers
 
 object SchedulerProvider {
-
     val database: Scheduler = Schedulers.single()
     val main: Scheduler = JavaFxScheduler.platform()
-
-    @Deprecated("Use the object reference directly.")
-    val Default = this
 }
