@@ -61,6 +61,7 @@ class FXTransactionDetail(val identity: Long) {
 
                         when {
                             t == null -> {
+                                // first transaction
                                 t = FXTransactionDetail(transactionId)
                             }
                             t.identity != transactionId -> {

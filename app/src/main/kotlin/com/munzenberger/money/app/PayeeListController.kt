@@ -2,6 +2,7 @@ package com.munzenberger.money.app
 
 import com.munzenberger.money.app.control.DateTableCellFactory
 import com.munzenberger.money.app.control.HyperlinkTableCellFactory
+import com.munzenberger.money.app.control.bindAsyncProperty
 import com.munzenberger.money.app.model.FXPayee
 import com.munzenberger.money.app.property.AsyncObjectMapper
 import com.munzenberger.money.app.property.bindAsync
@@ -34,34 +35,8 @@ class PayeeListController : AutoCloseable {
 
     fun initialize() {
 
-        tableView.apply {
-
-            val payeeList = FXCollections.observableArrayList<FXPayee>().apply {
-                bindAsync(viewModel.payeesProperty)
-            }
-
-            val sortedList = SortedList(payeeList)
-
-            // keep the table sorted when the contents change
-            sortedList.comparatorProperty().bind(comparatorProperty())
-
-            items = sortedList
-
-            placeholderProperty().bindAsync(viewModel.payeesProperty, object : AsyncObjectMapper<List<FXPayee>, Node> {
-
-                override fun pending() = executing()
-
-                override fun executing() = ProgressIndicator().apply {
-                    setPrefSize(60.0, 60.0)
-                    setMaxSize(60.0, 60.0)
-                }
-
-                override fun complete(obj: List<FXPayee>) = Text("No payees.")
-
-                override fun error(error: Throwable) = Label(error.message).apply {
-                    textFill = Color.RED
-                }
-            })
+        tableView.bindAsyncProperty(viewModel.payeesProperty) {
+            Text("No payees.")
         }
 
         nameColumn.apply {
