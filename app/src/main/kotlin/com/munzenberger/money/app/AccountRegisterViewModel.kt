@@ -1,5 +1,6 @@
 package com.munzenberger.money.app
 
+import com.munzenberger.money.app.model.FXTransactionDetail
 import com.munzenberger.money.app.property.AsyncObject
 import com.munzenberger.money.app.property.ReadOnlyAsyncObjectProperty
 import com.munzenberger.money.app.property.SimpleAsyncObjectProperty
@@ -14,8 +15,10 @@ class AccountRegisterViewModel : AutoCloseable {
     private val disposables = CompositeDisposable()
 
     private val account = SimpleAsyncObjectProperty<Account>()
+    private val transactions = SimpleAsyncObjectProperty<List<FXTransactionDetail>>()
 
     val accountProperty: ReadOnlyAsyncObjectProperty<Account> = account
+    val transactionsProperty: ReadOnlyAsyncObjectProperty<List<FXTransactionDetail>> = transactions
 
     fun start(database: ObservableMoneyDatabase, accountIdentity: Long) {
 
@@ -23,6 +26,12 @@ class AccountRegisterViewModel : AutoCloseable {
                 .subscribeOn(SchedulerProvider.database)
                 .observeOn(SchedulerProvider.main)
                 .subscribe(account)
+                .also { disposables.add(it) }
+
+        FXTransactionDetail.observableTransactionsForAccount(accountIdentity, database)
+                .subscribeOn(SchedulerProvider.database)
+                .observeOn(SchedulerProvider.main)
+                .subscribe(transactions)
                 .also { disposables.add(it) }
     }
 

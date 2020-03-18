@@ -6,7 +6,6 @@ import com.munzenberger.money.core.Transfer
 import com.munzenberger.money.core.TransferResultSetMapper
 import com.munzenberger.money.core.model.TransferTable
 import com.munzenberger.money.sql.eq
-import io.reactivex.Single
 
 fun Transaction.getTransfers(database: MoneyDatabase): List<Transfer> =
     when (val id = identity) {
