@@ -1,6 +1,7 @@
 package com.munzenberger.money.app
 
 import com.munzenberger.money.app.control.DateTableCellFactory
+import com.munzenberger.money.app.control.MoneyTableCellFactory
 import com.munzenberger.money.app.control.bindAsync
 import com.munzenberger.money.app.model.FXTransactionDetail
 import com.munzenberger.money.app.navigation.LayoutControllerNavigation
@@ -40,10 +41,10 @@ class AccountRegisterController : AutoCloseable {
     @FXML lateinit var addTransactionButton: Button
     @FXML lateinit var tableView: TableView<FXTransactionDetail>
     @FXML lateinit var dateColumn: TableColumn<FXTransactionDetail, Date>
-    @FXML lateinit var payeeColumn: TableColumn<FXTransactionDetail, String?>
-    @FXML lateinit var categoryColumn: TableColumn<FXTransactionDetail, String?>
-    @FXML lateinit var paymentColumn: TableColumn<FXTransactionDetail, Money?>
-    @FXML lateinit var depositColumn: TableColumn<FXTransactionDetail, Money?>
+    @FXML lateinit var payeeColumn: TableColumn<FXTransactionDetail, String>
+    @FXML lateinit var categoryColumn: TableColumn<FXTransactionDetail, String>
+    @FXML lateinit var paymentColumn: TableColumn<FXTransactionDetail, Money>
+    @FXML lateinit var depositColumn: TableColumn<FXTransactionDetail, Money>
     @FXML lateinit var balanceColumn: TableColumn<FXTransactionDetail, Money>
 
     private lateinit var stage: Stage
@@ -93,14 +94,17 @@ class AccountRegisterController : AutoCloseable {
         }
 
         paymentColumn.apply {
+            cellFactory = MoneyTableCellFactory()
             cellValueFactory = Callback { it.value.paymentProperty }
         }
 
         depositColumn.apply {
+            cellFactory = MoneyTableCellFactory()
             cellValueFactory = Callback { it.value.depositProperty }
         }
 
         balanceColumn.apply {
+            cellFactory = MoneyTableCellFactory()
             cellValueFactory = Callback { it.value.balanceProperty }
         }
     }
