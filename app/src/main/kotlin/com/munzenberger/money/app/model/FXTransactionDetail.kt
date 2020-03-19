@@ -1,5 +1,6 @@
 package com.munzenberger.money.app.model
 
+import com.munzenberger.money.core.Account
 import com.munzenberger.money.core.Money
 import com.munzenberger.money.core.MoneyDatabase
 import com.munzenberger.money.sql.Query
@@ -12,27 +13,25 @@ import java.util.Date
 
 class FXTransactionDetail(val identity: Long) {
 
-    private val date = SimpleObjectProperty<Date>()
-    private val payee = SimpleStringProperty()
-    private val amount = SimpleObjectProperty(Money.zero())
-    private val category = SimpleStringProperty()
-    private val memo = SimpleStringProperty()
-    private val payment = SimpleObjectProperty<Money>()
-    private val deposit = SimpleObjectProperty<Money>()
-    private val balance = SimpleObjectProperty<Money>()
+    val dateProperty = SimpleObjectProperty<Date>()
+    val payeeProperty = SimpleStringProperty()
+    val categoryProperty = SimpleStringProperty()
+    val memoProperty = SimpleStringProperty()
+    val paymentProperty = SimpleObjectProperty<Money>()
+    val depositProperty = SimpleObjectProperty<Money>()
+    val balanceProperty = SimpleObjectProperty<Money>()
 
     companion object {
 
-        private val SQL_QUERY =
-                """SELECT TRANSACTION_ID, TRANSACTION_DATE, PAYEE_NAME, TRANSFER_AMOUNT, SOURCE_ACCOUNT.ACCOUNT_ID AS SOURCE_ACCOUNT_ID, SOURCE_ACCOUNT.ACCOUNT_NAME AS SOURCE_ACCOUNT_NAME, TARGET_ACCOUNT.ACCOUNT_ID AS TARGET_ACCOUNT_ID, TARGET_ACCOUNT.ACCOUNT_NAME AS TARGET_ACCOUNT_NAME, TRANSACTION_MEMO
-                   FROM TRANSACTIONS
-                   LEFT JOIN ACCOUNTS AS SOURCE_ACCOUNT ON TRANSACTIONS.TRANSACTION_ACCOUNT_ID = SOURCE_ACCOUNT.ACCOUNT_ID
-                   LEFT JOIN PAYEES ON TRANSACTIONS.TRANSACTION_PAYEE_ID = PAYEES.PAYEE_ID
-                   LEFT JOIN TRANSFERS ON TRANSACTIONS.TRANSACTION_ID = TRANSFERS.TRANSFER_TRANSACTION_ID
-                   LEFT JOIN CATEGORIES ON TRANSFERS.TRANSFER_CATEGORY_ID = CATEGORIES.CATEGORY_ID
-                   LEFT JOIN ACCOUNTS AS TARGET_ACCOUNT ON CATEGORIES.CATEGORY_ACCOUNT_ID = TARGET_ACCOUNT.ACCOUNT_ID
-                   WHERE TRANSACTION_ACCOUNT_ID = ? OR CATEGORY_ACCOUNT_ID = ?
-                   ORDER BY TRANSACTION_DATE ASC"""
+        private const val SQL_QUERY =
+                "SELECT TRANSACTION_ID, TRANSACTION_DATE, PAYEE_NAME, TRANSFER_AMOUNT, SOURCE_ACCOUNT.ACCOUNT_ID AS SOURCE_ACCOUNT_ID, SOURCE_ACCOUNT.ACCOUNT_NAME AS SOURCE_ACCOUNT_NAME, TARGET_ACCOUNT.ACCOUNT_ID AS TARGET_ACCOUNT_ID, TARGET_ACCOUNT.ACCOUNT_NAME AS TARGET_ACCOUNT_NAME, TRANSACTION_MEMO " + "FROM TRANSACTIONS " +
+                "LEFT JOIN ACCOUNTS AS SOURCE_ACCOUNT ON TRANSACTIONS.TRANSACTION_ACCOUNT_ID = SOURCE_ACCOUNT.ACCOUNT_ID " +
+                "LEFT JOIN PAYEES ON TRANSACTIONS.TRANSACTION_PAYEE_ID = PAYEES.PAYEE_ID " +
+                "LEFT JOIN TRANSFERS ON TRANSACTIONS.TRANSACTION_ID = TRANSFERS.TRANSFER_TRANSACTION_ID " +
+                "LEFT JOIN CATEGORIES ON TRANSFERS.TRANSFER_CATEGORY_ID = CATEGORIES.CATEGORY_ID " +
+                "LEFT JOIN ACCOUNTS AS TARGET_ACCOUNT ON CATEGORIES.CATEGORY_ACCOUNT_ID = TARGET_ACCOUNT.ACCOUNT_ID " +
+                "WHERE TRANSACTION_ACCOUNT_ID = ? OR CATEGORY_ACCOUNT_ID = ? " +
+                "ORDER BY TRANSACTION_DATE ASC"
 
         fun getTransactionsForAccount(accountId: Long, initialBalance: Money, database: MoneyDatabase): List<FXTransactionDetail> {
 
@@ -59,33 +58,33 @@ class FXTransactionDetail(val identity: Long) {
                         val targetAccountName = rs.getLongOrNull("TARGET_ACCOUNT_NAME")
                         val memo: String? = rs.getString("TRANSACTION_MEMO")
 
-                        when {
-                            t == null -> {
-                                // first transaction
+                        t?.run {
+                            // start new transaction
+                            if (identity != transactionId) {
+                                balanceProperty.value = Money.valueOf(balance)
+                                list.add(this)
                                 t = FXTransactionDetail(transactionId)
-                            }
-                            t.identity != transactionId -> {
-
-                                // end previous transaction
-                                t.balance.value = Money.valueOf(balance)
-                                list.add(t)
-
-                                // start new transaction
-                                t = FXTransactionDetail(transactionId).apply {
-                                    this.date.value = date
-                                    this.payee.value = payee
-                                    this.memo.value = memo
-                                }
                             }
                         }
 
-                        //
+                        if (t == null) {
+                            // first transaction
+                            t = FXTransactionDetail(transactionId)
+                        }
+
+                        t?.run {
+                            dateProperty.value = date
+                            payeeProperty.value = payee
+                            memoProperty.value = memo
+
+                            // calculate category totals
+                        }
                     }
 
                     t?.run {
                         // last transaction
-                        this.balance.value = Money.valueOf(balance)
-                        list.add(t)
+                        balanceProperty.value = Money.valueOf(balance)
+                        list.add(this)
                     }
                 }
             })
@@ -94,3 +93,6 @@ class FXTransactionDetail(val identity: Long) {
         }
     }
 }
+
+fun Account.getTransactionDetails(database: MoneyDatabase): List<FXTransactionDetail> =
+        FXTransactionDetail.getTransactionsForAccount(identity!!, initialBalance ?: Money.zero(), database)

@@ -1,11 +1,10 @@
 package com.munzenberger.money.app
 
 import com.munzenberger.money.app.model.FXTransactionDetail
+import com.munzenberger.money.app.model.getTransactionDetails
 import com.munzenberger.money.app.property.AsyncObject
 import com.munzenberger.money.app.property.ReadOnlyAsyncObjectProperty
 import com.munzenberger.money.app.property.SimpleAsyncObjectProperty
-import com.munzenberger.money.app.property.subscribe
-import com.munzenberger.money.app.property.flatMap
 import com.munzenberger.money.core.Account
 import com.munzenberger.money.core.rx.ObservableMoneyDatabase
 import com.munzenberger.money.core.rx.observableAccount
@@ -25,10 +24,16 @@ class AccountRegisterViewModel : AutoCloseable {
     fun start(database: ObservableMoneyDatabase, accountIdentity: Long) {
 
         Account.observableAccount(accountIdentity, database)
-                .flatMap(account) { Observable.fromCallable { FXTransactionDetail.getTransactionsForAccount(it.identity!!, it.initialBalance!!, database) } }
+                .flatMap { Observable.fromCallable { it to it.getTransactionDetails(database) } }
                 .subscribeOn(SchedulerProvider.database)
                 .observeOn(SchedulerProvider.main)
-                .subscribe(transactions)
+                .subscribe({ (a, t) ->
+                    account.value = AsyncObject.Complete(a)
+                    transactions.value = AsyncObject.Complete(t)
+                }, {
+                    account.value = AsyncObject.Error(it)
+                    transactions.value = AsyncObject.Error(it)
+                })
                 .also { disposables.add(it) }
     }
 

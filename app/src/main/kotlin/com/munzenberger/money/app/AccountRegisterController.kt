@@ -1,5 +1,6 @@
 package com.munzenberger.money.app
 
+import com.munzenberger.money.app.control.DateTableCellFactory
 import com.munzenberger.money.app.control.bindAsync
 import com.munzenberger.money.app.model.FXTransactionDetail
 import com.munzenberger.money.app.navigation.LayoutControllerNavigation
@@ -18,7 +19,9 @@ import javafx.scene.control.ProgressIndicator
 import javafx.scene.control.TableColumn
 import javafx.scene.control.TableView
 import javafx.stage.Stage
+import javafx.util.Callback
 import java.net.URL
+import java.text.DateFormat
 import java.util.Date
 
 class AccountRegisterController : AutoCloseable {
@@ -74,6 +77,31 @@ class AccountRegisterController : AutoCloseable {
             Hyperlink("Add a transaction to get started.").apply {
                 setOnAction { addTransaction() }
             }
+        }
+
+        dateColumn.apply {
+            cellFactory = DateTableCellFactory()
+            cellValueFactory = Callback { it.value.dateProperty }
+        }
+
+        payeeColumn.apply {
+            cellValueFactory = Callback { it.value.payeeProperty }
+        }
+
+        categoryColumn.apply {
+            cellValueFactory = Callback { it.value.categoryProperty }
+        }
+
+        paymentColumn.apply {
+            cellValueFactory = Callback { it.value.paymentProperty }
+        }
+
+        depositColumn.apply {
+            cellValueFactory = Callback { it.value.depositProperty }
+        }
+
+        balanceColumn.apply {
+            cellValueFactory = Callback { it.value.balanceProperty }
         }
     }
 
