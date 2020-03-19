@@ -45,8 +45,7 @@ class AccountRegisterController : AutoCloseable {
     @FXML lateinit var dateColumn: TableColumn<FXTransactionDetail, Date>
     @FXML lateinit var payeeColumn: TableColumn<FXTransactionDetail, String>
     @FXML lateinit var categoryColumn: TableColumn<FXTransactionDetail, String>
-    @FXML lateinit var paymentColumn: TableColumn<FXTransactionDetail, Money>
-    @FXML lateinit var depositColumn: TableColumn<FXTransactionDetail, Money>
+    @FXML lateinit var amountColumn: TableColumn<FXTransactionDetail, Money>
     @FXML lateinit var balanceColumn: TableColumn<FXTransactionDetail, Money>
     @FXML lateinit var endingBalanceLabel: Label
     @FXML lateinit var endingBalanceProgressIndicator: ProgressIndicator
@@ -97,16 +96,9 @@ class AccountRegisterController : AutoCloseable {
             cellValueFactory = Callback { it.value.categoryProperty }
         }
 
-        paymentColumn.apply {
+        amountColumn.apply {
             cellFactory = MoneyTableCellFactory()
-            cellValueFactory = Callback { it.value.paymentProperty }
-            // TODO: set title of column based on account type
-        }
-
-        depositColumn.apply {
-            cellFactory = MoneyTableCellFactory()
-            cellValueFactory = Callback { it.value.depositProperty }
-            // TODO: set title of column based on account type
+            cellValueFactory = Callback { it.value.amountProperty }
         }
 
         balanceColumn.apply {

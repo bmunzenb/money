@@ -15,8 +15,6 @@ import com.munzenberger.money.sql.eq
 import com.munzenberger.money.sql.isNull
 import java.lang.UnsupportedOperationException
 
-private const val delimiter = ":"
-
 interface DelayedCategory {
 
     val name: String
@@ -25,24 +23,13 @@ interface DelayedCategory {
 
     companion object {
 
-        fun name(accountTypeCategory: AccountType.Category? = null, accountName: String?, categoryName: String?): String {
-            return when {
-                accountName == null -> "error: no account in category"
-                categoryName == null -> when (accountTypeCategory) {
-                    AccountType.Category.ASSETS, AccountType.Category.LIABILITIES -> "Transfer $delimiter $accountName"
-                    else -> accountName
-                }
-                else -> "$accountName $delimiter $categoryName"
-            }
-        }
-
         fun from(category: Category): DelayedCategory = RealCategory(category)
 
         fun from(string: String): DelayedCategory = PendingCategory(string)
 
         fun split(): DelayedCategory = object : DelayedCategory {
 
-            override val name = "Split/Multiple Categories"
+            override val name = SPLIT_CATEGORY_NAME
 
             override fun getCategory(executor: QueryExecutor, transactionType: TransactionType): Category {
                 throw UnsupportedOperationException()
@@ -61,7 +48,7 @@ private class RealCategory(private val category: Category) : DelayedCategory {
         val accountName = category.account?.name
         val categoryName = category.name
 
-        name = DelayedCategory.name(accountTypeCategory, accountName, categoryName)
+        name = categoryName(accountTypeCategory, accountName, categoryName)
     }
 
     override fun getCategory(executor: QueryExecutor, transactionType: TransactionType) = category
@@ -76,12 +63,12 @@ private class PendingCategory(string: String) : DelayedCategory {
 
     init {
 
-        val values = string.split(delimiter, limit = 2)
+        val values = string.split(CATEGORY_NAME_DELIMITER, limit = 2)
 
         accountName = values[0].trim()
         categoryName = if (values.size > 1) values[1].trim() else null
 
-        name = DelayedCategory.name(accountName = accountName, categoryName = categoryName)
+        name = categoryName(accountName = accountName, categoryName = categoryName)
     }
 
     override fun getCategory(executor: QueryExecutor, transactionType: TransactionType): Category {
