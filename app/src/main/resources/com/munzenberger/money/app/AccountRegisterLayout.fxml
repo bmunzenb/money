@@ -45,12 +45,12 @@
       </VBox>
       <StackPane maxWidth="1.7976931348623157E308" GridPane.columnIndex="1" GridPane.rowIndex="2">
          <children>
-            <Label text="Ending Balance" StackPane.alignment="CENTER_RIGHT">
+            <Label fx:id="endingBalanceLabel" text="Ending Balance" StackPane.alignment="CENTER_RIGHT">
                <font>
                   <Font name="System Bold" size="12.0" />
                </font>
             </Label>
-            <ProgressIndicator maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="12.0" prefWidth="12.0" StackPane.alignment="CENTER_RIGHT" />
+            <ProgressIndicator fx:id="endingBalanceProgressIndicator" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="12.0" prefWidth="12.0" StackPane.alignment="CENTER_RIGHT" />
          </children>
       </StackPane>
       <TableView fx:id="tableView" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="0.0" minWidth="0.0" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS" GridPane.rowIndex="1" GridPane.vgrow="ALWAYS">

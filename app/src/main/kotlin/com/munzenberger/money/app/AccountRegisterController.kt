@@ -1,6 +1,7 @@
 package com.munzenberger.money.app
 
 import com.munzenberger.money.app.control.DateTableCellFactory
+import com.munzenberger.money.app.control.MoneyTableCell
 import com.munzenberger.money.app.control.MoneyTableCellFactory
 import com.munzenberger.money.app.control.bindAsync
 import com.munzenberger.money.app.model.FXTransactionDetail
@@ -11,6 +12,7 @@ import com.munzenberger.money.app.property.bindAsyncStatus
 import com.munzenberger.money.core.Money
 import com.munzenberger.money.core.MoneyDatabase
 import com.munzenberger.money.core.Transaction
+import com.munzenberger.money.core.isNegative
 import com.munzenberger.money.core.rx.ObservableMoneyDatabase
 import javafx.fxml.FXML
 import javafx.scene.control.Button
@@ -46,6 +48,8 @@ class AccountRegisterController : AutoCloseable {
     @FXML lateinit var paymentColumn: TableColumn<FXTransactionDetail, Money>
     @FXML lateinit var depositColumn: TableColumn<FXTransactionDetail, Money>
     @FXML lateinit var balanceColumn: TableColumn<FXTransactionDetail, Money>
+    @FXML lateinit var endingBalanceLabel: Label
+    @FXML lateinit var endingBalanceProgressIndicator: ProgressIndicator
 
     private lateinit var stage: Stage
     private lateinit var database: MoneyDatabase
@@ -96,16 +100,38 @@ class AccountRegisterController : AutoCloseable {
         paymentColumn.apply {
             cellFactory = MoneyTableCellFactory()
             cellValueFactory = Callback { it.value.paymentProperty }
+            // TODO: set title of column based on account type
         }
 
         depositColumn.apply {
             cellFactory = MoneyTableCellFactory()
             cellValueFactory = Callback { it.value.depositProperty }
+            // TODO: set title of column based on account type
         }
 
         balanceColumn.apply {
             cellFactory = MoneyTableCellFactory()
             cellValueFactory = Callback { it.value.balanceProperty }
+        }
+
+        endingBalanceProgressIndicator.visibleProperty().bindAsyncStatus(viewModel.endingBalanceProperty,
+                AsyncObject.Status.PENDING,
+                AsyncObject.Status.EXECUTING)
+
+        endingBalanceLabel.apply {
+            visibleProperty().bindAsyncStatus(viewModel.endingBalanceProperty, AsyncObject.Status.COMPLETE)
+            textProperty().bindAsync(viewModel.endingBalanceProperty) { "Ending Balance: $it" }
+        }
+
+        viewModel.endingBalanceProperty.addListener { _, _, newValue ->
+            endingBalanceLabel.styleClass.remove(MoneyTableCell.NEGATIVE_STYLE_CLASS)
+            when (newValue) {
+                is AsyncObject.Complete<Money> -> {
+                    if (newValue.value.isNegative) {
+                        endingBalanceLabel.styleClass.add(MoneyTableCell.NEGATIVE_STYLE_CLASS)
+                    }
+                }
+            }
         }
     }
 
