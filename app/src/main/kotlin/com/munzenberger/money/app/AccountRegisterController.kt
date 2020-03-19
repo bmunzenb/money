@@ -1,6 +1,6 @@
 package com.munzenberger.money.app
 
-import com.munzenberger.money.app.control.bindAsyncProperty
+import com.munzenberger.money.app.control.bindAsync
 import com.munzenberger.money.app.model.FXTransactionDetail
 import com.munzenberger.money.app.navigation.LayoutControllerNavigation
 import com.munzenberger.money.app.property.AsyncObject
@@ -70,8 +70,8 @@ class AccountRegisterController : AutoCloseable {
                 AsyncObject.Status.EXECUTING,
                 AsyncObject.Status.ERROR)
 
-        tableView.bindAsyncProperty(viewModel.transactionsProperty) {
-            Hyperlink("Add transactions to get started.").apply {
+        tableView.bindAsync(viewModel.transactionsProperty) {
+            Hyperlink("Add a transaction to get started.").apply {
                 setOnAction { addTransaction() }
             }
         }

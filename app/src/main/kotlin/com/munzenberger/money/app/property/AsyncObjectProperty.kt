@@ -23,3 +23,9 @@ fun <T> Single<T>.subscribe(property: AsyncObjectProperty<T>): Disposable =
 
 fun Completable.subscribe(property: AsyncStatusProperty): Disposable =
         subscribe({ property.value = AsyncObject.Complete(Unit) }, { property.value = AsyncObject.Error(it) })
+
+fun <T, R> Observable<T>.flatMap(property: AsyncObjectProperty<T>, block: (T) -> Observable<R>): Observable<R> =
+        flatMap {
+            property.value = AsyncObject.Complete(it)
+            block.invoke(it)
+        }

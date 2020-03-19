@@ -2,20 +2,12 @@ package com.munzenberger.money.app
 
 import com.munzenberger.money.app.control.DateTableCellFactory
 import com.munzenberger.money.app.control.HyperlinkTableCellFactory
-import com.munzenberger.money.app.control.bindAsyncProperty
+import com.munzenberger.money.app.control.bindAsync
 import com.munzenberger.money.app.model.FXPayee
-import com.munzenberger.money.app.property.AsyncObjectMapper
-import com.munzenberger.money.app.property.bindAsync
 import com.munzenberger.money.core.rx.ObservableMoneyDatabase
-import javafx.collections.FXCollections
-import javafx.collections.transformation.SortedList
 import javafx.fxml.FXML
-import javafx.scene.Node
-import javafx.scene.control.Label
-import javafx.scene.control.ProgressIndicator
 import javafx.scene.control.TableColumn
 import javafx.scene.control.TableView
-import javafx.scene.paint.Color
 import javafx.scene.text.Text
 import javafx.util.Callback
 import java.net.URL
@@ -35,7 +27,7 @@ class PayeeListController : AutoCloseable {
 
     fun initialize() {
 
-        tableView.bindAsyncProperty(viewModel.payeesProperty) {
+        tableView.bindAsync(viewModel.payeesProperty) {
             Text("No payees.")
         }
 

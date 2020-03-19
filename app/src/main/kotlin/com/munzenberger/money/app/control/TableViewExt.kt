@@ -11,7 +11,7 @@ import javafx.scene.control.ProgressIndicator
 import javafx.scene.control.TableView
 import javafx.scene.paint.Color
 
-inline fun <reified T> TableView<T>.bindAsyncProperty(listProperty: ReadOnlyAsyncObjectProperty<List<T>>, crossinline placeholder: () -> Node) {
+inline fun <reified T> TableView<T>.bindAsync(listProperty: ReadOnlyAsyncObjectProperty<List<T>>, crossinline placeholder: () -> Node) {
 
     val transactionList = FXCollections.observableArrayList<T>().apply {
         bindAsync(listProperty)

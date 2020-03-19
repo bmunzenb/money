@@ -2,7 +2,7 @@ package com.munzenberger.money.app
 
 import com.munzenberger.money.app.control.HyperlinkTableCellFactory
 import com.munzenberger.money.app.control.MoneyAsyncTableCellFactory
-import com.munzenberger.money.app.control.bindAsyncProperty
+import com.munzenberger.money.app.control.bindAsync
 import com.munzenberger.money.app.model.FXAccount
 import com.munzenberger.money.app.navigation.Navigator
 import com.munzenberger.money.app.property.AsyncObject
@@ -47,7 +47,7 @@ class AccountListController : AutoCloseable {
 
     fun initialize() {
 
-        tableView.bindAsyncProperty(viewModel.accountsProperty) {
+        tableView.bindAsync(viewModel.accountsProperty) {
             Hyperlink("Create an account to get started.").apply {
                 setOnAction { onCreateAccount() }
             }
