@@ -14,50 +14,139 @@ import javafx.beans.property.SimpleStringProperty
 import java.sql.ResultSet
 import java.util.Date
 
-class FXTransactionDetail private constructor(val identity: Long, date: Date, payee: String?, memo: String?) {
-
-    private val category = SimpleStringProperty()
-    private val amount = SimpleObjectProperty(Money.zero())
-    private val balance = SimpleObjectProperty<Money>()
+class FXTransactionDetail private constructor(
+        val identity: Long,
+        date: Date,
+        payee: String?,
+        memo: String?,
+        category: String?,
+        amount: Money,
+        balance: Money
+) {
 
     val dateProperty: ReadOnlyObjectProperty<Date> = SimpleObjectProperty(date)
     val payeeProperty: ReadOnlyStringProperty = SimpleStringProperty(payee)
     val memoProperty: ReadOnlyStringProperty = SimpleStringProperty(memo)
-    val categoryProperty: ReadOnlyStringProperty = category
-    val amountProperty: ReadOnlyObjectProperty<Money> = amount
-    val balanceProperty: ReadOnlyObjectProperty<Money> = balance
+    val categoryProperty: ReadOnlyStringProperty = SimpleStringProperty(category)
+    val amountProperty: ReadOnlyObjectProperty<Money> = SimpleObjectProperty(amount)
+    val balanceProperty: ReadOnlyObjectProperty<Money> = SimpleObjectProperty(balance)
+
+    private class TransactionDetailCollector(private val accountId: Long, initialBalance: Money) {
+
+        private var identity: Long? = null
+        private var date: Date? = null
+        private var payee: String? = null
+        private var memo: String? = null
+        private var category: String? = null
+        private var amount: Long = 0
+        private var balance: Long = initialBalance.value
+
+        fun ready(transactionId: Long) =
+                identity == null || transactionId == identity
+
+        fun collect(
+                transactionId: Long,
+                date: Date,
+                payee: String?,
+                memo: String?,
+                transferAmount: Long,
+                sourceAccountId: Long,
+                sourceAccountTypeCategory: String,
+                sourceAccountName: String,
+                targetAccountId: Long?,
+                targetAccountTypeCategory: String?,
+                targetAccountName: String?,
+                categoryName: String?
+        ) {
+            this.identity = transactionId
+            this.date = date
+            this.payee = payee
+            this.memo = memo
+
+            // calculate the total amount for this transaction
+            // this is not an else in case the source and target are the same
+
+            if (accountId == sourceAccountId) {
+                amount += transferAmount
+
+                category = when (category) {
+                    null -> categoryName(
+                            accountTypeCategory = targetAccountTypeCategory?.let { AccountType.Category.valueOf(it) },
+                            accountName = targetAccountName,
+                            categoryName = categoryName
+                    )
+                    else -> SPLIT_CATEGORY_NAME
+                }
+            }
+
+            if (accountId == targetAccountId) {
+                amount -= transferAmount
+
+                category = when (category) {
+                    null -> categoryName(
+                            accountTypeCategory = AccountType.Category.valueOf(sourceAccountTypeCategory),
+                            accountName = sourceAccountName
+                    )
+                    else -> SPLIT_CATEGORY_NAME
+                }
+            }
+        }
+
+        fun next(): FXTransactionDetail? {
+            balance += amount
+            val t = when (identity) {
+                null -> null
+                else -> FXTransactionDetail(
+                        identity = identity!!,
+                        date = date!!,
+                        payee = payee,
+                        memo = memo,
+                        category = category,
+                        amount = Money.valueOf(amount),
+                        balance = Money.valueOf(balance)
+                )
+            }
+            reset()
+            return t
+        }
+
+        private fun reset() {
+            identity = null
+            date = null
+            payee = null
+            memo = null
+            category = null
+            amount = 0
+        }
+    }
 
     companion object {
-
-        private const val SQL_QUERY =
-                "SELECT TRANSACTION_ID, TRANSACTION_DATE, PAYEE_NAME, TRANSFER_AMOUNT, TRANSACTION_MEMO, CATEGORY_NAME, " +
-                        "SOURCE_ACCOUNT.ACCOUNT_ID AS SOURCE_ACCOUNT_ID, SOURCE_ACCOUNT.ACCOUNT_NAME AS SOURCE_ACCOUNT_NAME, SOURCE_ACCOUNT_TYPE.ACCOUNT_TYPE_CATEGORY AS SOURCE_ACCOUNT_TYPE_CATEGORY, " +
-                        "TARGET_ACCOUNT.ACCOUNT_ID AS TARGET_ACCOUNT_ID, TARGET_ACCOUNT.ACCOUNT_NAME AS TARGET_ACCOUNT_NAME, TARGET_ACCOUNT_TYPE.ACCOUNT_TYPE_CATEGORY AS TARGET_ACCOUNT_TYPE_CATEGORY " +
-                "FROM TRANSACTIONS " +
-                "LEFT JOIN ACCOUNTS AS SOURCE_ACCOUNT ON TRANSACTIONS.TRANSACTION_ACCOUNT_ID = SOURCE_ACCOUNT.ACCOUNT_ID " +
-                "LEFT JOIN ACCOUNT_TYPES AS SOURCE_ACCOUNT_TYPE ON SOURCE_ACCOUNT.ACCOUNT_TYPE_ID = SOURCE_ACCOUNT_TYPE.ACCOUNT_TYPE_ID " +
-                "LEFT JOIN PAYEES ON TRANSACTIONS.TRANSACTION_PAYEE_ID = PAYEES.PAYEE_ID " +
-                "LEFT JOIN TRANSFERS ON TRANSACTIONS.TRANSACTION_ID = TRANSFERS.TRANSFER_TRANSACTION_ID " +
-                "LEFT JOIN CATEGORIES ON TRANSFERS.TRANSFER_CATEGORY_ID = CATEGORIES.CATEGORY_ID " +
-                "LEFT JOIN ACCOUNTS AS TARGET_ACCOUNT ON CATEGORIES.CATEGORY_ACCOUNT_ID = TARGET_ACCOUNT.ACCOUNT_ID " +
-                "LEFT JOIN ACCOUNT_TYPES AS TARGET_ACCOUNT_TYPE ON TARGET_ACCOUNT.ACCOUNT_TYPE_ID = TARGET_ACCOUNT_TYPE.ACCOUNT_TYPE_ID " +
-                "WHERE TRANSACTION_ACCOUNT_ID = ? OR CATEGORY_ACCOUNT_ID = ? " +
-                "ORDER BY TRANSACTION_DATE ASC"
 
         fun getTransactionsForAccount(accountId: Long, initialBalance: Money, database: MoneyDatabase): List<FXTransactionDetail> {
 
             val list = mutableListOf<FXTransactionDetail>()
 
-            val query = Query(SQL_QUERY, listOf(accountId, accountId))
+            val sql =
+                    "SELECT TRANSACTION_ID, TRANSACTION_DATE, PAYEE_NAME, TRANSFER_AMOUNT, TRANSACTION_MEMO, CATEGORY_NAME, " +
+                        "SOURCE_ACCOUNT.ACCOUNT_ID AS SOURCE_ACCOUNT_ID, SOURCE_ACCOUNT.ACCOUNT_NAME AS SOURCE_ACCOUNT_NAME, SOURCE_ACCOUNT_TYPE.ACCOUNT_TYPE_CATEGORY AS SOURCE_ACCOUNT_TYPE_CATEGORY, " +
+                        "TARGET_ACCOUNT.ACCOUNT_ID AS TARGET_ACCOUNT_ID, TARGET_ACCOUNT.ACCOUNT_NAME AS TARGET_ACCOUNT_NAME, TARGET_ACCOUNT_TYPE.ACCOUNT_TYPE_CATEGORY AS TARGET_ACCOUNT_TYPE_CATEGORY " +
+                    "FROM TRANSACTIONS " +
+                    "LEFT JOIN ACCOUNTS AS SOURCE_ACCOUNT ON TRANSACTIONS.TRANSACTION_ACCOUNT_ID = SOURCE_ACCOUNT.ACCOUNT_ID " +
+                    "LEFT JOIN ACCOUNT_TYPES AS SOURCE_ACCOUNT_TYPE ON SOURCE_ACCOUNT.ACCOUNT_TYPE_ID = SOURCE_ACCOUNT_TYPE.ACCOUNT_TYPE_ID " +
+                    "LEFT JOIN PAYEES ON TRANSACTIONS.TRANSACTION_PAYEE_ID = PAYEES.PAYEE_ID " +
+                    "LEFT JOIN TRANSFERS ON TRANSACTIONS.TRANSACTION_ID = TRANSFERS.TRANSFER_TRANSACTION_ID " +
+                    "LEFT JOIN CATEGORIES ON TRANSFERS.TRANSFER_CATEGORY_ID = CATEGORIES.CATEGORY_ID " +
+                    "LEFT JOIN ACCOUNTS AS TARGET_ACCOUNT ON CATEGORIES.CATEGORY_ACCOUNT_ID = TARGET_ACCOUNT.ACCOUNT_ID " +
+                    "LEFT JOIN ACCOUNT_TYPES AS TARGET_ACCOUNT_TYPE ON TARGET_ACCOUNT.ACCOUNT_TYPE_ID = TARGET_ACCOUNT_TYPE.ACCOUNT_TYPE_ID " +
+                    "WHERE TRANSACTION_ACCOUNT_ID = ? OR CATEGORY_ACCOUNT_ID = ? " +
+                    "ORDER BY TRANSACTION_DATE ASC"
+
+            val query = Query(sql, listOf(accountId, accountId))
 
             database.executeQuery(query, object : ResultSetHandler {
                 override fun accept(rs: ResultSet) {
 
-                    var category: String? = null
-                    var amount: Long = 0
-                    var balance: Long = initialBalance.value
-
-                    var t: FXTransactionDetail? = null
+                    val collector = TransactionDetailCollector(accountId, initialBalance)
 
                     while (rs.next()) {
 
@@ -69,75 +158,36 @@ class FXTransactionDetail private constructor(val identity: Long, date: Date, pa
                         val sourceAccountTypeCategory = rs.getString("SOURCE_ACCOUNT_TYPE_CATEGORY")
                         val sourceAccountName = rs.getString("SOURCE_ACCOUNT_NAME")
                         val targetAccountId = rs.getLongOrNull("TARGET_ACCOUNT_ID")
-                        val targetAccountTypeCategory = rs.getString("TARGET_ACCOUNT_TYPE_CATEGORY")
-                        val targetAccountName = rs.getString("TARGET_ACCOUNT_NAME")
-                        val categoryName = rs.getString("CATEGORY_NAME")
+                        val targetAccountTypeCategory: String? = rs.getString("TARGET_ACCOUNT_TYPE_CATEGORY")
+                        val targetAccountName: String? = rs.getString("TARGET_ACCOUNT_NAME")
+                        val categoryName: String? = rs.getString("CATEGORY_NAME")
                         val memo: String? = rs.getString("TRANSACTION_MEMO")
 
-                        t?.run {
-                            // start new transaction
-                            if (identity != transactionId) {
-                                balance += amount
-                                addTo(list, category, amount, balance)
-                                category = null
-                                amount = 0
-                                t = FXTransactionDetail(transactionId, date, payee, memo)
-                            }
+                        if (!collector.ready(transactionId)) {
+                            collector.next()?.let { list.add(it) }
                         }
 
-                        if (t == null) {
-                            // first transaction
-                            t = FXTransactionDetail(transactionId, date, payee, memo)
-                        }
-
-                        t?.run {
-
-                            // calculate the total amount for this transaction
-                            // this is not an else in case the source and target are the same
-
-                            if (accountId == sourceAccountId) {
-                                amount += transferAmount
-
-                                category = when (category) {
-                                    null -> categoryName(
-                                            accountTypeCategory = AccountType.Category.valueOf(targetAccountTypeCategory),
-                                            accountName = targetAccountName,
-                                            categoryName = categoryName
-                                    )
-                                    else -> SPLIT_CATEGORY_NAME
-                                }
-                            }
-
-                            if (accountId == targetAccountId) {
-                                amount -= transferAmount
-
-                                category = when (category) {
-                                    null -> categoryName(
-                                            accountTypeCategory = AccountType.Category.valueOf(sourceAccountTypeCategory),
-                                            accountName = sourceAccountName
-                                    )
-                                    else -> SPLIT_CATEGORY_NAME
-                                }
-                            }
-                        }
+                        collector.collect(
+                                transactionId = transactionId,
+                                date = date,
+                                payee = payee,
+                                transferAmount = transferAmount,
+                                sourceAccountId = sourceAccountId,
+                                sourceAccountTypeCategory = sourceAccountTypeCategory,
+                                sourceAccountName = sourceAccountName,
+                                targetAccountId = targetAccountId,
+                                targetAccountTypeCategory = targetAccountTypeCategory,
+                                targetAccountName = targetAccountName,
+                                categoryName = categoryName,
+                                memo = memo
+                        )
                     }
 
-                    t?.run {
-                        // last transaction
-                        balance += amount
-                        addTo(list, category, amount, balance)
-                    }
+                    collector.next()?.let { list.add(it) }
                 }
             })
 
             return list
-        }
-
-        private fun FXTransactionDetail.addTo(list: MutableList<FXTransactionDetail>, category: String?, amount: Long, balance: Long) {
-            this.category.value = category
-            this.amount.value = Money.valueOf(amount)
-            this.balance.value = Money.valueOf(balance)
-            list.add(this)
         }
     }
 }

@@ -28,22 +28,21 @@ abstract class DatabaseConnector {
             complete: DatabaseConnectionHandler
     ) {
 
-        Single.create<ObservableMoneyDatabase> {
+        Single.fromCallable {
 
-            Class.forName(driver)
+                    Class.forName(driver)
 
-            val connection = DriverManager.getConnection(connectionUrl, user, password)
-            val database = ObservableMoneyDatabase(ConnectionMoneyDatabase(name, dialect, connection))
+                    val connection = DriverManager.getConnection(connectionUrl, user, password)
 
-            when (driver) {
-                "org.sqlite.JDBC" ->
-                    // SQLite requires explicitly enabling foreign key constraints
-                    // https://www.sqlite.org/foreignkeys.html#fk_enable
-                    database.execute(Query("PRAGMA foreign_keys = ON"))
-            }
-
-            it.onSuccess(database)
-        }
+                    ObservableMoneyDatabase(ConnectionMoneyDatabase(name, dialect, connection)).also {
+                        when (driver) {
+                            "org.sqlite.JDBC" ->
+                                // SQLite requires explicitly enabling foreign key constraints
+                                // https://www.sqlite.org/foreignkeys.html#fk_enable
+                                it.execute(Query("PRAGMA foreign_keys = ON"))
+                        }
+                    }
+                }
                 .subscribeOn(SchedulerProvider.database)
                 .observeOn(SchedulerProvider.main)
                 .subscribe({ onConnectSuccess(it, complete) }, { onConnectError(it); complete.invoke(null) })

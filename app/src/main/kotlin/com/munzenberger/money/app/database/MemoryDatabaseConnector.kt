@@ -1,14 +1,7 @@
 package com.munzenberger.money.app.database
 
 import com.munzenberger.money.app.ErrorAlert
-import com.munzenberger.money.core.Account
-import com.munzenberger.money.core.AccountType
-import com.munzenberger.money.core.Bank
 import com.munzenberger.money.core.SQLiteDatabaseDialect
-import com.munzenberger.money.core.model.AccountTable
-import com.munzenberger.money.sql.Query
-import javafx.scene.control.Alert
-import java.lang.IllegalStateException
 
 object MemoryDatabaseConnector : DatabaseConnector() {
 
