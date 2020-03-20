@@ -42,8 +42,7 @@ class AccountRegisterController : AutoCloseable {
     @FXML lateinit var addTransactionButton: Button
     @FXML lateinit var tableView: TableView<FXTransactionDetail>
     @FXML lateinit var dateColumn: TableColumn<FXTransactionDetail, Date>
-    @FXML lateinit var payeeColumn: TableColumn<FXTransactionDetail, String>
-    @FXML lateinit var categoryColumn: TableColumn<FXTransactionDetail, String>
+    @FXML lateinit var detailColumn: TableColumn<FXTransactionDetail, String>
     @FXML lateinit var paymentColumn: TableColumn<FXTransactionDetail, Money>
     @FXML lateinit var depositColumn: TableColumn<FXTransactionDetail, Money>
     @FXML lateinit var balanceColumn: TableColumn<FXTransactionDetail, Money>
@@ -88,12 +87,8 @@ class AccountRegisterController : AutoCloseable {
             cellValueFactory = Callback { it.value.dateProperty }
         }
 
-        payeeColumn.apply {
-            cellValueFactory = Callback { it.value.payeeProperty }
-        }
-
-        categoryColumn.apply {
-            cellValueFactory = Callback { it.value.categoryProperty }
+        detailColumn.apply {
+            cellValueFactory = Callback { it.value.detailProperty }
         }
 
         paymentColumn.apply {

@@ -59,11 +59,10 @@
          </columnResizePolicy>
          <columns>
             <TableColumn fx:id="dateColumn" editable="false" prefWidth="75.0" text="Date" />
-            <TableColumn fx:id="payeeColumn" editable="false" prefWidth="75.0" text="Payee" />
-            <TableColumn fx:id="categoryColumn" editable="false" prefWidth="75.0" text="Category" />
-            <TableColumn fx:id="paymentColumn" editable="false" prefWidth="75.0" style="-fx-alignment: CENTER-RIGHT;" text="Payment" />
-            <TableColumn fx:id="depositColumn" editable="false" prefWidth="75.0" style="-fx-alignment: CENTER-RIGHT;" text="Deposit" />
-            <TableColumn fx:id="balanceColumn" editable="false" prefWidth="75.0" style="-fx-alignment: CENTER-RIGHT;" text="Balance" />
+            <TableColumn fx:id="detailColumn" editable="false" prefWidth="75.0" text="Payee / Category / Memo" />
+            <TableColumn fx:id="paymentColumn" editable="false" prefWidth="75.0" style="-fx-alignment: TOP-RIGHT;" text="Payment" />
+            <TableColumn fx:id="depositColumn" editable="false" prefWidth="75.0" style="-fx-alignment: TOP-RIGHT;" text="Deposit" />
+            <TableColumn fx:id="balanceColumn" editable="false" prefWidth="75.0" style="-fx-alignment: TOP-RIGHT;" text="Balance" />
          </columns>
       </TableView>
    </children>

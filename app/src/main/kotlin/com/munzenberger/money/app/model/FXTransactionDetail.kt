@@ -26,14 +26,25 @@ class FXTransactionDetail private constructor(
 ) {
 
     val dateProperty: ReadOnlyObjectProperty<Date> = SimpleObjectProperty(date)
-    val payeeProperty: ReadOnlyStringProperty = SimpleStringProperty(payee)
-    val categoryProperty: ReadOnlyStringProperty = SimpleStringProperty(category)
     val balanceProperty: ReadOnlyObjectProperty<Money> = SimpleObjectProperty(balance)
 
+    val detailProperty: ReadOnlyStringProperty
     val paymentProperty: ReadOnlyObjectProperty<Money>
     val depositProperty: ReadOnlyObjectProperty<Money>
 
+    private fun String?.toStringOrBlank() = when (this) {
+        null -> ""
+        else -> toString()
+    }
+
     init {
+
+        detailProperty = SimpleStringProperty(
+                payee.toStringOrBlank() + System.lineSeparator() +
+                        category.toStringOrBlank() + System.lineSeparator() +
+                        memo.toStringOrBlank()
+        )
+
         when {
             amount.isNegative -> {
                 paymentProperty = SimpleObjectProperty(amount.negate())
