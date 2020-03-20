@@ -24,7 +24,6 @@ import javafx.scene.control.TableView
 import javafx.stage.Stage
 import javafx.util.Callback
 import java.net.URL
-import java.text.DateFormat
 import java.util.Date
 
 class AccountRegisterController : AutoCloseable {
@@ -45,7 +44,8 @@ class AccountRegisterController : AutoCloseable {
     @FXML lateinit var dateColumn: TableColumn<FXTransactionDetail, Date>
     @FXML lateinit var payeeColumn: TableColumn<FXTransactionDetail, String>
     @FXML lateinit var categoryColumn: TableColumn<FXTransactionDetail, String>
-    @FXML lateinit var amountColumn: TableColumn<FXTransactionDetail, Money>
+    @FXML lateinit var paymentColumn: TableColumn<FXTransactionDetail, Money>
+    @FXML lateinit var depositColumn: TableColumn<FXTransactionDetail, Money>
     @FXML lateinit var balanceColumn: TableColumn<FXTransactionDetail, Money>
     @FXML lateinit var endingBalanceLabel: Label
     @FXML lateinit var endingBalanceProgressIndicator: ProgressIndicator
@@ -96,9 +96,14 @@ class AccountRegisterController : AutoCloseable {
             cellValueFactory = Callback { it.value.categoryProperty }
         }
 
-        amountColumn.apply {
-            cellFactory = MoneyTableCellFactory()
-            cellValueFactory = Callback { it.value.amountProperty }
+        paymentColumn.apply {
+            cellValueFactory = Callback { it.value.paymentProperty }
+            // TODO change the title based on the account type
+        }
+
+        depositColumn.apply {
+            cellValueFactory = Callback { it.value.depositProperty }
+            // TODO change the title based on the account type
         }
 
         balanceColumn.apply {

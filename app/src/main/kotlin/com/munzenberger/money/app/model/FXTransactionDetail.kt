@@ -4,6 +4,7 @@ import com.munzenberger.money.core.Account
 import com.munzenberger.money.core.AccountType
 import com.munzenberger.money.core.Money
 import com.munzenberger.money.core.MoneyDatabase
+import com.munzenberger.money.core.isNegative
 import com.munzenberger.money.sql.Query
 import com.munzenberger.money.sql.ResultSetHandler
 import com.munzenberger.money.sql.getLongOrNull
@@ -26,10 +27,24 @@ class FXTransactionDetail private constructor(
 
     val dateProperty: ReadOnlyObjectProperty<Date> = SimpleObjectProperty(date)
     val payeeProperty: ReadOnlyStringProperty = SimpleStringProperty(payee)
-    val memoProperty: ReadOnlyStringProperty = SimpleStringProperty(memo)
     val categoryProperty: ReadOnlyStringProperty = SimpleStringProperty(category)
-    val amountProperty: ReadOnlyObjectProperty<Money> = SimpleObjectProperty(amount)
     val balanceProperty: ReadOnlyObjectProperty<Money> = SimpleObjectProperty(balance)
+
+    val paymentProperty: ReadOnlyObjectProperty<Money>
+    val depositProperty: ReadOnlyObjectProperty<Money>
+
+    init {
+        when {
+            amount.isNegative -> {
+                paymentProperty = SimpleObjectProperty(amount.negate())
+                depositProperty = SimpleObjectProperty()
+            }
+            else -> {
+                paymentProperty = SimpleObjectProperty()
+                depositProperty = SimpleObjectProperty(amount)
+            }
+        }
+    }
 
     private class TransactionDetailCollector(private val accountId: Long, initialBalance: Money) {
 
