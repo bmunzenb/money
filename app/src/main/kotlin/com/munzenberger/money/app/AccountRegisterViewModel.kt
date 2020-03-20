@@ -11,6 +11,8 @@ import com.munzenberger.money.core.rx.ObservableMoneyDatabase
 import com.munzenberger.money.core.rx.observableAccount
 import io.reactivex.Observable
 import io.reactivex.disposables.CompositeDisposable
+import javafx.beans.property.ReadOnlyStringProperty
+import javafx.beans.property.SimpleStringProperty
 
 class AccountRegisterViewModel : AutoCloseable {
 
@@ -25,10 +27,28 @@ class AccountRegisterViewModel : AutoCloseable {
     private val account = SimpleAsyncObjectProperty<Account>()
     private val transactions = SimpleAsyncObjectProperty<List<FXTransactionDetail>>()
     private val endingBalance = SimpleAsyncObjectProperty<Money>()
+    private val debitText = SimpleStringProperty()
+    private val creditText = SimpleStringProperty()
 
     val accountProperty: ReadOnlyAsyncObjectProperty<Account> = account
     val transactionsProperty: ReadOnlyAsyncObjectProperty<List<FXTransactionDetail>> = transactions
     val endingBalanceProperty: ReadOnlyAsyncObjectProperty<Money> = endingBalance
+    val debitTextProperty: ReadOnlyStringProperty = debitText
+    val creditTextProperty: ReadOnlyStringProperty = creditText
+
+    init {
+        account.addListener { _, _, newValue ->
+            when (newValue) {
+                is AsyncObject.Complete -> newValue.value.accountType?.run {
+                    debitText.value = TransactionType.findType(this, TransactionType.Variant.DEBIT)?.name
+                    creditText.value = TransactionType.findType(this, TransactionType.Variant.CREDIT)?.name
+                }
+                else -> {
+                    // don't bother clearing the titles as we don't want flicker
+                }
+            }
+        }
+    }
 
     fun start(database: ObservableMoneyDatabase, accountIdentity: Long) {
 

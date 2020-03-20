@@ -43,8 +43,8 @@ class AccountRegisterController : AutoCloseable {
     @FXML lateinit var tableView: TableView<FXTransactionDetail>
     @FXML lateinit var dateColumn: TableColumn<FXTransactionDetail, Date>
     @FXML lateinit var detailColumn: TableColumn<FXTransactionDetail, String>
-    @FXML lateinit var paymentColumn: TableColumn<FXTransactionDetail, Money>
-    @FXML lateinit var depositColumn: TableColumn<FXTransactionDetail, Money>
+    @FXML lateinit var debitColumn: TableColumn<FXTransactionDetail, Money>
+    @FXML lateinit var creditColumn: TableColumn<FXTransactionDetail, Money>
     @FXML lateinit var balanceColumn: TableColumn<FXTransactionDetail, Money>
     @FXML lateinit var endingBalanceLabel: Label
     @FXML lateinit var endingBalanceProgressIndicator: ProgressIndicator
@@ -91,14 +91,14 @@ class AccountRegisterController : AutoCloseable {
             cellValueFactory = Callback { it.value.detailProperty }
         }
 
-        paymentColumn.apply {
+        debitColumn.apply {
             cellValueFactory = Callback { it.value.paymentProperty }
-            // TODO change the title based on the account type
+            textProperty().bind(viewModel.debitTextProperty)
         }
 
-        depositColumn.apply {
+        creditColumn.apply {
             cellValueFactory = Callback { it.value.depositProperty }
-            // TODO change the title based on the account type
+            textProperty().bind(viewModel.creditTextProperty)
         }
 
         balanceColumn.apply {

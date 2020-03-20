@@ -32,11 +32,6 @@ class FXTransactionDetail private constructor(
     val paymentProperty: ReadOnlyObjectProperty<Money>
     val depositProperty: ReadOnlyObjectProperty<Money>
 
-    private fun String?.toStringOrBlank() = when (this) {
-        null -> ""
-        else -> toString()
-    }
-
     init {
 
         detailProperty = SimpleStringProperty(
@@ -220,3 +215,8 @@ class FXTransactionDetail private constructor(
 
 fun Account.getTransactionDetails(database: MoneyDatabase): List<FXTransactionDetail> =
         FXTransactionDetail.getTransactionsForAccount(identity!!, initialBalance ?: Money.zero(), database)
+
+private fun String?.toStringOrBlank() = when (this) {
+    null -> ""
+    else -> toString()
+}

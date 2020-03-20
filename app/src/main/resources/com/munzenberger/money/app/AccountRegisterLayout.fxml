@@ -60,8 +60,8 @@
          <columns>
             <TableColumn fx:id="dateColumn" editable="false" prefWidth="75.0" text="Date" />
             <TableColumn fx:id="detailColumn" editable="false" prefWidth="75.0" text="Payee / Category / Memo" />
-            <TableColumn fx:id="paymentColumn" editable="false" prefWidth="75.0" style="-fx-alignment: TOP-RIGHT;" text="Payment" />
-            <TableColumn fx:id="depositColumn" editable="false" prefWidth="75.0" style="-fx-alignment: TOP-RIGHT;" text="Deposit" />
+            <TableColumn fx:id="debitColumn" editable="false" prefWidth="75.0" style="-fx-alignment: TOP-RIGHT;" text="Debit" />
+            <TableColumn fx:id="creditColumn" editable="false" prefWidth="75.0" style="-fx-alignment: TOP-RIGHT;" text="Credit" />
             <TableColumn fx:id="balanceColumn" editable="false" prefWidth="75.0" style="-fx-alignment: TOP-RIGHT;" text="Balance" />
          </columns>
       </TableView>

@@ -46,3 +46,6 @@ fun Money.forTransactionType(transactionType: TransactionType?): Money {
         else -> this
     }
 }
+
+fun TransactionType.Companion.findType(accountType: AccountType, variant: TransactionType.Variant) =
+        getTypes(accountType).find { it.variant == variant }
