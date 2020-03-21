@@ -52,7 +52,11 @@ class FXTransactionDetail private constructor(
         }
     }
 
-    private class TransactionDetailCollector(private val accountId: Long, initialBalance: Money) {
+    private class TransactionDetailCollector(
+            private val accountId: Long,
+            initialBalance: Money,
+            private val invertBalance: Boolean
+    ) {
 
         private var identity: Long? = null
         private var date: Date? = null
@@ -124,7 +128,7 @@ class FXTransactionDetail private constructor(
                         memo = memo,
                         category = category,
                         amount = Money.valueOf(amount),
-                        balance = Money.valueOf(balance)
+                        balance = Money.valueOf(if (invertBalance) -balance else balance)
                 )
             }
             reset()
@@ -143,7 +147,12 @@ class FXTransactionDetail private constructor(
 
     companion object {
 
-        fun getTransactionsForAccount(accountId: Long, initialBalance: Money, database: MoneyDatabase): List<FXTransactionDetail> {
+        fun getTransactionsForAccount(
+                accountId: Long,
+                initialBalance: Money,
+                invertBalance: Boolean,
+                database: MoneyDatabase
+        ): List<FXTransactionDetail> {
 
             val list = mutableListOf<FXTransactionDetail>()
 
@@ -167,7 +176,7 @@ class FXTransactionDetail private constructor(
             database.executeQuery(query, object : ResultSetHandler {
                 override fun accept(rs: ResultSet) {
 
-                    val collector = TransactionDetailCollector(accountId, initialBalance)
+                    val collector = TransactionDetailCollector(accountId, initialBalance, invertBalance)
 
                     while (rs.next()) {
 
@@ -213,8 +222,12 @@ class FXTransactionDetail private constructor(
     }
 }
 
-fun Account.getTransactionDetails(database: MoneyDatabase): List<FXTransactionDetail> =
-        FXTransactionDetail.getTransactionsForAccount(identity!!, initialBalance ?: Money.zero(), database)
+fun Account.getTransactionDetails(database: MoneyDatabase, invertBalance: Boolean): List<FXTransactionDetail> =
+        FXTransactionDetail.getTransactionsForAccount(
+                accountId = identity!!,
+                initialBalance = initialBalance ?: Money.zero(),
+                invertBalance = invertBalance,
+                database = database)
 
 private fun String?.toStringOrBlank() = when (this) {
     null -> ""

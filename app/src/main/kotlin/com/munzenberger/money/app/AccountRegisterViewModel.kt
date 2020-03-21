@@ -6,6 +6,7 @@ import com.munzenberger.money.app.property.AsyncObject
 import com.munzenberger.money.app.property.ReadOnlyAsyncObjectProperty
 import com.munzenberger.money.app.property.SimpleAsyncObjectProperty
 import com.munzenberger.money.core.Account
+import com.munzenberger.money.core.AccountType
 import com.munzenberger.money.core.Money
 import com.munzenberger.money.core.rx.ObservableMoneyDatabase
 import com.munzenberger.money.core.rx.observableAccount
@@ -53,11 +54,17 @@ class AccountRegisterViewModel : AutoCloseable {
     fun start(database: ObservableMoneyDatabase, accountIdentity: Long) {
 
         Account.observableAccount(accountIdentity, database)
-                .flatMap { Observable.fromCallable {
-                    SubscriptionResult(
-                            account = it,
-                            transactions = it.getTransactionDetails(database),
-                            endingBalance = it.balance(database)) }
+                .flatMap {
+                    Observable.fromCallable {
+
+                        val invertBalance = it.accountType!!.category == AccountType.Category.LIABILITIES
+
+                        SubscriptionResult(
+                                account = it,
+                                transactions = it.getTransactionDetails(database, invertBalance),
+                                endingBalance = it.balance(database).let { if (invertBalance) it.negate() else it }
+                        )
+                    }
                 }
                 .subscribeOn(SchedulerProvider.database)
                 .observeOn(SchedulerProvider.main)
