@@ -14,18 +14,18 @@ class FXAccountTransaction (accountTransaction: AccountTransaction) {
     val balanceProperty: ReadOnlyObjectProperty<Money> = SimpleObjectProperty(accountTransaction.balance)
     val payeeProperty: ReadOnlyStringProperty = SimpleStringProperty(accountTransaction.payee)
 
-    val paymentProperty: ReadOnlyObjectProperty<Money>
-    val depositProperty: ReadOnlyObjectProperty<Money>
+    val debitProperty: ReadOnlyObjectProperty<Money>
+    val creditProperty: ReadOnlyObjectProperty<Money>
 
     init {
         when {
             accountTransaction.amount.isNegative -> {
-                paymentProperty = SimpleObjectProperty(accountTransaction.amount.negate())
-                depositProperty = SimpleObjectProperty()
+                debitProperty = SimpleObjectProperty(accountTransaction.amount.negate())
+                creditProperty = SimpleObjectProperty()
             }
             else -> {
-                paymentProperty = SimpleObjectProperty()
-                depositProperty = SimpleObjectProperty(accountTransaction.amount)
+                debitProperty = SimpleObjectProperty()
+                creditProperty = SimpleObjectProperty(accountTransaction.amount)
             }
         }
     }
