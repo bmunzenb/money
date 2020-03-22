@@ -57,15 +57,18 @@ class AccountRegisterViewModel : AutoCloseable {
                 .flatMap {
                     Observable.fromCallable {
 
-                        val invertBalance = it.accountType!!.category == AccountType.Category.LIABILITIES
+                        var transactions = it.getAccountTransactions(database)
+                        var endingBalance = it.balance(database)
 
-                        val transactions = it.getAccountTransactions(database)
-                                //.map { if (invertBalance) it.copy(amount = it.balance.negate()) else it }
+                        if (it.accountType!!.category == AccountType.Category.LIABILITIES) {
+                            transactions = transactions.map { it.copy(balance = it.balance.negate()) }
+                            endingBalance = endingBalance.negate()
+                        }
 
                         SubscriptionResult(
                                 account = it,
                                 transactions = transactions.map { FXAccountTransaction(it) },
-                                endingBalance = it.balance(database)//.let { if (invertBalance) it.negate() else it }
+                                endingBalance = endingBalance
                         )
                     }
                 }

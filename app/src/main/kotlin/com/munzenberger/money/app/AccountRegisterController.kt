@@ -92,17 +92,19 @@ class AccountRegisterController : AutoCloseable {
         }
 
         debitColumn.apply {
+            cellFactory = MoneyTableCellFactory(withCurrency = false, negativeStyle = false)
             cellValueFactory = Callback { it.value.debitProperty }
             textProperty().bind(viewModel.debitTextProperty)
         }
 
         creditColumn.apply {
+            cellFactory = MoneyTableCellFactory(withCurrency = false, negativeStyle = false)
             cellValueFactory = Callback { it.value.creditProperty }
             textProperty().bind(viewModel.creditTextProperty)
         }
 
         balanceColumn.apply {
-            cellFactory = MoneyTableCellFactory()
+            cellFactory = MoneyTableCellFactory(withCurrency = false)
             cellValueFactory = Callback { it.value.balanceProperty }
         }
 

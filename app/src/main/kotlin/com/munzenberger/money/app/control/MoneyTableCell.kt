@@ -6,7 +6,10 @@ import javafx.scene.control.TableCell
 import javafx.scene.control.TableColumn
 import javafx.util.Callback
 
-class MoneyTableCell<S> : TableCell<S, Money>() {
+class MoneyTableCell<S>(
+        private val withCurrency: Boolean,
+        private val negativeStyle: Boolean
+) : TableCell<S, Money>() {
 
     companion object {
         const val NEGATIVE_STYLE_CLASS = "money-negative"
@@ -20,16 +23,25 @@ class MoneyTableCell<S> : TableCell<S, Money>() {
         when (value) {
             null -> text = null
             else -> {
-                text = value.toString()
-                when {
-                    value.isNegative -> styleClass.add(NEGATIVE_STYLE_CLASS)
+                text = value.text(withCurrency)
+                if (negativeStyle && value.isNegative) {
+                     styleClass.add(NEGATIVE_STYLE_CLASS)
                 }
             }
         }
     }
 }
 
-class MoneyTableCellFactory<S>() : Callback<TableColumn<S, Money>, TableCell<S, Money>> {
+class MoneyTableCellFactory<S>(
+        private val withCurrency: Boolean = true,
+        private val negativeStyle: Boolean = true
+) : Callback<TableColumn<S, Money>, TableCell<S, Money>> {
 
-    override fun call(param: TableColumn<S, Money>?) = MoneyTableCell<S>()
+    override fun call(param: TableColumn<S, Money>?) =
+            MoneyTableCell<S>(withCurrency, negativeStyle)
+}
+
+private fun Money.text(withCurrency: Boolean) = when (withCurrency) {
+    true -> toString()
+    else -> toStringWithoutCurrency()
 }
