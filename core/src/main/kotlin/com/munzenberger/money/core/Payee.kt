@@ -36,4 +36,3 @@ class PayeeResultSetMapper : ResultSetMapper<Payee> {
         return Payee(model)
     }
 }
-

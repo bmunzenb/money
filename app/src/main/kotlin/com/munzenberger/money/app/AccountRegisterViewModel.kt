@@ -1,7 +1,7 @@
 package com.munzenberger.money.app
 
-import com.munzenberger.money.app.model.FXTransactionDetail
-import com.munzenberger.money.app.model.getTransactionDetails
+import com.munzenberger.money.app.model.FXAccountTransaction
+import com.munzenberger.money.app.model.getAccountTransactions
 import com.munzenberger.money.app.property.AsyncObject
 import com.munzenberger.money.app.property.ReadOnlyAsyncObjectProperty
 import com.munzenberger.money.app.property.SimpleAsyncObjectProperty
@@ -19,20 +19,20 @@ class AccountRegisterViewModel : AutoCloseable {
 
     private data class SubscriptionResult(
             val account: Account,
-            val transactions: List<FXTransactionDetail>,
+            val transactions: List<FXAccountTransaction>,
             val endingBalance: Money
     )
 
     private val disposables = CompositeDisposable()
 
     private val account = SimpleAsyncObjectProperty<Account>()
-    private val transactions = SimpleAsyncObjectProperty<List<FXTransactionDetail>>()
+    private val transactions = SimpleAsyncObjectProperty<List<FXAccountTransaction>>()
     private val endingBalance = SimpleAsyncObjectProperty<Money>()
     private val debitText = SimpleStringProperty()
     private val creditText = SimpleStringProperty()
 
     val accountProperty: ReadOnlyAsyncObjectProperty<Account> = account
-    val transactionsProperty: ReadOnlyAsyncObjectProperty<List<FXTransactionDetail>> = transactions
+    val transactionsProperty: ReadOnlyAsyncObjectProperty<List<FXAccountTransaction>> = transactions
     val endingBalanceProperty: ReadOnlyAsyncObjectProperty<Money> = endingBalance
     val debitTextProperty: ReadOnlyStringProperty = debitText
     val creditTextProperty: ReadOnlyStringProperty = creditText
@@ -59,10 +59,13 @@ class AccountRegisterViewModel : AutoCloseable {
 
                         val invertBalance = it.accountType!!.category == AccountType.Category.LIABILITIES
 
+                        val transactions = it.getAccountTransactions(database)
+                                //.map { if (invertBalance) it.copy(amount = it.balance.negate()) else it }
+
                         SubscriptionResult(
                                 account = it,
-                                transactions = it.getTransactionDetails(database, invertBalance),
-                                endingBalance = it.balance(database).let { if (invertBalance) it.negate() else it }
+                                transactions = transactions.map { FXAccountTransaction(it) },
+                                endingBalance = it.balance(database)//.let { if (invertBalance) it.negate() else it }
                         )
                     }
                 }

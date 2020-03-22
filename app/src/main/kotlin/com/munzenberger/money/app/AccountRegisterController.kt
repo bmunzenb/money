@@ -4,7 +4,7 @@ import com.munzenberger.money.app.control.DateTableCellFactory
 import com.munzenberger.money.app.control.MoneyTableCell
 import com.munzenberger.money.app.control.MoneyTableCellFactory
 import com.munzenberger.money.app.control.bindAsync
-import com.munzenberger.money.app.model.FXTransactionDetail
+import com.munzenberger.money.app.model.FXAccountTransaction
 import com.munzenberger.money.app.navigation.LayoutControllerNavigation
 import com.munzenberger.money.app.property.AsyncObject
 import com.munzenberger.money.app.property.bindAsync
@@ -40,12 +40,12 @@ class AccountRegisterController : AutoCloseable {
     @FXML lateinit var accountNameLabel: Label
     @FXML lateinit var editAccountButton: Button
     @FXML lateinit var addTransactionButton: Button
-    @FXML lateinit var tableView: TableView<FXTransactionDetail>
-    @FXML lateinit var dateColumn: TableColumn<FXTransactionDetail, Date>
-    @FXML lateinit var detailColumn: TableColumn<FXTransactionDetail, String>
-    @FXML lateinit var debitColumn: TableColumn<FXTransactionDetail, Money>
-    @FXML lateinit var creditColumn: TableColumn<FXTransactionDetail, Money>
-    @FXML lateinit var balanceColumn: TableColumn<FXTransactionDetail, Money>
+    @FXML lateinit var tableView: TableView<FXAccountTransaction>
+    @FXML lateinit var dateColumn: TableColumn<FXAccountTransaction, Date>
+    @FXML lateinit var payeeColumn: TableColumn<FXAccountTransaction, String>
+    @FXML lateinit var debitColumn: TableColumn<FXAccountTransaction, Money>
+    @FXML lateinit var creditColumn: TableColumn<FXAccountTransaction, Money>
+    @FXML lateinit var balanceColumn: TableColumn<FXAccountTransaction, Money>
     @FXML lateinit var endingBalanceLabel: Label
     @FXML lateinit var endingBalanceProgressIndicator: ProgressIndicator
 
@@ -87,8 +87,8 @@ class AccountRegisterController : AutoCloseable {
             cellValueFactory = Callback { it.value.dateProperty }
         }
 
-        detailColumn.apply {
-            cellValueFactory = Callback { it.value.detailProperty }
+        payeeColumn.apply {
+            cellValueFactory = Callback { it.value.payeeProperty }
         }
 
         debitColumn.apply {
