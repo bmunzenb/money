@@ -43,6 +43,7 @@ class AccountRegisterController : AutoCloseable {
     @FXML lateinit var tableView: TableView<FXAccountTransaction>
     @FXML lateinit var dateColumn: TableColumn<FXAccountTransaction, Date>
     @FXML lateinit var payeeColumn: TableColumn<FXAccountTransaction, String>
+    @FXML lateinit var categoryColumn: TableColumn<FXAccountTransaction, String>
     @FXML lateinit var debitColumn: TableColumn<FXAccountTransaction, Money>
     @FXML lateinit var creditColumn: TableColumn<FXAccountTransaction, Money>
     @FXML lateinit var balanceColumn: TableColumn<FXAccountTransaction, Money>
@@ -76,9 +77,26 @@ class AccountRegisterController : AutoCloseable {
                 AsyncObject.Status.EXECUTING,
                 AsyncObject.Status.ERROR)
 
-        tableView.bindAsync(viewModel.transactionsProperty) {
-            Hyperlink("Add a transaction to get started.").apply {
-                setOnAction { addTransaction() }
+        tableView.apply {
+
+            dateColumn.prefWidthProperty().bind(widthProperty().multiply(0.09))
+            payeeColumn.prefWidthProperty().bind(widthProperty().multiply(0.27))
+            categoryColumn.prefWidthProperty().bind(widthProperty().multiply(0.27))
+            debitColumn.prefWidthProperty().bind(widthProperty().multiply(0.12))
+            creditColumn.prefWidthProperty().bind(widthProperty().multiply(0.12))
+            balanceColumn.prefWidthProperty().bind(widthProperty().multiply(0.12))
+
+            dateColumn.isResizable = false
+            payeeColumn.isResizable = false
+            categoryColumn.isResizable = false
+            debitColumn.isResizable = false
+            creditColumn.isResizable = false
+            balanceColumn.isResizable = false
+
+            bindAsync(viewModel.transactionsProperty) {
+                Hyperlink("Add a transaction to get started.").apply {
+                    setOnAction { addTransaction() }
+                }
             }
         }
 
@@ -89,6 +107,10 @@ class AccountRegisterController : AutoCloseable {
 
         payeeColumn.apply {
             cellValueFactory = Callback { it.value.payeeProperty }
+        }
+
+        categoryColumn.apply {
+            cellValueFactory = Callback { it.value.categoryProperty }
         }
 
         debitColumn.apply {

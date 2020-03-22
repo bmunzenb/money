@@ -14,10 +14,20 @@ class FXAccountTransaction (accountTransaction: AccountTransaction) {
     val balanceProperty: ReadOnlyObjectProperty<Money> = SimpleObjectProperty(accountTransaction.balance)
     val payeeProperty: ReadOnlyStringProperty = SimpleStringProperty(accountTransaction.payee)
 
+    val categoryProperty: ReadOnlyStringProperty
     val debitProperty: ReadOnlyObjectProperty<Money>
     val creditProperty: ReadOnlyObjectProperty<Money>
 
     init {
+
+        categoryProperty = SimpleStringProperty().apply {
+            value = when (accountTransaction.categories.size) {
+                0 -> null
+                1 -> accountTransaction.categories[0]
+                else -> SPLIT_CATEGORY_NAME
+            }
+        }
+
         when {
             accountTransaction.amount.isNegative -> {
                 debitProperty = SimpleObjectProperty(accountTransaction.amount.negate())
