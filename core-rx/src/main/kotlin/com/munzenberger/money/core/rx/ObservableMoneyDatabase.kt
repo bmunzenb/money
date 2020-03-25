@@ -10,7 +10,7 @@ import io.reactivex.subjects.BehaviorSubject
 
 class ObservableMoneyDatabase(private val database: MoneyDatabase) : MoneyDatabase by database {
 
-    private val updateSubject = BehaviorSubject.create<Unit>().apply { onNext(Unit) }
+    private val updateSubject = BehaviorSubject.createDefault<Unit>(Unit)
 
     val onUpdate: Observable<Unit> = updateSubject
 
