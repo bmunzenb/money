@@ -41,8 +41,10 @@ class AccountRegisterViewModel : AutoCloseable {
         account.addListener { _, _, newValue ->
             when (newValue) {
                 is AsyncObject.Complete -> newValue.value.accountType?.run {
-                    debitText.value = TransactionType.findType(this, TransactionType.Variant.DEBIT)?.name
-                    creditText.value = TransactionType.findType(this, TransactionType.Variant.CREDIT)?.name
+                    TransactionType.getTypes(this).run {
+                        debitText.value = find { it.variant == TransactionType.Variant.DEBIT }?.name
+                        creditText.value = find { it.variant == TransactionType.Variant.CREDIT }?.name
+                    }
                 }
                 else -> {
                     // don't bother clearing the titles as we don't want flicker
@@ -67,7 +69,7 @@ class AccountRegisterViewModel : AutoCloseable {
 
                         SubscriptionResult(
                                 account = it,
-                                transactions = transactions.map { FXAccountTransaction(it) },
+                                transactions = transactions.map { FXAccountTransaction(it, database) },
                                 endingBalance = endingBalance
                         )
                     }
@@ -84,13 +86,6 @@ class AccountRegisterViewModel : AutoCloseable {
                     endingBalance.value = AsyncObject.Error(it)
                 })
                 .also { disposables.add(it) }
-    }
-
-    fun getAccount(block: (Account) -> Unit) = account.get().let {
-        when (it) {
-            is AsyncObject.Complete -> block.invoke(it.value)
-            else -> {}
-        }
     }
 
     override fun close() {

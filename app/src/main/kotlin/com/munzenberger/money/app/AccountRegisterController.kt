@@ -9,18 +9,24 @@ import com.munzenberger.money.app.navigation.LayoutControllerNavigation
 import com.munzenberger.money.app.property.AsyncObject
 import com.munzenberger.money.app.property.bindAsync
 import com.munzenberger.money.app.property.bindAsyncStatus
+import com.munzenberger.money.core.Account
 import com.munzenberger.money.core.Money
 import com.munzenberger.money.core.MoneyDatabase
 import com.munzenberger.money.core.Transaction
 import com.munzenberger.money.core.isNegative
 import com.munzenberger.money.core.rx.ObservableMoneyDatabase
 import javafx.fxml.FXML
+import javafx.scene.Cursor
 import javafx.scene.control.Button
+import javafx.scene.control.ContextMenu
 import javafx.scene.control.Hyperlink
 import javafx.scene.control.Label
+import javafx.scene.control.MenuItem
 import javafx.scene.control.ProgressIndicator
 import javafx.scene.control.TableColumn
+import javafx.scene.control.TableRow
 import javafx.scene.control.TableView
+import javafx.scene.input.MouseButton
 import javafx.stage.Stage
 import javafx.util.Callback
 import java.net.URL
@@ -93,9 +99,27 @@ class AccountRegisterController : AutoCloseable {
             creditColumn.isResizable = false
             balanceColumn.isResizable = false
 
+            rowFactory = Callback {
+                object : TableRow<FXAccountTransaction>() {
+                    init {
+                        val edit = MenuItem("Edit").apply { setOnAction { onEditTransaction(item) } }
+                        contextMenu = ContextMenu().apply { items.addAll(edit) }
+
+                        setOnMouseClicked { event ->
+                            when {
+                                event.button == MouseButton.PRIMARY && event.clickCount == 2 -> when (item) {
+                                    null -> onAddTransaction()
+                                    else -> onEditTransaction(item)
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
             bindAsync(viewModel.transactionsProperty) {
                 Hyperlink("Add a transaction to get started.").apply {
-                    setOnAction { addTransaction() }
+                    setOnAction { onAddTransaction() }
                 }
             }
         }
@@ -169,17 +193,42 @@ class AccountRegisterController : AutoCloseable {
         }
     }
 
-    @FXML fun addTransaction() {
+    @FXML fun onAddTransaction() {
         viewModel.getAccount {
-            DialogBuilder.build(EditTransactionController.LAYOUT) { stage, controller: EditTransactionController ->
-                stage.title = addTransactionButton.text
-                stage.show()
-                controller.start(stage, database, Transaction().apply { account = it })
-            }
+            startEditTransaction(addTransactionButton.text, Transaction().apply { account = it })
+        }
+    }
+
+    private fun onEditTransaction(transaction: FXAccountTransaction) {
+        stage.scene.cursor = Cursor.WAIT
+        transaction.getTransaction
+                .subscribeOn(SchedulerProvider.database)
+                .observeOn(SchedulerProvider.main)
+                .subscribe { t, e ->
+                    stage.scene.cursor = Cursor.DEFAULT
+                    when {
+                        t != null -> startEditTransaction("Edit Transaction", t)
+                        e != null -> ErrorAlert.showAndWait(e)
+                    }
+                }
+    }
+
+    private fun startEditTransaction(title: String, transaction: Transaction) {
+        DialogBuilder.build(EditTransactionController.LAYOUT) { stage, controller: EditTransactionController ->
+            stage.title = title
+            stage.show()
+            controller.start(stage, database, transaction)
         }
     }
 
     override fun close() {
         viewModel.close()
+    }
+}
+
+private fun AccountRegisterViewModel.getAccount(block: (Account) -> Unit) = accountProperty.value.let {
+    when (it) {
+        is AsyncObject.Complete -> block.invoke(it.value)
+        else -> Unit
     }
 }

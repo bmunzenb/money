@@ -1,14 +1,18 @@
 package com.munzenberger.money.app.model
 
 import com.munzenberger.money.core.Money
+import com.munzenberger.money.core.MoneyDatabase
+import com.munzenberger.money.core.PersistableNotFoundException
+import com.munzenberger.money.core.Transaction
 import com.munzenberger.money.core.isNegative
+import io.reactivex.Single
 import javafx.beans.property.ReadOnlyObjectProperty
 import javafx.beans.property.ReadOnlyStringProperty
 import javafx.beans.property.SimpleObjectProperty
 import javafx.beans.property.SimpleStringProperty
 import java.util.Date
 
-class FXAccountTransaction (accountTransaction: AccountTransaction) {
+class FXAccountTransaction(private val accountTransaction: AccountTransaction, private val database: MoneyDatabase) {
 
     val dateProperty: ReadOnlyObjectProperty<Date> = SimpleObjectProperty(accountTransaction.date)
     val balanceProperty: ReadOnlyObjectProperty<Money> = SimpleObjectProperty(accountTransaction.balance)
@@ -17,6 +21,12 @@ class FXAccountTransaction (accountTransaction: AccountTransaction) {
     val categoryProperty: ReadOnlyStringProperty
     val debitProperty: ReadOnlyObjectProperty<Money>
     val creditProperty: ReadOnlyObjectProperty<Money>
+
+    val getTransaction: Single<Transaction>
+        get() = Single.fromCallable {
+            Transaction.get(accountTransaction.transactionId, database)
+                    ?: throw PersistableNotFoundException(Transaction::class, accountTransaction.transactionId)
+        }
 
     init {
 
