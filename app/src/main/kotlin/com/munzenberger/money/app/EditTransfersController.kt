@@ -55,7 +55,7 @@ class EditTransfersController {
             setOnKeyReleased {
                 when (it.code) {
                     KeyCode.DELETE -> viewModel.delete(selectionModel.selectedItems)
-                    else -> { /* do nothing */ }
+                    else -> Unit
                 }
             }
 

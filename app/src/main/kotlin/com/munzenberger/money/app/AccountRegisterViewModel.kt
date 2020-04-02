@@ -69,7 +69,7 @@ class AccountRegisterViewModel : AutoCloseable {
 
                         SubscriptionResult(
                                 account = it,
-                                transactions = transactions.map { FXAccountTransaction(it, database) },
+                                transactions = transactions.map { FXAccountTransaction(it) },
                                 endingBalance = endingBalance
                         )
                     }

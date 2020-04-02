@@ -13,7 +13,7 @@ object OpenFileDatabaseConnector : FileDatabaseConnector() {
         title = "Open Money Database"
         initialDirectory = File(System.getProperty("user.home"))
         extensionFilters.addAll(
-                FileChooser.ExtensionFilter("Money Database Files", "*${FileDatabaseConnector.SUFFIX}"),
+                FileChooser.ExtensionFilter("Money Database Files", "*$SUFFIX"),
                 FileChooser.ExtensionFilter("All Files", "*"))
     }.showOpenDialog(ownerWindow)
 

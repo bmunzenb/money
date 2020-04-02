@@ -5,6 +5,7 @@ import com.munzenberger.money.app.control.MoneyTableCell
 import com.munzenberger.money.app.control.MoneyTableCellFactory
 import com.munzenberger.money.app.control.bindAsync
 import com.munzenberger.money.app.model.FXAccountTransaction
+import com.munzenberger.money.app.model.delete
 import com.munzenberger.money.app.navigation.LayoutControllerNavigation
 import com.munzenberger.money.app.property.AsyncObject
 import com.munzenberger.money.app.property.bindAsync
@@ -17,15 +18,20 @@ import com.munzenberger.money.core.isNegative
 import com.munzenberger.money.core.rx.ObservableMoneyDatabase
 import javafx.fxml.FXML
 import javafx.scene.Cursor
+import javafx.scene.control.Alert
 import javafx.scene.control.Button
+import javafx.scene.control.ButtonType
 import javafx.scene.control.ContextMenu
 import javafx.scene.control.Hyperlink
 import javafx.scene.control.Label
 import javafx.scene.control.MenuItem
 import javafx.scene.control.ProgressIndicator
+import javafx.scene.control.SelectionMode
+import javafx.scene.control.SeparatorMenuItem
 import javafx.scene.control.TableColumn
 import javafx.scene.control.TableRow
 import javafx.scene.control.TableView
+import javafx.scene.input.KeyCode
 import javafx.scene.input.MouseButton
 import javafx.stage.Stage
 import javafx.util.Callback
@@ -85,6 +91,42 @@ class AccountRegisterController : AutoCloseable {
 
         tableView.apply {
 
+            rowFactory = Callback {
+                object : TableRow<FXAccountTransaction>() {
+                    init {
+                        contextMenu = ContextMenu().apply {
+                            MenuItem("Edit")
+                                    .apply { setOnAction { onEditTransaction(item) } }
+                                    .also { items.add(it) }
+
+                            SeparatorMenuItem().also { items.add(it) }
+
+                            MenuItem("Delete")
+                                    .apply { setOnAction { onDeleteTransactions(listOf(item)) } }
+                                    .also { items.add(it) }
+                        }
+
+                        setOnMouseClicked { event ->
+                            when {
+                                event.button == MouseButton.PRIMARY && event.clickCount == 2 -> when (item) {
+                                    null -> onAddTransaction()
+                                    else -> onEditTransaction(item)
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            selectionModel.selectionMode = SelectionMode.SINGLE
+
+            setOnKeyReleased {
+                when (it.code) {
+                    KeyCode.DELETE -> onDeleteTransactions(selectionModel.selectedItems)
+                    else -> Unit
+                }
+            }
+
             dateColumn.prefWidthProperty().bind(widthProperty().multiply(0.09))
             payeeColumn.prefWidthProperty().bind(widthProperty().multiply(0.27))
             categoryColumn.prefWidthProperty().bind(widthProperty().multiply(0.27))
@@ -98,24 +140,6 @@ class AccountRegisterController : AutoCloseable {
             debitColumn.isResizable = false
             creditColumn.isResizable = false
             balanceColumn.isResizable = false
-
-            rowFactory = Callback {
-                object : TableRow<FXAccountTransaction>() {
-                    init {
-                        val edit = MenuItem("Edit").apply { setOnAction { onEditTransaction(item) } }
-                        contextMenu = ContextMenu().apply { items.addAll(edit) }
-
-                        setOnMouseClicked { event ->
-                            when {
-                                event.button == MouseButton.PRIMARY && event.clickCount == 2 -> when (item) {
-                                    null -> onAddTransaction()
-                                    else -> onEditTransaction(item)
-                                }
-                            }
-                        }
-                    }
-                }
-            }
 
             bindAsync(viewModel.transactionsProperty) {
                 Hyperlink("Add a transaction to get started.").apply {
@@ -201,16 +225,33 @@ class AccountRegisterController : AutoCloseable {
 
     private fun onEditTransaction(transaction: FXAccountTransaction) {
         stage.scene.cursor = Cursor.WAIT
-        transaction.getTransaction
-                .subscribeOn(SchedulerProvider.database)
-                .observeOn(SchedulerProvider.main)
-                .subscribe { t, e ->
+        transaction.getTransaction(database) { t, e ->
+            stage.scene.cursor = Cursor.DEFAULT
+            when {
+                t != null -> startEditTransaction("Edit Transaction", t)
+                e != null -> ErrorAlert.showAndWait(e)
+            }
+        }
+    }
+
+    private fun onDeleteTransactions(transactions: List<FXAccountTransaction>) {
+
+        val result = Alert(Alert.AlertType.CONFIRMATION).apply {
+            title = "Confirm Delete"
+            contentText = "Are you sure you want to delete this transaction?"
+        }.showAndWait()
+
+        when {
+            result.isPresent && result.get() == ButtonType.OK -> {
+                stage.scene.cursor = Cursor.WAIT
+                transactions.delete(database) { error ->
                     stage.scene.cursor = Cursor.DEFAULT
-                    when {
-                        t != null -> startEditTransaction("Edit Transaction", t)
-                        e != null -> ErrorAlert.showAndWait(e)
+                    if (error != null) {
+                        ErrorAlert.showAndWait(error)
                     }
                 }
+            }
+        }
     }
 
     private fun startEditTransaction(title: String, transaction: Transaction) {

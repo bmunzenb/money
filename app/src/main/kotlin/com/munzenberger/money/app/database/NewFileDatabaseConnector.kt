@@ -11,9 +11,9 @@ object NewFileDatabaseConnector : FileDatabaseConnector() {
     fun openFile(ownerWindow: Window): File? = FileChooser().apply {
         title = "New Money Database"
         initialDirectory = File(System.getProperty("user.home"))
-        initialFileName = "Money${FileDatabaseConnector.SUFFIX}"
+        initialFileName = "Money$SUFFIX"
         extensionFilters.addAll(
-                FileChooser.ExtensionFilter("Money Database Files", "*${FileDatabaseConnector.SUFFIX}"),
+                FileChooser.ExtensionFilter("Money Database Files", "*$SUFFIX"),
                 FileChooser.ExtensionFilter("All Files", "*"))
     }.showSaveDialog(ownerWindow)
 
