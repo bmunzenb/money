@@ -1,5 +1,6 @@
 package com.munzenberger.money.app.control
 
+import com.munzenberger.money.app.model.moneyNegativePseudoClass
 import com.munzenberger.money.core.Money
 import com.munzenberger.money.core.isNegative
 import javafx.scene.control.TableCell
@@ -11,23 +12,14 @@ class MoneyTableCell<S>(
         private val negativeStyle: Boolean
 ) : TableCell<S, Money>() {
 
-    companion object {
-        const val NEGATIVE_STYLE_CLASS = "money-negative"
-    }
-
     override fun updateItem(value: Money?, empty: Boolean) {
         super.updateItem(item, empty)
 
-        styleClass.remove(NEGATIVE_STYLE_CLASS)
+        text = value?.text(withCurrency)
 
-        when (value) {
-            null -> text = null
-            else -> {
-                text = value.text(withCurrency)
-                if (negativeStyle && value.isNegative) {
-                     styleClass.add(NEGATIVE_STYLE_CLASS)
-                }
-            }
+        if (negativeStyle) {
+            val isMoneyNegative = !empty && value != null && value.isNegative
+            pseudoClassStateChanged(moneyNegativePseudoClass, isMoneyNegative)
         }
     }
 }

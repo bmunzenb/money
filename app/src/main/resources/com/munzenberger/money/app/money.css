@@ -2,14 +2,18 @@
     -fx-text-fill: -fx-text-background-color ;
 }
 
-.money-negative {
+.label:money-negative {
     -fx-text-fill: #dd0000 ;
 }
 
-.table-row-cell .money-negative {
+.table-cell:money-negative {
     -fx-text-fill: #dd0000 ;
 }
 
-.table-row-cell:selected .money-negative {
+.table-row-cell:selected .table-cell:money-negative {
     -fx-text-fill: -fx-text-background-color ;
+}
+
+.table-row-cell:future-date .table-cell {
+    -fx-opacity: 0.5 ;
 }

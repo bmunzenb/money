@@ -1,11 +1,12 @@
 package com.munzenberger.money.app
 
+import com.munzenberger.money.app.control.AccountTransactionTableRow
 import com.munzenberger.money.app.control.DateTableCellFactory
-import com.munzenberger.money.app.control.MoneyTableCell
 import com.munzenberger.money.app.control.MoneyTableCellFactory
 import com.munzenberger.money.app.control.bindAsync
 import com.munzenberger.money.app.model.FXAccountTransaction
 import com.munzenberger.money.app.model.delete
+import com.munzenberger.money.app.model.moneyNegativePseudoClass
 import com.munzenberger.money.app.navigation.LayoutControllerNavigation
 import com.munzenberger.money.app.property.AsyncObject
 import com.munzenberger.money.app.property.bindAsync
@@ -21,18 +22,13 @@ import javafx.scene.Cursor
 import javafx.scene.control.Alert
 import javafx.scene.control.Button
 import javafx.scene.control.ButtonType
-import javafx.scene.control.ContextMenu
 import javafx.scene.control.Hyperlink
 import javafx.scene.control.Label
-import javafx.scene.control.MenuItem
 import javafx.scene.control.ProgressIndicator
 import javafx.scene.control.SelectionMode
-import javafx.scene.control.SeparatorMenuItem
 import javafx.scene.control.TableColumn
-import javafx.scene.control.TableRow
 import javafx.scene.control.TableView
 import javafx.scene.input.KeyCode
-import javafx.scene.input.MouseButton
 import javafx.stage.Stage
 import javafx.util.Callback
 import java.net.URL
@@ -92,30 +88,11 @@ class AccountRegisterController : AutoCloseable {
         tableView.apply {
 
             rowFactory = Callback {
-                object : TableRow<FXAccountTransaction>() {
-                    init {
-                        contextMenu = ContextMenu().apply {
-                            MenuItem("Edit")
-                                    .apply { setOnAction { onEditTransaction(item) } }
-                                    .also { items.add(it) }
-
-                            SeparatorMenuItem().also { items.add(it) }
-
-                            MenuItem("Delete")
-                                    .apply { setOnAction { onDeleteTransactions(listOf(item)) } }
-                                    .also { items.add(it) }
-                        }
-
-                        setOnMouseClicked { event ->
-                            when {
-                                event.button == MouseButton.PRIMARY && event.clickCount == 2 -> when (item) {
-                                    null -> onAddTransaction()
-                                    else -> onEditTransaction(item)
-                                }
-                            }
-                        }
-                    }
-                }
+                AccountTransactionTableRow(
+                        addTransaction = this@AccountRegisterController::onAddTransaction,
+                        editTransaction = this@AccountRegisterController::onEditTransaction,
+                        deleteTransactions = this@AccountRegisterController::onDeleteTransactions
+                )
             }
 
             selectionModel.selectionMode = SelectionMode.SINGLE
@@ -188,14 +165,8 @@ class AccountRegisterController : AutoCloseable {
         }
 
         viewModel.endingBalanceProperty.addListener { _, _, newValue ->
-            endingBalanceLabel.styleClass.remove(MoneyTableCell.NEGATIVE_STYLE_CLASS)
-            when (newValue) {
-                is AsyncObject.Complete<Money> -> {
-                    if (newValue.value.isNegative) {
-                        endingBalanceLabel.styleClass.add(MoneyTableCell.NEGATIVE_STYLE_CLASS)
-                    }
-                }
-            }
+            val isMoneyNegative = newValue is AsyncObject.Complete && newValue.value.isNegative
+            endingBalanceLabel.pseudoClassStateChanged(moneyNegativePseudoClass, isMoneyNegative)
         }
     }
 

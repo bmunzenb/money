@@ -1,6 +1,6 @@
 package com.munzenberger.money.app.control
 
-import com.munzenberger.money.app.control.MoneyTableCell.Companion.NEGATIVE_STYLE_CLASS
+import com.munzenberger.money.app.model.moneyNegativePseudoClass
 import com.munzenberger.money.app.property.AsyncObject
 import com.munzenberger.money.core.Money
 import com.munzenberger.money.core.isNegative
@@ -12,12 +12,7 @@ class MoneyAsyncTableCell<S> : AsyncTableCell<S, Money>() {
 
     override fun onComplete(value: Money) {
         super.onComplete(value)
-
-        styleClass.remove(NEGATIVE_STYLE_CLASS)
-
-        if (value.isNegative) {
-            styleClass.add(NEGATIVE_STYLE_CLASS)
-        }
+        pseudoClassStateChanged(moneyNegativePseudoClass, value.isNegative)
     }
 }
 

@@ -2,9 +2,9 @@ package com.munzenberger.money.app
 
 import com.munzenberger.money.app.control.HyperlinkTableCellFactory
 import com.munzenberger.money.app.control.MoneyAsyncTableCellFactory
-import com.munzenberger.money.app.control.MoneyTableCell
 import com.munzenberger.money.app.control.bindAsync
 import com.munzenberger.money.app.model.FXAccount
+import com.munzenberger.money.app.model.moneyNegativePseudoClass
 import com.munzenberger.money.app.navigation.Navigator
 import com.munzenberger.money.app.property.AsyncObject
 import com.munzenberger.money.app.property.AsyncObjectComparator
@@ -85,15 +85,9 @@ class AccountListController : AutoCloseable {
         }
 
         viewModel.totalBalanceProperty.addListener { _, _, newValue ->
-            totalBalanceLabel.styleClass.remove(MoneyTableCell.NEGATIVE_STYLE_CLASS)
-            when (newValue) {
-                is AsyncObject.Complete<Money> -> {
-                    if (newValue.value.isNegative) {
-                        totalBalanceLabel.styleClass.add(MoneyTableCell.NEGATIVE_STYLE_CLASS)
-                    }
-                    tableView.sort()
-                }
-            }
+            val isMoneyNegative = newValue is AsyncObject.Complete && newValue.value.isNegative
+            totalBalanceLabel.pseudoClassStateChanged(moneyNegativePseudoClass, isMoneyNegative)
+            tableView.sort()
         }
     }
 
