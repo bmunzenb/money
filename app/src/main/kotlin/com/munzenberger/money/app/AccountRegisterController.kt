@@ -4,6 +4,7 @@ import com.munzenberger.money.app.control.AccountTransactionTableRow
 import com.munzenberger.money.app.control.DateTableCellFactory
 import com.munzenberger.money.app.control.MoneyTableCellFactory
 import com.munzenberger.money.app.control.bindAsync
+import com.munzenberger.money.app.control.setWaiting
 import com.munzenberger.money.app.model.FXAccountTransaction
 import com.munzenberger.money.app.model.delete
 import com.munzenberger.money.app.model.moneyNegativePseudoClass
@@ -195,9 +196,9 @@ class AccountRegisterController : AutoCloseable {
     }
 
     private fun onEditTransaction(transaction: FXAccountTransaction) {
-        stage.scene.cursor = Cursor.WAIT
+        stage.setWaiting(true)
         transaction.getTransaction(database) { t, e ->
-            stage.scene.cursor = Cursor.DEFAULT
+            stage.setWaiting(false)
             when {
                 t != null -> startEditTransaction("Edit Transaction", t)
                 e != null -> ErrorAlert.showAndWait(e)
@@ -214,9 +215,9 @@ class AccountRegisterController : AutoCloseable {
 
         when {
             result.isPresent && result.get() == ButtonType.OK -> {
-                stage.scene.cursor = Cursor.WAIT
+                stage.setWaiting(true)
                 transactions.delete(database) { error ->
-                    stage.scene.cursor = Cursor.DEFAULT
+                    stage.setWaiting(false)
                     if (error != null) {
                         ErrorAlert.showAndWait(error)
                     }

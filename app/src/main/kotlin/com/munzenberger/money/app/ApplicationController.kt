@@ -1,5 +1,6 @@
 package com.munzenberger.money.app
 
+import com.munzenberger.money.app.control.setWaiting
 import com.munzenberger.money.core.rx.ObservableMoneyDatabase
 import javafx.fxml.FXML
 import javafx.fxml.FXMLLoader
@@ -34,8 +35,9 @@ class ApplicationController : DatabaseConnectorDelegate, AutoCloseable {
             }
         }
 
-        menuBar.disableProperty().bind(viewModel.isConnectionInProgressProperty)
-        contentPane.disableProperty().bind(viewModel.isConnectionInProgressProperty)
+        viewModel.isConnectionInProgressProperty.addListener { _, _, newValue ->
+            stage.setWaiting(newValue)
+        }
     }
 
     fun start(stage: Stage) {
