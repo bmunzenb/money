@@ -19,6 +19,8 @@ interface DelayedCategory {
 
     val name: String
 
+    val isTransfer: Boolean
+
     fun getCategory(executor: QueryExecutor, transactionType: TransactionType): Category
 
     companion object {
@@ -30,6 +32,7 @@ interface DelayedCategory {
         fun split(): DelayedCategory = object : DelayedCategory {
 
             override val name = SPLIT_CATEGORY_NAME
+            override val isTransfer: Boolean = false
 
             override fun getCategory(executor: QueryExecutor, transactionType: TransactionType): Category {
                 throw UnsupportedOperationException()
@@ -41,6 +44,7 @@ interface DelayedCategory {
 private class RealCategory(private val category: Category) : DelayedCategory {
 
     override val name: String
+    override val isTransfer: Boolean
 
     init {
 
@@ -49,6 +53,7 @@ private class RealCategory(private val category: Category) : DelayedCategory {
         val categoryName = category.name
 
         name = categoryName(accountTypeCategory, accountName, categoryName)
+        isTransfer = listOf(AccountType.Category.ASSETS, AccountType.Category.LIABILITIES).contains(accountTypeCategory)
     }
 
     override fun getCategory(executor: QueryExecutor, transactionType: TransactionType) = category
@@ -57,6 +62,7 @@ private class RealCategory(private val category: Category) : DelayedCategory {
 private class PendingCategory(string: String) : DelayedCategory {
 
     override val name: String
+    override val isTransfer: Boolean = false
 
     private val accountName: String
     private val categoryName: String?
@@ -138,4 +144,16 @@ private class PendingCategory(string: String) : DelayedCategory {
 
         return category
     }
+}
+
+object DelayedCategoryComparator : Comparator<DelayedCategory> {
+    override fun compare(o1: DelayedCategory?, o2: DelayedCategory?): Int =
+            when {
+                o1 == o2 -> 0
+                o1 == null -> 1
+                o2 == null -> -1
+                o1.isTransfer && !o2.isTransfer -> 1
+                o2.isTransfer && !o1.isTransfer -> -1
+                else -> o1.name.compareTo(o2.name)
+            }
 }

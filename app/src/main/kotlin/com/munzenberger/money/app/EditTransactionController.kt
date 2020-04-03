@@ -99,7 +99,7 @@ class EditTransactionController {
 
         categoryComboBox.apply {
 
-            val categoryConverter = BlockStringConverter<DelayedCategory>(DelayedCategory::name) { DelayedCategory.from(it) }
+            val categoryConverter = BlockStringConverter(DelayedCategory::name) { DelayedCategory.from(it) }
 
             cellFactory = TextListCellFactory(categoryConverter::toString)
             buttonCell = cellFactory.call(null)

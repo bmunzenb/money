@@ -1,6 +1,7 @@
 package com.munzenberger.money.app
 
 import com.munzenberger.money.app.model.DelayedCategory
+import com.munzenberger.money.app.model.DelayedCategoryComparator
 import com.munzenberger.money.app.model.getAssetsAndLiabilities
 import com.munzenberger.money.app.model.getTransfers
 import com.munzenberger.money.app.model.toDate
@@ -140,7 +141,7 @@ class EditTransactionViewModel : EditTransferBase(), AutoCloseable {
                 .subscribe(payees)
 
         Single.fromCallable { Category.getAll(database) }
-                .map { it.map { c -> DelayedCategory.from(c) } }
+                .map { it.map { c -> DelayedCategory.from(c) }.sortedWith(DelayedCategoryComparator) }
                 .subscribeOn(SchedulerProvider.database)
                 .observeOn(SchedulerProvider.main)
                 .subscribe(categories)
