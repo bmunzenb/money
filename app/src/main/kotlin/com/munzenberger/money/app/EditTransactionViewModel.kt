@@ -83,7 +83,6 @@ class EditTransactionViewModel : EditTransferBase(), AutoCloseable {
                     it.list.first().let { first ->
                         selectedCategoryProperty.bindBidirectional(first.selectedCategoryProperty)
                         amountProperty.bindBidirectional(first.amountProperty)
-                        memo = first.memo
                     }
                     categoryDisabled.value = false
                     amountDisabled.value = false
@@ -150,6 +149,8 @@ class EditTransactionViewModel : EditTransferBase(), AutoCloseable {
                 .subscribeOn(SchedulerProvider.database)
                 .observeOn(SchedulerProvider.main)
                 .subscribe(::onTransfers)
+
+        memoProperty.value = transaction.memo
     }
 
     private fun onTransfers(transfers: List<Transfer>) {
@@ -220,15 +221,8 @@ class EditTransactionViewModel : EditTransferBase(), AutoCloseable {
     }
 
     fun prepareSplit(block: (ObservableList<EditTransfer>, List<DelayedCategory>) -> Unit) {
-
-        val c = categories.get()
-        if (c is AsyncObject.Complete) {
-
-            if (editTransfers.size == 1) {
-                editTransfers.first().memo = memo
-            }
-
-            block.invoke(editTransfers, c.value)
+        when (val c = categories.get()) {
+            is AsyncObject.Complete -> block.invoke(editTransfers, c.value)
         }
     }
 

@@ -26,8 +26,8 @@ class MoneyApplication : Application() {
                     stylesheets.add(MoneyApplication::class.java.getResource("money.css").toExternalForm())
                 }
 
-                width = 640.0
-                height = 480.0
+                width = 800.0
+                height = 600.0
                 minWidth = width
                 minHeight = height
                 show()

@@ -25,13 +25,14 @@ interface QueryExecutor {
     }
 }
 
-fun QueryExecutor.transaction(block: (tx: TransactionQueryExecutor) -> Unit) {
-    val tx = createTransaction()
-    try {
-        block.invoke(tx)
-        tx.commit()
-    } catch (e: Throwable) {
-        tx.rollback()
-        throw e
+fun QueryExecutor.transaction(block: (TransactionQueryExecutor) -> Unit) {
+    createTransaction().run {
+        try {
+            block.invoke(this)
+            commit()
+        } catch (e: Throwable) {
+            rollback()
+            throw e
+        }
     }
 }

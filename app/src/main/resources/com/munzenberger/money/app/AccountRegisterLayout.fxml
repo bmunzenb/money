@@ -58,12 +58,12 @@
             <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
          </columnResizePolicy>
          <columns>
-            <TableColumn fx:id="dateColumn" editable="false" prefWidth="75.0" text="Date" />
-            <TableColumn fx:id="payeeColumn" editable="false" prefWidth="75.0" text="Payee" />
-            <TableColumn fx:id="categoryColumn" editable="false" prefWidth="75.0" text="Category" />
-            <TableColumn fx:id="debitColumn" editable="false" prefWidth="75.0" style="-fx-alignment: TOP-RIGHT;" text="Debit" />
-            <TableColumn fx:id="creditColumn" editable="false" prefWidth="75.0" style="-fx-alignment: TOP-RIGHT;" text="Credit" />
-            <TableColumn fx:id="balanceColumn" editable="false" prefWidth="75.0" style="-fx-alignment: TOP-RIGHT;" text="Balance" />
+            <TableColumn fx:id="dateColumn" editable="false" minWidth="-Infinity" prefWidth="75.0" style="-fx-alignment: CENTER;" text="Date" />
+            <TableColumn fx:id="payeeColumn" editable="false" minWidth="-Infinity" prefWidth="150.0" text="Payee" />
+            <TableColumn fx:id="categoryColumn" editable="false" minWidth="-Infinity" prefWidth="150.0" text="Category" />
+            <TableColumn fx:id="debitColumn" editable="false" minWidth="-Infinity" prefWidth="75.0" style="-fx-alignment: CENTER-RIGHT;" text="Debit" />
+            <TableColumn fx:id="creditColumn" editable="false" minWidth="-Infinity" prefWidth="75.0" style="-fx-alignment: CENTER-RIGHT;" text="Credit" />
+            <TableColumn fx:id="balanceColumn" editable="false" minWidth="-Infinity" prefWidth="75.0" style="-fx-alignment: CENTER-RIGHT;" text="Balance" />
          </columns>
       </TableView>
    </children>
