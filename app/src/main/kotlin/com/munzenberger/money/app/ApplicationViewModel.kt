@@ -1,5 +1,6 @@
 package com.munzenberger.money.app
 
+import com.munzenberger.money.app.database.DatabaseConnector
 import com.munzenberger.money.app.database.DatabaseConnectorCallbacks
 import com.munzenberger.money.app.database.FileDatabaseConnector
 import com.munzenberger.money.app.database.MemoryDatabaseConnector
@@ -37,43 +38,39 @@ class ApplicationViewModel : AutoCloseable {
     }
 
     fun openFileDatabase(file: File, callbacks: DatabaseConnectorCallbacks) {
-        connectToDatabase(callbacks) {
-            FileDatabaseConnector.connect(file, it)
-        }
+        connectToDatabase(callbacks, FileDatabaseConnector(file))
     }
 
     fun startMemoryDatabase(callbacks: DatabaseConnectorCallbacks) {
-        connectToDatabase(callbacks) {
-            MemoryDatabaseConnector.connect(it)
-        }
+        connectToDatabase(callbacks, MemoryDatabaseConnector())
     }
 
-    private fun connectToDatabase(callbacks: DatabaseConnectorCallbacks, block: (DatabaseConnectorCallbacks) -> Unit) {
+    private fun connectToDatabase(callbacks: DatabaseConnectorCallbacks, connector: DatabaseConnector) {
 
         isConnectionInProgress.value = true
 
         val callbacksWrapper = object : DatabaseConnectorCallbacks {
 
             override fun onCanceled() {
-                isConnectionInProgress.value = false
                 callbacks.onCanceled()
+                isConnectionInProgress.value = false
             }
 
             override fun onConnected(database: ObservableMoneyDatabase) {
+                callbacks.onConnected(database)
                 isConnectionInProgress.value = false
                 connectedDatabase.value?.close()
                 connectedDatabase.value = database
-                callbacks.onConnected(database)
             }
 
             override fun onConnectError(error: Throwable) {
-                isConnectionInProgress.value = false
                 callbacks.onConnectError(error)
+                isConnectionInProgress.value = false
             }
 
             override fun onUnsupportedVersion() {
-                isConnectionInProgress.value = false
                 callbacks.onUnsupportedVersion()
+                isConnectionInProgress.value = false
             }
 
             override fun onPendingUpgrades(): Boolean {
@@ -81,7 +78,7 @@ class ApplicationViewModel : AutoCloseable {
             }
         }
 
-        block.invoke(callbacksWrapper)
+        connector.connect(callbacksWrapper)
     }
 
     fun exit() {

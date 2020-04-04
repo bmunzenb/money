@@ -22,9 +22,11 @@ interface DatabaseConnectorCallbacks {
     fun onConnectError(error: Throwable)
 }
 
-object DatabaseConnector {
+abstract class DatabaseConnector {
 
-    fun connect(
+    abstract fun connect(callbacks: DatabaseConnectorCallbacks)
+
+    protected fun connect(
             name: String,
             driver: String,
             dialect: DatabaseDialect,

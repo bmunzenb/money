@@ -64,7 +64,7 @@ class ApplicationController : DatabaseConnectorDelegate, AutoCloseable {
     }
 
     @FXML override fun onMemoryDatabase() {
-        viewModel.startMemoryDatabase(MemoryDatabase)
+        viewModel.startMemoryDatabase(MemoryDatabase())
     }
 
     @FXML fun onExit() {
