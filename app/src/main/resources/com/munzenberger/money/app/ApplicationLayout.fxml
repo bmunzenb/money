@@ -16,6 +16,8 @@
                   <MenuItem onAction="#onCreateDatabase" text="_New" />
                 <MenuItem onAction="#onOpenDatabase" text="_Open" />
                   <SeparatorMenuItem mnemonicParsing="false" />
+                  <MenuItem onAction="#onMemoryDatabase" text="New in-_memory database" />
+                  <SeparatorMenuItem mnemonicParsing="false" />
                   <MenuItem onAction="#onExit" text="E_xit" />
               </items>
             </Menu>

@@ -4,10 +4,14 @@ import com.munzenberger.money.app.database.DatabaseConnectionHandler
 import com.munzenberger.money.app.database.MemoryDatabaseConnector
 import com.munzenberger.money.app.database.NewFileDatabaseConnector
 import com.munzenberger.money.app.database.OpenFileDatabaseConnector
-import com.munzenberger.money.core.MoneyDatabase
 import com.munzenberger.money.core.rx.ObservableMoneyDatabase
 import javafx.application.Platform
-import javafx.beans.property.*
+import javafx.beans.property.ReadOnlyBooleanProperty
+import javafx.beans.property.ReadOnlyObjectProperty
+import javafx.beans.property.ReadOnlyStringProperty
+import javafx.beans.property.SimpleBooleanProperty
+import javafx.beans.property.SimpleObjectProperty
+import javafx.beans.property.SimpleStringProperty
 import javafx.stage.Window
 
 class ApplicationViewModel : AutoCloseable {
@@ -31,19 +35,16 @@ class ApplicationViewModel : AutoCloseable {
     }
 
     fun createDatabase(ownerWindow: Window) {
-        NewFileDatabaseConnector.openFile(ownerWindow)?.let { file ->
-            connectToDatabase {
-                NewFileDatabaseConnector.connect(file, it)
-            }
+        connectToDatabase {
+            NewFileDatabaseConnector(ownerWindow).connect(it)
         }
     }
 
     fun openDatabase(ownerWindow: Window) {
-        OpenFileDatabaseConnector.openFile(ownerWindow)?.let { file ->
-            connectToDatabase {
-                OpenFileDatabaseConnector.connect(file, it)
-            }
+        connectToDatabase {
+            OpenFileDatabaseConnector(ownerWindow).connect(it)
         }
+
     }
 
     fun startMemoryDatabase() {

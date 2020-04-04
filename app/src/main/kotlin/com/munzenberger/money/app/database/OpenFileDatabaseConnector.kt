@@ -7,9 +7,9 @@ import javafx.stage.FileChooser
 import javafx.stage.Window
 import java.io.File
 
-object OpenFileDatabaseConnector : FileDatabaseConnector() {
+class OpenFileDatabaseConnector(private val ownerWindow: Window) : FileDatabaseConnector() {
 
-    fun openFile(ownerWindow: Window): File? = FileChooser().apply {
+    override fun openFile(): File? = FileChooser().apply {
         title = "Open Money Database"
         initialDirectory = File(System.getProperty("user.home"))
         extensionFilters.addAll(

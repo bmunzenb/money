@@ -9,7 +9,17 @@ abstract class FileDatabaseConnector : DatabaseConnector() {
         const val SUFFIX = ".money"
     }
 
-    open fun connect(file: File, complete: DatabaseConnectionHandler) {
+    abstract fun openFile(): File?
+
+    fun connect(complete: DatabaseConnectionHandler) {
+
+        when (val f = openFile()) {
+            null -> complete.invoke(null)
+            else -> connect(f, complete)
+        }
+    }
+
+    private fun connect(file: File, complete: DatabaseConnectionHandler) {
 
         val name = file.absolutePath
         val connectionUrl = "jdbc:sqlite:$name"

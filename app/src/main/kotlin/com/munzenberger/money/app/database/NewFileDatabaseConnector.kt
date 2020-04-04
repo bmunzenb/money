@@ -6,33 +6,33 @@ import javafx.stage.FileChooser
 import javafx.stage.Window
 import java.io.File
 
-object NewFileDatabaseConnector : FileDatabaseConnector() {
+class NewFileDatabaseConnector(private val ownerWindow: Window) : FileDatabaseConnector() {
 
-    fun openFile(ownerWindow: Window): File? = FileChooser().apply {
-        title = "New Money Database"
-        initialDirectory = File(System.getProperty("user.home"))
-        initialFileName = "Money$SUFFIX"
-        extensionFilters.addAll(
-                FileChooser.ExtensionFilter("Money Database Files", "*$SUFFIX"),
-                FileChooser.ExtensionFilter("All Files", "*"))
-    }.showSaveDialog(ownerWindow)
+    override fun openFile(): File? {
+        val file: File? = FileChooser().apply {
+            title = "New Money Database"
+            initialDirectory = File(System.getProperty("user.home"))
+            initialFileName = "Money$SUFFIX"
+            extensionFilters.addAll(
+                    FileChooser.ExtensionFilter("Money Database Files", "*$SUFFIX"),
+                    FileChooser.ExtensionFilter("All Files", "*"))
+        }.showSaveDialog(ownerWindow)
 
-    override fun connect(file: File, complete: DatabaseConnectionHandler) {
+        file?.run {
+            if (exists()) {
+                if (!delete()) {
 
-        if (file.exists()) {
-            if (!file.delete()) {
+                    Alert(Alert.AlertType.ERROR).apply {
+                        title = "Error"
+                        contentText = "Could not delete existing file."
+                    }.showAndWait()
 
-                Alert(Alert.AlertType.ERROR).apply {
-                    title = "Error"
-                    contentText = "Could not delete existing file."
-                }.showAndWait()
-
-                complete.invoke(null)
-                return
+                    return null
+                }
             }
         }
 
-        super.connect(file, complete)
+        return file
     }
 
     override fun onUnsupportedVersion() {
