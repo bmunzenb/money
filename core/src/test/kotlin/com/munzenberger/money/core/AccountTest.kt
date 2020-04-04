@@ -2,6 +2,7 @@ package com.munzenberger.money.core
 
 import org.junit.Assert.*
 import org.junit.Test
+import java.time.LocalDate
 import java.util.*
 
 class AccountTest : PersistableTest<Account>() {
@@ -56,7 +57,7 @@ class AccountTest : PersistableTest<Account>() {
 
         val transaction1 = Transaction().apply {
             this.account = account1
-            this.date = Date()
+            this.date = LocalDate.now()
             save(database)
         }
 
@@ -76,7 +77,7 @@ class AccountTest : PersistableTest<Account>() {
 
         val transaction2 = Transaction().apply {
             this.account = account2
-            this.date = Date()
+            this.date = LocalDate.now()
             save(database)
         }
 

@@ -5,10 +5,10 @@ import javafx.beans.property.ReadOnlyObjectProperty
 import javafx.beans.property.ReadOnlyStringProperty
 import javafx.beans.property.SimpleObjectProperty
 import javafx.beans.property.SimpleStringProperty
-import java.util.Date
+import java.time.LocalDate
 
-class FXPayee(payee: Payee, lastPaid: Date? = null) {
+class FXPayee(payee: Payee, lastPaid: LocalDate? = null) {
 
     val nameProperty: ReadOnlyStringProperty = SimpleStringProperty(payee.name)
-    val lastPaidProperty: ReadOnlyObjectProperty<Date> = SimpleObjectProperty(lastPaid)
+    val lastPaidProperty: ReadOnlyObjectProperty<LocalDate> = SimpleObjectProperty(lastPaid)
 }

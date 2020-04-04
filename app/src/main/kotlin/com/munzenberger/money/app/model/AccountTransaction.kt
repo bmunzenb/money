@@ -6,13 +6,14 @@ import com.munzenberger.money.core.Money
 import com.munzenberger.money.core.MoneyDatabase
 import com.munzenberger.money.sql.Query
 import com.munzenberger.money.sql.ResultSetHandler
+import com.munzenberger.money.sql.getLocalDate
 import com.munzenberger.money.sql.getLongOrNull
 import java.sql.ResultSet
-import java.util.Date
+import java.time.LocalDate
 
 data class AccountTransaction(
         val transactionId: Long,
-        val date: Date,
+        val date: LocalDate,
         val payee: String?,
         val categories: List<String>,
         val amount: Money,
@@ -26,7 +27,7 @@ private class AccountTransactionCollector(
 
     private class Entry(
             val transactionId: Long,
-            val date: Date,
+            val date: LocalDate,
             val payee: String?,
             var amount: Long = 0,
             var categories: List<String> = emptyList()
@@ -36,7 +37,7 @@ private class AccountTransactionCollector(
 
     fun collect(
             transactionId: Long,
-            date: Date,
+            date: LocalDate,
             payee: String?,
             transferAmount: Long,
             transactionAccountId: Long,
@@ -128,7 +129,7 @@ private class AccountTransactionResultSetHandler(accountId: Long, initialBalance
         while (rs.next()) {
 
             val transactionId = rs.getLong("TRANSACTION_ID")
-            val date = rs.getDate("TRANSACTION_DATE")
+            val date = rs.getLocalDate("TRANSACTION_DATE")
             val transactionAccountId = rs.getLong("TRANSACTION_ACCOUNT_ID")
             val transactionAccountTypeCategory = rs.getString("TRANSACTION_ACCOUNT_TYPE_CATEGORY")
             val transactionAccountName = rs.getString("TRANSACTION_ACCOUNT_NAME")

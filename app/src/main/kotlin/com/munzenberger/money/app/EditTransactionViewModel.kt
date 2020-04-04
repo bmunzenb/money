@@ -4,8 +4,6 @@ import com.munzenberger.money.app.model.DelayedCategory
 import com.munzenberger.money.app.model.DelayedCategoryComparator
 import com.munzenberger.money.app.model.getAssetsAndLiabilities
 import com.munzenberger.money.app.model.getTransfers
-import com.munzenberger.money.app.model.toDate
-import com.munzenberger.money.app.model.toLocalDate
 import com.munzenberger.money.app.property.AsyncObject
 import com.munzenberger.money.app.property.ReadOnlyAsyncObjectProperty
 import com.munzenberger.money.app.property.ReadOnlyAsyncStatusProperty
@@ -130,7 +128,7 @@ class EditTransactionViewModel : EditTransferBase(), AutoCloseable {
                 .observeOn(SchedulerProvider.main)
                 .subscribe(accounts)
 
-        dateProperty.value = transaction.date?.toLocalDate() ?: LocalDate.now()
+        dateProperty.value = transaction.date ?: LocalDate.now()
 
         selectedPayeeProperty.value = transaction.payee
 
@@ -187,7 +185,7 @@ class EditTransactionViewModel : EditTransferBase(), AutoCloseable {
 
             transaction.apply {
                 account = selectedAccountProperty.value
-                date = dateProperty.value.toDate()
+                date = dateProperty.value
                 payee = selectedPayeeProperty.value
                 memo = memoProperty.value
                 save(tx)

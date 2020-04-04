@@ -7,7 +7,7 @@ import javafx.scene.control.MenuItem
 import javafx.scene.control.SeparatorMenuItem
 import javafx.scene.control.TableRow
 import javafx.scene.input.MouseButton
-import java.util.Date
+import java.time.LocalDate
 
 class AccountTransactionTableRow(
         addTransaction: () -> Unit,
@@ -41,7 +41,7 @@ class AccountTransactionTableRow(
     override fun updateItem(item: FXAccountTransaction?, empty: Boolean) {
         super.updateItem(item, empty)
 
-        val isFuture = !empty && item != null && item.dateProperty.value.after(Date())
+        val isFuture = !empty && item != null && item.dateProperty.value.isAfter(LocalDate.now())
         pseudoClassStateChanged(futureDatePseudoClass, isFuture)
     }
 }

@@ -16,13 +16,13 @@ import javafx.beans.property.ReadOnlyObjectProperty
 import javafx.beans.property.ReadOnlyStringProperty
 import javafx.beans.property.SimpleObjectProperty
 import javafx.beans.property.SimpleStringProperty
-import java.util.Date
+import java.time.LocalDate
 
 class FXAccountTransaction(accountTransaction: AccountTransaction) {
 
     internal val transactionId = accountTransaction.transactionId
 
-    val dateProperty: ReadOnlyObjectProperty<Date> = SimpleObjectProperty(accountTransaction.date)
+    val dateProperty: ReadOnlyObjectProperty<LocalDate> = SimpleObjectProperty(accountTransaction.date)
     val balanceProperty: ReadOnlyObjectProperty<Money> = SimpleObjectProperty(accountTransaction.balance)
     val payeeProperty: ReadOnlyStringProperty = SimpleStringProperty(accountTransaction.payee)
 

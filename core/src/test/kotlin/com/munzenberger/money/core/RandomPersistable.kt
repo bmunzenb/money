@@ -1,5 +1,6 @@
 package com.munzenberger.money.core
 
+import java.time.LocalDate
 import java.util.*
 
 private val random = Random()
@@ -42,7 +43,7 @@ fun Category.randomize() = this.apply {
 fun Transaction.randomize() = this.apply {
     account = Account().randomize()
     payee = Payee().randomize()
-    date = Date()
+    date = LocalDate.now()
     memo = randomString()
 }
 

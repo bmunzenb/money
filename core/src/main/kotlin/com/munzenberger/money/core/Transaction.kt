@@ -4,18 +4,18 @@ import com.munzenberger.money.core.model.TransactionModel
 import com.munzenberger.money.core.model.TransactionTable
 import com.munzenberger.money.sql.QueryExecutor
 import com.munzenberger.money.sql.ResultSetMapper
-import com.munzenberger.money.sql.transaction
 import com.munzenberger.money.sql.getLongOrNull
+import com.munzenberger.money.sql.transaction
 import java.sql.ResultSet
-import java.util.*
+import java.time.LocalDate
 
 class Transaction internal constructor(model: TransactionModel) : Persistable<TransactionModel>(model, TransactionTable) {
 
     constructor() : this(TransactionModel())
 
-    var date: Date?
-        get() = model.date?.let { Date(it) }
-        set(value) { model.date = value?.time }
+    var date: LocalDate?
+        get() = model.date?.let { LocalDate.ofEpochDay(it) }
+        set(value) { model.date = value?.toEpochDay() }
 
     var memo: String?
         get() = model.memo
@@ -59,4 +59,3 @@ class TransactionResultSetMapper : ResultSetMapper<Transaction> {
         }
     }
 }
-

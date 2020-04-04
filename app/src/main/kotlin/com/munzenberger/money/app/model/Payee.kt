@@ -7,11 +7,11 @@ import com.munzenberger.money.core.model.PayeeTable
 import com.munzenberger.money.core.model.TransactionTable
 import com.munzenberger.money.sql.Query
 import com.munzenberger.money.sql.ResultSetMapper
-import io.reactivex.Single
+import com.munzenberger.money.sql.getLocalDateOrNull
 import java.sql.ResultSet
-import java.util.Date
+import java.time.LocalDate
 
-fun Payee.Companion.getAllWithLastPaid(database: MoneyDatabase): List<Pair<Payee, Date?>> {
+fun Payee.Companion.getAllWithLastPaid(database: MoneyDatabase): List<Pair<Payee, LocalDate?>> {
 
     val query = Query.selectFrom(PayeeTable.name)
             .cols(PayeeTable.identityColumn, PayeeTable.nameColumn, "MAX(${TransactionTable.dateColumn}) AS LAST_PAID")
@@ -19,13 +19,13 @@ fun Payee.Companion.getAllWithLastPaid(database: MoneyDatabase): List<Pair<Payee
             .groupBy(PayeeTable.identityColumn)
             .build()
 
-    return database.getList(query, object : ResultSetMapper<Pair<Payee, Date?>> {
+    return database.getList(query, object : ResultSetMapper<Pair<Payee, LocalDate?>> {
 
         private val payeeMapper = PayeeResultSetMapper()
 
-        override fun apply(rs: ResultSet): Pair<Payee, Date?> {
+        override fun apply(rs: ResultSet): Pair<Payee, LocalDate?> {
             val payee = payeeMapper.apply(rs)
-            val latePaid: Date? = rs.getDate("LAST_PAID")
+            val latePaid = rs.getLocalDateOrNull("LAST_PAID")
 
             return payee to latePaid
         }

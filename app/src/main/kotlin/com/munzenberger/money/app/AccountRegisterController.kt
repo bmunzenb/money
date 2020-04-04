@@ -19,7 +19,6 @@ import com.munzenberger.money.core.Transaction
 import com.munzenberger.money.core.isNegative
 import com.munzenberger.money.core.rx.ObservableMoneyDatabase
 import javafx.fxml.FXML
-import javafx.scene.Cursor
 import javafx.scene.control.Alert
 import javafx.scene.control.Button
 import javafx.scene.control.ButtonType
@@ -33,7 +32,7 @@ import javafx.scene.input.KeyCode
 import javafx.stage.Stage
 import javafx.util.Callback
 import java.net.URL
-import java.util.Date
+import java.time.LocalDate
 
 class AccountRegisterController : AutoCloseable {
 
@@ -50,7 +49,7 @@ class AccountRegisterController : AutoCloseable {
     @FXML lateinit var editAccountButton: Button
     @FXML lateinit var addTransactionButton: Button
     @FXML lateinit var tableView: TableView<FXAccountTransaction>
-    @FXML lateinit var dateColumn: TableColumn<FXAccountTransaction, Date>
+    @FXML lateinit var dateColumn: TableColumn<FXAccountTransaction, LocalDate>
     @FXML lateinit var payeeColumn: TableColumn<FXAccountTransaction, String>
     @FXML lateinit var categoryColumn: TableColumn<FXAccountTransaction, String>
     @FXML lateinit var debitColumn: TableColumn<FXAccountTransaction, Money>

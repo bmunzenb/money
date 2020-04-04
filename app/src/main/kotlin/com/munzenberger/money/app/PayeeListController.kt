@@ -11,7 +11,7 @@ import javafx.scene.control.TableView
 import javafx.scene.text.Text
 import javafx.util.Callback
 import java.net.URL
-import java.util.Date
+import java.time.LocalDate
 
 class PayeeListController : AutoCloseable {
 
@@ -21,7 +21,7 @@ class PayeeListController : AutoCloseable {
 
     @FXML lateinit var tableView: TableView<FXPayee>
     @FXML lateinit var nameColumn: TableColumn<FXPayee, String>
-    @FXML lateinit var lastPaidColumn: TableColumn<FXPayee, Date>
+    @FXML lateinit var lastPaidColumn: TableColumn<FXPayee, LocalDate>
 
     private val viewModel = PayeeListViewModel()
 
