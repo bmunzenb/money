@@ -1,6 +1,9 @@
 package com.munzenberger.money.app
 
 import com.munzenberger.money.app.control.setWaiting
+import com.munzenberger.money.app.database.MemoryDatabase
+import com.munzenberger.money.app.database.NewFileDatabase
+import com.munzenberger.money.app.database.OpenFileDatabase
 import com.munzenberger.money.core.rx.ObservableMoneyDatabase
 import javafx.fxml.FXML
 import javafx.fxml.FXMLLoader
@@ -49,15 +52,19 @@ class ApplicationController : DatabaseConnectorDelegate, AutoCloseable {
     }
 
     @FXML override fun onCreateDatabase() {
-        viewModel.createDatabase(stage)
+        NewFileDatabase.openFile(stage)?.let {
+            viewModel.openFileDatabase(it, NewFileDatabase)
+        }
     }
 
     @FXML override fun onOpenDatabase() {
-        viewModel.openDatabase(stage)
+        OpenFileDatabase.openFile(stage)?.let {
+            viewModel.openFileDatabase(it, OpenFileDatabase)
+        }
     }
 
     @FXML override fun onMemoryDatabase() {
-        viewModel.startMemoryDatabase()
+        viewModel.startMemoryDatabase(MemoryDatabase)
     }
 
     @FXML fun onExit() {

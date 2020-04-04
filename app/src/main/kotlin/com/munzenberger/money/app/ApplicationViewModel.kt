@@ -1,9 +1,8 @@
 package com.munzenberger.money.app
 
-import com.munzenberger.money.app.database.DatabaseConnectionHandler
+import com.munzenberger.money.app.database.DatabaseConnectorCallbacks
+import com.munzenberger.money.app.database.FileDatabaseConnector
 import com.munzenberger.money.app.database.MemoryDatabaseConnector
-import com.munzenberger.money.app.database.NewFileDatabaseConnector
-import com.munzenberger.money.app.database.OpenFileDatabaseConnector
 import com.munzenberger.money.core.rx.ObservableMoneyDatabase
 import javafx.application.Platform
 import javafx.beans.property.ReadOnlyBooleanProperty
@@ -12,7 +11,7 @@ import javafx.beans.property.ReadOnlyStringProperty
 import javafx.beans.property.SimpleBooleanProperty
 import javafx.beans.property.SimpleObjectProperty
 import javafx.beans.property.SimpleStringProperty
-import javafx.stage.Window
+import java.io.File
 
 class ApplicationViewModel : AutoCloseable {
 
@@ -30,38 +29,59 @@ class ApplicationViewModel : AutoCloseable {
 
     init {
         connectedDatabaseProperty.addListener { _, _, db ->
-            title.value = db?.name ?: DEFAULT_TITLE
+            title.value = when (db) {
+                null -> DEFAULT_TITLE
+                else -> "${db.name} - $DEFAULT_TITLE"
+            }
         }
     }
 
-    fun createDatabase(ownerWindow: Window) {
-        connectToDatabase {
-            NewFileDatabaseConnector(ownerWindow).connect(it)
+    fun openFileDatabase(file: File, callbacks: DatabaseConnectorCallbacks) {
+        connectToDatabase(callbacks) {
+            FileDatabaseConnector.connect(file, it)
         }
     }
 
-    fun openDatabase(ownerWindow: Window) {
-        connectToDatabase {
-            OpenFileDatabaseConnector(ownerWindow).connect(it)
-        }
-
-    }
-
-    fun startMemoryDatabase() {
-        connectToDatabase {
+    fun startMemoryDatabase(callbacks: DatabaseConnectorCallbacks) {
+        connectToDatabase(callbacks) {
             MemoryDatabaseConnector.connect(it)
         }
     }
 
-    private fun connectToDatabase(block: (DatabaseConnectionHandler) -> Unit) {
+    private fun connectToDatabase(callbacks: DatabaseConnectorCallbacks, block: (DatabaseConnectorCallbacks) -> Unit) {
+
         isConnectionInProgress.value = true
-        block.invoke {
-            isConnectionInProgress.value = false
-            it?.run {
+
+        val callbacksWrapper = object : DatabaseConnectorCallbacks {
+
+            override fun onCanceled() {
+                isConnectionInProgress.value = false
+                callbacks.onCanceled()
+            }
+
+            override fun onConnected(database: ObservableMoneyDatabase) {
+                isConnectionInProgress.value = false
                 connectedDatabase.value?.close()
-                connectedDatabase.value = it
+                connectedDatabase.value = database
+                callbacks.onConnected(database)
+            }
+
+            override fun onConnectError(error: Throwable) {
+                isConnectionInProgress.value = false
+                callbacks.onConnectError(error)
+            }
+
+            override fun onUnsupportedVersion() {
+                isConnectionInProgress.value = false
+                callbacks.onUnsupportedVersion()
+            }
+
+            override fun onPendingUpgrades(): Boolean {
+                return callbacks.onPendingUpgrades()
             }
         }
+
+        block.invoke(callbacksWrapper)
     }
 
     fun exit() {

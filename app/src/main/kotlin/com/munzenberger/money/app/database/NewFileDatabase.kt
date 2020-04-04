@@ -1,14 +1,16 @@
 package com.munzenberger.money.app.database
 
 import com.munzenberger.money.app.ErrorAlert
+import com.munzenberger.money.app.database.FileDatabaseConnector.SUFFIX
+import com.munzenberger.money.core.rx.ObservableMoneyDatabase
 import javafx.scene.control.Alert
 import javafx.stage.FileChooser
 import javafx.stage.Window
 import java.io.File
 
-class NewFileDatabaseConnector(private val ownerWindow: Window) : FileDatabaseConnector() {
+object NewFileDatabase : DatabaseConnectorCallbacks {
 
-    override fun openFile(): File? {
+    fun openFile(ownerWindow: Window): File? {
         val file: File? = FileChooser().apply {
             title = "New Money Database"
             initialDirectory = File(System.getProperty("user.home"))
@@ -35,15 +37,22 @@ class NewFileDatabaseConnector(private val ownerWindow: Window) : FileDatabaseCo
         return file
     }
 
+    override fun onCanceled() {
+        // Do nothing
+    }
+
+    override fun onConnected(database: ObservableMoneyDatabase) {
+        // Do nothing
+    }
+
     override fun onUnsupportedVersion() {
         // this should not happen when creating a new file
-        throw IllegalStateException("unsupported database version")
+        ErrorAlert.showAndWait(IllegalStateException("Received unsupported database error while creating new database file."))
     }
 
     override fun onPendingUpgrades() = true
 
     override fun onConnectError(error: Throwable) {
-
         ErrorAlert.showAndWait(error)
     }
 }

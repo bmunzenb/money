@@ -14,18 +14,24 @@ import io.reactivex.Completable
 import io.reactivex.Single
 import java.sql.DriverManager
 
-typealias DatabaseConnectionHandler = (ObservableMoneyDatabase?) -> Unit
+interface DatabaseConnectorCallbacks {
+    fun onCanceled()
+    fun onUnsupportedVersion()
+    fun onPendingUpgrades(): Boolean
+    fun onConnected(database: ObservableMoneyDatabase)
+    fun onConnectError(error: Throwable)
+}
 
-abstract class DatabaseConnector {
+object DatabaseConnector {
 
-    protected fun connect(
+    fun connect(
             name: String,
             driver: String,
             dialect: DatabaseDialect,
             connectionUrl: String,
             user: String? = null,
             password: String? = null,
-            complete: DatabaseConnectionHandler
+            callbacks: DatabaseConnectorCallbacks
     ) {
 
         Single.fromCallable {
@@ -45,47 +51,47 @@ abstract class DatabaseConnector {
                 }
                 .subscribeOn(SchedulerProvider.database)
                 .observeOn(SchedulerProvider.main)
-                .subscribe({ onConnectSuccess(it, complete) }, { onConnectError(it); complete.invoke(null) })
+                .subscribe({ onConnectSuccess(it, callbacks) }, { callbacks.onConnectError(it) })
     }
 
-    private fun onConnectSuccess(database: ObservableMoneyDatabase, complete: DatabaseConnectionHandler) {
+    private fun onConnectSuccess(database: ObservableMoneyDatabase, callbacks: DatabaseConnectorCallbacks) {
 
         Single.fromCallable { MoneyCoreVersionManager().getVersionStatus(database) }
                 .subscribeOn(SchedulerProvider.database)
                 .observeOn(SchedulerProvider.main)
                 .doOnError { database.close() }
-                .subscribe({ onVersionStatus(database, it, complete) }, { onConnectError(it); complete.invoke(null) })
+                .subscribe({ onVersionStatus(database, it, callbacks) }, { callbacks.onConnectError(it) })
     }
 
-    private fun onVersionStatus(database: ObservableMoneyDatabase, status: VersionStatus, complete: DatabaseConnectionHandler) {
+    private fun onVersionStatus(database: ObservableMoneyDatabase, status: VersionStatus, callbacks: DatabaseConnectorCallbacks) {
 
         when (status) {
 
-            is CurrentVersion -> complete.invoke(database)
+            is CurrentVersion ->
+                callbacks.onConnected(database)
 
             is UnsupportedVersion -> {
                 database.close()
-                onUnsupportedVersion()
+                callbacks.onUnsupportedVersion()
             }
 
             is PendingUpgrades ->
-                if (onPendingUpgrades()) applyPendingUpgrades(database, status, complete)
-                else database.close()
+                when (callbacks.onPendingUpgrades()) {
+                    true -> applyPendingUpgrades(database, status, callbacks)
+                    else -> {
+                        database.close()
+                        callbacks.onCanceled()
+                    }
+                }
         }
     }
 
-    private fun applyPendingUpgrades(database: ObservableMoneyDatabase, upgrades: PendingUpgrades, complete: DatabaseConnectionHandler) {
+    private fun applyPendingUpgrades(database: ObservableMoneyDatabase, upgrades: PendingUpgrades, callbacks: DatabaseConnectorCallbacks) {
 
         Completable.fromRunnable { upgrades.apply() }
                 .subscribeOn(SchedulerProvider.database)
                 .observeOn(SchedulerProvider.main)
                 .doOnError { database.close() }
-                .subscribe({ complete.invoke(database) }, { onConnectError(it); complete.invoke(null) })
+                .subscribe({ callbacks.onConnected(database) }, { callbacks.onConnectError(it) })
     }
-
-    protected abstract fun onUnsupportedVersion()
-
-    protected abstract fun onPendingUpgrades(): Boolean
-
-    protected abstract fun onConnectError(error: Throwable)
 }

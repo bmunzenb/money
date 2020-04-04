@@ -1,21 +1,30 @@
 package com.munzenberger.money.app.database
 
-import com.munzenberger.money.app.ErrorAlert
+import com.munzenberger.money.app.database.FileDatabaseConnector.SUFFIX
+import com.munzenberger.money.core.rx.ObservableMoneyDatabase
 import javafx.scene.control.Alert
 import javafx.scene.control.ButtonType
 import javafx.stage.FileChooser
 import javafx.stage.Window
 import java.io.File
 
-class OpenFileDatabaseConnector(private val ownerWindow: Window) : FileDatabaseConnector() {
+object OpenFileDatabase : DatabaseConnectorCallbacks {
 
-    override fun openFile(): File? = FileChooser().apply {
+    fun openFile(ownerWindow: Window): File? = FileChooser().apply {
         title = "Open Money Database"
         initialDirectory = File(System.getProperty("user.home"))
         extensionFilters.addAll(
                 FileChooser.ExtensionFilter("Money Database Files", "*$SUFFIX"),
                 FileChooser.ExtensionFilter("All Files", "*"))
     }.showOpenDialog(ownerWindow)
+
+    override fun onCanceled() {
+        // Do nothing
+    }
+
+    override fun onConnected(database: ObservableMoneyDatabase) {
+        // Do nothing
+    }
 
     override fun onUnsupportedVersion() {
 
@@ -38,7 +47,6 @@ class OpenFileDatabaseConnector(private val ownerWindow: Window) : FileDatabaseC
     }
 
     override fun onConnectError(error: Throwable) {
-
-        ErrorAlert.showAndWait(error)
+        // Do nothing
     }
 }
