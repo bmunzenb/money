@@ -104,20 +104,6 @@ class AccountRegisterController : AutoCloseable {
                 }
             }
 
-            dateColumn.prefWidthProperty().bind(widthProperty().multiply(0.09))
-            payeeColumn.prefWidthProperty().bind(widthProperty().multiply(0.27))
-            categoryColumn.prefWidthProperty().bind(widthProperty().multiply(0.27))
-            debitColumn.prefWidthProperty().bind(widthProperty().multiply(0.12))
-            creditColumn.prefWidthProperty().bind(widthProperty().multiply(0.12))
-            balanceColumn.prefWidthProperty().bind(widthProperty().multiply(0.12))
-
-            dateColumn.isResizable = false
-            payeeColumn.isResizable = false
-            categoryColumn.isResizable = false
-            debitColumn.isResizable = false
-            creditColumn.isResizable = false
-            balanceColumn.isResizable = false
-
             bindAsync(viewModel.transactionsProperty) {
                 Hyperlink("Add a transaction to get started.").apply {
                     setOnAction { onAddTransaction() }
