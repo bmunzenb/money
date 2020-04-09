@@ -6,6 +6,7 @@ import com.munzenberger.money.app.control.MoneyTableCellFactory
 import com.munzenberger.money.app.control.bindAsync
 import com.munzenberger.money.app.control.setWaiting
 import com.munzenberger.money.app.model.FXAccountTransaction
+import com.munzenberger.money.app.model.FXAccountTransactionFilter
 import com.munzenberger.money.app.model.delete
 import com.munzenberger.money.app.model.moneyNegativePseudoClass
 import com.munzenberger.money.app.navigation.LayoutControllerNavigation
@@ -22,6 +23,7 @@ import javafx.fxml.FXML
 import javafx.scene.control.Alert
 import javafx.scene.control.Button
 import javafx.scene.control.ButtonType
+import javafx.scene.control.ChoiceBox
 import javafx.scene.control.Hyperlink
 import javafx.scene.control.Label
 import javafx.scene.control.ProgressIndicator
@@ -48,6 +50,7 @@ class AccountRegisterController : AutoCloseable {
     @FXML lateinit var accountNameLabel: Label
     @FXML lateinit var editAccountButton: Button
     @FXML lateinit var addTransactionButton: Button
+    @FXML lateinit var dateFilterChoiceBox: ChoiceBox<FXAccountTransactionFilter>
     @FXML lateinit var tableView: TableView<FXAccountTransaction>
     @FXML lateinit var dateColumn: TableColumn<FXAccountTransaction, LocalDate>
     @FXML lateinit var payeeColumn: TableColumn<FXAccountTransaction, String>
@@ -85,6 +88,11 @@ class AccountRegisterController : AutoCloseable {
                 AsyncObject.Status.EXECUTING,
                 AsyncObject.Status.ERROR)
 
+        dateFilterChoiceBox.apply {
+            items = viewModel.dateFiltersProperty
+            valueProperty().bindBidirectional(viewModel.selectedDateFilterProperty)
+        }
+
         tableView.apply {
 
             rowFactory = Callback {
@@ -104,7 +112,7 @@ class AccountRegisterController : AutoCloseable {
                 }
             }
 
-            bindAsync(viewModel.transactionsProperty) {
+            bindAsync(viewModel.transactionsProperty, viewModel.activeFiltersProperty) {
                 Hyperlink("Add a transaction to get started.").apply {
                     setOnAction { onAddTransaction() }
                 }
@@ -160,6 +168,9 @@ class AccountRegisterController : AutoCloseable {
         this.stage = stage
         this.database = database
         this.accountIdentity = accountIdentity
+
+        // TODO: eventually save as a preference by account
+        dateFilterChoiceBox.selectionModel.select(0)
 
         viewModel.start(database, accountIdentity)
     }
