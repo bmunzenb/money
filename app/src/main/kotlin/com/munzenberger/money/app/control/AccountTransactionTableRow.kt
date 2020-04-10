@@ -10,9 +10,9 @@ import javafx.scene.input.MouseButton
 import java.time.LocalDate
 
 class AccountTransactionTableRow(
-        addTransaction: () -> Unit,
-        editTransaction: (FXAccountTransaction) -> Unit,
-        deleteTransactions: (List<FXAccountTransaction>) -> Unit
+        private val addTransaction: () -> Unit,
+        private val editTransaction: (FXAccountTransaction) -> Unit,
+        private val deleteTransactions: (List<FXAccountTransaction>) -> Unit
 ) : TableRow<FXAccountTransaction>() {
 
     companion object {
@@ -20,14 +20,6 @@ class AccountTransactionTableRow(
     }
 
     init {
-        contextMenu = ContextMenu().apply {
-            items.addAll(
-                    MenuItem("Edit").apply { setOnAction { editTransaction(item) } },
-                    SeparatorMenuItem(),
-                    MenuItem("Delete").apply { setOnAction { deleteTransactions(listOf(item)) } }
-            )
-        }
-
         setOnMouseClicked { event ->
             when {
                 event.button == MouseButton.PRIMARY && event.clickCount == 2 -> when (item) {
@@ -40,6 +32,17 @@ class AccountTransactionTableRow(
 
     override fun updateItem(item: FXAccountTransaction?, empty: Boolean) {
         super.updateItem(item, empty)
+
+        contextMenu = when {
+            empty || item == null -> null
+            else -> ContextMenu().apply {
+                items.addAll(
+                        MenuItem("Edit").apply { setOnAction { editTransaction(item) } },
+                        SeparatorMenuItem(),
+                        MenuItem("Delete").apply { setOnAction { deleteTransactions(listOf(item)) } }
+                )
+            }
+        }
 
         val isFuture = !empty && item != null && item.dateProperty.value.isAfter(LocalDate.now())
         pseudoClassStateChanged(futureDatePseudoClass, isFuture)
