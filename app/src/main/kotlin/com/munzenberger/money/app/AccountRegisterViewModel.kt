@@ -9,12 +9,12 @@ import com.munzenberger.money.app.model.inLastMonths
 import com.munzenberger.money.app.property.AsyncObject
 import com.munzenberger.money.app.property.ReadOnlyAsyncObjectProperty
 import com.munzenberger.money.app.property.SimpleAsyncObjectProperty
+import com.munzenberger.money.app.property.flatMapAsyncObject
 import com.munzenberger.money.core.Account
 import com.munzenberger.money.core.AccountType
 import com.munzenberger.money.core.Money
+import com.munzenberger.money.core.PersistableNotFoundException
 import com.munzenberger.money.core.rx.ObservableMoneyDatabase
-import com.munzenberger.money.core.rx.observableAccount
-import io.reactivex.Observable
 import io.reactivex.disposables.CompositeDisposable
 import javafx.beans.property.ReadOnlyListProperty
 import javafx.beans.property.ReadOnlyObjectProperty
@@ -87,36 +87,51 @@ class AccountRegisterViewModel : AutoCloseable {
 
     fun start(database: ObservableMoneyDatabase, accountIdentity: Long) {
 
-        Account.observableAccount(accountIdentity, database)
-                .flatMap {
-                    Observable.fromCallable {
+        database.onUpdate.flatMapAsyncObject {
 
-                        var transactions = it.getAccountTransactions(database)
-                        var endingBalance = it.balance(database)
+            val account = Account.get(accountIdentity, database)
+                    ?: throw PersistableNotFoundException(Account::class, accountIdentity)
 
-                        if (it.accountType!!.category == AccountType.Category.LIABILITIES) {
-                            transactions = transactions.map { it.copy(balance = it.balance.negate()) }
-                            endingBalance = endingBalance.negate()
-                        }
+            var transactions = account.getAccountTransactions(database)
+            var endingBalance = account.balance(database)
 
-                        SubscriptionResult(
-                                account = it,
-                                transactions = transactions.map { FXAccountTransaction(it) },
-                                endingBalance = endingBalance
-                        )
-                    }
-                }
+            if (account.accountType!!.category == AccountType.Category.LIABILITIES) {
+                transactions = transactions.map { it.copy(balance = it.balance.negate()) }
+                endingBalance = endingBalance.negate()
+            }
+
+            SubscriptionResult(
+                    account = account,
+                    transactions = transactions.map { FXAccountTransaction(it) },
+                    endingBalance = endingBalance
+            )
+        }
                 .subscribeOn(SchedulerProvider.database)
                 .observeOn(SchedulerProvider.main)
-                .subscribe({
-                    account.value = AsyncObject.Complete(it.account)
-                    transactions.value = AsyncObject.Complete(it.transactions)
-                    endingBalance.value = AsyncObject.Complete(it.endingBalance)
-                }, {
-                    account.value = AsyncObject.Error(it)
-                    transactions.value = AsyncObject.Error(it)
-                    endingBalance.value = AsyncObject.Error(it)
-                })
+                .subscribe {
+                    when (it) {
+                        is AsyncObject.Pending -> {
+                            account.value = AsyncObject.Pending()
+                            transactions.value = AsyncObject.Pending()
+                            endingBalance.value = AsyncObject.Pending()
+                        }
+                        is AsyncObject.Executing -> {
+                            account.value = AsyncObject.Executing()
+                            transactions.value = AsyncObject.Executing()
+                            endingBalance.value = AsyncObject.Executing()
+                        }
+                        is AsyncObject.Complete -> {
+                            account.value = AsyncObject.Complete(it.value.account)
+                            transactions.value = AsyncObject.Complete(it.value.transactions)
+                            endingBalance.value = AsyncObject.Complete(it.value.endingBalance)
+                        }
+                        is AsyncObject.Error -> {
+                            account.value = AsyncObject.Error(it.error)
+                            transactions.value = AsyncObject.Error(it.error)
+                            endingBalance.value = AsyncObject.Error(it.error)
+                        }
+                    }
+                }
                 .also { disposables.add(it) }
     }
 
