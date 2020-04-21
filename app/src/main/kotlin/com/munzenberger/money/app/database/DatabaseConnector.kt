@@ -3,7 +3,7 @@ package com.munzenberger.money.app.database
 import com.munzenberger.money.app.SchedulerProvider
 import com.munzenberger.money.core.ConnectionMoneyDatabase
 import com.munzenberger.money.core.DatabaseDialect
-import com.munzenberger.money.core.rx.ObservableMoneyDatabase
+import com.munzenberger.money.app.model.ObservableMoneyDatabase
 import com.munzenberger.money.core.version.MoneyCoreVersionManager
 import com.munzenberger.money.sql.Query
 import com.munzenberger.money.version.CurrentVersion

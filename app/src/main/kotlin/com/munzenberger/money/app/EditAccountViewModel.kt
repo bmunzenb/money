@@ -1,6 +1,7 @@
 package com.munzenberger.money.app
 
 import com.munzenberger.money.app.model.getForCategories
+import com.munzenberger.money.app.property.AsyncObject
 import com.munzenberger.money.app.property.ReadOnlyAsyncObjectProperty
 import com.munzenberger.money.app.property.ReadOnlyAsyncStatusProperty
 import com.munzenberger.money.app.property.SimpleAsyncObjectProperty
@@ -12,8 +13,7 @@ import com.munzenberger.money.core.Bank
 import com.munzenberger.money.core.Category
 import com.munzenberger.money.core.Money
 import com.munzenberger.money.core.MoneyDatabase
-import com.munzenberger.money.core.rx.observableSave
-import com.munzenberger.money.core.rx.sortedBy
+import io.reactivex.Completable
 import io.reactivex.Single
 import javafx.beans.property.ReadOnlyBooleanProperty
 import javafx.beans.property.SimpleBooleanProperty
@@ -56,8 +56,7 @@ class EditAccountViewModel {
 
         accountNumberProperty.value = account.number
 
-        Single.fromCallable { Bank.getAll(database) }
-                .sortedBy { it.name }
+        Single.fromCallable { Bank.getAll(database).sortedBy { it.name } }
                 .subscribeOn(SchedulerProvider.database)
                 .observeOn(SchedulerProvider.main)
                 .subscribe(banks)
@@ -85,10 +84,13 @@ class EditAccountViewModel {
                 // a category to support transfers between accounts
                 val category = Category()
                 category.account = account
-                category.observableSave(database)
+                Completable.fromAction { category.save(database) }
             }
-            else -> account.observableSave(database)
+            else ->
+                Completable.fromAction { account.save(database) }
         }
+
+        saveStatus.value = AsyncObject.Executing()
 
         save.subscribeOn(SchedulerProvider.database)
                 .observeOn(SchedulerProvider.main)

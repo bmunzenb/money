@@ -15,9 +15,6 @@ interface AsyncObjectProperty<T> : Property<AsyncObject<T>>, ReadOnlyAsyncObject
 
 interface AsyncStatusProperty : AsyncObjectProperty<Unit>, ReadOnlyAsyncStatusProperty
 
-fun <T> Observable<T>.subscribe(property: AsyncObjectProperty<T>): Disposable =
-        subscribe({ property.value = AsyncObject.Complete(it) }, { property.value = AsyncObject.Error(it) })
-
 fun <T> Single<T>.subscribe(property: AsyncObjectProperty<T>): Disposable =
         subscribe({ property.value = AsyncObject.Complete(it) }, { property.value = AsyncObject.Error(it) })
 

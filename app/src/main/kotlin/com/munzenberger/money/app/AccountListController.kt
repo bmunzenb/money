@@ -13,7 +13,7 @@ import com.munzenberger.money.app.property.bindAsyncStatus
 import com.munzenberger.money.core.Account
 import com.munzenberger.money.core.Money
 import com.munzenberger.money.core.isNegative
-import com.munzenberger.money.core.rx.ObservableMoneyDatabase
+import com.munzenberger.money.app.model.ObservableMoneyDatabase
 import javafx.fxml.FXML
 import javafx.scene.control.Button
 import javafx.scene.control.Hyperlink

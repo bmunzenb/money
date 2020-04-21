@@ -19,8 +19,7 @@ import com.munzenberger.money.core.Transaction
 import com.munzenberger.money.core.Transfer
 import com.munzenberger.money.core.isNegative
 import com.munzenberger.money.core.isPositive
-import com.munzenberger.money.core.rx.observableTransaction
-import com.munzenberger.money.core.rx.sortedBy
+import com.munzenberger.money.app.model.observableTransaction
 import io.reactivex.Single
 import javafx.beans.property.ReadOnlyBooleanProperty
 import javafx.beans.property.ReadOnlyListProperty
@@ -132,8 +131,7 @@ class EditTransactionViewModel : EditTransferBase(), AutoCloseable {
 
         selectedPayeeProperty.value = transaction.payee
 
-        Single.fromCallable { Payee.getAll(database) }
-                .sortedBy { it.name }
+        Single.fromCallable { Payee.getAll(database).sortedBy { it.name } }
                 .subscribeOn(SchedulerProvider.database)
                 .observeOn(SchedulerProvider.main)
                 .subscribe(payees)

@@ -1,6 +1,0 @@
-dependencies {
-
-    api project(':core')
-
-    api "io.reactivex.rxjava2:rxjava:$versions.rxjava"
-}

@@ -12,8 +12,9 @@ javafx {
 
 dependencies {
 
-    implementation project(':core-rx')
+    implementation project(':core')
 
+    implementation "io.reactivex.rxjava2:rxjava:$versions.rxjava"
     implementation "io.reactivex.rxjava2:rxjavafx:$versions.rxjavafx"
 
     implementation "com.h2database:h2:$versions.h2"

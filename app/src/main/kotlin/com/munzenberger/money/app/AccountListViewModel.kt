@@ -2,6 +2,7 @@ package com.munzenberger.money.app
 
 import com.munzenberger.money.app.model.FXAccount
 import com.munzenberger.money.app.model.getAssetsAndLiabilities
+import com.munzenberger.money.app.property.AsyncObject
 import com.munzenberger.money.app.property.ReadOnlyAsyncObjectProperty
 import com.munzenberger.money.app.property.SimpleAsyncObjectProperty
 import com.munzenberger.money.app.property.bindAsync
@@ -9,8 +10,8 @@ import com.munzenberger.money.app.property.flatMapAsyncObject
 import com.munzenberger.money.app.property.subscribe
 import com.munzenberger.money.core.Account
 import com.munzenberger.money.core.Money
-import com.munzenberger.money.core.rx.ObservableMoneyDatabase
-import io.reactivex.Observable
+import com.munzenberger.money.app.model.ObservableMoneyDatabase
+import io.reactivex.Single
 import io.reactivex.disposables.CompositeDisposable
 
 class AccountListViewModel : AutoCloseable {
@@ -30,14 +31,15 @@ class AccountListViewModel : AutoCloseable {
             val observableBalances = accounts.map { it.observableBalance }
 
             val observableTotal = when (observableBalances.isEmpty()) {
-                true -> Observable.just(Money.zero())
-                else -> Observable.zip(observableBalances) { it.fold(Money.zero()) { acc, b -> acc.add(b as Money) } }
+                true -> Single.just(Money.zero())
+                else -> Single.zip(observableBalances) { it.fold(Money.zero()) { acc, b -> acc.add(b as Money) } }
             }
+
+            totalBalance.value = AsyncObject.Executing()
 
             observableTotal.subscribeOn(SchedulerProvider.database)
                     .observeOn(SchedulerProvider.main)
                     .subscribe(this)
-                    .also { disposables.add(it) }
         }
     }
 
