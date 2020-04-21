@@ -14,7 +14,7 @@ import com.munzenberger.money.core.Account
 import com.munzenberger.money.core.AccountType
 import com.munzenberger.money.core.Money
 import com.munzenberger.money.core.PersistableNotFoundException
-import com.munzenberger.money.app.model.ObservableMoneyDatabase
+import com.munzenberger.money.app.database.ObservableMoneyDatabase
 import io.reactivex.disposables.CompositeDisposable
 import javafx.beans.property.ReadOnlyListProperty
 import javafx.beans.property.ReadOnlyObjectProperty

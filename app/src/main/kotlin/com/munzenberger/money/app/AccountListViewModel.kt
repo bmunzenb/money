@@ -10,7 +10,7 @@ import com.munzenberger.money.app.property.flatMapAsyncObject
 import com.munzenberger.money.app.property.subscribe
 import com.munzenberger.money.core.Account
 import com.munzenberger.money.core.Money
-import com.munzenberger.money.app.model.ObservableMoneyDatabase
+import com.munzenberger.money.app.database.ObservableMoneyDatabase
 import io.reactivex.Single
 import io.reactivex.disposables.CompositeDisposable
 

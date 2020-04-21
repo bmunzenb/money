@@ -1,4 +1,4 @@
-package com.munzenberger.money.app.model
+package com.munzenberger.money.app.database
 
 import com.munzenberger.money.sql.QueryExecutor
 import com.munzenberger.money.sql.TransactionQueryExecutor

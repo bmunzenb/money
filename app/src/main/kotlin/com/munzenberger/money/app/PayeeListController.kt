@@ -4,7 +4,7 @@ import com.munzenberger.money.app.control.DateTableCellFactory
 import com.munzenberger.money.app.control.HyperlinkTableCellFactory
 import com.munzenberger.money.app.control.bindAsync
 import com.munzenberger.money.app.model.FXPayee
-import com.munzenberger.money.app.model.ObservableMoneyDatabase
+import com.munzenberger.money.app.database.ObservableMoneyDatabase
 import javafx.fxml.FXML
 import javafx.scene.control.TableColumn
 import javafx.scene.control.TableView

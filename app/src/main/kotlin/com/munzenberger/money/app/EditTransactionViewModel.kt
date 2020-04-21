@@ -19,7 +19,7 @@ import com.munzenberger.money.core.Transaction
 import com.munzenberger.money.core.Transfer
 import com.munzenberger.money.core.isNegative
 import com.munzenberger.money.core.isPositive
-import com.munzenberger.money.app.model.observableTransaction
+import com.munzenberger.money.app.database.observableTransaction
 import io.reactivex.Single
 import javafx.beans.property.ReadOnlyBooleanProperty
 import javafx.beans.property.ReadOnlyListProperty

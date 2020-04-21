@@ -1,7 +1,6 @@
 package com.munzenberger.money.app.database
 
 import com.munzenberger.money.app.ErrorAlert
-import com.munzenberger.money.app.model.ObservableMoneyDatabase
 
 open class MemoryDatabase : DatabaseConnectorCallbacks {
 

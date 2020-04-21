@@ -2,7 +2,7 @@ package com.munzenberger.money.app
 
 import com.munzenberger.money.app.navigation.LayoutControllerNavigation
 import com.munzenberger.money.app.navigation.Navigator
-import com.munzenberger.money.app.model.ObservableMoneyDatabase
+import com.munzenberger.money.app.database.ObservableMoneyDatabase
 import javafx.fxml.FXML
 import javafx.scene.control.Button
 import javafx.scene.layout.BorderPane

@@ -4,7 +4,7 @@ import com.munzenberger.money.app.database.DatabaseConnector
 import com.munzenberger.money.app.database.DatabaseConnectorCallbacks
 import com.munzenberger.money.app.database.FileDatabaseConnector
 import com.munzenberger.money.app.database.MemoryDatabaseConnector
-import com.munzenberger.money.app.model.ObservableMoneyDatabase
+import com.munzenberger.money.app.database.ObservableMoneyDatabase
 import javafx.application.Platform
 import javafx.beans.property.ReadOnlyBooleanProperty
 import javafx.beans.property.ReadOnlyObjectProperty

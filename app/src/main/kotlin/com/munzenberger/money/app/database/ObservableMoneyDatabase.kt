@@ -1,4 +1,4 @@
-package com.munzenberger.money.app.model
+package com.munzenberger.money.app.database
 
 import com.munzenberger.money.core.MoneyDatabase
 import com.munzenberger.money.sql.Query

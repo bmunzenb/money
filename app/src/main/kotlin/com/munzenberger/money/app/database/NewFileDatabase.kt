@@ -2,7 +2,6 @@ package com.munzenberger.money.app.database
 
 import com.munzenberger.money.app.ErrorAlert
 import com.munzenberger.money.app.database.FileDatabaseConnector.Companion.SUFFIX
-import com.munzenberger.money.app.model.ObservableMoneyDatabase
 import javafx.scene.control.Alert
 import javafx.stage.FileChooser
 import javafx.stage.Window
