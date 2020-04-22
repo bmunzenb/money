@@ -214,6 +214,7 @@ class EditTransactionViewModel : EditTransferBase(), AutoCloseable {
 
         save.subscribeOn(SchedulerProvider.database)
                 .observeOn(SchedulerProvider.main)
+                .doOnSubscribe { saveStatus.value = AsyncObject.Executing() }
                 .subscribe(saveStatus)
     }
 

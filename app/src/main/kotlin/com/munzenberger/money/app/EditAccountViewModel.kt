@@ -1,5 +1,6 @@
 package com.munzenberger.money.app
 
+import com.munzenberger.money.app.database.observableTransaction
 import com.munzenberger.money.app.model.getForCategories
 import com.munzenberger.money.app.property.AsyncObject
 import com.munzenberger.money.app.property.ReadOnlyAsyncObjectProperty
@@ -70,30 +71,32 @@ class EditAccountViewModel {
 
     fun save() {
 
-        account.apply {
-            name = accountNameProperty.value
-            accountType = selectedAccountTypeProperty.value
-            number = accountNumberProperty.value
-            bank = selectedBankProperty.value
-            initialBalance = initialBalanceProperty.value
-        }
+        val save = database.observableTransaction { tx ->
 
-        val save = when (account.identity) {
-            null -> {
-                // if the account doesn't already exist, create it via
-                // a category to support transfers between accounts
-                val category = Category()
-                category.account = account
-                Completable.fromAction { category.save(database) }
+            account.apply {
+                name = accountNameProperty.value
+                accountType = selectedAccountTypeProperty.value
+                number = accountNumberProperty.value
+                bank = selectedBankProperty.value
+                initialBalance = initialBalanceProperty.value
             }
-            else ->
-                Completable.fromAction { account.save(database) }
-        }
 
-        saveStatus.value = AsyncObject.Executing()
+            when (account.identity) {
+                null -> {
+                    // if the account doesn't already exist, create it via
+                    // a category to support transfers between accounts
+                    val category = Category()
+                    category.account = account
+                    category.save(database)
+                }
+                else ->
+                    account.save(database)
+            }
+        }
 
         save.subscribeOn(SchedulerProvider.database)
                 .observeOn(SchedulerProvider.main)
+                .doOnSubscribe { saveStatus.value = AsyncObject.Executing() }
                 .subscribe(saveStatus)
     }
 }
