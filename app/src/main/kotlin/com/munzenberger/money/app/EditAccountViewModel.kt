@@ -14,7 +14,6 @@ import com.munzenberger.money.core.Bank
 import com.munzenberger.money.core.Category
 import com.munzenberger.money.core.Money
 import com.munzenberger.money.core.MoneyDatabase
-import io.reactivex.Completable
 import io.reactivex.Single
 import javafx.beans.property.ReadOnlyBooleanProperty
 import javafx.beans.property.SimpleBooleanProperty
