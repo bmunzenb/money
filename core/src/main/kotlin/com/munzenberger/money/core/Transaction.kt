@@ -21,6 +21,10 @@ class Transaction internal constructor(model: TransactionModel) : Persistable<Tr
         get() = model.memo
         set(value) { model.memo = value }
 
+    var number: String?
+        get() = model.number
+        set(value) { model.number = value }
+
     var account: Account? = null
 
     var payee: Payee? = null
@@ -50,6 +54,7 @@ class TransactionResultSetMapper : ResultSetMapper<Transaction> {
             account = resultSet.getLongOrNull(TransactionTable.accountColumn)
             payee = resultSet.getLongOrNull(TransactionTable.payeeColumn)
             date = resultSet.getLongOrNull(TransactionTable.dateColumn)
+            number = resultSet.getString(TransactionTable.numberColumn)
             memo = resultSet.getString(TransactionTable.memoColumn)
         }
 

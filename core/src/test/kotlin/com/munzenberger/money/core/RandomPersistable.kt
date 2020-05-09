@@ -44,6 +44,7 @@ fun Transaction.randomize() = this.apply {
     account = Account().randomize()
     payee = Payee().randomize()
     date = LocalDate.now()
+    number = randomString()
     memo = randomString()
 }
 
@@ -51,6 +52,7 @@ fun Transfer.randomize() = this.apply {
     category = Category().randomize()
     setTransaction(Transaction().randomize())
     amount = Money.random()
+    number = randomString()
     memo = randomString()
 }
 

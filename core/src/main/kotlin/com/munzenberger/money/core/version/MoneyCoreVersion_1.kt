@@ -50,6 +50,7 @@ class MoneyCoreVersion_1 : ApplicableVersion<MoneyDatabase> {
                 .columnWithReference(TransactionTable.accountColumn, obj.dialect.identityType("NOT NULL"), AccountTable.name, AccountTable.identityColumn)
                 .columnWithReference(TransactionTable.payeeColumn, obj.dialect.identityType, PayeeTable.name, PayeeTable.identityColumn)
                 .column(TransactionTable.dateColumn, "BIGINT NOT NULL")
+                .column(TransactionTable.numberColumn, "TEXT")
                 .column(TransactionTable.memoColumn, "TEXT")
                 .build())
 
@@ -58,6 +59,7 @@ class MoneyCoreVersion_1 : ApplicableVersion<MoneyDatabase> {
                 .columnWithReference(TransferTable.transactionColumn, obj.dialect.identityType("NOT NULL"), TransactionTable.name, TransactionTable.identityColumn)
                 .columnWithReference(TransferTable.categoryColumn, obj.dialect.identityType("NOT NULL"), CategoryTable.name, CategoryTable.identityColumn)
                 .column(TransferTable.amountColumn, "BIGINT NOT NULL")
+                .column(TransferTable.numberColumn, "TEXT")
                 .column(TransferTable.memoColumn, "TEXT")
                 .build())
 

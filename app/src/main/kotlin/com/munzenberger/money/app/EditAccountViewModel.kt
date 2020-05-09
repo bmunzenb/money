@@ -86,10 +86,10 @@ class EditAccountViewModel {
                     // a category to support transfers between accounts
                     val category = Category()
                     category.account = account
-                    category.save(database)
+                    category.save(tx)
                 }
                 else ->
-                    account.save(database)
+                    account.save(tx)
             }
         }
 

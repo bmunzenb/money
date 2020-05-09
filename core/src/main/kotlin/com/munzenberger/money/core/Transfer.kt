@@ -16,6 +16,10 @@ class Transfer internal constructor(model: TransferModel) : Persistable<Transfer
         get() = model.amount?.let { Money.valueOf(it) }
         set(value) { model.amount = value?.value }
 
+    var number: String?
+        get() = model.number
+        set(value) { model.number = value }
+
     var memo: String?
         get() = model.memo
         set(value) { model.memo = value }
@@ -53,6 +57,7 @@ class TransferResultSetMapper : ResultSetMapper<Transfer> {
             transaction = resultSet.getLongOrNull(TransferTable.transactionColumn)
             category = resultSet.getLongOrNull(TransferTable.categoryColumn)
             amount = resultSet.getLong(TransferTable.amountColumn)
+            number = resultSet.getString(TransferTable.numberColumn)
             memo = resultSet.getString(TransferTable.memoColumn)
         }
 
