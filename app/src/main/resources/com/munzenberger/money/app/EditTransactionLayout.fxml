@@ -24,7 +24,8 @@
       <RowConstraints fillHeight="false" vgrow="NEVER" />
       <RowConstraints fillHeight="false" vgrow="NEVER" />
       <RowConstraints fillHeight="false" vgrow="NEVER" />
-      <RowConstraints fillHeight="false" minHeight="10.0" prefHeight="30.0" vgrow="NEVER" />
+      <RowConstraints fillHeight="false" vgrow="NEVER" />
+      <RowConstraints fillHeight="false" vgrow="NEVER" />
     <RowConstraints fillHeight="false" vgrow="NEVER" />
   </rowConstraints>
    <children>
@@ -34,20 +35,22 @@
       <ComboBox fx:id="typeComboBox" GridPane.columnIndex="1" GridPane.rowIndex="1" />
       <Label text="Date:" GridPane.rowIndex="2" />
       <DatePicker fx:id="datePicker" GridPane.columnIndex="1" GridPane.rowIndex="2" />
-      <Label text="Payee:" GridPane.rowIndex="3" />
-      <ComboBox fx:id="payeeComboBox" editable="true" maxWidth="1.7976931348623157E308" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS" GridPane.rowIndex="3" />
-      <Label text="Category:" GridPane.rowIndex="4" />
-      <HBox spacing="6.0" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS" GridPane.rowIndex="4">
+      <Label text="Number:" GridPane.rowIndex="3" />
+      <TextField fx:id="numberTextField" maxWidth="1.7976931348623157E308" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+      <Label text="Payee:" GridPane.rowIndex="4" />
+      <ComboBox fx:id="payeeComboBox" editable="true" maxWidth="1.7976931348623157E308" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS" GridPane.rowIndex="4" />
+      <Label text="Category:" GridPane.rowIndex="5" />
+      <HBox spacing="6.0" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS" GridPane.rowIndex="5">
          <children>
             <ComboBox fx:id="categoryComboBox" editable="true" maxWidth="1.7976931348623157E308" HBox.hgrow="ALWAYS" />
             <Button fx:id="categorySplitButton" mnemonicParsing="false" onAction="#onCategorySplitButton" text="Split" />
          </children>
       </HBox>
-      <Label text="Amount:" GridPane.rowIndex="5" />
-      <TextField fx:id="amountTextField" maxWidth="1.7976931348623157E308" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS" GridPane.rowIndex="5" />
-      <Label text="Memo:" GridPane.rowIndex="6" />
-      <TextField fx:id="memoTextField" maxWidth="1.7976931348623157E308" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS" GridPane.rowIndex="6" />
-      <ButtonBar GridPane.columnSpan="2147483647" GridPane.halignment="RIGHT" GridPane.rowIndex="7">
+      <Label text="Amount:" GridPane.rowIndex="6" />
+      <TextField fx:id="amountTextField" maxWidth="1.7976931348623157E308" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS" GridPane.rowIndex="6" />
+      <Label text="Memo:" GridPane.rowIndex="7" />
+      <TextField fx:id="memoTextField" maxWidth="1.7976931348623157E308" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS" GridPane.rowIndex="7" />
+      <ButtonBar GridPane.columnSpan="2147483647" GridPane.halignment="RIGHT" GridPane.rowIndex="8">
         <buttons>
           <Button fx:id="saveButton" defaultButton="true" mnemonicParsing="false" onAction="#onSaveButton" text="Save" />
             <Button fx:id="cancelButton" cancelButton="true" mnemonicParsing="false" onAction="#onCancelButton" text="Cancel" />

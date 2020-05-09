@@ -33,6 +33,7 @@ class EditTransactionController {
     @FXML lateinit var accountComboBox: ComboBox<Account>
     @FXML lateinit var typeComboBox: ComboBox<TransactionType>
     @FXML lateinit var datePicker: DatePicker
+    @FXML lateinit var numberTextField: TextField
     @FXML lateinit var payeeComboBox: ComboBox<Payee>
     @FXML lateinit var categoryComboBox: ComboBox<DelayedCategory>
     @FXML lateinit var categorySplitButton: Button
@@ -75,6 +76,8 @@ class EditTransactionController {
         }
 
         datePicker.valueProperty().bindBidirectional(viewModel.dateProperty)
+
+        numberTextField.textProperty().bindBidirectional(viewModel.numberProperty)
 
         payeeComboBox.apply {
 

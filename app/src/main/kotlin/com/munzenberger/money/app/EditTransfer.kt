@@ -11,6 +11,7 @@ abstract class EditTransferBase {
 
     val selectedCategoryProperty = SimpleObjectProperty<DelayedCategory>()
     val amountProperty = SimpleObjectProperty<Money>()
+    val numberProperty = SimpleStringProperty()
     val memoProperty = SimpleStringProperty()
 
     var category: DelayedCategory?
@@ -20,6 +21,10 @@ abstract class EditTransferBase {
     var amount: Money?
         get() = amountProperty.value
         set(value) { amountProperty.value = value }
+
+    var number: String?
+        get() = numberProperty.value
+        set(value) { numberProperty.value = value }
 
     var memo: String?
         get() = memoProperty.value
@@ -33,12 +38,14 @@ class EditTransfer : EditTransferBase() {
         fun from(transfer: Transfer, transactionType: TransactionType?) = EditTransfer().apply {
             category = transfer.category?.let { DelayedCategory.from(it) }
             amount = transfer.amount?.forTransactionType(transactionType)
+            number = transfer.number
             memo = transfer.memo
         }
 
         fun from(editTransfer: EditTransferBase) = EditTransfer().apply {
             category = editTransfer.category
             amount = editTransfer.amount
+            number = editTransfer.number
             memo = editTransfer.memo
         }
     }

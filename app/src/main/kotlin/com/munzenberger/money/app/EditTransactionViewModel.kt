@@ -147,6 +147,8 @@ class EditTransactionViewModel : EditTransferBase(), AutoCloseable {
                 .observeOn(SchedulerProvider.main)
                 .subscribe(::onTransfers)
 
+        numberProperty.value = transaction.number
+
         memoProperty.value = transaction.memo
     }
 
@@ -185,6 +187,7 @@ class EditTransactionViewModel : EditTransferBase(), AutoCloseable {
                 account = selectedAccountProperty.value
                 date = dateProperty.value
                 payee = selectedPayeeProperty.value
+                number = numberProperty.value
                 memo = memoProperty.value
                 save(tx)
             }
@@ -201,6 +204,7 @@ class EditTransactionViewModel : EditTransferBase(), AutoCloseable {
                 transfer.apply {
                     this.amount = edit.getAmountValue(transactionType!!)
                     this.category = edit.category!!.getCategory(tx, transactionType!!)
+                    this.number = edit.number
                     this.memo = edit.memo
                     save(tx)
                 }
