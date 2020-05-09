@@ -18,6 +18,7 @@ data class AccountTransaction(
         val categories: List<String>,
         val amount: Money,
         val balance: Money,
+        val number: String?,
         val memo: String?
 )
 
@@ -32,6 +33,7 @@ private class AccountTransactionCollector(
             val payee: String?,
             var amount: Long = 0,
             var categories: List<String> = emptyList(),
+            var number: String? = null,
             var memo: String? = null
     )
 
@@ -45,11 +47,13 @@ private class AccountTransactionCollector(
             transactionAccountId: Long,
             transactionAccountTypeCategory: String,
             transactionAccountName: String,
+            transactionNumber: String?,
             categoryAccountId: Long?,
             categoryAccountTypeCategory: String?,
             categoryAccountName: String?,
             categoryName: String?,
             transactionMemo: String?,
+            transferNumber: String?,
             transferMemo: String?
     ) {
 
@@ -70,7 +74,7 @@ private class AccountTransactionCollector(
                 )
 
             entry.categories += category
-
+            entry.number = transactionNumber
             entry.memo = transactionMemo
         }
 
@@ -83,7 +87,7 @@ private class AccountTransactionCollector(
                 )
 
             entry.categories += category
-
+            entry.number = transferNumber
             entry.memo = transferMemo
         }
     }
@@ -103,6 +107,7 @@ private class AccountTransactionCollector(
                             it.categories,
                             Money.valueOf(it.amount),
                             Money.valueOf(balance),
+                            it.number,
                             it.memo)
                 }
     }
@@ -113,7 +118,7 @@ private class AccountTransactionResultSetHandler(accountId: Long, initialBalance
     companion object {
         val sql =
                 """
-                SELECT TRANSACTION_ID, TRANSACTION_DATE, TRANSACTION_MEMO, TRANSFER_AMOUNT, TRANSFER_MEMO, PAYEE_NAME, TRANSACTION_ACCOUNT_ID, CATEGORY_ACCOUNT_ID,
+                SELECT TRANSACTION_ID, TRANSACTION_DATE, TRANSACTION_NUMBER, TRANSACTION_MEMO, TRANSFER_AMOUNT, TRANSFER_NUMBER, TRANSFER_MEMO, PAYEE_NAME, TRANSACTION_ACCOUNT_ID, CATEGORY_ACCOUNT_ID,
                     TRANSACTION_ACCOUNT_TYPE.ACCOUNT_TYPE_CATEGORY AS TRANSACTION_ACCOUNT_TYPE_CATEGORY, TRANSACTION_ACCOUNT.ACCOUNT_NAME AS TRANSACTION_ACCOUNT_NAME,
                     CATEGORY_ACCOUNT_TYPE.ACCOUNT_TYPE_CATEGORY AS CATEGORY_ACCOUNT_TYPE_CATEGORY, CATEGORY_ACCOUNT.ACCOUNT_NAME AS CATEGORY_ACCOUNT_NAME, CATEGORY_NAME
                 FROM TRANSACTIONS
@@ -142,6 +147,7 @@ private class AccountTransactionResultSetHandler(accountId: Long, initialBalance
             val transactionAccountId = rs.getLong("TRANSACTION_ACCOUNT_ID")
             val transactionAccountTypeCategory = rs.getString("TRANSACTION_ACCOUNT_TYPE_CATEGORY")
             val transactionAccountName = rs.getString("TRANSACTION_ACCOUNT_NAME")
+            val transactionNumber = rs.getString("TRANSACTION_NUMBER")
             val categoryAccountId = rs.getLongOrNull("CATEGORY_ACCOUNT_ID")
             val categoryAccountTypeCategory = rs.getString("CATEGORY_ACCOUNT_TYPE_CATEGORY")
             val categoryAccountName = rs.getString("CATEGORY_ACCOUNT_NAME")
@@ -149,22 +155,25 @@ private class AccountTransactionResultSetHandler(accountId: Long, initialBalance
             val transferAmount = rs.getLong("TRANSFER_AMOUNT")
             val payee = rs.getString("PAYEE_NAME")
             val transactionMemo = rs.getString("TRANSACTION_MEMO")
+            val transferNumber = rs.getString("TRANSFER_NUMBER")
             val transferMemo = rs.getString("TRANSFER_MEMO")
 
             collector.collect(
-                    transactionId,
-                    date,
-                    payee,
-                    transferAmount,
-                    transactionAccountId,
-                    transactionAccountTypeCategory,
-                    transactionAccountName,
-                    categoryAccountId,
-                    categoryAccountTypeCategory,
-                    categoryAccountName,
-                    categoryName,
-                    transactionMemo,
-                    transferMemo
+                    transactionId = transactionId,
+                    date = date,
+                    payee = payee,
+                    transferAmount = transferAmount,
+                    transactionAccountId = transactionAccountId,
+                    transactionAccountTypeCategory = transactionAccountTypeCategory,
+                    transactionAccountName = transactionAccountName,
+                    transactionNumber = transactionNumber,
+                    categoryAccountId = categoryAccountId,
+                    categoryAccountTypeCategory = categoryAccountTypeCategory,
+                    categoryAccountName = categoryAccountName,
+                    categoryName = categoryName,
+                    transactionMemo = transactionMemo,
+                    transferNumber = transferNumber,
+                    transferMemo = transferMemo
             )
         }
     }

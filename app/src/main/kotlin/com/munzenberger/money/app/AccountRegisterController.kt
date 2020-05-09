@@ -52,6 +52,7 @@ class AccountRegisterController : AutoCloseable {
     @FXML lateinit var addTransactionButton: Button
     @FXML lateinit var dateFilterChoiceBox: ChoiceBox<FXAccountTransactionFilter>
     @FXML lateinit var tableView: TableView<FXAccountTransaction>
+    @FXML lateinit var numberColumn: TableColumn<FXAccountTransaction, String>
     @FXML lateinit var dateColumn: TableColumn<FXAccountTransaction, LocalDate>
     @FXML lateinit var payeeColumn: TableColumn<FXAccountTransaction, String>
     @FXML lateinit var categoryColumn: TableColumn<FXAccountTransaction, String>
@@ -117,6 +118,10 @@ class AccountRegisterController : AutoCloseable {
                     setOnAction { onAddTransaction() }
                 }
             }
+        }
+
+        numberColumn.apply {
+            cellValueFactory = Callback { it.value.numberProperty }
         }
 
         dateColumn.apply {

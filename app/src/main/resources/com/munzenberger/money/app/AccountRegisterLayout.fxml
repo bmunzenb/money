@@ -61,6 +61,7 @@
             <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
          </columnResizePolicy>
          <columns>
+            <TableColumn fx:id="numberColumn" editable="false" maxWidth="650.0" minWidth="-Infinity" prefWidth="50.0" style="-fx-alignment: CENTER-RIGHT;" text="Num" />
             <TableColumn fx:id="dateColumn" editable="false" maxWidth="1000.0" minWidth="-Infinity" prefWidth="75.0" style="-fx-alignment: CENTER;" text="Date" />
             <TableColumn fx:id="payeeColumn" editable="false" maxWidth="2000.0" minWidth="-Infinity" prefWidth="150.0" text="Payee" />
             <TableColumn fx:id="categoryColumn" editable="false" maxWidth="2000.0" minWidth="-Infinity" prefWidth="150.0" text="Category" />

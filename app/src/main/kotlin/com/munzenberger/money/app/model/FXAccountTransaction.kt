@@ -24,6 +24,7 @@ class FXAccountTransaction(accountTransaction: AccountTransaction) {
     internal val transactionId = accountTransaction.transactionId
 
     val dateProperty: ReadOnlyObjectProperty<LocalDate> = SimpleObjectProperty(accountTransaction.date)
+    val numberProperty: ReadOnlyStringProperty = SimpleStringProperty(accountTransaction.number)
     val balanceProperty: ReadOnlyObjectProperty<Money> = SimpleObjectProperty(accountTransaction.balance)
     val payeeProperty: ReadOnlyStringProperty = SimpleStringProperty(accountTransaction.payee)
 
