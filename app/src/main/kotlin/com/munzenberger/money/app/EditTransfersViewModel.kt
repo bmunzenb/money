@@ -8,7 +8,6 @@ import javafx.beans.property.SimpleListProperty
 import javafx.collections.FXCollections
 import javafx.collections.ListChangeListener
 import javafx.collections.ObservableList
-import javafx.util.Callback
 
 class EditTransfersViewModel : EditTransferBase() {
 
@@ -53,12 +52,14 @@ class EditTransfersViewModel : EditTransferBase() {
     fun add() {
 
         val editTransfer = EditTransfer()
+        editTransfer.number = number
         editTransfer.category = category
         editTransfer.amount = amount
         editTransfer.memo = memo
 
         transfers.add(editTransfer)
 
+        number = null
         category = null
         memo = null
         amount = null

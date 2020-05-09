@@ -31,9 +31,11 @@ class EditTransfersController {
     }
 
     @FXML private lateinit var tableView: TableView<EditTransfer>
+    @FXML private lateinit var numberColumn: TableColumn<EditTransfer, String>
     @FXML private lateinit var categoryColumn: TableColumn<EditTransfer, DelayedCategory>
     @FXML private lateinit var memoColumn: TableColumn<EditTransfer, String>
     @FXML private lateinit var amountColumn: TableColumn<EditTransfer, Money>
+    @FXML private lateinit var numberTextField: TextField
     @FXML private lateinit var categoryComboBox: ComboBox<DelayedCategory>
     @FXML private lateinit var memoTextField: TextField
     @FXML private lateinit var amountTextField: TextField
@@ -62,6 +64,11 @@ class EditTransfersController {
             placeholder = Text("Use the form below to add transaction details.")
         }
 
+        numberColumn.apply {
+            cellFactory = TextFieldTableCell.forTableColumn()
+            cellValueFactory = Callback { t -> t.value.numberProperty }
+        }
+
         categoryColumn.apply {
 
             val converter = ListLookupStringConverter(
@@ -87,6 +94,10 @@ class EditTransfersController {
         amountColumn.apply {
             cellFactory = TextFieldTableCell.forTableColumn(MoneyStringConverter())
             cellValueFactory = Callback { t -> t.value.amountProperty }
+        }
+
+        numberTextField.apply {
+            textProperty().bindBidirectional(viewModel.numberProperty)
         }
 
         categoryComboBox.apply {
