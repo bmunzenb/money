@@ -136,8 +136,7 @@ class EditTransactionViewModel : EditTransferBase(), AutoCloseable {
                 .observeOn(SchedulerProvider.main)
                 .subscribe(payees)
 
-        Single.fromCallable { Category.getAll(database) }
-                .map { it.map { c -> DelayedCategory.from(c) }.sortedWith(DelayedCategoryComparator) }
+        Single.fromCallable { Category.getAll(database).map { c -> DelayedCategory.from(c) }.sortedWith(DelayedCategoryComparator) }
                 .subscribeOn(SchedulerProvider.database)
                 .observeOn(SchedulerProvider.main)
                 .subscribe(categories)
@@ -216,9 +215,10 @@ class EditTransactionViewModel : EditTransferBase(), AutoCloseable {
             }
         }
 
+        saveStatus.value = AsyncObject.Executing()
+
         save.subscribeOn(SchedulerProvider.database)
                 .observeOn(SchedulerProvider.main)
-                .doOnSubscribe { saveStatus.value = AsyncObject.Executing() }
                 .subscribe(saveStatus)
     }
 
