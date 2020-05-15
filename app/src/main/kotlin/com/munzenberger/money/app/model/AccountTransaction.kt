@@ -116,7 +116,7 @@ private class AccountTransactionCollector(
 private class AccountTransactionResultSetHandler(accountId: Long, initialBalance: Money) : ResultSetHandler {
 
     companion object {
-        val sql =
+        private val sql =
                 """
                 SELECT TRANSACTION_ID, TRANSACTION_DATE, TRANSACTION_NUMBER, TRANSACTION_MEMO, TRANSFER_AMOUNT, TRANSFER_NUMBER, TRANSFER_MEMO, PAYEE_NAME, TRANSACTION_ACCOUNT_ID, CATEGORY_ACCOUNT_ID,
                     TRANSACTION_ACCOUNT_TYPE.ACCOUNT_TYPE_CATEGORY AS TRANSACTION_ACCOUNT_TYPE_CATEGORY, TRANSACTION_ACCOUNT.ACCOUNT_NAME AS TRANSACTION_ACCOUNT_NAME,
@@ -134,6 +134,8 @@ private class AccountTransactionResultSetHandler(accountId: Long, initialBalance
     }
 
     private val collector = AccountTransactionCollector(accountId, initialBalance)
+
+    val query: Query = Query(sql, listOf(accountId, accountId))
 
     val results: List<AccountTransaction>
         get() = collector.getAccountTransactions()
@@ -182,12 +184,9 @@ private class AccountTransactionResultSetHandler(accountId: Long, initialBalance
 fun Account.getAccountTransactions(database: MoneyDatabase): List<AccountTransaction> {
 
     val accountId = identity ?: throw IllegalStateException("Can't get transactions for an unsaved account.")
-
     val handler = AccountTransactionResultSetHandler(accountId, initialBalance ?: Money.zero())
 
-    Query(AccountTransactionResultSetHandler.sql, listOf(accountId, accountId)).let {
-        database.executeQuery(it, handler)
-    }
+    database.executeQuery(handler.query, handler)
 
     return handler.results
 }

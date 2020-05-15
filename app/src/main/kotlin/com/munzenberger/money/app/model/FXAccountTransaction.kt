@@ -32,8 +32,6 @@ class FXAccountTransaction(accountTransaction: AccountTransaction) {
     val debitProperty: ReadOnlyObjectProperty<Money>
     val creditProperty: ReadOnlyObjectProperty<Money>
 
-    val detailsProperty: ReadOnlyStringProperty
-
     init {
 
         val category = when (accountTransaction.categories.size) {
@@ -43,13 +41,6 @@ class FXAccountTransaction(accountTransaction: AccountTransaction) {
         }
 
         categoryProperty = SimpleStringProperty(category)
-
-        val details =
-                (accountTransaction.payee ?: "") + System.lineSeparator() +
-                (category ?: "") + System.lineSeparator() +
-                (accountTransaction.memo ?: "")
-
-        detailsProperty = SimpleStringProperty(details)
 
         when {
             accountTransaction.amount.isNegative -> {

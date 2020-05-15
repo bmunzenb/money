@@ -8,7 +8,9 @@ import com.munzenberger.money.core.model.TransferTable
 import com.munzenberger.money.sql.Condition
 import com.munzenberger.money.sql.Query
 import com.munzenberger.money.sql.QueryExecutor
+import com.munzenberger.money.sql.ResultSetHandler
 import com.munzenberger.money.sql.ResultSetMapper
+import com.munzenberger.money.sql.eq
 import com.munzenberger.money.sql.getLongOrNull
 import com.munzenberger.money.sql.transaction
 import java.sql.ResultSet
@@ -34,30 +36,9 @@ class Account internal constructor(model: AccountModel) : Persistable<AccountMod
         set(value) { model.initialBalance = value?.value }
 
     fun balance(executor: QueryExecutor): Money {
-
-        val creditsQuery = Query.selectFrom(TransferTable.name)
-                .cols("SUM(${TransferTable.amountColumn}) AS CREDITS")
-                .innerJoin(TransferTable.name, TransferTable.transactionColumn, TransactionTable.name, TransactionTable.identityColumn)
-                .where(Condition.eq(TransactionTable.accountColumn, identity))
-                .build()
-
-        val credits = executor.getFirst(creditsQuery, object : ResultSetMapper<Long> {
-            override fun apply(resultSet: ResultSet) = resultSet.getLong("CREDITS")
-        })
-
-        val debitsQuery = Query.selectFrom(TransferTable.name)
-                .cols("SUM(${TransferTable.amountColumn}) AS DEBITS")
-                .innerJoin(TransferTable.name, TransferTable.categoryColumn, CategoryTable.name, CategoryTable.identityColumn)
-                .where(Condition.eq(CategoryTable.accountColumn, identity))
-                .build()
-
-        val debits = executor.getFirst(debitsQuery, object : ResultSetMapper<Long> {
-            override fun apply(resultSet: ResultSet) = resultSet.getLong("DEBITS")
-        })
-
-        val balance = (model.initialBalance ?: 0) + (credits ?: 0) - (debits ?: 0)
-
-        return Money.valueOf(balance)
+        val collector = AccountBalanceCollector(identity, model.initialBalance)
+        executor.executeQuery(collector.query, collector)
+        return collector.result
     }
 
     override fun save(executor: QueryExecutor) = executor.transaction { tx ->
@@ -92,6 +73,34 @@ class AccountResultSetMapper : ResultSetMapper<Account> {
         return Account(model).apply {
             accountType = model.accountType?.let { AccountTypeResultSetMapper().apply(resultSet) }
             bank = model.bank?.let { BankResultSetMapper().apply(resultSet) }
+        }
+    }
+}
+
+private class AccountBalanceCollector(private val accountId: Long?, initialBalance: Long?) : ResultSetHandler {
+
+    val query: Query = Query.selectFrom(TransferTable.name)
+            .cols(TransferTable.amountColumn, CategoryTable.accountColumn)
+            .innerJoin(TransferTable.name, TransferTable.transactionColumn, TransactionTable.name, TransactionTable.identityColumn)
+            .innerJoin(TransferTable.name, TransferTable.categoryColumn, CategoryTable.name, CategoryTable.identityColumn)
+            .where(TransactionTable.accountColumn.eq(accountId).or(CategoryTable.accountColumn.eq(accountId)))
+            .build()
+
+    val result: Money
+        get() = Money.valueOf(accumulator)
+
+    private var accumulator: Long = initialBalance ?: 0
+
+    override fun accept(rs: ResultSet) {
+        while (rs.next()) {
+
+            val amount = rs.getLong(TransferTable.amountColumn)
+            val categoryAccount = rs.getLong(CategoryTable.accountColumn)
+
+            accumulator += when (accountId) {
+                categoryAccount -> -amount
+                else -> amount
+            }
         }
     }
 }

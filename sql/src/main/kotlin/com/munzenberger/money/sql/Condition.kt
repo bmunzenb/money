@@ -45,7 +45,7 @@ data class Condition(val clause: String, val parameters: List<Any?> = emptyList(
             Condition("($clause) AND (${condition.clause})", parameters.plus(condition.parameters))
 }
 
-fun String.eq(value: Any) = Condition.eq(this, value)
+fun String.eq(value: Any?) = Condition.eq(this, value)
 
 fun String.greaterThan(value: Any) = Condition.greaterThan(this, value)
 
