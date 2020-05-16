@@ -35,7 +35,7 @@ class AccountListViewModel : AutoCloseable {
                 else -> Single.zip(observableBalances) { it.fold(Money.zero()) { acc, b -> acc.add(b as Money) } }
             }
 
-            totalBalance.value = AsyncObject.Executing()
+            value = AsyncObject.Executing()
 
             observableTotal.subscribeOn(SchedulerProvider.database)
                     .observeOn(SchedulerProvider.main)

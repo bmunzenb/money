@@ -25,7 +25,7 @@ class FXAccount(account: Account, database: MoneyDatabase) {
     val balanceProperty: ReadOnlyAsyncObjectProperty<Money> = balance
 
     val observableBalance: Single<Money> by lazy {
-        Single.fromCallable { account.balance(database) }
+        Single.fromCallable { account.getBalance(database) }
                 .doOnSubscribe { balance.value = AsyncObject.Executing() }
                 .doOnError { balance.value = AsyncObject.Error(it) }
                 .doOnSuccess { balance.value = AsyncObject.Complete(it) }

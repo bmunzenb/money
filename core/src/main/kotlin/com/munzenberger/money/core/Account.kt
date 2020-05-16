@@ -35,7 +35,7 @@ class Account internal constructor(model: AccountModel) : Persistable<AccountMod
         get() = model.initialBalance?.let { Money.valueOf(it) }
         set(value) { model.initialBalance = value?.value }
 
-    fun balance(executor: QueryExecutor): Money {
+    fun getBalance(executor: QueryExecutor): Money {
         val collector = AccountBalanceCollector(identity, model.initialBalance)
         executor.executeQuery(collector.query, collector)
         return collector.result
@@ -79,6 +79,8 @@ class AccountResultSetMapper : ResultSetMapper<Account> {
 
 private class AccountBalanceCollector(private val accountId: Long?, initialBalance: Long?) : ResultSetHandler {
 
+    // query for all transfers where the specified account is either the parent of the transaction,
+    // or the category for a child transfer
     val query: Query = Query.selectFrom(TransferTable.name)
             .cols(TransferTable.amountColumn, CategoryTable.accountColumn)
             .innerJoin(TransferTable.name, TransferTable.transactionColumn, TransactionTable.name, TransactionTable.identityColumn)
@@ -98,7 +100,13 @@ private class AccountBalanceCollector(private val accountId: Long?, initialBalan
             val categoryAccount = rs.getLong(CategoryTable.accountColumn)
 
             accumulator += when (accountId) {
+
+                // if the specified account is the category for the transfer, then the amount
+                // is debited (subtracted) from the accumulator
                 categoryAccount -> -amount
+
+                // if the specified account is the parent for the transaction, then the transfer amount
+                // is credited (added) to the accumulator
                 else -> amount
             }
         }

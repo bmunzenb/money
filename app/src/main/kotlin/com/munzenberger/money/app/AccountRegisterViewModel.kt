@@ -2,7 +2,6 @@ package com.munzenberger.money.app
 
 import com.munzenberger.money.app.model.FXAccountTransaction
 import com.munzenberger.money.app.model.FXAccountTransactionFilter
-import com.munzenberger.money.app.model.getAccountTransactions
 import com.munzenberger.money.app.model.inCurrentMonth
 import com.munzenberger.money.app.model.inCurrentYear
 import com.munzenberger.money.app.model.inLastMonths
@@ -15,6 +14,7 @@ import com.munzenberger.money.core.AccountType
 import com.munzenberger.money.core.Money
 import com.munzenberger.money.core.PersistableNotFoundException
 import com.munzenberger.money.app.database.ObservableMoneyDatabase
+import com.munzenberger.money.core.getAccountTransactions
 import io.reactivex.disposables.CompositeDisposable
 import javafx.beans.property.ReadOnlyListProperty
 import javafx.beans.property.ReadOnlyObjectProperty
@@ -93,7 +93,7 @@ class AccountRegisterViewModel : AutoCloseable {
                     ?: throw PersistableNotFoundException(Account::class, accountIdentity)
 
             var transactions = account.getAccountTransactions(database)
-            var endingBalance = account.balance(database)
+            var endingBalance = account.getBalance(database)
 
             if (account.accountType!!.category == AccountType.Category.LIABILITIES) {
                 transactions = transactions.map { it.copy(balance = it.balance.negate()) }

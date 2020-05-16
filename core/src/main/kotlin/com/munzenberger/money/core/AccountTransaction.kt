@@ -1,9 +1,5 @@
-package com.munzenberger.money.app.model
+package com.munzenberger.money.core
 
-import com.munzenberger.money.core.Account
-import com.munzenberger.money.core.AccountType
-import com.munzenberger.money.core.Money
-import com.munzenberger.money.core.MoneyDatabase
 import com.munzenberger.money.sql.Query
 import com.munzenberger.money.sql.ResultSetHandler
 import com.munzenberger.money.sql.getLocalDate
@@ -15,12 +11,18 @@ data class AccountTransaction(
         val transactionId: Long,
         val date: LocalDate,
         val payee: String?,
-        val categories: List<String>,
+        val categories: List<Category>,
         val amount: Money,
         val balance: Money,
         val number: String?,
         val memo: String?
-)
+) {
+    data class Category(
+            val accountTypeCategory: AccountType.Category?,
+            val accountName: String?,
+            val categoryName: String?
+    )
+}
 
 private class AccountTransactionCollector(
         private val accountId: Long,
@@ -32,7 +34,7 @@ private class AccountTransactionCollector(
             val date: LocalDate,
             val payee: String?,
             var amount: Long = 0,
-            var categories: List<String> = emptyList(),
+            var categories: List<AccountTransaction.Category> = emptyList(),
             var number: String? = null,
             var memo: String? = null
     )
@@ -67,11 +69,12 @@ private class AccountTransactionCollector(
         if (accountId == transactionAccountId) {
             entry.amount += transferAmount
 
-            val category = categoryName(
-                        accountTypeCategory = categoryAccountTypeCategory?.let { AccountType.Category.valueOf(it) },
-                        accountName = categoryAccountName,
-                        categoryName = categoryName
-                )
+            // this is a parent transaction, so use the category of the child transfer
+            val category = AccountTransaction.Category(
+                    accountTypeCategory = categoryAccountTypeCategory?.let { AccountType.Category.valueOf(it) },
+                    accountName = categoryAccountName,
+                    categoryName = categoryName
+            )
 
             entry.categories += category
             entry.number = transactionNumber
@@ -81,10 +84,12 @@ private class AccountTransactionCollector(
         if (accountId == categoryAccountId) {
             entry.amount -= transferAmount
 
-            val category = categoryName(
-                        accountTypeCategory = AccountType.Category.valueOf(transactionAccountTypeCategory),
-                        accountName = transactionAccountName
-                )
+            // this is a child transfer, so use the parent transaction account as the category
+            val category = AccountTransaction.Category(
+                    accountTypeCategory = AccountType.Category.valueOf(transactionAccountTypeCategory),
+                    accountName = transactionAccountName,
+                    categoryName = null
+            )
 
             entry.categories += category
             entry.number = transferNumber

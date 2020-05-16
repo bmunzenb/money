@@ -6,7 +6,7 @@ const val CATEGORY_NAME_DELIMITER = ":"
 
 const val SPLIT_CATEGORY_NAME = "Split/Multiple Categories"
 
-fun categoryName(accountTypeCategory: AccountType.Category? = null, accountName: String?, categoryName: String? = null): String {
+fun buildCategoryName(accountTypeCategory: AccountType.Category? = null, accountName: String?, categoryName: String? = null): String {
     return when {
         accountName == null -> "<error: no account name in category>"
         categoryName == null -> when (accountTypeCategory) {

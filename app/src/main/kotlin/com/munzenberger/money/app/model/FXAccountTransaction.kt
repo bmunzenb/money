@@ -1,6 +1,7 @@
 package com.munzenberger.money.app.model
 
 import com.munzenberger.money.app.SchedulerProvider
+import com.munzenberger.money.core.AccountTransaction
 import com.munzenberger.money.core.Money
 import com.munzenberger.money.core.MoneyDatabase
 import com.munzenberger.money.core.PersistableNotFoundException
@@ -36,7 +37,7 @@ class FXAccountTransaction(accountTransaction: AccountTransaction) {
 
         val category = when (accountTransaction.categories.size) {
             0 -> null
-            1 -> accountTransaction.categories[0]
+            1 -> accountTransaction.categories[0].getCategoryName()
             else -> SPLIT_CATEGORY_NAME
         }
 
@@ -65,6 +66,12 @@ class FXAccountTransaction(accountTransaction: AccountTransaction) {
     }
 }
 
+private fun AccountTransaction.Category.getCategoryName() = buildCategoryName(
+        accountTypeCategory = accountTypeCategory,
+        accountName = accountName,
+        categoryName = categoryName
+)
+
 fun List<FXAccountTransaction>.delete(database: MoneyDatabase, block: (Throwable?) -> Unit) {
 
     val ids = map { it.transactionId }
@@ -89,19 +96,3 @@ fun List<FXAccountTransaction>.delete(database: MoneyDatabase, block: (Throwable
             .observeOn(SchedulerProvider.main)
             .subscribe { _, error -> block.invoke(error) }
 }
-
-class FXAccountTransactionFilter(
-        val name: String,
-        predicate: Predicate<FXAccountTransaction>
-) : Predicate<FXAccountTransaction> by predicate {
-    override fun toString() = name
-}
-
-fun LocalDate.inCurrentMonth(): Boolean =
-        LocalDate.now().let { month == it.month && year == it.year }
-
-fun LocalDate.inCurrentYear(): Boolean =
-        LocalDate.now().year == year
-
-fun LocalDate.inLastMonths(months: Long): Boolean =
-        isAfter(LocalDate.now().minusMonths(months))

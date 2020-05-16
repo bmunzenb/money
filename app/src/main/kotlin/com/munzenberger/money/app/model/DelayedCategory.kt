@@ -52,7 +52,7 @@ private class RealCategory(private val category: Category) : DelayedCategory {
         val accountName = category.account?.name
         val categoryName = category.name
 
-        name = categoryName(accountTypeCategory, accountName, categoryName)
+        name = buildCategoryName(accountTypeCategory, accountName, categoryName)
         isTransfer = listOf(AccountType.Category.ASSETS, AccountType.Category.LIABILITIES).contains(accountTypeCategory)
     }
 
@@ -74,7 +74,7 @@ private class PendingCategory(string: String) : DelayedCategory {
         accountName = values[0].trim()
         categoryName = if (values.size > 1) values[1].trim() else null
 
-        name = categoryName(accountName = accountName, categoryName = categoryName)
+        name = buildCategoryName(accountName = accountName, categoryName = categoryName)
     }
 
     override fun getCategory(executor: QueryExecutor, transactionType: TransactionType): Category {

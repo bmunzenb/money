@@ -3,7 +3,6 @@ package com.munzenberger.money.core
 import org.junit.Assert.*
 import org.junit.Test
 import java.time.LocalDate
-import java.util.*
 
 class AccountTest : PersistableTest<Account>() {
 
@@ -89,10 +88,10 @@ class AccountTest : PersistableTest<Account>() {
             save(database)
         }
 
-        val balance1 = account1.balance(database)
+        val balance1 = account1.getBalance(database)
         assertEquals("Account1 should have credit of 42 and debit of 88", Money.valueOf(10 + 42 - 88), balance1)
 
-        val balance2 = account2.balance(database)
+        val balance2 = account2.getBalance(database)
         assertEquals("Account2 should have credit of 88", Money.valueOf(-10 + 88), balance2)
     }
 }
