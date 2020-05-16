@@ -19,6 +19,7 @@ import com.munzenberger.money.core.MoneyDatabase
 import com.munzenberger.money.core.Transaction
 import com.munzenberger.money.core.isNegative
 import com.munzenberger.money.app.database.ObservableMoneyDatabase
+import com.munzenberger.money.app.property.NumberStringComparator
 import javafx.fxml.FXML
 import javafx.scene.control.Alert
 import javafx.scene.control.Button
@@ -122,6 +123,7 @@ class AccountRegisterController : AutoCloseable {
 
         numberColumn.apply {
             cellValueFactory = Callback { it.value.numberProperty }
+            comparator = NumberStringComparator
         }
 
         dateColumn.apply {

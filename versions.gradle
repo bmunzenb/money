@@ -8,5 +8,6 @@ versions.h2 = '1.4.200'
 versions.sqlite = '3.31.1'
 versions.javafx = '11.0.2'
 versions.rxjavafx = '2.11.0-RC34'
+versions.mockk = '1.10.0'
 
 ext.versions = versions
