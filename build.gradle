@@ -22,6 +22,9 @@ allprojects {
 subprojects {
     apply plugin: 'kotlin'
 
+    version = 'SNAPSHOT'
+    archivesBaseName = "${rootProject.name}-${project.name}"
+
     dependencies {
         implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
 
