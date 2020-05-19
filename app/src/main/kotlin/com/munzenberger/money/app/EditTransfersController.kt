@@ -11,6 +11,7 @@ import javafx.collections.ObservableList
 import javafx.fxml.FXML
 import javafx.scene.control.Button
 import javafx.scene.control.ComboBox
+import javafx.scene.control.Label
 import javafx.scene.control.SelectionMode
 import javafx.scene.control.TableColumn
 import javafx.scene.control.TableView
@@ -40,6 +41,7 @@ class EditTransfersController {
     @FXML private lateinit var memoTextField: TextField
     @FXML private lateinit var amountTextField: TextField
     @FXML private lateinit var addButton: Button
+    @FXML private lateinit var totalLabel: Label
     @FXML private lateinit var doneButton: Button
 
     private lateinit var stage: Stage
@@ -61,7 +63,7 @@ class EditTransfersController {
                 }
             }
 
-            placeholder = Text("Use the form below to add transaction details.")
+            placeholder = Text("Use the form above to add transaction details.")
         }
 
         numberColumn.apply {
@@ -134,6 +136,13 @@ class EditTransfersController {
         }
 
         doneButton.disableProperty().bind(viewModel.doneDisabledProperty)
+
+        viewModel.totalProperty.addListener { _, _, newValue ->
+            totalLabel.text = when (newValue) {
+                null -> null
+                else -> "Total: ${newValue.toStringWithoutCurrency()}"
+            }
+        }
     }
 
     fun start(stage: Stage, transfers: ObservableList<EditTransfer>, categories: List<DelayedCategory>) {

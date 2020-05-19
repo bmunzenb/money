@@ -1,10 +1,13 @@
 package com.munzenberger.money.app
 
 import com.munzenberger.money.app.model.DelayedCategory
+import com.munzenberger.money.core.Money
 import javafx.beans.property.ReadOnlyBooleanProperty
 import javafx.beans.property.ReadOnlyListProperty
+import javafx.beans.property.ReadOnlyObjectProperty
 import javafx.beans.property.SimpleBooleanProperty
 import javafx.beans.property.SimpleListProperty
+import javafx.beans.property.SimpleObjectProperty
 import javafx.collections.FXCollections
 import javafx.collections.ListChangeListener
 import javafx.collections.ObservableList
@@ -19,21 +22,26 @@ class EditTransfersViewModel : EditTransferBase() {
     }
 
     private val doneDisabled = SimpleBooleanProperty(true)
+    private val total = SimpleObjectProperty<Money>()
 
     val transfersProperty: ReadOnlyListProperty<EditTransfer> = SimpleListProperty(transfers)
     val categoriesProperty: ReadOnlyListProperty<DelayedCategory> = SimpleListProperty(categories)
     val addDisabledProperty: ReadOnlyBooleanProperty = addDisabled
     val doneDisabledProperty: ReadOnlyBooleanProperty = doneDisabled
+    val totalProperty: ReadOnlyObjectProperty<Money> = total
 
     private lateinit var originalTransfers: ObservableList<EditTransfer>
 
     init {
         transfers.addListener(ListChangeListener {
             doneDisabled.value = it.list.isEmpty() || it.list.any { e -> !e.isValid }
+            total.value = it.list.fold(Money.zero()) { acc, m -> acc.add(m.amount ?: Money.zero()) }
         })
     }
 
     fun start(transfers: ObservableList<EditTransfer>, categories: List<DelayedCategory>) {
+
+        this.total.value = Money.zero()
 
         this.originalTransfers = transfers
 

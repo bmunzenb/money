@@ -43,7 +43,7 @@
       <HBox spacing="6.0" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS" GridPane.rowIndex="5">
          <children>
             <ComboBox fx:id="categoryComboBox" editable="true" maxWidth="1.7976931348623157E308" HBox.hgrow="ALWAYS" />
-            <Button fx:id="categorySplitButton" mnemonicParsing="false" onAction="#onCategorySplitButton" text="Split" />
+            <Button fx:id="categorySplitButton" minWidth="-Infinity" mnemonicParsing="false" onAction="#onCategorySplitButton" text="Split" />
          </children>
       </HBox>
       <Label text="Amount:" GridPane.rowIndex="6" />
