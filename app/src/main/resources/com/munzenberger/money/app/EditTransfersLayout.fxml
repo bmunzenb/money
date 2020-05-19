@@ -28,7 +28,7 @@
             <TableColumn fx:id="numberColumn" maxWidth="2500.0" minWidth="-1.0" prefWidth="50.0" sortable="false" text="Num" />
           <TableColumn fx:id="categoryColumn" minWidth="-1.0" prefWidth="100.0" sortable="false" text="Category" />
           <TableColumn fx:id="memoColumn" minWidth="-1.0" prefWidth="100.0" sortable="false" text="Memo" />
-            <TableColumn fx:id="amountColumn" minWidth="-1.0" prefWidth="100.0" sortable="false" style="-fx-alignment: CENTER-RIGHT;" text="Amount" />
+            <TableColumn fx:id="amountColumn" maxWidth="3500.0" minWidth="-1.0" prefWidth="100.0" sortable="false" style="-fx-alignment: CENTER-RIGHT;" text="Amount" />
         </columns>
          <columnResizePolicy>
             <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
@@ -39,7 +39,7 @@
       </TableView>
       <Label fx:id="totalLabel" alignment="CENTER_RIGHT" maxWidth="1.7976931348623157E308" minWidth="-Infinity" text="Total:">
          <font>
-            <Font name="System Bold" size="13.0" />
+            <Font name="System Bold" size="12.0" />
          </font>
       </Label>
       <ButtonBar prefHeight="40.0" prefWidth="200.0" VBox.vgrow="NEVER">

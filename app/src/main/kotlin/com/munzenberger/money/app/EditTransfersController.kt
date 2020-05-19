@@ -140,7 +140,7 @@ class EditTransfersController {
         viewModel.totalProperty.addListener { _, _, newValue ->
             totalLabel.text = when (newValue) {
                 null -> null
-                else -> "Total: ${newValue.toStringWithoutCurrency()}"
+                else -> "Total: $newValue"
             }
         }
     }
