@@ -5,7 +5,6 @@ import com.munzenberger.money.core.model.AccountTable
 import com.munzenberger.money.core.model.CategoryTable
 import com.munzenberger.money.core.model.TransactionTable
 import com.munzenberger.money.core.model.TransferTable
-import com.munzenberger.money.sql.Condition
 import com.munzenberger.money.sql.Query
 import com.munzenberger.money.sql.QueryExecutor
 import com.munzenberger.money.sql.ResultSetHandler
@@ -82,7 +81,7 @@ private class AccountBalanceCollector(private val accountId: Long?, initialBalan
     // query for all transfers where the specified account is either the parent of the transaction,
     // or the category for a child transfer
     val query: Query = Query.selectFrom(TransferTable.name)
-            .cols(TransferTable.amountColumn, CategoryTable.accountColumn)
+            .cols(TransferTable.amountColumn, TransactionTable.accountColumn, CategoryTable.accountColumn)
             .innerJoin(TransferTable.name, TransferTable.transactionColumn, TransactionTable.name, TransactionTable.identityColumn)
             .innerJoin(TransferTable.name, TransferTable.categoryColumn, CategoryTable.name, CategoryTable.identityColumn)
             .where(TransactionTable.accountColumn.eq(accountId).or(CategoryTable.accountColumn.eq(accountId)))
@@ -97,17 +96,19 @@ private class AccountBalanceCollector(private val accountId: Long?, initialBalan
         while (rs.next()) {
 
             val amount = rs.getLong(TransferTable.amountColumn)
+            val transactionAccount = rs.getLong(TransactionTable.accountColumn)
             val categoryAccount = rs.getLong(CategoryTable.accountColumn)
 
-            accumulator += when (accountId) {
-
-                // if the specified account is the category for the transfer, then the amount
-                // is debited (subtracted) from the accumulator
-                categoryAccount -> -amount
-
+            if (accountId == transactionAccount) {
                 // if the specified account is the parent for the transaction, then the transfer amount
                 // is credited (added) to the accumulator
-                else -> amount
+                accumulator += amount
+            }
+
+            if (accountId == categoryAccount) {
+                // if the specified account is the category for the transfer, then the amount
+                // is debited (subtracted) from the accumulator
+                accumulator -= amount
             }
         }
     }
