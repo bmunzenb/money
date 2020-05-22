@@ -3,7 +3,6 @@ package com.munzenberger.money.app
 import com.munzenberger.money.app.model.DelayedCategory
 import com.munzenberger.money.app.model.DelayedCategoryComparator
 import com.munzenberger.money.app.model.getAssetsAndLiabilities
-import com.munzenberger.money.app.model.getTransfers
 import com.munzenberger.money.app.property.AsyncObject
 import com.munzenberger.money.app.property.ReadOnlyAsyncObjectProperty
 import com.munzenberger.money.app.property.ReadOnlyAsyncStatusProperty
@@ -21,6 +20,7 @@ import com.munzenberger.money.core.isNegative
 import com.munzenberger.money.core.isPositive
 import com.munzenberger.money.app.database.observableTransaction
 import com.munzenberger.money.app.model.displayName
+import com.munzenberger.money.core.getTransfers
 import io.reactivex.Single
 import javafx.beans.property.ReadOnlyBooleanProperty
 import javafx.beans.property.ReadOnlyListProperty

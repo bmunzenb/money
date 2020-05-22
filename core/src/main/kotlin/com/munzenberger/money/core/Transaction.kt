@@ -2,8 +2,10 @@ package com.munzenberger.money.core
 
 import com.munzenberger.money.core.model.TransactionModel
 import com.munzenberger.money.core.model.TransactionTable
+import com.munzenberger.money.core.model.TransferTable
 import com.munzenberger.money.sql.QueryExecutor
 import com.munzenberger.money.sql.ResultSetMapper
+import com.munzenberger.money.sql.eq
 import com.munzenberger.money.sql.getLongOrNull
 import com.munzenberger.money.sql.transaction
 import java.sql.ResultSet
@@ -69,3 +71,18 @@ class TransactionResultSetMapper : ResultSetMapper<Transaction> {
         }
     }
 }
+
+fun Transaction.getTransfers(database: MoneyDatabase): List<Transfer> =
+        when (val id = identity) {
+            null ->
+                emptyList()
+
+            else -> {
+                val query = TransferTable.select()
+                        .where(TransferTable.transactionColumn.eq(id))
+                        .orderBy(TransferTable.identityColumn)
+                        .build()
+
+                database.getList(query, TransferResultSetMapper())
+            }
+        }
