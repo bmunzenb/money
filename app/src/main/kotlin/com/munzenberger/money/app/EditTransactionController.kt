@@ -18,6 +18,7 @@ import javafx.scene.Node
 import javafx.scene.control.Button
 import javafx.scene.control.ComboBox
 import javafx.scene.control.DatePicker
+import javafx.scene.control.Label
 import javafx.scene.control.TextField
 import javafx.scene.control.TextFormatter
 import javafx.stage.Stage
@@ -39,6 +40,7 @@ class EditTransactionController {
     @FXML lateinit var categorySplitButton: Button
     @FXML lateinit var amountTextField: TextField
     @FXML lateinit var memoTextField: TextField
+    @FXML lateinit var statusLabel: Label
     @FXML lateinit var saveButton: Button
     @FXML lateinit var cancelButton: Button
 
@@ -132,6 +134,8 @@ class EditTransactionController {
         }
 
         memoTextField.textProperty().bindBidirectional(viewModel.memoProperty)
+
+        statusLabel.textProperty().bind(viewModel.transactionStatusProperty)
 
         saveButton.disableProperty().bind(viewModel.notValidProperty)
 

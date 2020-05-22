@@ -18,7 +18,6 @@ import javafx.beans.property.ReadOnlyStringProperty
 import javafx.beans.property.SimpleObjectProperty
 import javafx.beans.property.SimpleStringProperty
 import java.time.LocalDate
-import java.util.function.Predicate
 
 class FXAccountTransaction(accountTransaction: AccountTransaction) {
 
@@ -30,6 +29,7 @@ class FXAccountTransaction(accountTransaction: AccountTransaction) {
     val payeeProperty: ReadOnlyStringProperty = SimpleStringProperty(accountTransaction.payee)
 
     val categoryProperty: ReadOnlyStringProperty
+    val statusProperty: ReadOnlyStringProperty
     val debitProperty: ReadOnlyObjectProperty<Money>
     val creditProperty: ReadOnlyObjectProperty<Money>
 
@@ -42,6 +42,8 @@ class FXAccountTransaction(accountTransaction: AccountTransaction) {
         }
 
         categoryProperty = SimpleStringProperty(category)
+
+        statusProperty = SimpleStringProperty(accountTransaction.status.code)
 
         when {
             accountTransaction.amount.isNegative -> {

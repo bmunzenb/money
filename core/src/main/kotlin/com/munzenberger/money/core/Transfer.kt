@@ -26,6 +26,10 @@ class Transfer internal constructor(model: TransferModel) : Persistable<Transfer
 
     var category: Category? = null
 
+    var status: TransactionStatus
+        get() = TransactionStatus.fromCode(model.status)
+        set(value) { model.status = value.code }
+
     private val transactionRef = PersistableIdentityReference()
 
     fun setTransaction(transaction: Transaction) {
@@ -59,6 +63,7 @@ class TransferResultSetMapper : ResultSetMapper<Transfer> {
             amount = resultSet.getLong(TransferTable.amountColumn)
             number = resultSet.getString(TransferTable.numberColumn)
             memo = resultSet.getString(TransferTable.memoColumn)
+            status = resultSet.getString(TransferTable.statusColumn)
         }
 
         return Transfer(model).apply {

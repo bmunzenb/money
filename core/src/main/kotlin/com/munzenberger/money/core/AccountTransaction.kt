@@ -15,7 +15,8 @@ data class AccountTransaction(
         val amount: Money,
         val balance: Money,
         val number: String?,
-        val memo: String?
+        val memo: String?,
+        val status: TransactionStatus
 ) {
     data class Category(
             val accountTypeCategory: AccountType.Category?,
@@ -36,7 +37,8 @@ private class AccountTransactionCollector(
             var amount: Long = 0,
             var categories: List<AccountTransaction.Category> = emptyList(),
             var number: String? = null,
-            var memo: String? = null
+            var memo: String? = null,
+            var status: String? = null
     )
 
     private val entries = mutableMapOf<Long, Entry>()
@@ -50,13 +52,15 @@ private class AccountTransactionCollector(
             transactionAccountTypeCategory: String,
             transactionAccountName: String,
             transactionNumber: String?,
+            transactionStatus: String?,
             categoryAccountId: Long?,
             categoryAccountTypeCategory: String?,
             categoryAccountName: String?,
             categoryName: String?,
             transactionMemo: String?,
             transferNumber: String?,
-            transferMemo: String?
+            transferMemo: String?,
+            transferStatus: String?
     ) {
 
         var entry = entries[transactionId]
@@ -79,6 +83,7 @@ private class AccountTransactionCollector(
             entry.categories += category
             entry.number = transactionNumber
             entry.memo = transactionMemo
+            entry.status = transactionStatus
         }
 
         if (accountId == categoryAccountId) {
@@ -94,6 +99,7 @@ private class AccountTransactionCollector(
             entry.categories += category
             entry.number = transferNumber
             entry.memo = transferMemo
+            entry.status = transferStatus
         }
     }
 
@@ -106,14 +112,15 @@ private class AccountTransactionCollector(
                 .map {
                     balance += it.amount
                     AccountTransaction(
-                            it.transactionId,
-                            it.date,
-                            it.payee,
-                            it.categories,
-                            Money.valueOf(it.amount),
-                            Money.valueOf(balance),
-                            it.number,
-                            it.memo)
+                            transactionId = it.transactionId,
+                            date = it.date,
+                            payee = it.payee,
+                            categories = it.categories,
+                            amount = Money.valueOf(it.amount),
+                            balance = Money.valueOf(balance),
+                            number = it.number,
+                            memo = it.memo,
+                            status = TransactionStatus.fromCode(it.status))
                 }
     }
 }
@@ -123,7 +130,7 @@ private class AccountTransactionResultSetHandler(accountId: Long, initialBalance
     companion object {
         private val sql =
                 """
-                SELECT TRANSACTION_ID, TRANSACTION_DATE, TRANSACTION_NUMBER, TRANSACTION_MEMO, TRANSFER_AMOUNT, TRANSFER_NUMBER, TRANSFER_MEMO, PAYEE_NAME, TRANSACTION_ACCOUNT_ID, CATEGORY_ACCOUNT_ID,
+                SELECT TRANSACTION_ID, TRANSACTION_DATE, TRANSACTION_NUMBER, TRANSACTION_MEMO, TRANSACTION_STATUS, TRANSFER_AMOUNT, TRANSFER_NUMBER, TRANSFER_MEMO, TRANSFER_STATUS, PAYEE_NAME, TRANSACTION_ACCOUNT_ID, CATEGORY_ACCOUNT_ID,
                     TRANSACTION_ACCOUNT_TYPE.ACCOUNT_TYPE_CATEGORY AS TRANSACTION_ACCOUNT_TYPE_CATEGORY, TRANSACTION_ACCOUNT.ACCOUNT_NAME AS TRANSACTION_ACCOUNT_NAME,
                     CATEGORY_ACCOUNT_TYPE.ACCOUNT_TYPE_CATEGORY AS CATEGORY_ACCOUNT_TYPE_CATEGORY, CATEGORY_ACCOUNT.ACCOUNT_NAME AS CATEGORY_ACCOUNT_NAME, CATEGORY_NAME
                 FROM TRANSACTIONS
@@ -155,6 +162,7 @@ private class AccountTransactionResultSetHandler(accountId: Long, initialBalance
             val transactionAccountTypeCategory = rs.getString("TRANSACTION_ACCOUNT_TYPE_CATEGORY")
             val transactionAccountName = rs.getString("TRANSACTION_ACCOUNT_NAME")
             val transactionNumber = rs.getString("TRANSACTION_NUMBER")
+            val transactionStatus = rs.getString("TRANSACTION_STATUS")
             val categoryAccountId = rs.getLongOrNull("CATEGORY_ACCOUNT_ID")
             val categoryAccountTypeCategory = rs.getString("CATEGORY_ACCOUNT_TYPE_CATEGORY")
             val categoryAccountName = rs.getString("CATEGORY_ACCOUNT_NAME")
@@ -164,6 +172,7 @@ private class AccountTransactionResultSetHandler(accountId: Long, initialBalance
             val transactionMemo = rs.getString("TRANSACTION_MEMO")
             val transferNumber = rs.getString("TRANSFER_NUMBER")
             val transferMemo = rs.getString("TRANSFER_MEMO")
+            val transferStatus = rs.getString("TRANSFER_STATUS")
 
             collector.collect(
                     transactionId = transactionId,
@@ -174,13 +183,15 @@ private class AccountTransactionResultSetHandler(accountId: Long, initialBalance
                     transactionAccountTypeCategory = transactionAccountTypeCategory,
                     transactionAccountName = transactionAccountName,
                     transactionNumber = transactionNumber,
+                    transactionStatus = transactionStatus,
                     categoryAccountId = categoryAccountId,
                     categoryAccountTypeCategory = categoryAccountTypeCategory,
                     categoryAccountName = categoryAccountName,
                     categoryName = categoryName,
                     transactionMemo = transactionMemo,
                     transferNumber = transferNumber,
-                    transferMemo = transferMemo
+                    transferMemo = transferMemo,
+                    transferStatus = transferStatus
             )
         }
     }

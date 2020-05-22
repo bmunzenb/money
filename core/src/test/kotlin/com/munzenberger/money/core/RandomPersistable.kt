@@ -40,12 +40,16 @@ fun Category.randomize() = this.apply {
     name = randomString()
 }
 
+fun TransactionStatus.Companion.random() =
+        TransactionStatus.values().random()
+
 fun Transaction.randomize() = this.apply {
     account = Account().randomize()
     payee = Payee().randomize()
     date = LocalDate.now()
     number = randomString()
     memo = randomString()
+    status = TransactionStatus.random()
 }
 
 fun Transfer.randomize() = this.apply {
@@ -54,6 +58,7 @@ fun Transfer.randomize() = this.apply {
     amount = Money.random()
     number = randomString()
     memo = randomString()
+    status = TransactionStatus.random()
 }
 
 private fun Money.Companion.random() = valueOf(random.nextLong())

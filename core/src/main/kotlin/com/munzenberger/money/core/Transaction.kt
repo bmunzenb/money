@@ -29,6 +29,10 @@ class Transaction internal constructor(model: TransactionModel) : Persistable<Tr
 
     var payee: Payee? = null
 
+    var status: TransactionStatus
+        get() = TransactionStatus.fromCode(model.status)
+        set(value) { model.status = value.code }
+
     override fun save(executor: QueryExecutor) = executor.transaction { tx ->
         model.account = account.getIdentity(tx)
         model.payee = payee.getIdentity(tx)
@@ -56,6 +60,7 @@ class TransactionResultSetMapper : ResultSetMapper<Transaction> {
             date = resultSet.getLongOrNull(TransactionTable.dateColumn)
             number = resultSet.getString(TransactionTable.numberColumn)
             memo = resultSet.getString(TransactionTable.memoColumn)
+            status = resultSet.getString(TransactionTable.statusColumn)
         }
 
         return Transaction(model).apply {

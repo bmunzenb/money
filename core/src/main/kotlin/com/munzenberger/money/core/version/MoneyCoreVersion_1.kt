@@ -2,6 +2,7 @@ package com.munzenberger.money.core.version
 
 import com.munzenberger.money.core.AccountType
 import com.munzenberger.money.core.MoneyDatabase
+import com.munzenberger.money.core.TransactionStatus
 import com.munzenberger.money.core.model.*
 import com.munzenberger.money.sql.Query
 import com.munzenberger.money.version.ApplicableVersion
@@ -52,6 +53,8 @@ class MoneyCoreVersion_1 : ApplicableVersion<MoneyDatabase> {
                 .column(TransactionTable.dateColumn, "BIGINT NOT NULL")
                 .column(TransactionTable.numberColumn, "TEXT")
                 .column(TransactionTable.memoColumn, "TEXT")
+                .column(TransactionTable.statusColumn, "TEXT")
+                .constraint("TRANSACTION_STATUS_CONSTRAINT", "CHECK (${TransactionTable.statusColumn} IN ('${TransactionStatus.UNRECONCILED.code}', '${TransactionStatus.CLEARED.code}', '${TransactionStatus.RECONCILED.code}'))")
                 .build())
 
         obj.execute(Query.createTable(TransferTable.name)
@@ -61,6 +64,8 @@ class MoneyCoreVersion_1 : ApplicableVersion<MoneyDatabase> {
                 .column(TransferTable.amountColumn, "BIGINT NOT NULL")
                 .column(TransferTable.numberColumn, "TEXT")
                 .column(TransferTable.memoColumn, "TEXT")
+                .column(TransferTable.statusColumn, "TEXT")
+                .constraint("TRANSFER_STATUS_CONSTRAINT", "CHECK (${TransferTable.statusColumn} IN ('${TransactionStatus.UNRECONCILED.code}', '${TransactionStatus.CLEARED.code}', '${TransactionStatus.RECONCILED.code}'))")
                 .build())
 
         obj.executeUpdate(Query.insertInto(AccountTypeTable.name)

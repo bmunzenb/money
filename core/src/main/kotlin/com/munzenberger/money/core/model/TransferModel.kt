@@ -8,7 +8,8 @@ data class TransferModel(
         var category: Long? = null,
         var amount: Long? = null,
         var number: String? = null,
-        var memo: String? = null
+        var memo: String? = null,
+        var status: String? = null
 ) : Model()
 
 object TransferTable : Table<TransferModel>() {
@@ -21,6 +22,7 @@ object TransferTable : Table<TransferModel>() {
     const val amountColumn = "TRANSFER_AMOUNT"
     const val numberColumn = "TRANSFER_NUMBER"
     const val memoColumn = "TRANSFER_MEMO"
+    const val statusColumn = "TRANSFER_STATUS"
 
     override fun setValues(settable: SettableQueryBuilder<*>, model: TransferModel) {
         settable.set(transactionColumn, model.transaction)
@@ -28,6 +30,7 @@ object TransferTable : Table<TransferModel>() {
         settable.set(amountColumn, model.amount)
         settable.set(numberColumn, model.number)
         settable.set(memoColumn, model.memo)
+        settable.set(statusColumn, model.status)
     }
 
     override fun applyJoins(select: SelectQueryBuilder) {

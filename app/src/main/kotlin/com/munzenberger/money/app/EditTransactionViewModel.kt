@@ -20,12 +20,15 @@ import com.munzenberger.money.core.Transfer
 import com.munzenberger.money.core.isNegative
 import com.munzenberger.money.core.isPositive
 import com.munzenberger.money.app.database.observableTransaction
+import com.munzenberger.money.app.model.displayName
 import io.reactivex.Single
 import javafx.beans.property.ReadOnlyBooleanProperty
 import javafx.beans.property.ReadOnlyListProperty
+import javafx.beans.property.ReadOnlyStringProperty
 import javafx.beans.property.SimpleBooleanProperty
 import javafx.beans.property.SimpleListProperty
 import javafx.beans.property.SimpleObjectProperty
+import javafx.beans.property.SimpleStringProperty
 import javafx.collections.FXCollections
 import javafx.collections.ListChangeListener
 import javafx.collections.ObservableList
@@ -43,6 +46,7 @@ class EditTransactionViewModel : EditTransferBase(), AutoCloseable {
     private val amountDisabled = SimpleBooleanProperty(true)
     private val saveStatus = SimpleAsyncStatusProperty()
     private val notValid = SimpleBooleanProperty()
+    private val transactionStatus = SimpleStringProperty()
 
     val accountsProperty: ReadOnlyAsyncObjectProperty<List<Account>> = accounts
     val selectedAccountProperty = SimpleObjectProperty<Account?>()
@@ -58,6 +62,7 @@ class EditTransactionViewModel : EditTransferBase(), AutoCloseable {
     val amountDisabledProperty: ReadOnlyBooleanProperty = amountDisabled
     val saveStatusProperty: ReadOnlyAsyncStatusProperty = saveStatus
     val notValidProperty: ReadOnlyBooleanProperty = notValid
+    val transactionStatusProperty: ReadOnlyStringProperty = transactionStatus
 
     private lateinit var database: MoneyDatabase
     private lateinit var transaction: Transaction
@@ -149,6 +154,8 @@ class EditTransactionViewModel : EditTransferBase(), AutoCloseable {
         numberProperty.value = transaction.number
 
         memoProperty.value = transaction.memo
+
+        transactionStatus.value = transaction.status.displayName
     }
 
     private fun onTransfers(transfers: List<Transfer>) {

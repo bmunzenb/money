@@ -8,7 +8,8 @@ data class TransactionModel(
         var payee: Long? = null,
         var date: Long? = null,
         var number: String? = null,
-        var memo: String? = null
+        var memo: String? = null,
+        var status: String? = null
 ) : Model()
 
 object TransactionTable : Table<TransactionModel>() {
@@ -21,6 +22,7 @@ object TransactionTable : Table<TransactionModel>() {
     const val dateColumn = "TRANSACTION_DATE"
     const val numberColumn = "TRANSACTION_NUMBER"
     const val memoColumn = "TRANSACTION_MEMO"
+    const val statusColumn = "TRANSACTION_STATUS"
 
     override fun setValues(settable: SettableQueryBuilder<*>, model: TransactionModel) {
         settable.set(accountColumn, model.account)
@@ -28,6 +30,7 @@ object TransactionTable : Table<TransactionModel>() {
         settable.set(dateColumn, model.date)
         settable.set(numberColumn, model.number)
         settable.set(memoColumn, model.memo)
+        settable.set(statusColumn, model.status)
     }
 
     override fun applyJoins(select: SelectQueryBuilder) {
