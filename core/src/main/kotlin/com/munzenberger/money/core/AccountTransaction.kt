@@ -30,7 +30,7 @@ private class AccountTransactionCollector(
         private val initialBalance: Money
 ) {
 
-    private class Entry(
+    private class TransactionEntry(
             val transactionId: Long,
             val date: LocalDate,
             val payee: String?,
@@ -41,65 +41,67 @@ private class AccountTransactionCollector(
             var status: String? = null
     )
 
-    private val entries = mutableMapOf<Long, Entry>()
+    internal data class TransferEntry(
+            val transactionId: Long,
+            val date: LocalDate,
+            val payee: String?,
+            val transferAmount: Long,
+            val transactionAccountId: Long,
+            val transactionAccountTypeCategory: String,
+            val transactionAccountName: String,
+            val transactionNumber: String?,
+            val transactionStatus: String?,
+            val categoryAccountId: Long?,
+            val categoryAccountTypeCategory: String?,
+            val categoryAccountName: String?,
+            val categoryName: String?,
+            val transactionMemo: String?,
+            val transferNumber: String?,
+            val transferMemo: String?,
+            val transferStatus: String?
+    )
 
-    fun collect(
-            transactionId: Long,
-            date: LocalDate,
-            payee: String?,
-            transferAmount: Long,
-            transactionAccountId: Long,
-            transactionAccountTypeCategory: String,
-            transactionAccountName: String,
-            transactionNumber: String?,
-            transactionStatus: String?,
-            categoryAccountId: Long?,
-            categoryAccountTypeCategory: String?,
-            categoryAccountName: String?,
-            categoryName: String?,
-            transactionMemo: String?,
-            transferNumber: String?,
-            transferMemo: String?,
-            transferStatus: String?
-    ) {
+    private val entries = mutableMapOf<Long, TransactionEntry>()
 
-        var entry = entries[transactionId]
+    fun collect(t: TransferEntry) {
+
+        var entry = entries[t.transactionId]
 
         if (entry == null) {
-            entry = Entry(transactionId, date, payee)
-            entries[transactionId] = entry
+            entry = TransactionEntry(t.transactionId, t.date, t.payee)
+            entries[t.transactionId] = entry
         }
 
-        if (accountId == transactionAccountId) {
-            entry.amount += transferAmount
+        if (accountId == t.transactionAccountId) {
+            entry.amount += t.transferAmount
 
             // this is a parent transaction, so use the category of the child transfer
             val category = AccountTransaction.Category(
-                    accountTypeCategory = categoryAccountTypeCategory?.let { AccountType.Category.valueOf(it) },
-                    accountName = categoryAccountName,
-                    categoryName = categoryName
+                    accountTypeCategory = t.categoryAccountTypeCategory?.let { AccountType.Category.valueOf(it) },
+                    accountName = t.categoryAccountName,
+                    categoryName = t.categoryName
             )
 
             entry.categories += category
-            entry.number = transactionNumber
-            entry.memo = transactionMemo
-            entry.status = transactionStatus
+            entry.number = t.transactionNumber
+            entry.memo = t.transactionMemo
+            entry.status = t.transactionStatus
         }
 
-        if (accountId == categoryAccountId) {
-            entry.amount -= transferAmount
+        if (accountId == t.categoryAccountId) {
+            entry.amount -= t.transferAmount
 
             // this is a child transfer, so use the parent transaction account as the category
             val category = AccountTransaction.Category(
-                    accountTypeCategory = AccountType.Category.valueOf(transactionAccountTypeCategory),
-                    accountName = transactionAccountName,
+                    accountTypeCategory = AccountType.Category.valueOf(t.transactionAccountTypeCategory),
+                    accountName = t.transactionAccountName,
                     categoryName = null
             )
 
             entry.categories += category
-            entry.number = transferNumber
-            entry.memo = transferMemo
-            entry.status = transferStatus
+            entry.number = t.transferNumber
+            entry.memo = t.transferMemo
+            entry.status = t.transferStatus
         }
     }
 
@@ -156,43 +158,27 @@ private class AccountTransactionResultSetHandler(accountId: Long, initialBalance
 
         while (rs.next()) {
 
-            val transactionId = rs.getLong("TRANSACTION_ID")
-            val date = rs.getLocalDate("TRANSACTION_DATE")
-            val transactionAccountId = rs.getLong("TRANSACTION_ACCOUNT_ID")
-            val transactionAccountTypeCategory = rs.getString("TRANSACTION_ACCOUNT_TYPE_CATEGORY")
-            val transactionAccountName = rs.getString("TRANSACTION_ACCOUNT_NAME")
-            val transactionNumber = rs.getString("TRANSACTION_NUMBER")
-            val transactionStatus = rs.getString("TRANSACTION_STATUS")
-            val categoryAccountId = rs.getLongOrNull("CATEGORY_ACCOUNT_ID")
-            val categoryAccountTypeCategory = rs.getString("CATEGORY_ACCOUNT_TYPE_CATEGORY")
-            val categoryAccountName = rs.getString("CATEGORY_ACCOUNT_NAME")
-            val categoryName = rs.getString("CATEGORY_NAME")
-            val transferAmount = rs.getLong("TRANSFER_AMOUNT")
-            val payee = rs.getString("PAYEE_NAME")
-            val transactionMemo = rs.getString("TRANSACTION_MEMO")
-            val transferNumber = rs.getString("TRANSFER_NUMBER")
-            val transferMemo = rs.getString("TRANSFER_MEMO")
-            val transferStatus = rs.getString("TRANSFER_STATUS")
-
-            collector.collect(
-                    transactionId = transactionId,
-                    date = date,
-                    payee = payee,
-                    transferAmount = transferAmount,
-                    transactionAccountId = transactionAccountId,
-                    transactionAccountTypeCategory = transactionAccountTypeCategory,
-                    transactionAccountName = transactionAccountName,
-                    transactionNumber = transactionNumber,
-                    transactionStatus = transactionStatus,
-                    categoryAccountId = categoryAccountId,
-                    categoryAccountTypeCategory = categoryAccountTypeCategory,
-                    categoryAccountName = categoryAccountName,
-                    categoryName = categoryName,
-                    transactionMemo = transactionMemo,
-                    transferNumber = transferNumber,
-                    transferMemo = transferMemo,
-                    transferStatus = transferStatus
+            val t = AccountTransactionCollector.TransferEntry(
+                    transactionId = rs.getLong("TRANSACTION_ID"),
+                    date = rs.getLocalDate("TRANSACTION_DATE"),
+                    transactionAccountId = rs.getLong("TRANSACTION_ACCOUNT_ID"),
+                    transactionAccountTypeCategory = rs.getString("TRANSACTION_ACCOUNT_TYPE_CATEGORY"),
+                    transactionAccountName = rs.getString("TRANSACTION_ACCOUNT_NAME"),
+                    transactionNumber = rs.getString("TRANSACTION_NUMBER"),
+                    transactionStatus = rs.getString("TRANSACTION_STATUS"),
+                    categoryAccountId = rs.getLongOrNull("CATEGORY_ACCOUNT_ID"),
+                    categoryAccountTypeCategory = rs.getString("CATEGORY_ACCOUNT_TYPE_CATEGORY"),
+                    categoryAccountName = rs.getString("CATEGORY_ACCOUNT_NAME"),
+                    categoryName = rs.getString("CATEGORY_NAME"),
+                    transferAmount = rs.getLong("TRANSFER_AMOUNT"),
+                    payee = rs.getString("PAYEE_NAME"),
+                    transactionMemo = rs.getString("TRANSACTION_MEMO"),
+                    transferNumber = rs.getString("TRANSFER_NUMBER"),
+                    transferMemo = rs.getString("TRANSFER_MEMO"),
+                    transferStatus = rs.getString("TRANSFER_STATUS")
             )
+
+            collector.collect(t)
         }
     }
 }
