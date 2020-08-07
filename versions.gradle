@@ -6,7 +6,7 @@ versions.junit = '4.13'
 versions.rxjava = '2.2.19'
 versions.h2 = '1.4.200'
 versions.sqlite = '3.32.3.1'
-versions.javafx = '11.0.2'
+versions.javafx = '14'
 versions.rxjavafx = '2.11.0-RC34'
 versions.mockk = '1.10.0'
 
