@@ -1,13 +1,13 @@
 def versions = [:]
 
-versions.kotlin = '1.4.0'
-versions.gradle_versions = '0.31.0'
-versions.junit = '4.13'
-versions.rxjava = '2.2.19'
+versions.kotlin = '1.4.10'
+versions.gradle_versions = '0.33.0'
+versions.junit = '4.13.1'
+versions.rxjava = '2.2.20'
 versions.h2 = '1.4.200'
 versions.sqlite = '3.32.3.2'
 versions.javafx = '14'
 versions.rxjavafx = '2.11.0-RC34'
-versions.mockk = '1.10.0'
+versions.mockk = '1.10.2'
 
 ext.versions = versions
