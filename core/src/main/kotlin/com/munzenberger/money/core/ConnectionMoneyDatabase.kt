@@ -15,7 +15,7 @@ class ConnectionMoneyDatabase(
     private val logger = Logger.getLogger(MoneyDatabase::class.java.simpleName)
 
     init {
-        logger.info("Connected to money databse: $name")
+        logger.info("Connected to money database: $name")
     }
 
     override fun close() {

@@ -41,7 +41,7 @@ private class AccountTransactionCollector(
             var status: String? = null
     )
 
-    internal data class TransferEntry(
+    data class TransferEntry(
             val transactionId: Long,
             val date: LocalDate,
             val payee: String?,
@@ -65,11 +65,8 @@ private class AccountTransactionCollector(
 
     fun collect(t: TransferEntry) {
 
-        var entry = entries[t.transactionId]
-
-        if (entry == null) {
-            entry = TransactionEntry(t.transactionId, t.date, t.payee)
-            entries[t.transactionId] = entry
+        val entry = entries.getOrPut(t.transactionId) {
+            TransactionEntry(t.transactionId, t.date, t.payee)
         }
 
         if (accountId == t.transactionAccountId) {
