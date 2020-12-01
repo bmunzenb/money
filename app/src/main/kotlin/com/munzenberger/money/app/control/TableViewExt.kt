@@ -18,7 +18,7 @@ import java.util.function.Predicate
 inline fun <reified T> TableView<T>.bindAsync(
         listProperty: ReadOnlyAsyncObjectProperty<List<T>>,
         filterProperty: ReadOnlyObjectProperty<Predicate<T>> = SimpleObjectProperty(),
-        noinline placeholder: () -> Node
+        placeholder: Node
 ) {
 
     val observableList = FXCollections.observableArrayList<T>().apply {
@@ -45,7 +45,7 @@ inline fun <reified T> TableView<T>.bindAsync(
             setMaxSize(60.0, 60.0)
         }
 
-        override fun complete(obj: List<T>) = placeholder.invoke()
+        override fun complete(obj: List<T>) = placeholder
 
         override fun error(error: Throwable) = Label(error.message).apply {
             textFill = Color.RED

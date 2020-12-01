@@ -48,11 +48,12 @@ class AccountListController : AutoCloseable {
 
     fun initialize() {
 
-        tableView.bindAsync(viewModel.accountsProperty) {
-            Hyperlink("Create an account to get started.").apply {
-                setOnAction { onCreateAccount() }
-            }
-        }
+        tableView.bindAsync(
+                listProperty = viewModel.accountsProperty,
+                placeholder = Hyperlink("Create an account to get started.").apply {
+                    setOnAction { onCreateAccount() }
+                }
+        )
 
         nameColumn.apply {
             cellFactory = HyperlinkTableCellFactory {

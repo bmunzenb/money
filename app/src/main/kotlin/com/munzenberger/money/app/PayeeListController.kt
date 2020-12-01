@@ -27,9 +27,10 @@ class PayeeListController : AutoCloseable {
 
     fun initialize() {
 
-        tableView.bindAsync(viewModel.payeesProperty) {
-            Text("No payees.")
-        }
+        tableView.bindAsync(
+                listProperty = viewModel.payeesProperty,
+                placeholder = Text("No payees.")
+        )
 
         nameColumn.apply {
             cellFactory = HyperlinkTableCellFactory { /* TODO: open the payee details screen */ }

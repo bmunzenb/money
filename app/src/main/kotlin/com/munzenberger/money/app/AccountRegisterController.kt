@@ -115,11 +115,13 @@ class AccountRegisterController : AutoCloseable {
                 }
             }
 
-            bindAsync(viewModel.transactionsProperty, viewModel.activeFiltersProperty) {
-                Hyperlink("Add a transaction to get started.").apply {
-                    setOnAction { onAddTransaction() }
-                }
-            }
+            bindAsync(
+                    listProperty = viewModel.transactionsProperty,
+                    filterProperty = viewModel.activeFiltersProperty,
+                    placeholder = Hyperlink("Add a transaction to get started.").apply {
+                        setOnAction { onAddTransaction() }
+                    }
+            )
         }
 
         numberColumn.apply {
