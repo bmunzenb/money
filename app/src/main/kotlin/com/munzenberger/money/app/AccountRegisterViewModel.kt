@@ -1,5 +1,6 @@
 package com.munzenberger.money.app
 
+import com.munzenberger.money.app.database.ObservableMoneyDatabase
 import com.munzenberger.money.app.model.FXAccountTransaction
 import com.munzenberger.money.app.model.FXAccountTransactionFilter
 import com.munzenberger.money.app.model.inCurrentMonth
@@ -12,13 +13,23 @@ import com.munzenberger.money.app.property.flatMapAsyncObject
 import com.munzenberger.money.core.Account
 import com.munzenberger.money.core.AccountType
 import com.munzenberger.money.core.Money
+import com.munzenberger.money.core.MoneyDatabase
 import com.munzenberger.money.core.PersistableNotFoundException
-import com.munzenberger.money.app.database.ObservableMoneyDatabase
+import com.munzenberger.money.core.Transaction
+import com.munzenberger.money.core.TransactionStatus
 import com.munzenberger.money.core.getAccountTransactions
+import com.munzenberger.money.core.model.TransactionTable
+import com.munzenberger.money.core.model.TransferTable
+import com.munzenberger.money.sql.DeleteQueryBuilder
+import com.munzenberger.money.sql.inGroup
+import com.munzenberger.money.sql.transaction
+import io.reactivex.Single
 import io.reactivex.disposables.CompositeDisposable
+import javafx.beans.property.ReadOnlyBooleanProperty
 import javafx.beans.property.ReadOnlyListProperty
 import javafx.beans.property.ReadOnlyObjectProperty
 import javafx.beans.property.ReadOnlyStringProperty
+import javafx.beans.property.SimpleBooleanProperty
 import javafx.beans.property.SimpleListProperty
 import javafx.beans.property.SimpleObjectProperty
 import javafx.beans.property.SimpleStringProperty
@@ -41,6 +52,7 @@ class AccountRegisterViewModel : AutoCloseable {
     private val debitText = SimpleStringProperty()
     private val creditText = SimpleStringProperty()
     private val activeFilters = SimpleObjectProperty<Predicate<FXAccountTransaction>>()
+    private val operationInProgress = SimpleBooleanProperty(false)
 
     val accountProperty: ReadOnlyAsyncObjectProperty<Account> = account
     val transactionsProperty: ReadOnlyAsyncObjectProperty<List<FXAccountTransaction>> = transactions
@@ -49,18 +61,21 @@ class AccountRegisterViewModel : AutoCloseable {
     val creditTextProperty: ReadOnlyStringProperty = creditText
     val dateFiltersProperty: ReadOnlyListProperty<FXAccountTransactionFilter>
     val activeFiltersProperty: ReadOnlyObjectProperty<Predicate<FXAccountTransaction>> = activeFilters
+    val operationInProgressProperty: ReadOnlyBooleanProperty = operationInProgress
 
     val selectedDateFilterProperty = SimpleObjectProperty<FXAccountTransactionFilter>()
+
+    lateinit var database: MoneyDatabase
 
     init {
 
         val dateFilters = FXCollections.observableArrayList<FXAccountTransactionFilter>().apply {
             addAll(
-                    FXAccountTransactionFilter("All Dates", Predicate { true }),
-                    FXAccountTransactionFilter("Current Month", Predicate { it.dateProperty.value.inCurrentMonth() }),
-                    FXAccountTransactionFilter("Current Year", Predicate { it.dateProperty.value.inCurrentYear() }),
-                    FXAccountTransactionFilter("Last 3 Months", Predicate { it.dateProperty.value.inLastMonths(3) }),
-                    FXAccountTransactionFilter("Last 12 Months", Predicate { it.dateProperty.value.inLastMonths(12) })
+                    FXAccountTransactionFilter("All Dates") { true },
+                    FXAccountTransactionFilter("Current Month") { it.dateProperty.value.inCurrentMonth() },
+                    FXAccountTransactionFilter("Current Year") { it.dateProperty.value.inCurrentYear() },
+                    FXAccountTransactionFilter("Last 3 Months") { it.dateProperty.value.inLastMonths(3) },
+                    FXAccountTransactionFilter("Last 12 Months") { it.dateProperty.value.inLastMonths(12) }
             )
         }
 
@@ -86,6 +101,8 @@ class AccountRegisterViewModel : AutoCloseable {
     }
 
     fun start(database: ObservableMoneyDatabase, accountIdentity: Long) {
+
+        this.database = database
 
         database.onUpdate.flatMapAsyncObject {
 
@@ -133,6 +150,50 @@ class AccountRegisterViewModel : AutoCloseable {
                     }
                 }
                 .also { disposables.add(it) }
+    }
+
+    fun getTransaction(transaction: FXAccountTransaction, block: (Transaction?, Throwable?) -> Unit) {
+
+        Single.fromCallable {
+            Transaction.get(transaction.transactionId, database)
+                    ?: throw PersistableNotFoundException(Transaction::class, transaction.transactionId)
+        }
+                .subscribeOn(SchedulerProvider.database)
+                .observeOn(SchedulerProvider.main)
+                .doOnSubscribe { operationInProgress.value = true }
+                .doFinally { operationInProgress.value = false }
+                .subscribe { t, error -> block.invoke(t, error) }
+    }
+
+    fun deleteTransactions(transactions: List<FXAccountTransaction>, block: (Throwable?) -> Unit) {
+
+        val ids = transactions.map { it.transactionId }
+
+        Single.fromCallable {
+            database.transaction { tx ->
+
+                val deleteTransfers = DeleteQueryBuilder(TransferTable.name)
+                        .where(TransferTable.transactionColumn.inGroup(ids))
+                        .build()
+
+                tx.executeUpdate(deleteTransfers)
+
+                val deleteTransactions = DeleteQueryBuilder(TransactionTable.name)
+                        .where(TransactionTable.identityColumn.inGroup(ids))
+                        .build()
+
+                tx.executeUpdate(deleteTransactions)
+            }
+        }
+                .subscribeOn(SchedulerProvider.database)
+                .observeOn(SchedulerProvider.main)
+                .doOnSubscribe { operationInProgress.value = true }
+                .doFinally { operationInProgress.value = false }
+                .subscribe { _, error -> block.invoke(error) }
+    }
+
+    fun updateTransactionStatus(transaction: FXAccountTransaction, status: TransactionStatus, block: (Throwable?) -> Unit) {
+        // TODO: implement me!
     }
 
     override fun close() {

@@ -7,10 +7,8 @@ import javafx.css.PseudoClass
 import javafx.scene.control.ContextMenu
 import javafx.scene.control.Menu
 import javafx.scene.control.MenuItem
-import javafx.scene.control.RadioMenuItem
 import javafx.scene.control.SeparatorMenuItem
 import javafx.scene.control.TableRow
-import javafx.scene.control.ToggleGroup
 import javafx.scene.input.MouseButton
 import java.time.LocalDate
 
@@ -37,18 +35,18 @@ class AccountTransactionTableRow(
 
         val markAs = Menu("Mark As").apply {
 
-            val statusGroup = ToggleGroup()
+            //val statusGroup = ToggleGroup()
 
-            val unreconciled = createStatusRadioMenuItem(TransactionStatus.UNRECONCILED, "Unreconciled").apply {
-                toggleGroup = statusGroup
+            val unreconciled = createStatusMenuItem(TransactionStatus.UNRECONCILED, "Unreconciled").apply {
+                //toggleGroup = statusGroup
             }
 
-            val cleared = createStatusRadioMenuItem(TransactionStatus.CLEARED, "Cleared (C)").apply {
-                toggleGroup = statusGroup
+            val cleared = createStatusMenuItem(TransactionStatus.CLEARED, "Cleared (C)").apply {
+                //toggleGroup = statusGroup
             }
 
-            val reconciled = createStatusRadioMenuItem(TransactionStatus.RECONCILED, "Reconciled (R)").apply {
-                toggleGroup = statusGroup
+            val reconciled = createStatusMenuItem(TransactionStatus.RECONCILED, "Reconciled (R)").apply {
+                //toggleGroup = statusGroup
             }
 
             items.addAll(unreconciled, cleared, reconciled)
@@ -88,9 +86,9 @@ class AccountTransactionTableRow(
         pseudoClassStateChanged(futureDatePseudoClass, isFuture)
     }
 
-    private fun createStatusRadioMenuItem(status: TransactionStatus, text: String) =
-            RadioMenuItem(text).apply {
+    private fun createStatusMenuItem(status: TransactionStatus, text: String) =
+            // TODO convert to RadioMenuItem and bind the selected property to the item's status
+            MenuItem(text).apply {
                 setOnAction { markAs(item, status) }
-                // TODO bind the selected item property
             }
 }

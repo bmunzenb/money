@@ -5,10 +5,9 @@ import com.munzenberger.money.app.control.DateTableCellFactory
 import com.munzenberger.money.app.control.MoneyTableCellFactory
 import com.munzenberger.money.app.control.TableCellFactory
 import com.munzenberger.money.app.control.bindAsync
-import com.munzenberger.money.app.control.setWaiting
+import com.munzenberger.money.app.control.bindWaiting
 import com.munzenberger.money.app.model.FXAccountTransaction
 import com.munzenberger.money.app.model.FXAccountTransactionFilter
-import com.munzenberger.money.app.model.delete
 import com.munzenberger.money.app.model.moneyNegativePseudoClass
 import com.munzenberger.money.app.navigation.LayoutControllerNavigation
 import com.munzenberger.money.app.property.AsyncObject
@@ -190,6 +189,8 @@ class AccountRegisterController : AutoCloseable {
         // TODO: eventually save as a preference by account
         dateFilterChoiceBox.selectionModel.select(0)
 
+        stage.bindWaiting(viewModel.operationInProgressProperty)
+
         viewModel.start(database, accountIdentity)
     }
 
@@ -210,10 +211,7 @@ class AccountRegisterController : AutoCloseable {
     }
 
     private fun onEditTransaction(transaction: FXAccountTransaction) {
-        // TODO move to view model?
-        stage.setWaiting(true)
-        transaction.getTransaction(database) { t, e ->
-            stage.setWaiting(false)
+        viewModel.getTransaction(transaction) { t, e ->
             when {
                 t != null -> startEditTransaction("Edit Transaction", t)
                 e != null -> ErrorAlert.showAndWait(e)
@@ -223,27 +221,24 @@ class AccountRegisterController : AutoCloseable {
 
     private fun onDeleteTransactions(transactions: List<FXAccountTransaction>) {
 
-        val result = Alert(Alert.AlertType.CONFIRMATION).apply {
+        Alert(Alert.AlertType.CONFIRMATION).apply {
             title = "Confirm Delete"
             contentText = "Are you sure you want to delete this transaction?"
-        }.showAndWait()
-
-        when {
-            result.isPresent && result.get() == ButtonType.OK -> {
-                // TODO move to view model?
-                stage.setWaiting(true)
-                transactions.delete(database) { error ->
-                    stage.setWaiting(false)
-                    if (error != null) {
-                        ErrorAlert.showAndWait(error)
-                    }
+        }.showAndDoWhen(ButtonType.OK) {
+            viewModel.deleteTransactions(transactions) { error ->
+                if (error != null) {
+                    ErrorAlert.showAndWait(error)
                 }
             }
         }
     }
 
     private fun updateTransactionStatus(transaction: FXAccountTransaction, status: TransactionStatus) {
-        // TODO implement me!
+        viewModel.updateTransactionStatus(transaction, status) { error ->
+            if (error != null) {
+                ErrorAlert.showAndWait(error)
+            }
+        }
     }
 
     private fun startEditTransaction(title: String, transaction: Transaction) {

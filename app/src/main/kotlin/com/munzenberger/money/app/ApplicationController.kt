@@ -1,6 +1,6 @@
 package com.munzenberger.money.app
 
-import com.munzenberger.money.app.control.setWaiting
+import com.munzenberger.money.app.control.bindWaiting
 import com.munzenberger.money.app.database.MemoryDatabase
 import com.munzenberger.money.app.database.NewFileDatabase
 import com.munzenberger.money.app.database.OpenFileDatabase
@@ -37,16 +37,13 @@ class ApplicationController : DatabaseConnectorDelegate, AutoCloseable {
                 else -> presentWelcome()
             }
         }
-
-        viewModel.isConnectionInProgressProperty.addListener { _, _, newValue ->
-            stage.setWaiting(newValue)
-        }
     }
 
     fun start(stage: Stage) {
         this.stage = stage
 
         stage.titleProperty().bind(viewModel.titleProperty)
+        stage.bindWaiting(viewModel.isConnectionInProgressProperty)
 
         presentWelcome()
     }
