@@ -100,9 +100,9 @@ class AccountRegisterController : AutoCloseable {
 
             rowFactory = Callback {
                 AccountTransactionTableRow(
-                        addTransaction = this@AccountRegisterController::onAddTransaction,
-                        editTransaction = this@AccountRegisterController::onEditTransaction,
-                        deleteTransactions = this@AccountRegisterController::onDeleteTransactions
+                        add = this@AccountRegisterController::onAddTransaction,
+                        edit = this@AccountRegisterController::onEditTransaction,
+                        delete = { onDeleteTransactions(listOf(it)) }
                 )
             }
 

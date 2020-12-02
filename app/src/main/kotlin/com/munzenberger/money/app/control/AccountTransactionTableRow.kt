@@ -1,6 +1,7 @@
 package com.munzenberger.money.app.control
 
 import com.munzenberger.money.app.model.FXAccountTransaction
+import javafx.beans.binding.Bindings
 import javafx.css.PseudoClass
 import javafx.scene.control.ContextMenu
 import javafx.scene.control.MenuItem
@@ -10,39 +11,48 @@ import javafx.scene.input.MouseButton
 import java.time.LocalDate
 
 class AccountTransactionTableRow(
-        private val addTransaction: () -> Unit,
-        private val editTransaction: (FXAccountTransaction) -> Unit,
-        private val deleteTransactions: (List<FXAccountTransaction>) -> Unit
+        private val add: () -> Unit,
+        private val edit: (FXAccountTransaction) -> Unit,
+        private val delete: (FXAccountTransaction) -> Unit
 ) : TableRow<FXAccountTransaction>() {
 
     companion object {
         private val futureDatePseudoClass: PseudoClass = PseudoClass.getPseudoClass("future-date")
     }
 
+    private val rowContextMenu = ContextMenu().apply {
+
+        val edit = MenuItem("Edit").apply {
+            setOnAction { edit(item) }
+        }
+
+        val delete = MenuItem("Delete").apply {
+            setOnAction { delete(item) }
+        }
+
+        items.addAll(edit, SeparatorMenuItem(), delete)
+    }
+
     init {
         setOnMouseClicked { event ->
             when {
                 event.button == MouseButton.PRIMARY && event.clickCount == 2 -> when (item) {
-                    null -> addTransaction()
-                    else -> editTransaction(item)
+                    null -> add()
+                    else -> edit(item)
                 }
             }
         }
+
+        // show context menu only on rows with items
+        contextMenuProperty().bind(
+                Bindings.`when`(itemProperty().isNotNull)
+                .then(rowContextMenu)
+                .otherwise(null as ContextMenu?)
+        )
     }
 
     override fun updateItem(item: FXAccountTransaction?, empty: Boolean) {
         super.updateItem(item, empty)
-
-        contextMenu = when {
-            empty || item == null -> null
-            else -> ContextMenu().apply {
-                items.addAll(
-                        MenuItem("Edit").apply { setOnAction { editTransaction(item) } },
-                        SeparatorMenuItem(),
-                        MenuItem("Delete").apply { setOnAction { deleteTransactions(listOf(item)) } }
-                )
-            }
-        }
 
         val isFuture = !empty && item != null && item.dateProperty.value.isAfter(LocalDate.now())
         pseudoClassStateChanged(futureDatePseudoClass, isFuture)
