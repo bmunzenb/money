@@ -3,6 +3,7 @@ package com.munzenberger.money.app
 import com.munzenberger.money.app.control.AccountTransactionTableRow
 import com.munzenberger.money.app.control.DateTableCellFactory
 import com.munzenberger.money.app.control.MoneyTableCellFactory
+import com.munzenberger.money.app.control.TableCellFactory
 import com.munzenberger.money.app.control.bindAsync
 import com.munzenberger.money.app.control.setWaiting
 import com.munzenberger.money.app.model.FXAccountTransaction
@@ -20,6 +21,7 @@ import com.munzenberger.money.core.Transaction
 import com.munzenberger.money.core.isNegative
 import com.munzenberger.money.app.database.ObservableMoneyDatabase
 import com.munzenberger.money.app.property.NumberStringComparator
+import com.munzenberger.money.core.TransactionStatus
 import javafx.fxml.FXML
 import javafx.scene.control.Alert
 import javafx.scene.control.Button
@@ -57,7 +59,7 @@ class AccountRegisterController : AutoCloseable {
     @FXML lateinit var dateColumn: TableColumn<FXAccountTransaction, LocalDate>
     @FXML lateinit var payeeColumn: TableColumn<FXAccountTransaction, String>
     @FXML lateinit var categoryColumn: TableColumn<FXAccountTransaction, String>
-    @FXML lateinit var statusColumn: TableColumn<FXAccountTransaction, String>
+    @FXML lateinit var statusColumn: TableColumn<FXAccountTransaction, TransactionStatus>
     @FXML lateinit var debitColumn: TableColumn<FXAccountTransaction, Money>
     @FXML lateinit var creditColumn: TableColumn<FXAccountTransaction, Money>
     @FXML lateinit var balanceColumn: TableColumn<FXAccountTransaction, Money>
@@ -102,7 +104,8 @@ class AccountRegisterController : AutoCloseable {
                 AccountTransactionTableRow(
                         add = this@AccountRegisterController::onAddTransaction,
                         edit = this@AccountRegisterController::onEditTransaction,
-                        delete = { onDeleteTransactions(listOf(it)) }
+                        delete = { onDeleteTransactions(listOf(it)) },
+                        markAs = this@AccountRegisterController::updateTransactionStatus
                 )
             }
 
@@ -143,6 +146,7 @@ class AccountRegisterController : AutoCloseable {
         }
 
         statusColumn.apply {
+            cellFactory = TableCellFactory { it.code }
             cellValueFactory = Callback { it.value.statusProperty }
         }
 
@@ -206,6 +210,7 @@ class AccountRegisterController : AutoCloseable {
     }
 
     private fun onEditTransaction(transaction: FXAccountTransaction) {
+        // TODO move to view model?
         stage.setWaiting(true)
         transaction.getTransaction(database) { t, e ->
             stage.setWaiting(false)
@@ -225,6 +230,7 @@ class AccountRegisterController : AutoCloseable {
 
         when {
             result.isPresent && result.get() == ButtonType.OK -> {
+                // TODO move to view model?
                 stage.setWaiting(true)
                 transactions.delete(database) { error ->
                     stage.setWaiting(false)
@@ -234,6 +240,10 @@ class AccountRegisterController : AutoCloseable {
                 }
             }
         }
+    }
+
+    private fun updateTransactionStatus(transaction: FXAccountTransaction, status: TransactionStatus) {
+        // TODO implement me!
     }
 
     private fun startEditTransaction(title: String, transaction: Transaction) {

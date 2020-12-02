@@ -19,7 +19,7 @@ import com.munzenberger.money.core.Transfer
 import com.munzenberger.money.core.isNegative
 import com.munzenberger.money.core.isPositive
 import com.munzenberger.money.app.database.observableTransaction
-import com.munzenberger.money.app.model.displayName
+import com.munzenberger.money.core.TransactionStatus
 import com.munzenberger.money.core.getTransfers
 import io.reactivex.Single
 import javafx.beans.property.ReadOnlyBooleanProperty
@@ -155,7 +155,11 @@ class EditTransactionViewModel : EditTransferBase(), AutoCloseable {
 
         memoProperty.value = transaction.memo
 
-        transactionStatus.value = transaction.status.displayName
+        transactionStatus.value = when (transaction.status) {
+            TransactionStatus.CLEARED -> "Cleared"
+            TransactionStatus.RECONCILED -> "Reconciled"
+            else -> ""
+        }
     }
 
     private fun onTransfers(transfers: List<Transfer>) {

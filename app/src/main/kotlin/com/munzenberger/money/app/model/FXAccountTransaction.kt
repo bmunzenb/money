@@ -6,6 +6,7 @@ import com.munzenberger.money.core.Money
 import com.munzenberger.money.core.MoneyDatabase
 import com.munzenberger.money.core.PersistableNotFoundException
 import com.munzenberger.money.core.Transaction
+import com.munzenberger.money.core.TransactionStatus
 import com.munzenberger.money.core.isNegative
 import com.munzenberger.money.core.model.TransactionTable
 import com.munzenberger.money.core.model.TransferTable
@@ -29,7 +30,7 @@ class FXAccountTransaction(accountTransaction: AccountTransaction) {
     val payeeProperty: ReadOnlyStringProperty = SimpleStringProperty(accountTransaction.payee)
 
     val categoryProperty: ReadOnlyStringProperty
-    val statusProperty: ReadOnlyStringProperty
+    val statusProperty: ReadOnlyObjectProperty<TransactionStatus>
     val debitProperty: ReadOnlyObjectProperty<Money>
     val creditProperty: ReadOnlyObjectProperty<Money>
 
@@ -43,7 +44,7 @@ class FXAccountTransaction(accountTransaction: AccountTransaction) {
 
         categoryProperty = SimpleStringProperty(category)
 
-        statusProperty = SimpleStringProperty(accountTransaction.status.code)
+        statusProperty = SimpleObjectProperty(accountTransaction.status)
 
         when {
             accountTransaction.amount.isNegative -> {
