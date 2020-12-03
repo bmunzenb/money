@@ -13,7 +13,9 @@ import java.time.LocalDate
 
 class Transaction internal constructor(model: TransactionModel) : Persistable<TransactionModel>(model, TransactionTable) {
 
-    constructor() : this(TransactionModel())
+    constructor() : this(TransactionModel(
+            status = TransactionStatus.UNRECONCILED.name
+    ))
 
     var date: LocalDate?
         get() = model.date?.let { LocalDate.ofEpochDay(it) }
@@ -32,8 +34,8 @@ class Transaction internal constructor(model: TransactionModel) : Persistable<Tr
     var payee: Payee? = null
 
     var status: TransactionStatus
-        get() = TransactionStatus.fromCode(model.status)
-        set(value) { model.status = value.code }
+        get() = TransactionStatus.parse(model.status)
+        set(value) { model.status = value.name }
 
     override fun save(executor: QueryExecutor) = executor.transaction { tx ->
         model.account = account.getIdentity(tx)

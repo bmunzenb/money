@@ -145,7 +145,13 @@ class AccountRegisterController : AutoCloseable {
         }
 
         statusColumn.apply {
-            cellFactory = TableCellFactory { it.code }
+            cellFactory = TableCellFactory {
+                when (it) {
+                    TransactionStatus.RECONCILED -> "R"
+                    TransactionStatus.CLEARED -> "C"
+                    else -> ""
+                }
+            }
             cellValueFactory = Callback { it.value.statusProperty }
         }
 

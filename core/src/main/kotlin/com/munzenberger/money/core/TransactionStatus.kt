@@ -1,13 +1,10 @@
 package com.munzenberger.money.core
 
-enum class TransactionStatus(val code: String) {
-    UNRECONCILED(""), CLEARED("C"), RECONCILED("R");
+enum class TransactionStatus {
+    UNRECONCILED, CLEARED, RECONCILED;
 
     companion object {
-        fun fromCode(code: String?) = when (code) {
-            CLEARED.code -> CLEARED
-            RECONCILED.code -> RECONCILED
-            else -> UNRECONCILED
-        }
+        fun parse(string: String?, defaultValue: TransactionStatus = UNRECONCILED) =
+                string?.let { valueOf(it) } ?: defaultValue
     }
 }

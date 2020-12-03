@@ -53,8 +53,8 @@ class MoneyCoreVersion_1 : ApplicableVersion<MoneyDatabase> {
                 .column(TransactionTable.dateColumn, "BIGINT NOT NULL")
                 .column(TransactionTable.numberColumn, "TEXT")
                 .column(TransactionTable.memoColumn, "TEXT")
-                .column(TransactionTable.statusColumn, "TEXT")
-                .constraint("TRANSACTION_STATUS_CONSTRAINT", "CHECK (${TransactionTable.statusColumn} IN ('${TransactionStatus.UNRECONCILED.code}', '${TransactionStatus.CLEARED.code}', '${TransactionStatus.RECONCILED.code}'))")
+                .column(TransactionTable.statusColumn, "TEXT NOT NULL")
+                .constraint("TRANSACTION_STATUS_CONSTRAINT", "CHECK (${TransactionTable.statusColumn} IN ('UNRECONCILED', 'CLEARED', 'RECONCILED'))")
                 .build())
 
         obj.execute(Query.createTable(TransferTable.name)
@@ -64,8 +64,8 @@ class MoneyCoreVersion_1 : ApplicableVersion<MoneyDatabase> {
                 .column(TransferTable.amountColumn, "BIGINT NOT NULL")
                 .column(TransferTable.numberColumn, "TEXT")
                 .column(TransferTable.memoColumn, "TEXT")
-                .column(TransferTable.statusColumn, "TEXT")
-                .constraint("TRANSFER_STATUS_CONSTRAINT", "CHECK (${TransferTable.statusColumn} IN ('${TransactionStatus.UNRECONCILED.code}', '${TransactionStatus.CLEARED.code}', '${TransactionStatus.RECONCILED.code}'))")
+                .column(TransferTable.statusColumn, "TEXT NOT NULL")
+                .constraint("TRANSFER_STATUS_CONSTRAINT", "CHECK (${TransferTable.statusColumn} IN ('UNRECONCILED', 'CLEARED', 'RECONCILED'))")
                 .build())
 
         obj.executeUpdate(Query.insertInto(AccountTypeTable.name)

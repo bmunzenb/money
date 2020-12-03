@@ -124,7 +124,7 @@ private class AccountTransactionCollector(
                             balance = Money.valueOf(balance),
                             number = it.number,
                             memo = it.memo,
-                            status = TransactionStatus.fromCode(it.status))
+                            status = TransactionStatus.parse(it.status))
                 }
     }
 }
