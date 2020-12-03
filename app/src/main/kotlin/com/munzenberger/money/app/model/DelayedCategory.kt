@@ -117,12 +117,10 @@ private class PendingCategory(string: String) : DelayedCategory {
                     executor.getFirst(it, CategoryResultSetMapper())
                 }
 
-                if (category == null) {
-                    category = Category().apply {
+                category = category ?: Category().apply {
                         this.account = account
                         save(executor)
                     }
-                }
             }
         }
 
@@ -132,14 +130,11 @@ private class PendingCategory(string: String) : DelayedCategory {
                 executor.getFirst(it, CategoryResultSetMapper())
             }
 
-            category = when (c) {
-                null -> Category().apply {
+            category = c ?: Category().apply {
                     this.account = account
                     this.name = categoryName
                     save(executor)
                 }
-                else -> c
-            }
         }
 
         return category

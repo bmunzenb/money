@@ -65,7 +65,7 @@
             <TableColumn fx:id="dateColumn" editable="false" maxWidth="1000.0" minWidth="-Infinity" prefWidth="75.0" style="-fx-alignment: CENTER;" text="Date" />
             <TableColumn fx:id="payeeColumn" editable="false" maxWidth="2000.0" minWidth="-Infinity" prefWidth="150.0" text="Payee" />
             <TableColumn fx:id="categoryColumn" editable="false" maxWidth="2000.0" minWidth="-Infinity" prefWidth="150.0" text="Category" />
-            <TableColumn fx:id="statusColumn" maxWidth="250.0" minWidth="-Infinity" prefWidth="25.0" style="-fx-alignment: CENTER;" text="C" />
+            <TableColumn fx:id="statusColumn" editable="false" maxWidth="250.0" minWidth="-Infinity" prefWidth="25.0" sortable="false" style="-fx-alignment: CENTER;" text="C" />
             <TableColumn fx:id="debitColumn" editable="false" maxWidth="1000.0" minWidth="-Infinity" prefWidth="75.0" style="-fx-alignment: CENTER-RIGHT;" text="Debit" />
             <TableColumn fx:id="creditColumn" editable="false" maxWidth="1000.0" minWidth="-Infinity" prefWidth="75.0" style="-fx-alignment: CENTER-RIGHT;" text="Credit" />
             <TableColumn fx:id="balanceColumn" editable="false" maxWidth="1000.0" minWidth="-Infinity" prefWidth="75.0" style="-fx-alignment: CENTER-RIGHT;" text="Balance" />

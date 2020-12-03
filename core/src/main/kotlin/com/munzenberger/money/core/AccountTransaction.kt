@@ -1,6 +1,7 @@
 package com.munzenberger.money.core
 
 import com.munzenberger.money.sql.Query
+import com.munzenberger.money.sql.QueryExecutor
 import com.munzenberger.money.sql.ResultSetHandler
 import com.munzenberger.money.sql.getLocalDate
 import com.munzenberger.money.sql.getLongOrNull
@@ -23,6 +24,10 @@ data class AccountTransaction(
             val accountName: String?,
             val categoryName: String?
     )
+
+    fun updateStatus(status: TransactionStatus, executor: QueryExecutor) {
+        // TODO implement me
+    }
 }
 
 private class AccountTransactionCollector(

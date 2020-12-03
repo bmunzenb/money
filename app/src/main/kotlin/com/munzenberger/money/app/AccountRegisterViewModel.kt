@@ -193,7 +193,13 @@ class AccountRegisterViewModel : AutoCloseable {
     }
 
     fun updateTransactionStatus(transaction: FXAccountTransaction, status: TransactionStatus, block: (Throwable?) -> Unit) {
-        // TODO: implement me!
+
+        Single.fromCallable { transaction.updateStatus(status, database) }
+                .subscribeOn(SchedulerProvider.database)
+                .observeOn(SchedulerProvider.main)
+                .doOnSubscribe { operationInProgress.value = true }
+                .doFinally { operationInProgress.value = false }
+                .subscribe { _, error -> block.invoke(error) }
     }
 
     override fun close() {
