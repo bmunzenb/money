@@ -3,8 +3,10 @@ package com.munzenberger.money.core.model
 import com.munzenberger.money.sql.SelectQueryBuilder
 import com.munzenberger.money.sql.SettableQueryBuilder
 
+@Deprecated("Will be removed.")
 data class CategoryModel(var account: Long? = null, var name: String? = null) : Model()
 
+@Deprecated("Will be removed.")
 object CategoryTable : Table<CategoryModel>() {
 
     override val name = "CATEGORIES"

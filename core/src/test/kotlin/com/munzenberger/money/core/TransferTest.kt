@@ -15,7 +15,7 @@ class TransferTest : PersistableTest<Transfer>() {
     }
 
     override fun assertPersistablePropertiesAreEquals(p1: Transfer, p2: Transfer) {
-        assertEquals(p1.category?.identity, p2.category?.identity)
+        assertEquals(p1.account?.identity, p2.account?.identity)
         assertEquals(p1.amount, p2.amount)
         assertEquals(p1.memo, p2.memo)
         assertEquals(p1.number, p2.number)

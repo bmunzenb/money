@@ -4,7 +4,8 @@ import com.munzenberger.money.sql.SettableQueryBuilder
 
 data class AccountTypeModel(
         var category: String? = null,
-        var variant: String? = null
+        var variant: String? = null,
+        var isCategory: Boolean? = null
 ) : Model()
 
 object AccountTypeTable : Table<AccountTypeModel>() {
@@ -14,9 +15,11 @@ object AccountTypeTable : Table<AccountTypeModel>() {
 
     const val categoryColumn = "ACCOUNT_TYPE_CATEGORY"
     const val variantColumn = "ACCOUNT_TYPE_VARIANT"
+    const val isCategoryColumn = "ACCOUNT_TYPE_IS_CATEGORY"
 
     override fun setValues(settable: SettableQueryBuilder<*>, model: AccountTypeModel) {
         settable.set(categoryColumn, model.category)
         settable.set(variantColumn, model.variant)
+        settable.set(isCategoryColumn, model.isCategory)
     }
 }

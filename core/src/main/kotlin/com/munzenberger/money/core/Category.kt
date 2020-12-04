@@ -8,6 +8,7 @@ import com.munzenberger.money.sql.transaction
 import com.munzenberger.money.sql.getLongOrNull
 import java.sql.ResultSet
 
+@Deprecated("Will be removed.")
 class Category internal constructor(model: CategoryModel) : Persistable<CategoryModel>(model, CategoryTable) {
 
     constructor() : this(CategoryModel())
@@ -33,6 +34,7 @@ class Category internal constructor(model: CategoryModel) : Persistable<Category
     }
 }
 
+@Deprecated("Will be removed")
 class CategoryResultSetMapper : ResultSetMapper<Category> {
 
     override fun apply(resultSet: ResultSet): Category {

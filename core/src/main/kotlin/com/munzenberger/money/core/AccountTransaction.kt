@@ -7,12 +7,12 @@ import com.munzenberger.money.sql.QueryExecutor
 import com.munzenberger.money.sql.ResultSetHandler
 import com.munzenberger.money.sql.eq
 import com.munzenberger.money.sql.getLocalDate
-import com.munzenberger.money.sql.getLongOrNull
 import com.munzenberger.money.sql.inGroup
 import com.munzenberger.money.sql.transaction
 import java.sql.ResultSet
 import java.time.LocalDate
 
+@Deprecated("Will be removed.")
 data class AccountTransaction(
         val transactionId: Long,
         val date: LocalDate,
@@ -255,6 +255,7 @@ private class AccountTransactionResultSetHandler(accountId: Long, initialBalance
     }
 }
 
+@Deprecated("Replace with Account.getRegister()")
 fun Account.getAccountTransactions(database: MoneyDatabase): List<AccountTransaction> {
 
     val accountId = identity ?: throw IllegalStateException("Can't get transactions for an unsaved account.")

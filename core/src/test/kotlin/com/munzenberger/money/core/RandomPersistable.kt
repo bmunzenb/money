@@ -21,6 +21,7 @@ fun Bank.randomize() = this.apply {
 fun AccountType.randomize() = this.apply {
     variant = AccountType.Variant.values().let { it[random.nextInt(it.size)] }
     category = AccountType.Category.values().let { it[random.nextInt(it.size)] }
+    isCategory = false
 }
 
 fun Account.randomize() = this.apply {
@@ -53,8 +54,8 @@ fun Transaction.randomize() = this.apply {
 }
 
 fun Transfer.randomize() = this.apply {
-    category = Category().randomize()
     setTransaction(Transaction().randomize())
+    account = Account().randomize()
     amount = Money.random()
     number = randomString()
     memo = randomString()

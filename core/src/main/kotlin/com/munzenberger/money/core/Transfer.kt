@@ -26,7 +26,10 @@ class Transfer internal constructor(model: TransferModel) : Persistable<Transfer
         get() = model.memo
         set(value) { model.memo = value }
 
+    @Deprecated("Use account instead")
     var category: Category? = null
+
+    var account: Account? = null
 
     var status: TransactionStatus
         get() = TransactionStatus.parse(model.status)
@@ -40,7 +43,7 @@ class Transfer internal constructor(model: TransferModel) : Persistable<Transfer
 
     override fun save(executor: QueryExecutor) = executor.transaction { tx ->
         transactionRef.getIdentity(tx) { model.transaction = it }
-        model.category = category.getIdentity(tx)
+        model.account = account.getIdentity(tx)
         super.save(tx)
     }
 
@@ -61,7 +64,7 @@ class TransferResultSetMapper : ResultSetMapper<Transfer> {
         val model = TransferModel().apply {
             identity = resultSet.getLong(TransferTable.identityColumn)
             transaction = resultSet.getLongOrNull(TransferTable.transactionColumn)
-            category = resultSet.getLongOrNull(TransferTable.categoryColumn)
+            account = resultSet.getLongOrNull(TransferTable.accountColumn)
             amount = resultSet.getLong(TransferTable.amountColumn)
             number = resultSet.getString(TransferTable.numberColumn)
             memo = resultSet.getString(TransferTable.memoColumn)
@@ -69,7 +72,7 @@ class TransferResultSetMapper : ResultSetMapper<Transfer> {
         }
 
         return Transfer(model).apply {
-            category = model.category?.let { CategoryResultSetMapper().apply(resultSet) }
+            account = model.account?.let { AccountResultSetMapper().apply(resultSet) }
         }
     }
 }

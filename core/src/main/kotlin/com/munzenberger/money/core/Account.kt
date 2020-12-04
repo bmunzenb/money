@@ -2,7 +2,6 @@ package com.munzenberger.money.core
 
 import com.munzenberger.money.core.model.AccountModel
 import com.munzenberger.money.core.model.AccountTable
-import com.munzenberger.money.core.model.CategoryTable
 import com.munzenberger.money.core.model.TransactionTable
 import com.munzenberger.money.core.model.TransferTable
 import com.munzenberger.money.sql.Query
@@ -78,13 +77,12 @@ class AccountResultSetMapper : ResultSetMapper<Account> {
 
 private class AccountBalanceCollector(private val accountId: Long?, initialBalance: Long?) : ResultSetHandler {
 
-    // query for all transfers where the specified account is either the parent of the transaction,
-    // or the category for a child transfer
+    // query for all transfers where the specified account is either
+    // the parent of the transaction, or the child as a transfer
     val query: Query = Query.selectFrom(TransferTable.name)
-            .cols(TransferTable.amountColumn, TransactionTable.accountColumn, CategoryTable.accountColumn)
+            .cols(TransferTable.amountColumn, TransactionTable.accountColumn, TransferTable.accountColumn)
             .innerJoin(TransferTable.name, TransferTable.transactionColumn, TransactionTable.name, TransactionTable.identityColumn)
-            .innerJoin(TransferTable.name, TransferTable.categoryColumn, CategoryTable.name, CategoryTable.identityColumn)
-            .where(TransactionTable.accountColumn.eq(accountId).or(CategoryTable.accountColumn.eq(accountId)))
+            .where(TransactionTable.accountColumn.eq(accountId).or(TransferTable.accountColumn.eq(accountId)))
             .build()
 
     val result: Money
@@ -97,17 +95,17 @@ private class AccountBalanceCollector(private val accountId: Long?, initialBalan
 
             val amount = rs.getLong(TransferTable.amountColumn)
             val transactionAccount = rs.getLong(TransactionTable.accountColumn)
-            val categoryAccount = rs.getLong(CategoryTable.accountColumn)
+            val transferAccount = rs.getLong(TransferTable.accountColumn)
 
             if (accountId == transactionAccount) {
-                // if the specified account is the parent for the transaction, then the transfer amount
-                // is credited (added) to the accumulator
+                // if the specified account is the parent for the transaction,
+                // then the transfer amount is credited (added) to the accumulator
                 accumulator += amount
             }
 
-            if (accountId == categoryAccount) {
-                // if the specified account is the category for the transfer, then the amount
-                // is debited (subtracted) from the accumulator
+            if (accountId == transferAccount) {
+                // if the specified account is the child as the transfer,
+                // then the amount is debited (subtracted) from the accumulator
                 accumulator -= amount
             }
         }

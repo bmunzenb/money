@@ -2,7 +2,6 @@ package com.munzenberger.money.core.version
 
 import com.munzenberger.money.core.AccountType
 import com.munzenberger.money.core.MoneyDatabase
-import com.munzenberger.money.core.TransactionStatus
 import com.munzenberger.money.core.model.*
 import com.munzenberger.money.sql.Query
 import com.munzenberger.money.version.ApplicableVersion
@@ -22,6 +21,7 @@ class MoneyCoreVersion_1 : ApplicableVersion<MoneyDatabase> {
                 .column(AccountTypeTable.identityColumn, obj.dialect.identityColumnType)
                 .column(AccountTypeTable.categoryColumn, "TEXT NOT NULL")
                 .column(AccountTypeTable.variantColumn, "TEXT NOT NULL")
+                .column(AccountTypeTable.isCategoryColumn, obj.dialect.booleanType("NOT NULL"))
                 .constraint("ACCOUNT_TYPE_CATEGORY_CONSTRAINT", "CHECK (${AccountTypeTable.categoryColumn} IN ('${AccountType.Category.ASSETS.name}', '${AccountType.Category.LIABILITIES.name}', '${AccountType.Category.INCOME.name}', '${AccountType.Category.EXPENSES.name}'))")
                 .constraint("ACCOUNT_TYPE_VARIANT_CONSTRAINT", "CHECK (${AccountTypeTable.variantColumn} IN ('${AccountType.Variant.SAVINGS.name}', '${AccountType.Variant.CHECKING.name}', '${AccountType.Variant.ASSET.name}', '${AccountType.Variant.CASH.name}', '${AccountType.Variant.CREDIT.name}', '${AccountType.Variant.LOAN.name}', '${AccountType.Variant.INCOME.name}', '${AccountType.Variant.EXPENSE.name}'))")
                 .build())
@@ -60,7 +60,7 @@ class MoneyCoreVersion_1 : ApplicableVersion<MoneyDatabase> {
         obj.execute(Query.createTable(TransferTable.name)
                 .column(TransferTable.identityColumn, obj.dialect.identityColumnType)
                 .columnWithReference(TransferTable.transactionColumn, obj.dialect.identityType("NOT NULL"), TransactionTable.name, TransactionTable.identityColumn)
-                .columnWithReference(TransferTable.categoryColumn, obj.dialect.identityType("NOT NULL"), CategoryTable.name, CategoryTable.identityColumn)
+                .columnWithReference(TransferTable.accountColumn, obj.dialect.identityType("NOT NULL"), AccountTable.nameColumn, AccountTable.identityColumn)
                 .column(TransferTable.amountColumn, "BIGINT NOT NULL")
                 .column(TransferTable.numberColumn, "TEXT")
                 .column(TransferTable.memoColumn, "TEXT")
@@ -71,41 +71,49 @@ class MoneyCoreVersion_1 : ApplicableVersion<MoneyDatabase> {
         obj.executeUpdate(Query.insertInto(AccountTypeTable.name)
                 .set(AccountTypeTable.categoryColumn, AccountType.Category.ASSETS.name)
                 .set(AccountTypeTable.variantColumn, AccountType.Variant.SAVINGS.name)
+                .set(AccountTypeTable.isCategoryColumn, false)
                 .build())
 
         obj.executeUpdate(Query.insertInto(AccountTypeTable.name)
                 .set(AccountTypeTable.categoryColumn, AccountType.Category.ASSETS.name)
                 .set(AccountTypeTable.variantColumn, AccountType.Variant.CHECKING.name)
+                .set(AccountTypeTable.isCategoryColumn, false)
                 .build())
 
         obj.executeUpdate(Query.insertInto(AccountTypeTable.name)
                 .set(AccountTypeTable.categoryColumn, AccountType.Category.ASSETS.name)
                 .set(AccountTypeTable.variantColumn, AccountType.Variant.ASSET.name)
+                .set(AccountTypeTable.isCategoryColumn, false)
                 .build())
 
         obj.executeUpdate(Query.insertInto(AccountTypeTable.name)
                 .set(AccountTypeTable.categoryColumn, AccountType.Category.ASSETS.name)
                 .set(AccountTypeTable.variantColumn, AccountType.Variant.CASH.name)
+                .set(AccountTypeTable.isCategoryColumn, false)
                 .build())
 
         obj.executeUpdate(Query.insertInto(AccountTypeTable.name)
                 .set(AccountTypeTable.categoryColumn, AccountType.Category.LIABILITIES.name)
                 .set(AccountTypeTable.variantColumn, AccountType.Variant.CREDIT.name)
+                .set(AccountTypeTable.isCategoryColumn, false)
                 .build())
 
         obj.executeUpdate(Query.insertInto(AccountTypeTable.name)
                 .set(AccountTypeTable.categoryColumn, AccountType.Category.LIABILITIES.name)
                 .set(AccountTypeTable.variantColumn, AccountType.Variant.LOAN.name)
+                .set(AccountTypeTable.isCategoryColumn, false)
                 .build())
 
         obj.executeUpdate(Query.insertInto(AccountTypeTable.name)
                 .set(AccountTypeTable.categoryColumn, AccountType.Category.INCOME.name)
                 .set(AccountTypeTable.variantColumn, AccountType.Variant.INCOME.name)
+                .set(AccountTypeTable.isCategoryColumn, true)
                 .build())
 
         obj.executeUpdate(Query.insertInto(AccountTypeTable.name)
                 .set(AccountTypeTable.categoryColumn, AccountType.Category.EXPENSES.name)
                 .set(AccountTypeTable.variantColumn, AccountType.Variant.EXPENSE.name)
+                .set(AccountTypeTable.isCategoryColumn, true)
                 .build())
     }
 }

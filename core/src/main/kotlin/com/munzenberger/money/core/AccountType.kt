@@ -36,6 +36,10 @@ class AccountType internal constructor(model: AccountTypeModel) : Persistable<Ac
         get() = model.variant?.let { Variant.valueOf(it) }
         set(value) { model.variant = value?.name }
 
+    var isCategory: Boolean?
+        get() = model.isCategory
+        set(value) { model.isCategory = value }
+
     companion object {
 
         fun getAll(executor: QueryExecutor) =
@@ -54,9 +58,9 @@ class AccountTypeResultSetMapper : ResultSetMapper<AccountType> {
             identity = resultSet.getLong(AccountTypeTable.identityColumn)
             category = resultSet.getString(AccountTypeTable.categoryColumn)
             variant = resultSet.getString(AccountTypeTable.variantColumn)
+            isCategory = resultSet.getBoolean(AccountTypeTable.isCategoryColumn)
         }
 
         return AccountType(model)
     }
 }
-

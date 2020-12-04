@@ -49,8 +49,15 @@ class AccountTest : PersistableTest<Account>() {
             save(database)
         }
 
-        val accountCategory = Category().apply {
-            this.account = account1
+        val account2 = Account().apply {
+            randomize()
+            initialBalance = Money.valueOf(-10)
+            save(database)
+        }
+
+        val account3 = Account().apply {
+            randomize()
+            initialBalance = null
             save(database)
         }
 
@@ -60,17 +67,13 @@ class AccountTest : PersistableTest<Account>() {
             save(database)
         }
 
-        // Transfers -> Transaction -> Account = Amount added to that account
+        // Transfer 42 units from account2 to account1
+        // account1 -> 10 + 42 = 52
+        // account2 -> -10 - 42 = -52
         Transfer().apply {
             this.setTransaction(transaction1)
-            this.category = Category().apply { randomize() }
+            this.account = account2
             this.amount = Money.valueOf(42)
-            save(database)
-        }
-
-        val account2 = Account().apply {
-            randomize()
-            initialBalance = Money.valueOf(-10)
             save(database)
         }
 
@@ -80,18 +83,33 @@ class AccountTest : PersistableTest<Account>() {
             save(database)
         }
 
-        // Transfers -> Category -> Account -> Amount subtracted from that account
+        // Transfer 88 units from account3 to account2
+        // account2 -> -52 + 88 = 36
+        // account3 -> -88
        Transfer().apply {
             this.setTransaction(transaction2)
-            this.category = accountCategory
+            this.account = account3
             this.amount = Money.valueOf(88)
             save(database)
         }
 
+        // Transfer 10 units from account1 to account2
+        // account1 -> 52 - 10 = 42
+        // account3 -> 36 + 10 = 46
+        Transfer().apply {
+            this.setTransaction(transaction2)
+            this.account = account1
+            this.amount = Money.valueOf(10)
+            save(database)
+        }
+
         val balance1 = account1.getBalance(database)
-        assertEquals("Account1 should have credit of 42 and debit of 88", Money.valueOf(10 + 42 - 88), balance1)
+        assertEquals(Money.valueOf(10 + 42 - 10), balance1)
 
         val balance2 = account2.getBalance(database)
-        assertEquals("Account2 should have credit of 88", Money.valueOf(-10 + 88), balance2)
+        assertEquals(Money.valueOf(-10 - 42 + 88 + 10), balance2)
+
+        val balance3 = account3.getBalance(database)
+        assertEquals(Money.valueOf(-88), balance3)
     }
 }
