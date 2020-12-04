@@ -60,7 +60,7 @@ class MoneyCoreVersion_1 : ApplicableVersion<MoneyDatabase> {
         obj.execute(Query.createTable(TransferTable.name)
                 .column(TransferTable.identityColumn, obj.dialect.identityColumnType)
                 .columnWithReference(TransferTable.transactionColumn, obj.dialect.identityType("NOT NULL"), TransactionTable.name, TransactionTable.identityColumn)
-                .columnWithReference(TransferTable.accountColumn, obj.dialect.identityType("NOT NULL"), AccountTable.nameColumn, AccountTable.identityColumn)
+                .columnWithReference(TransferTable.accountColumn, obj.dialect.identityType("NOT NULL"), AccountTable.name, AccountTable.identityColumn)
                 .column(TransferTable.amountColumn, "BIGINT NOT NULL")
                 .column(TransferTable.numberColumn, "TEXT")
                 .column(TransferTable.memoColumn, "TEXT")

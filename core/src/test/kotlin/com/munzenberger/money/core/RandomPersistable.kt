@@ -36,11 +36,6 @@ fun Payee.randomize() = this.apply {
     name = randomString()
 }
 
-fun Category.randomize() = this.apply {
-    account = Account().randomize()
-    name = randomString()
-}
-
 fun TransactionStatus.Companion.random() =
         TransactionStatus.values().random()
 
