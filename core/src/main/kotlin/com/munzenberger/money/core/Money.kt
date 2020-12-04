@@ -10,16 +10,20 @@ class Money private constructor(val currency: Currency, val value: Long): Compar
 
     companion object {
 
-        fun zero(currency: Currency = Currency.getInstance(Locale.getDefault())) =
+        private val defaultCurrency = Currency.getInstance("USD")
+
+        private val defaultLocale = Locale.getDefault()
+
+        fun zero(currency: Currency = defaultCurrency) =
                 valueOf(0, currency)
 
-        fun valueOf(value: Long, currency: Currency = Currency.getInstance(Locale.getDefault())) =
+        fun valueOf(value: Long, currency: Currency = defaultCurrency) =
                 Money(currency, value)
 
         fun valueOf(
                 fraction: String,
-                locale: Locale = Locale.getDefault(),
-                currency: Currency = Currency.getInstance(locale)
+                currency: Currency = defaultCurrency,
+                locale: Locale = defaultLocale
         ): Money {
 
             val format = NumberFormat.getNumberInstance(locale) as DecimalFormat
@@ -80,7 +84,7 @@ class Money private constructor(val currency: Currency, val value: Long): Compar
 
     fun negate(): Money = Money(currency, -value)
 
-    override fun toString() = toString(Locale.getDefault())
+    override fun toString() = toString(defaultLocale)
 
     fun toString(locale: Locale): String {
 
@@ -93,7 +97,7 @@ class Money private constructor(val currency: Currency, val value: Long): Compar
         return format.format(fraction)
     }
 
-    fun toStringWithoutCurrency(locale: Locale = Locale.getDefault()): String {
+    fun toStringWithoutCurrency(locale: Locale = defaultLocale): String {
 
         val fraction = valueToFraction(currency, value)
 
