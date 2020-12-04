@@ -15,5 +15,6 @@
 }
 
 .table-row-cell:future-date .table-cell {
-    -fx-opacity: 0.5 ;
+    -fx-opacity: 0.65 ;
+    -fx-font-style: italic ;
 }
