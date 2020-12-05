@@ -12,21 +12,16 @@ import javafx.collections.FXCollections
 import javafx.collections.ListChangeListener
 import javafx.collections.ObservableList
 
-class EditTransfersViewModel : EditTransferBase() {
+class EditTransfersViewModel {
 
     private val transfers = FXCollections.observableArrayList<EditTransfer> { t -> arrayOf(t.selectedCategoryProperty, t.amountProperty) }
     private val categories = FXCollections.observableArrayList<DelayedCategory>()
-
-    private val addDisabled = SimpleBooleanProperty(true).apply {
-        bind(selectedCategoryProperty.isNull.or(amountProperty.isNull))
-    }
 
     private val doneDisabled = SimpleBooleanProperty(true)
     private val total = SimpleObjectProperty<Money>()
 
     val transfersProperty: ReadOnlyListProperty<EditTransfer> = SimpleListProperty(transfers)
     val categoriesProperty: ReadOnlyListProperty<DelayedCategory> = SimpleListProperty(categories)
-    val addDisabledProperty: ReadOnlyBooleanProperty = addDisabled
     val doneDisabledProperty: ReadOnlyBooleanProperty = doneDisabled
     val totalProperty: ReadOnlyObjectProperty<Money> = total
 
@@ -57,20 +52,11 @@ class EditTransfersViewModel : EditTransferBase() {
         this.categories.addAll(categories)
     }
 
-    fun add() {
+    fun add(): Int {
 
-        val editTransfer = EditTransfer()
-        editTransfer.number = number
-        editTransfer.category = category
-        editTransfer.amount = amount
-        editTransfer.memo = memo
+        transfers.add(EditTransfer())
 
-        transfers.add(editTransfer)
-
-        number = null
-        category = null
-        memo = null
-        amount = null
+        return transfers.size - 1
     }
 
     fun delete(items: List<EditTransfer>) {

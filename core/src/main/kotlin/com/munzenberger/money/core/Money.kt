@@ -1,8 +1,10 @@
 package com.munzenberger.money.core
 
 import java.math.BigDecimal
+import java.math.RoundingMode
 import java.text.DecimalFormat
 import java.text.NumberFormat
+import java.text.ParseException
 import java.util.Currency
 import java.util.Locale
 
@@ -20,6 +22,7 @@ class Money private constructor(val currency: Currency, val value: Long): Compar
         fun valueOf(value: Long, currency: Currency = defaultCurrency) =
                 Money(currency, value)
 
+        @Throws(ParseException::class)
         fun valueOf(
                 fraction: String,
                 currency: Currency = defaultCurrency,
@@ -27,10 +30,11 @@ class Money private constructor(val currency: Currency, val value: Long): Compar
         ): Money {
 
             val format = NumberFormat.getNumberInstance(locale) as DecimalFormat
-            format.maximumFractionDigits = currency.defaultFractionDigits
             format.isParseBigDecimal = true
 
-            val f = format.parse(fraction) as BigDecimal
+            val f = (format.parse(fraction) as BigDecimal)
+                    // round down to the nearest fractional digit
+                    .setScale(currency.defaultFractionDigits, RoundingMode.FLOOR)
 
             val v = fractionToValue(currency, f)
 

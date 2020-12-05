@@ -18,7 +18,6 @@ import com.munzenberger.money.core.Transfer
 import com.munzenberger.money.core.isNegative
 import com.munzenberger.money.core.isPositive
 import com.munzenberger.money.app.database.observableTransaction
-import com.munzenberger.money.app.model.getCategories
 import com.munzenberger.money.core.TransactionStatus
 import com.munzenberger.money.core.getTransfers
 import io.reactivex.Single

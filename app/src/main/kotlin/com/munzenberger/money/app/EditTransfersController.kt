@@ -3,20 +3,16 @@ package com.munzenberger.money.app
 import com.munzenberger.money.app.control.BlockStringConverter
 import com.munzenberger.money.app.control.ListLookupStringConverter
 import com.munzenberger.money.app.control.MoneyStringConverter
-import com.munzenberger.money.app.control.TextListCellFactory
-import com.munzenberger.money.app.control.autoCompleteTextFormatter
 import com.munzenberger.money.app.model.DelayedCategory
 import com.munzenberger.money.core.Money
+import javafx.beans.binding.Bindings
 import javafx.collections.ObservableList
 import javafx.fxml.FXML
 import javafx.scene.control.Button
-import javafx.scene.control.ComboBox
 import javafx.scene.control.Label
 import javafx.scene.control.SelectionMode
 import javafx.scene.control.TableColumn
 import javafx.scene.control.TableView
-import javafx.scene.control.TextField
-import javafx.scene.control.TextFormatter
 import javafx.scene.control.cell.ComboBoxTableCell
 import javafx.scene.control.cell.TextFieldTableCell
 import javafx.scene.input.KeyCode
@@ -36,11 +32,8 @@ class EditTransfersController {
     @FXML private lateinit var categoryColumn: TableColumn<EditTransfer, DelayedCategory>
     @FXML private lateinit var memoColumn: TableColumn<EditTransfer, String>
     @FXML private lateinit var amountColumn: TableColumn<EditTransfer, Money>
-    @FXML private lateinit var numberTextField: TextField
-    @FXML private lateinit var categoryComboBox: ComboBox<DelayedCategory>
-    @FXML private lateinit var memoTextField: TextField
-    @FXML private lateinit var amountTextField: TextField
     @FXML private lateinit var addButton: Button
+    @FXML private lateinit var deleteButton: Button
     @FXML private lateinit var totalLabel: Label
     @FXML private lateinit var doneButton: Button
 
@@ -54,16 +47,9 @@ class EditTransfersController {
 
             items = viewModel.transfersProperty
 
-            selectionModel.selectionMode = SelectionMode.MULTIPLE
+            selectionModel.selectionMode = SelectionMode.SINGLE
 
-            setOnKeyReleased {
-                when (it.code) {
-                    KeyCode.DELETE -> viewModel.delete(selectionModel.selectedItems)
-                    else -> Unit
-                }
-            }
-
-            placeholder = Text("Use the form above to add transaction details.")
+            placeholder = Text("Click the Add button to add transaction details.")
         }
 
         numberColumn.apply {
@@ -98,42 +84,12 @@ class EditTransfersController {
             cellValueFactory = Callback { t -> t.value.amountProperty }
         }
 
-        numberTextField.apply {
-            textProperty().bindBidirectional(viewModel.numberProperty)
-        }
-
-        categoryComboBox.apply {
-
-            val categoryConverter = BlockStringConverter(DelayedCategory::name) { DelayedCategory.from(it) }
-
-            cellFactory = TextListCellFactory(categoryConverter::toString)
-            buttonCell = cellFactory.call(null)
-
-            items = viewModel.categoriesProperty
-
-            editor.textFormatter = autoCompleteTextFormatter(items, categoryConverter)
-
-            converter = ListLookupStringConverter(items, categoryConverter)
-
-            valueProperty().bindBidirectional(viewModel.selectedCategoryProperty)
-        }
-
-        amountTextField.apply {
-
-            val moneyConverter = MoneyStringConverter()
-
-            textFormatter = TextFormatter(moneyConverter).apply {
-                valueProperty().bindBidirectional(viewModel.amountProperty)
-            }
-        }
-
-        memoTextField.apply {
-            textProperty().bindBidirectional(viewModel.memoProperty)
-        }
-
-        addButton.apply {
-            disableProperty().bind(viewModel.addDisabledProperty)
-        }
+        deleteButton.disableProperty().bind(
+                Bindings.createBooleanBinding(
+                        { tableView.selectionModel.selectedItems.isEmpty() },
+                        tableView.selectionModel.selectedItems
+                )
+        )
 
         doneButton.disableProperty().bind(viewModel.doneDisabledProperty)
 
@@ -156,7 +112,12 @@ class EditTransfersController {
     }
 
     @FXML fun onAddButton() {
-        viewModel.add()
+        val row = viewModel.add()
+        tableView.edit(row, categoryColumn)
+    }
+
+    @FXML fun onDeleteButton() {
+        viewModel.delete(tableView.selectionModel.selectedItems)
     }
 
     @FXML fun onDoneButton() {
