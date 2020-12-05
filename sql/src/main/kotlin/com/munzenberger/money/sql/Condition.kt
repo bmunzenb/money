@@ -38,11 +38,17 @@ data class Condition(val clause: String, val parameters: List<Any?> = emptyList(
                 notInGroup(column, values.toList())
     }
 
-    fun or(condition: Condition) =
-            Condition("($clause) OR (${condition.clause})", parameters.plus(condition.parameters))
+    infix fun or(condition: Condition?) =
+            when (condition) {
+                null -> this
+                else -> Condition("($clause) OR (${condition.clause})", parameters.plus(condition.parameters))
+            }
 
-    fun and(condition: Condition) =
-            Condition("($clause) AND (${condition.clause})", parameters.plus(condition.parameters))
+    infix fun and(condition: Condition?) =
+            when (condition) {
+                null -> this
+                else -> Condition("($clause) AND (${condition.clause})", parameters.plus(condition.parameters))
+            }
 }
 
 fun String.eq(value: Any?) = Condition.eq(this, value)

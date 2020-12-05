@@ -40,12 +40,6 @@ class MoneyCoreVersion_1 : ApplicableVersion<MoneyDatabase> {
                 .column(AccountTable.initialBalanceColumn, "BIGINT")
                 .build())
 
-        obj.execute(Query.createTable(CategoryTable.name)
-                .column(CategoryTable.identityColumn, obj.dialect.identityColumnType)
-                .columnWithReference(CategoryTable.accountColumn, obj.dialect.identityType("NOT NULL"), AccountTable.name, AccountTable.identityColumn)
-                .column(CategoryTable.nameColumn, "TEXT")
-                .build())
-
         obj.execute(Query.createTable(TransactionTable.name)
                 .column(TransactionTable.identityColumn, obj.dialect.identityColumnType)
                 .columnWithReference(TransactionTable.accountColumn, obj.dialect.identityType("NOT NULL"), AccountTable.name, AccountTable.identityColumn)

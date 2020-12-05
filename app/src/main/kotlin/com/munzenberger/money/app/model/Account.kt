@@ -2,21 +2,45 @@ package com.munzenberger.money.app.model
 
 import com.munzenberger.money.core.Account
 import com.munzenberger.money.core.AccountResultSetMapper
-import com.munzenberger.money.core.AccountType
 import com.munzenberger.money.core.MoneyDatabase
 import com.munzenberger.money.core.model.AccountTable
 import com.munzenberger.money.core.model.AccountTypeTable
-import com.munzenberger.money.sql.inGroup
+import com.munzenberger.money.sql.Condition
+import com.munzenberger.money.sql.QueryExecutor
+import com.munzenberger.money.sql.eq
 
-fun Account.Companion.getAssetsAndLiabilities(database: MoneyDatabase): List<Account> {
+private fun getAccounts(
+        executor: QueryExecutor,
+        isCategory: Boolean? = null
+) : List<Account> {
 
-    val categories = listOf(AccountType.Category.ASSETS, AccountType.Category.LIABILITIES).map { it.name }
+    var condition: Condition? = null
 
-    val query = AccountTable.select()
-            .where(AccountTypeTable.categoryColumn.inGroup(categories))
-            .orderBy(AccountTable.identityColumn)
-            .build()
+    isCategory?.let {
+        condition = AccountTypeTable.isCategoryColumn.eq(it)
+    }
 
-    return database.getList(query, AccountResultSetMapper())
+    // add additional filters here...
+    // filter?.let {
+    //     condition = Condition(it) and condition
+    // }
+
+    var builder = AccountTable.select()
+
+    condition?.let {
+        builder = builder.where(it)
+    }
+
+    builder = builder.orderBy(AccountTable.identityColumn)
+
+    return executor.getList(builder.build(), AccountResultSetMapper())
 }
 
+fun Account.Companion.getAssetsAndLiabilities(database: MoneyDatabase) =
+        getAccounts(database, isCategory = false)
+
+fun Account.Companion.getCategories(database: MoneyDatabase) =
+        getAccounts(database, isCategory = true)
+
+val Account.categoryName: String
+    get() = categoryName(name, accountType?.isCategory)

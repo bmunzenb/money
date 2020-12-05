@@ -82,7 +82,7 @@ private class AccountBalanceCollector(private val accountId: Long?, initialBalan
     val query: Query = Query.selectFrom(TransferTable.name)
             .cols(TransferTable.amountColumn, TransactionTable.accountColumn, TransferTable.accountColumn)
             .innerJoin(TransferTable.name, TransferTable.transactionColumn, TransactionTable.name, TransactionTable.identityColumn)
-            .where(TransactionTable.accountColumn.eq(accountId).or(TransferTable.accountColumn.eq(accountId)))
+            .where(TransactionTable.accountColumn.eq(accountId) or (TransferTable.accountColumn.eq(accountId)))
             .build()
 
     val result: Money

@@ -91,7 +91,7 @@ private class RegisterCollector(val accountId: Long) {
             transactionAccountName: String,
             transactionDate: LocalDate,
             transactionNumber: String?,
-            transactionMemo: String,
+            transactionMemo: String?,
             transactionStatus: String,
             payeeId: Long?,
             payeeName: String?,

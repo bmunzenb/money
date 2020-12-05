@@ -1,5 +1,6 @@
 package com.munzenberger.money.app.control
 
+import com.munzenberger.money.app.ErrorAlert
 import com.munzenberger.money.app.property.AsyncObjectMapper
 import com.munzenberger.money.app.property.ReadOnlyAsyncObjectProperty
 import com.munzenberger.money.app.property.bindAsync
@@ -9,6 +10,7 @@ import javafx.collections.FXCollections
 import javafx.collections.transformation.FilteredList
 import javafx.collections.transformation.SortedList
 import javafx.scene.Node
+import javafx.scene.control.Hyperlink
 import javafx.scene.control.Label
 import javafx.scene.control.ProgressIndicator
 import javafx.scene.control.TableView
@@ -47,8 +49,9 @@ inline fun <reified T> TableView<T>.bindAsync(
 
         override fun complete(obj: List<T>) = placeholder
 
-        override fun error(error: Throwable) = Label(error.message).apply {
+        override fun error(error: Throwable) = Hyperlink(error.message).apply {
             textFill = Color.RED
+            setOnAction { ErrorAlert(error).showAndWait() }
         }
     })
 }

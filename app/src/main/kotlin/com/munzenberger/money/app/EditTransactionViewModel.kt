@@ -10,7 +10,6 @@ import com.munzenberger.money.app.property.SimpleAsyncObjectProperty
 import com.munzenberger.money.app.property.SimpleAsyncStatusProperty
 import com.munzenberger.money.app.property.subscribe
 import com.munzenberger.money.core.Account
-import com.munzenberger.money.core.Category
 import com.munzenberger.money.core.Money
 import com.munzenberger.money.core.MoneyDatabase
 import com.munzenberger.money.core.Payee
@@ -19,6 +18,7 @@ import com.munzenberger.money.core.Transfer
 import com.munzenberger.money.core.isNegative
 import com.munzenberger.money.core.isPositive
 import com.munzenberger.money.app.database.observableTransaction
+import com.munzenberger.money.app.model.getCategories
 import com.munzenberger.money.core.TransactionStatus
 import com.munzenberger.money.core.getTransfers
 import io.reactivex.Single
@@ -141,7 +141,7 @@ class EditTransactionViewModel : EditTransferBase(), AutoCloseable {
                 .observeOn(SchedulerProvider.main)
                 .subscribe(payees)
 
-        Single.fromCallable { Category.getAll(database).map { c -> DelayedCategory.from(c) }.sortedWith(DelayedCategoryComparator) }
+        Single.fromCallable { Account.getAll(database).map { c -> DelayedCategory.from(c) }.sortedWith(DelayedCategoryComparator) }
                 .subscribeOn(SchedulerProvider.database)
                 .observeOn(SchedulerProvider.main)
                 .subscribe(categories)
@@ -213,7 +213,7 @@ class EditTransactionViewModel : EditTransferBase(), AutoCloseable {
 
                 transfer.apply {
                     this.amount = edit.getAmountValue(transactionType!!)
-                    this.category = edit.category!!.getCategory(tx, transactionType!!)
+                    this.account = edit.category!!.getCategory(tx, transactionType!!)
                     this.number = edit.number
                     this.memo = edit.memo
                     save(tx)

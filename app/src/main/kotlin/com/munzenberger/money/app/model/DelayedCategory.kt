@@ -5,15 +5,18 @@ import com.munzenberger.money.core.Account
 import com.munzenberger.money.core.AccountResultSetMapper
 import com.munzenberger.money.core.AccountType
 import com.munzenberger.money.core.AccountTypeResultSetMapper
-import com.munzenberger.money.core.Category
-import com.munzenberger.money.core.CategoryResultSetMapper
 import com.munzenberger.money.core.model.AccountTable
 import com.munzenberger.money.core.model.AccountTypeTable
-import com.munzenberger.money.core.model.CategoryTable
 import com.munzenberger.money.sql.QueryExecutor
 import com.munzenberger.money.sql.eq
-import com.munzenberger.money.sql.isNull
 import java.lang.UnsupportedOperationException
+
+const val SPLIT_CATEGORY_NAME = "Split/Multiple Categories"
+
+fun categoryName(accountName: String?, isCategory: Boolean?): String = when (isCategory) {
+    true -> accountName ?: "<empty>"
+    else -> "Transfer : $accountName"
+}
 
 interface DelayedCategory {
 
@@ -21,123 +24,70 @@ interface DelayedCategory {
 
     val isTransfer: Boolean
 
-    fun getCategory(executor: QueryExecutor, transactionType: TransactionType): Category
+    fun getCategory(executor: QueryExecutor, transactionType: TransactionType): Account
 
     companion object {
 
-        fun from(category: Category): DelayedCategory = RealCategory(category)
+        fun from(account: Account): DelayedCategory = RealCategory(account)
 
         fun from(string: String): DelayedCategory = PendingCategory(string)
 
         fun split(): DelayedCategory = object : DelayedCategory {
 
             override val name = SPLIT_CATEGORY_NAME
-            override val isTransfer: Boolean = false
+            override val isTransfer = false
 
-            override fun getCategory(executor: QueryExecutor, transactionType: TransactionType): Category {
+            override fun getCategory(executor: QueryExecutor, transactionType: TransactionType): Account {
                 throw UnsupportedOperationException()
             }
         }
     }
 }
 
-private class RealCategory(private val category: Category) : DelayedCategory {
+private class RealCategory(private val account: Account) : DelayedCategory {
 
-    override val name: String
-    override val isTransfer: Boolean
+    override val name = account.categoryName
+    override val isTransfer = account.accountType?.isCategory != true
 
-    init {
-
-        val accountTypeCategory = category.account?.accountType?.category
-        val accountName = category.account?.name
-        val categoryName = category.name
-
-        name = buildCategoryName(accountTypeCategory, accountName, categoryName)
-        isTransfer = listOf(AccountType.Category.ASSETS, AccountType.Category.LIABILITIES).contains(accountTypeCategory)
-    }
-
-    override fun getCategory(executor: QueryExecutor, transactionType: TransactionType) = category
+    override fun getCategory(executor: QueryExecutor, transactionType: TransactionType) = account
 }
 
 private class PendingCategory(string: String) : DelayedCategory {
 
-    override val name: String
+    override val name = string
     override val isTransfer: Boolean = false
 
-    private val accountName: String
-    private val categoryName: String?
+    override fun getCategory(executor: QueryExecutor, transactionType: TransactionType): Account {
 
-    init {
+        var account = AccountTable
+                .select()
+                .where(AccountTable.nameColumn.eq(name))
+                .build()
+                .let { executor.getFirst(it, AccountResultSetMapper()) }
 
-        val values = string.split(CATEGORY_NAME_DELIMITER, limit = 2)
+        if (account == null) {
 
-        accountName = values[0].trim()
-        categoryName = if (values.size > 1) values[1].trim() else null
-
-        name = buildCategoryName(accountName = accountName, categoryName = categoryName)
-    }
-
-    override fun getCategory(executor: QueryExecutor, transactionType: TransactionType): Category {
-
-        var category: Category?
-
-        var account = AccountTable.select().where(AccountTable.nameColumn.eq(accountName)).build().let {
-            executor.getFirst(it, AccountResultSetMapper())
-        }
-
-        when (account) {
-
-            null -> {
-                // TODO: should also use the sign of the amount to determine variant
-                val variant = when (transactionType.variant) {
-                    TransactionType.Variant.CREDIT -> AccountType.Variant.INCOME
-                    TransactionType.Variant.DEBIT -> AccountType.Variant.EXPENSE
-                }
-
-                // find the account type that matches the transaction type
-                val accountType = AccountTypeTable.select().where(AccountTypeTable.variantColumn.eq(variant.name)).build().let {
-                    executor.getFirst(it, AccountTypeResultSetMapper())
-                }
-
-                account = Account().apply {
-                    this.name = accountName
-                    this.accountType = accountType
-                    save(executor)
-                }
-
-                category = Category().apply {
-                    this.account = account
-                    save(executor)
-                }
+            // TODO: should also use the sign of the amount to determine variant
+            val variant = when (transactionType.variant) {
+                TransactionType.Variant.CREDIT -> AccountType.Variant.INCOME
+                TransactionType.Variant.DEBIT -> AccountType.Variant.EXPENSE
             }
 
-            else -> {
+            // find the account type that matches the transaction type
+            val accountType = AccountTypeTable
+                    .select()
+                    .where(AccountTypeTable.variantColumn.eq(variant.name))
+                    .build()
+                    .let { executor.getFirst(it, AccountTypeResultSetMapper()) }
 
-                category = CategoryTable.select().where(CategoryTable.accountColumn.eq(account.identity!!).and(CategoryTable.nameColumn.isNull())).build().let {
-                    executor.getFirst(it, CategoryResultSetMapper())
-                }
-
-                category = category ?: Category().apply {
-                        this.account = account
-                        save(executor)
-                    }
+            account = Account().apply {
+                this.name = this@PendingCategory.name
+                this.accountType = accountType
+                save(executor)
             }
         }
 
-        if (categoryName != null) {
-
-            val c = CategoryTable.select().where(CategoryTable.accountColumn.eq(account.identity!!).and(CategoryTable.nameColumn.eq(categoryName))).build().let {
-                executor.getFirst(it, CategoryResultSetMapper())
-            }
-
-            category = c ?: Category().apply {
-                    this.account = account
-                    this.name = categoryName
-                    save(executor)
-                }
-        }
-
-        return category
+        return account
     }
 }
 

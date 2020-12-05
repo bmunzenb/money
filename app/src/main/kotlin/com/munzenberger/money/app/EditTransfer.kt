@@ -36,7 +36,7 @@ class EditTransfer : EditTransferBase() {
     companion object {
 
         fun from(transfer: Transfer, transactionType: TransactionType?) = EditTransfer().apply {
-            category = transfer.category?.let { DelayedCategory.from(it) }
+            category = transfer.account?.let { DelayedCategory.from(it) }
             amount = transfer.amount?.forTransactionType(transactionType)
             number = transfer.number
             memo = transfer.memo

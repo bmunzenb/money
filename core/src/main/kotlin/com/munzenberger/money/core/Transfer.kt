@@ -26,9 +26,6 @@ class Transfer internal constructor(model: TransferModel) : Persistable<Transfer
         get() = model.memo
         set(value) { model.memo = value }
 
-    @Deprecated("Use account instead")
-    var category: Category? = null
-
     var account: Account? = null
 
     var status: TransactionStatus

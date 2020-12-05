@@ -17,7 +17,7 @@ import com.munzenberger.money.core.MoneyDatabase
 import com.munzenberger.money.core.PersistableNotFoundException
 import com.munzenberger.money.core.Transaction
 import com.munzenberger.money.core.TransactionStatus
-import com.munzenberger.money.core.getAccountTransactions
+import com.munzenberger.money.core.getRegister
 import com.munzenberger.money.core.model.TransactionTable
 import com.munzenberger.money.core.model.TransferTable
 import com.munzenberger.money.sql.DeleteQueryBuilder
@@ -109,7 +109,7 @@ class AccountRegisterViewModel : AutoCloseable {
             val account = Account.get(accountIdentity, database)
                     ?: throw PersistableNotFoundException(Account::class, accountIdentity)
 
-            var transactions = account.getAccountTransactions(database)
+            var transactions = account.getRegister(database)
             var endingBalance = account.getBalance(database)
 
             if (account.accountType!!.category == AccountType.Category.LIABILITIES) {

@@ -1,7 +1,7 @@
 package com.munzenberger.money.app.model
 
-import com.munzenberger.money.core.AccountTransaction
 import com.munzenberger.money.core.Money
+import com.munzenberger.money.core.RegisterEntry
 import com.munzenberger.money.core.TransactionStatus
 import com.munzenberger.money.core.isNegative
 import com.munzenberger.money.sql.QueryExecutor
@@ -11,7 +11,7 @@ import javafx.beans.property.SimpleObjectProperty
 import javafx.beans.property.SimpleStringProperty
 import java.time.LocalDate
 
-class FXAccountTransaction(private val accountTransaction: AccountTransaction) {
+class FXAccountTransaction(private val accountTransaction: RegisterEntry) {
 
     internal val transactionId = accountTransaction.transactionId
 
@@ -20,7 +20,7 @@ class FXAccountTransaction(private val accountTransaction: AccountTransaction) {
     val dateProperty: ReadOnlyObjectProperty<LocalDate> = SimpleObjectProperty(accountTransaction.date)
     val numberProperty: ReadOnlyStringProperty = SimpleStringProperty(accountTransaction.number)
     val balanceProperty: ReadOnlyObjectProperty<Money> = SimpleObjectProperty(accountTransaction.balance)
-    val payeeProperty: ReadOnlyStringProperty = SimpleStringProperty(accountTransaction.payee)
+    val payeeProperty: ReadOnlyStringProperty = SimpleStringProperty(accountTransaction.payeeName)
 
     val categoryProperty: ReadOnlyStringProperty
     val statusProperty: ReadOnlyObjectProperty<TransactionStatus> = status
@@ -31,7 +31,7 @@ class FXAccountTransaction(private val accountTransaction: AccountTransaction) {
 
         val category = when (accountTransaction.categories.size) {
             0 -> null
-            1 -> accountTransaction.categories[0].getCategoryName()
+            1 -> accountTransaction.categories[0].name
             else -> SPLIT_CATEGORY_NAME
         }
 
@@ -55,8 +55,5 @@ class FXAccountTransaction(private val accountTransaction: AccountTransaction) {
     }
 }
 
-private fun AccountTransaction.Category.getCategoryName() = buildCategoryName(
-        accountTypeCategory = accountTypeCategory,
-        accountName = accountName,
-        categoryName = categoryName
-)
+private val RegisterEntry.Category.name: String
+    get() = categoryName(accountName, accountIsCategory)
