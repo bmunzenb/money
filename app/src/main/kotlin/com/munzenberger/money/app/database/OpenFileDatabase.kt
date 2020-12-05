@@ -1,5 +1,6 @@
 package com.munzenberger.money.app.database
 
+import com.munzenberger.money.app.ErrorAlert
 import com.munzenberger.money.app.database.FileDatabaseConnector.Companion.SUFFIX
 import javafx.scene.control.Alert
 import javafx.scene.control.ButtonType
@@ -46,6 +47,6 @@ object OpenFileDatabase : DatabaseConnectorCallbacks {
     }
 
     override fun onConnectError(error: Throwable) {
-        // Do nothing
+        ErrorAlert(error).showAndWait()
     }
 }
