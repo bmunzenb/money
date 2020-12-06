@@ -19,10 +19,10 @@ val AccountType.name: String?
         null -> null
     }
 
-fun AccountType.Companion.getForCategories(database: MoneyDatabase, vararg categories: AccountType.Category): List<AccountType> {
+fun AccountType.Companion.getForCategories(database: MoneyDatabase, vararg groups: AccountType.Group): List<AccountType> {
 
     val query = AccountTypeTable.select()
-            .where(AccountTypeTable.categoryColumn.inGroup(categories.map { it.name }))
+            .where(AccountTypeTable.groupColumn.inGroup(groups.map { it.name }))
             .orderBy(AccountTypeTable.identityColumn)
             .build()
 

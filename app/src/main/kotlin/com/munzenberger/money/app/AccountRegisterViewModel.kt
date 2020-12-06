@@ -112,7 +112,7 @@ class AccountRegisterViewModel : AutoCloseable {
             var transactions = account.getRegister(database)
             var endingBalance = account.getBalance(database)
 
-            if (account.accountType!!.category == AccountType.Category.LIABILITIES) {
+            if (account.accountType!!.group == AccountType.Group.LIABILITIES) {
                 transactions = transactions.map { it.copy(balance = it.balance.negate()) }
                 endingBalance = endingBalance.negate()
             }

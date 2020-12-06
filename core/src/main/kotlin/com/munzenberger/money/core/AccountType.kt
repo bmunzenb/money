@@ -10,7 +10,7 @@ class AccountType internal constructor(model: AccountTypeModel) : Persistable<Ac
 
     constructor() : this(AccountTypeModel())
 
-    enum class Category {
+    enum class Group {
         ASSETS,
         LIABILITIES,
         INCOME,
@@ -28,9 +28,9 @@ class AccountType internal constructor(model: AccountTypeModel) : Persistable<Ac
         EXPENSE
     }
 
-    var category: Category?
-        get() = model.category?.let { Category.valueOf(it) }
-        set(value) { model.category = value?.name }
+    var group: Group?
+        get() = model.group?.let { Group.valueOf(it) }
+        set(value) { model.group = value?.name }
 
     var variant: Variant?
         get() = model.variant?.let { Variant.valueOf(it) }
@@ -56,7 +56,7 @@ class AccountTypeResultSetMapper : ResultSetMapper<AccountType> {
 
         val model = AccountTypeModel().apply {
             identity = resultSet.getLong(AccountTypeTable.identityColumn)
-            category = resultSet.getString(AccountTypeTable.categoryColumn)
+            group = resultSet.getString(AccountTypeTable.groupColumn)
             variant = resultSet.getString(AccountTypeTable.variantColumn)
             isCategory = resultSet.getBoolean(AccountTypeTable.isCategoryColumn)
         }

@@ -45,7 +45,7 @@ class EditAccountViewModel {
 
         accountNameProperty.value = account.name
 
-        Single.fromCallable { AccountType.getForCategories(database, AccountType.Category.ASSETS, AccountType.Category.LIABILITIES) }
+        Single.fromCallable { AccountType.getForCategories(database, AccountType.Group.ASSETS, AccountType.Group.LIABILITIES) }
                 .subscribeOn(SchedulerProvider.database)
                 .observeOn(SchedulerProvider.main)
                 .subscribe(accountTypes)
