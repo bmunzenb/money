@@ -63,7 +63,7 @@ class AccountListController : AutoCloseable {
         }
 
         typeColumn.apply {
-            cellValueFactory = Callback { a -> a.value.typeProperty.get().nameProperty }
+            cellValueFactory = Callback { a -> a.value.typeProperty }
         }
 
         numberColumn.apply {
