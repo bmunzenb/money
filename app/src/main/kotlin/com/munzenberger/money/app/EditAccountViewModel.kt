@@ -1,6 +1,6 @@
 package com.munzenberger.money.app
 
-import com.munzenberger.money.app.model.getForCategories
+import com.munzenberger.money.app.model.getForAccounts
 import com.munzenberger.money.app.property.AsyncObject
 import com.munzenberger.money.app.property.ReadOnlyAsyncObjectProperty
 import com.munzenberger.money.app.property.ReadOnlyAsyncStatusProperty
@@ -45,7 +45,7 @@ class EditAccountViewModel {
 
         accountNameProperty.value = account.name
 
-        Single.fromCallable { AccountType.getForCategories(database, AccountType.Group.ASSETS, AccountType.Group.LIABILITIES) }
+        Single.fromCallable { AccountType.getForAccounts(database) }
                 .subscribeOn(SchedulerProvider.database)
                 .observeOn(SchedulerProvider.main)
                 .subscribe(accountTypes)

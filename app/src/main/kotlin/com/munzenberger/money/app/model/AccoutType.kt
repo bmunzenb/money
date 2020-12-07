@@ -2,9 +2,10 @@ package com.munzenberger.money.app.model
 
 import com.munzenberger.money.core.AccountType
 import com.munzenberger.money.core.AccountTypeResultSetMapper
-import com.munzenberger.money.core.MoneyDatabase
 import com.munzenberger.money.core.model.AccountTypeTable
-import com.munzenberger.money.sql.inGroup
+import com.munzenberger.money.sql.Condition
+import com.munzenberger.money.sql.QueryExecutor
+import com.munzenberger.money.sql.eq
 
 val AccountType.name: String?
     get() = when (variant) {
@@ -19,12 +20,27 @@ val AccountType.name: String?
         null -> null
     }
 
-fun AccountType.Companion.getForCategories(database: MoneyDatabase, vararg groups: AccountType.Group): List<AccountType> {
+private fun getAccountTypes(executor: QueryExecutor, isCategory: Boolean?): List<AccountType> {
 
-    val query = AccountTypeTable.select()
-            .where(AccountTypeTable.groupColumn.inGroup(groups.map { it.name }))
-            .orderBy(AccountTypeTable.identityColumn)
-            .build()
+    var condition: Condition? = null
 
-    return database.getList(query, AccountTypeResultSetMapper())
+    isCategory?.let {
+        condition = AccountTypeTable.isCategoryColumn.eq(it)
+    }
+
+    var builder = AccountTypeTable.select()
+
+    condition?.let {
+        builder = builder.where(it)
+    }
+
+    builder = builder.orderBy(AccountTypeTable.identityColumn)
+
+    return executor.getList(builder.build(), AccountTypeResultSetMapper())
 }
+
+fun AccountType.Companion.getForAccounts(executor: QueryExecutor): List<AccountType> =
+        getAccountTypes(executor, isCategory = false)
+
+fun AccountType.Companion.getForCategories(executor: QueryExecutor): List<AccountType> =
+        getAccountTypes(executor, isCategory = true)
