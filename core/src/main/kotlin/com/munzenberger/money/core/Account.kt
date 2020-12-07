@@ -4,6 +4,8 @@ import com.munzenberger.money.core.model.AccountModel
 import com.munzenberger.money.core.model.AccountTable
 import com.munzenberger.money.core.model.TransactionTable
 import com.munzenberger.money.core.model.TransferTable
+import com.munzenberger.money.core.model.innerJoin
+import com.munzenberger.money.core.model.selectFrom
 import com.munzenberger.money.sql.Query
 import com.munzenberger.money.sql.QueryExecutor
 import com.munzenberger.money.sql.ResultSetHandler
@@ -79,10 +81,10 @@ private class AccountBalanceCollector(private val accountId: Long?, initialBalan
 
     // query for all transfers where the specified account is either
     // the parent of the transaction, or the child as a transfer
-    val query: Query = Query.selectFrom(TransferTable.name)
+    val query: Query = Query.selectFrom(TransferTable)
             .cols(TransferTable.amountColumn, TransactionTable.accountColumn, TransferTable.accountColumn)
-            .innerJoin(TransferTable.name, TransferTable.transactionColumn, TransactionTable.name, TransactionTable.identityColumn)
-            .where(TransactionTable.accountColumn.eq(accountId) or (TransferTable.accountColumn.eq(accountId)))
+            .innerJoin(TransferTable, TransferTable.transactionColumn, TransactionTable, TransactionTable.identityColumn)
+            .where(TransactionTable.accountColumn.eq(accountId) or TransferTable.accountColumn.eq(accountId))
             .build()
 
     val result: Money

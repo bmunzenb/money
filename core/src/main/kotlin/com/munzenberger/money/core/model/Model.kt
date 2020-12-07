@@ -34,3 +34,15 @@ abstract class Table<M : Model> {
     protected fun SelectQueryBuilder.leftJoin(leftColumn: String, right: Table<*>) =
             leftJoin(name, leftColumn, right.name, right.identityColumn).apply { right.applyJoins(this) }
 }
+
+fun Query.Companion.selectFrom(table: Table<*>) =
+        selectFrom(table.name)
+
+fun SelectQueryBuilder.innerJoin(leftTable: Table<*>, leftColumn: String, rightTable: Table<*>, rightColumn: String) =
+        innerJoin(leftTable.name, leftColumn, rightTable.name, rightColumn)
+
+fun SelectQueryBuilder.leftJoin(leftTable: Table<*>, leftColumn: String, rightTable: Table<*>, rightColumn: String) =
+        leftJoin(leftTable.name, leftColumn, rightTable.name, rightColumn)
+
+fun SelectQueryBuilder.rightJoin(leftTable: Table<*>, leftColumn: String, rightTable: Table<*>, rightColumn: String) =
+        rightJoin(leftTable.name, leftColumn, rightTable.name, rightColumn)

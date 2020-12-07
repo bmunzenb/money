@@ -5,6 +5,8 @@ import com.munzenberger.money.core.Payee
 import com.munzenberger.money.core.PayeeResultSetMapper
 import com.munzenberger.money.core.model.PayeeTable
 import com.munzenberger.money.core.model.TransactionTable
+import com.munzenberger.money.core.model.leftJoin
+import com.munzenberger.money.core.model.selectFrom
 import com.munzenberger.money.sql.Query
 import com.munzenberger.money.sql.ResultSetMapper
 import com.munzenberger.money.sql.getLocalDateOrNull
@@ -13,9 +15,9 @@ import java.time.LocalDate
 
 fun Payee.Companion.getAllWithLastPaid(database: MoneyDatabase): List<Pair<Payee, LocalDate?>> {
 
-    val query = Query.selectFrom(PayeeTable.name)
+    val query = Query.selectFrom(PayeeTable)
             .cols(PayeeTable.identityColumn, PayeeTable.nameColumn, "MAX(${TransactionTable.dateColumn}) AS LAST_PAID")
-            .leftJoin(PayeeTable.name, PayeeTable.identityColumn, TransactionTable.name, TransactionTable.payeeColumn)
+            .leftJoin(PayeeTable, PayeeTable.identityColumn, TransactionTable, TransactionTable.payeeColumn)
             .groupBy(PayeeTable.identityColumn)
             .build()
 
