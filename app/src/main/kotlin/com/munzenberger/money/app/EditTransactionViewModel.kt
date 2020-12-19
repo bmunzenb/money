@@ -236,6 +236,7 @@ class EditTransactionViewModel : EditTransferBase(), AutoCloseable {
     }
 
     private fun onError(error: Throwable) {
-        // TODO handle the error
+        // TODO refactor this to the controller
+        ErrorAlert(error).showAndWait()
     }
 }

@@ -1,10 +1,12 @@
 package com.munzenberger.money.app.property
 
+import javafx.beans.binding.Bindings
 import javafx.beans.property.BooleanProperty
 import javafx.beans.property.Property
 import javafx.beans.property.StringProperty
 import javafx.beans.value.ChangeListener
 import javafx.collections.ObservableList
+import java.util.concurrent.Callable
 
 interface AsyncObjectMapper<T, R> {
     fun pending(): R
@@ -15,18 +17,18 @@ interface AsyncObjectMapper<T, R> {
 
 fun <T, R> Property<R>.bindAsync(asyncObjectProperty: ReadOnlyAsyncObjectProperty<T>, mapper: AsyncObjectMapper<T, R>) {
 
-    val callable = { obj: AsyncObject<T> -> when (obj) {
-        is AsyncObject.Pending -> setValue(mapper.pending())
-        is AsyncObject.Executing -> setValue(mapper.executing())
-        is AsyncObject.Complete -> setValue(mapper.complete(obj.value))
-        is AsyncObject.Error -> setValue(mapper.error(obj.error))
-    }}
+    val callable: Callable<R> = Callable {
+        when (val obj = asyncObjectProperty.value) {
+            is AsyncObject.Pending -> mapper.pending()
+            is AsyncObject.Executing -> mapper.executing()
+            is AsyncObject.Complete -> mapper.complete(obj.value)
+            is AsyncObject.Error -> mapper.error(obj.error)
+        }
+    }
 
-    callable.invoke(asyncObjectProperty.value)
+    val binding = Bindings.createObjectBinding(callable, asyncObjectProperty)
 
-    val listener = ChangeListener { _, _, obj: AsyncObject<T> -> callable.invoke(obj) }
-
-    asyncObjectProperty.addListener(listener)
+    bind(binding)
 }
 
 fun <T> ObservableList<T>.bindAsync(asyncObjectProperty: ReadOnlyAsyncObjectProperty<List<T>>) {
@@ -47,15 +49,13 @@ fun <T> ObservableList<T>.bindAsync(asyncObjectProperty: ReadOnlyAsyncObjectProp
 
 fun BooleanProperty.bindAsyncStatus(asyncObjectProperty: ReadOnlyAsyncObjectProperty<*>, vararg status: AsyncObject.Status) {
 
-    val callable = { obj: AsyncObject<*> ->
-        set(obj.status in status)
+    val callable: Callable<Boolean> = Callable {
+        asyncObjectProperty.value.status in status
     }
 
-    callable.invoke(asyncObjectProperty.value)
+    val binding = Bindings.createBooleanBinding(callable, asyncObjectProperty)
 
-    val listener = ChangeListener { _, _, obj: AsyncObject<*> -> callable.invoke(obj) }
-
-    asyncObjectProperty.addListener(listener)
+    bind(binding)
 }
 
 fun <T> StringProperty.bindAsync(asyncObjectProperty: ReadOnlyAsyncObjectProperty<T>, toString: (T) -> String? = { it?.toString() }) =
