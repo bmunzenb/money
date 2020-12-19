@@ -2,7 +2,7 @@ package com.munzenberger.money.core
 
 import com.munzenberger.money.sql.QueryExecutor
 
-internal class PersistableIdentityReference {
+internal class PersistableIdentityReference(private var identity: Long?) {
 
     private var value: Persistable<*>? = null
     private var updated = false
@@ -12,10 +12,11 @@ internal class PersistableIdentityReference {
         this.updated = true
     }
 
-    fun getIdentity(executor: QueryExecutor, block: (Long?) -> Unit) {
+    fun getIdentity(executor: QueryExecutor): Long? {
         if (updated) {
-            val identity = value.getIdentity(executor)
-            block.invoke(identity)
+            identity = value.getIdentity(executor)
+            updated = false
         }
+        return identity
     }
 }

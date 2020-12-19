@@ -32,14 +32,14 @@ class Transfer internal constructor(model: TransferModel) : Persistable<Transfer
         get() = TransactionStatus.parse(model.status)
         set(value) { model.status = value.name }
 
-    private val transactionRef = PersistableIdentityReference()
+    private val transactionRef = PersistableIdentityReference(model.transaction)
 
     fun setTransaction(transaction: Transaction) {
         this.transactionRef.set(transaction)
     }
 
     override fun save(executor: QueryExecutor) = executor.transaction { tx ->
-        transactionRef.getIdentity(tx) { model.transaction = it }
+        model.transaction = transactionRef.getIdentity(tx)
         model.account = account.getIdentity(tx)
         super.save(tx)
     }
