@@ -10,8 +10,8 @@ import com.munzenberger.money.version.CurrentVersion
 import com.munzenberger.money.version.PendingUpgrades
 import com.munzenberger.money.version.UnsupportedVersion
 import com.munzenberger.money.version.VersionStatus
-import io.reactivex.Completable
-import io.reactivex.Single
+import io.reactivex.rxjava3.core.Completable
+import io.reactivex.rxjava3.core.Single
 import java.sql.DriverManager
 
 interface DatabaseConnectorCallbacks {

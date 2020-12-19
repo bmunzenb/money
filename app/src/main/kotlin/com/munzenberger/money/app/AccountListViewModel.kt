@@ -10,8 +10,8 @@ import com.munzenberger.money.app.property.flatMapAsyncObject
 import com.munzenberger.money.app.property.asyncValue
 import com.munzenberger.money.core.Account
 import com.munzenberger.money.core.Money
-import io.reactivex.Single
-import io.reactivex.disposables.CompositeDisposable
+import io.reactivex.rxjava3.core.Single
+import io.reactivex.rxjava3.disposables.CompositeDisposable
 
 class AccountListViewModel : AutoCloseable {
 
@@ -31,7 +31,9 @@ class AccountListViewModel : AutoCloseable {
 
             val observableTotal = when (observableBalances.isEmpty()) {
                 true -> Single.just(Money.zero())
-                else -> Single.zip(observableBalances) { it.fold(Money.zero()) { acc, b -> acc.add(b as Money) } }
+                else -> Single.zip(observableBalances) {
+                    it.fold(Money.zero()) { acc, b -> acc.add(b as Money) }
+                }
             }
 
             asyncValue(observableTotal)

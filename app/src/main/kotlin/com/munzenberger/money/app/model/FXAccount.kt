@@ -7,7 +7,7 @@ import com.munzenberger.money.app.sanitize
 import com.munzenberger.money.core.Account
 import com.munzenberger.money.core.Money
 import com.munzenberger.money.core.MoneyDatabase
-import io.reactivex.Single
+import io.reactivex.rxjava3.core.Single
 import javafx.beans.property.ReadOnlyStringProperty
 import javafx.beans.property.SimpleStringProperty
 

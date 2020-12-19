@@ -21,7 +21,7 @@ import com.munzenberger.money.core.getTransfers
 import com.munzenberger.money.core.isNegative
 import com.munzenberger.money.core.isPositive
 import com.munzenberger.money.sql.transaction
-import io.reactivex.Single
+import io.reactivex.rxjava3.core.Single
 import javafx.beans.property.ReadOnlyBooleanProperty
 import javafx.beans.property.ReadOnlyListProperty
 import javafx.beans.property.ReadOnlyStringProperty

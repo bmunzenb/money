@@ -1,6 +1,6 @@
 package com.munzenberger.money.app.property
 
-import io.reactivex.Observable
+import io.reactivex.rxjava3.core.Observable
 
 fun <T, R> Observable<T>.flatMapAsyncObject(block: (T) -> R): Observable<AsyncObject<R>> =
         flatMap { input: T ->

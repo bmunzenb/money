@@ -1,10 +1,10 @@
 package com.munzenberger.money.app.property
 
 import com.munzenberger.money.app.SchedulerProvider
-import io.reactivex.Completable
-import io.reactivex.Scheduler
-import io.reactivex.Single
-import io.reactivex.disposables.Disposable
+import io.reactivex.rxjava3.core.Completable
+import io.reactivex.rxjava3.core.Scheduler
+import io.reactivex.rxjava3.core.Single
+import io.reactivex.rxjava3.disposables.Disposable
 import javafx.beans.property.Property
 import javafx.beans.property.ReadOnlyProperty
 
@@ -20,7 +20,7 @@ fun <T> AsyncObjectProperty<T>.asyncValue(
         single: Single<T>,
         subscribeOn: Scheduler = SchedulerProvider.database,
         observeOn: Scheduler = SchedulerProvider.main
-):Disposable = single.subscribeOn(subscribeOn)
+): Disposable = single.subscribeOn(subscribeOn)
         .observeOn(observeOn)
         .doOnSubscribe { value = AsyncObject.Executing() }
         .subscribe(
@@ -32,13 +32,13 @@ fun <T> AsyncObjectProperty<T>.asyncValue(
         subscribeOn: Scheduler = SchedulerProvider.database,
         observeOn: Scheduler = SchedulerProvider.main,
         block: () -> T
-):Disposable = asyncValue(Single.fromCallable(block), subscribeOn, observeOn)
+): Disposable = asyncValue(Single.fromCallable(block), subscribeOn, observeOn)
 
 fun AsyncStatusProperty.asyncExecute(
         subscribeOn: Scheduler = SchedulerProvider.database,
         observeOn: Scheduler = SchedulerProvider.main,
         block: () -> Unit
-):Disposable = Completable.fromAction(block)
+): Disposable = Completable.fromAction(block)
         .subscribeOn(subscribeOn)
         .observeOn(observeOn)
         .doOnSubscribe { value = AsyncObject.Executing() }

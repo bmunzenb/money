@@ -23,8 +23,8 @@ import com.munzenberger.money.core.model.TransferTable
 import com.munzenberger.money.sql.DeleteQueryBuilder
 import com.munzenberger.money.sql.inGroup
 import com.munzenberger.money.sql.transaction
-import io.reactivex.Single
-import io.reactivex.disposables.CompositeDisposable
+import io.reactivex.rxjava3.core.Single
+import io.reactivex.rxjava3.disposables.CompositeDisposable
 import javafx.beans.property.ReadOnlyBooleanProperty
 import javafx.beans.property.ReadOnlyListProperty
 import javafx.beans.property.ReadOnlyObjectProperty

@@ -7,7 +7,7 @@ import com.munzenberger.money.app.property.SimpleAsyncObjectProperty
 import com.munzenberger.money.app.property.flatMapAsyncObject
 import com.munzenberger.money.core.Payee
 import com.munzenberger.money.app.database.ObservableMoneyDatabase
-import io.reactivex.disposables.CompositeDisposable
+import io.reactivex.rxjava3.disposables.CompositeDisposable
 
 class PayeeListViewModel : AutoCloseable {
 

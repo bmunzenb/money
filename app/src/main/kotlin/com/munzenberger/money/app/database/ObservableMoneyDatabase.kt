@@ -4,9 +4,9 @@ import com.munzenberger.money.core.MoneyDatabase
 import com.munzenberger.money.sql.Query
 import com.munzenberger.money.sql.ResultSetHandler
 import com.munzenberger.money.sql.TransactionQueryExecutor
-import io.reactivex.Observable
-import io.reactivex.Observer
-import io.reactivex.subjects.BehaviorSubject
+import io.reactivex.rxjava3.core.Observable
+import io.reactivex.rxjava3.core.Observer
+import io.reactivex.rxjava3.subjects.BehaviorSubject
 
 class ObservableMoneyDatabase(private val database: MoneyDatabase) : MoneyDatabase by database {
 
