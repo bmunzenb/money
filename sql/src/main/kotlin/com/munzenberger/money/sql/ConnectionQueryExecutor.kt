@@ -31,6 +31,7 @@ private class ManagedTransactionQueryExecutor(
     private val logger = Logger.getLogger(ManagedTransactionQueryExecutor::class.java.name)
     private val level = Level.FINE
 
+    private val rollbackListeners = mutableListOf<Runnable>()
     private var autoCommit = connection.autoCommit
     private var semaphore = AtomicInteger(0)
 
@@ -57,6 +58,7 @@ private class ManagedTransactionQueryExecutor(
                 logger.log(level, "Commit transaction")
                 connection.commit()
                 connection.autoCommit = autoCommit
+                rollbackListeners.clear()
             }
             else -> logger.log(level, "Delayed commit for nested transaction: $n")
         }
@@ -70,8 +72,15 @@ private class ManagedTransactionQueryExecutor(
                 logger.log(level, "Rollback transaction")
                 connection.rollback()
                 connection.autoCommit = autoCommit
+                rollbackListeners.forEach { it.run() }
+                rollbackListeners.clear()
             }
             else -> logger.log(level, "Delayed rollback for nested transaction: $n")
         }
+    }
+
+    @Synchronized
+    override fun addRollbackListener(listener: Runnable) {
+        rollbackListeners.add(listener)
     }
 }

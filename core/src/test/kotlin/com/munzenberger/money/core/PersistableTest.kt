@@ -1,5 +1,6 @@
 package com.munzenberger.money.core
 
+import com.munzenberger.money.sql.transaction
 import org.junit.Assert.*
 import org.junit.Test
 
@@ -89,5 +90,34 @@ abstract class PersistableTest<P : Persistable<*>> : MoneyDatabaseTestSupport() 
             assertEquals(this!!.identity, p.identity)
             assertPersistablePropertiesAreEquals(p, this)
         }
+    }
+
+    @Test
+    fun `rolling back a transaction on insert clears the identity`() {
+
+        val tx = database.createTransaction()
+
+        val p = createPersistable().apply { save(tx) }
+        assertNotNull(p.identity)
+
+        tx.rollback()
+        assertNull(p.identity)
+    }
+
+    @Test
+    fun `rolling back a transaction on delete restores the identity`() {
+
+        val p = createPersistable().apply { save(database) }
+
+        val tx = database.createTransaction()
+
+        val identity = p.identity
+        assertNotNull(identity)
+
+        p.delete(tx)
+        assertNull(p.identity)
+
+        tx.rollback()
+        assertEquals(identity, p.identity)
     }
 }

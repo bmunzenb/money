@@ -4,6 +4,7 @@ import com.munzenberger.money.core.model.Model
 import com.munzenberger.money.core.model.Table
 import com.munzenberger.money.sql.QueryExecutor
 import com.munzenberger.money.sql.ResultSetMapper
+import com.munzenberger.money.sql.TransactionQueryExecutor
 import java.lang.IllegalStateException
 
 abstract class Persistable<M : Model>(
@@ -28,6 +29,12 @@ abstract class Persistable<M : Model>(
         executor.executeUpdate(query, handler)
 
         model.identity = handler.identity
+
+        if (executor is TransactionQueryExecutor) {
+            executor.addRollbackListener {
+                model.identity = null
+            }
+        }
     }
 
     private fun update(executor: QueryExecutor) {
@@ -49,7 +56,15 @@ abstract class Persistable<M : Model>(
                 0 -> throw IllegalStateException("No rows deleted for persistable.")
             }
 
+            val i = model.identity
+
             model.identity = null
+
+            if (executor is TransactionQueryExecutor) {
+                executor.addRollbackListener {
+                    model.identity = i
+                }
+            }
         }
     }
 
