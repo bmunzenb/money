@@ -5,13 +5,12 @@ import com.munzenberger.money.core.model.TransferTable
 import com.munzenberger.money.sql.QueryExecutor
 import com.munzenberger.money.sql.ResultSetMapper
 import com.munzenberger.money.sql.transaction
-import com.munzenberger.money.sql.getLongOrNull
 import java.sql.ResultSet
 
 class Transfer internal constructor(model: TransferModel) : Persistable<TransferModel>(model, TransferTable) {
 
     constructor() : this(TransferModel(
-            status = TransactionStatus.UNRECONCILED.name
+            status = TransactionStatus.UNRECONCILED
     ))
 
     var amount: Money?
@@ -28,11 +27,11 @@ class Transfer internal constructor(model: TransferModel) : Persistable<Transfer
 
     var account: Account? = null
 
-    var status: TransactionStatus
-        get() = TransactionStatus.parse(model.status)
-        set(value) { model.status = value.name }
+    var status: TransactionStatus?
+        get() = model.status
+        set(value) { model.status = value }
 
-    private val transactionRef = PersistableIdentityReference(model.transaction)
+    internal val transactionRef = PersistableIdentityReference(model.transaction)
 
     fun setTransaction(transaction: Transaction) {
         this.transactionRef.set(transaction)
@@ -59,13 +58,7 @@ class TransferResultSetMapper : ResultSetMapper<Transfer> {
     override fun apply(resultSet: ResultSet): Transfer {
 
         val model = TransferModel().apply {
-            identity = resultSet.getLong(TransferTable.identityColumn)
-            transaction = resultSet.getLongOrNull(TransferTable.transactionColumn)
-            account = resultSet.getLongOrNull(TransferTable.accountColumn)
-            amount = resultSet.getLong(TransferTable.amountColumn)
-            number = resultSet.getString(TransferTable.numberColumn)
-            memo = resultSet.getString(TransferTable.memoColumn)
-            status = resultSet.getString(TransferTable.statusColumn)
+            TransferTable.getValues(resultSet, this)
         }
 
         return Transfer(model).apply {

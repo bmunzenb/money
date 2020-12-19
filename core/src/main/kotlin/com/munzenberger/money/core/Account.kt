@@ -62,12 +62,7 @@ class AccountResultSetMapper : ResultSetMapper<Account> {
     override fun apply(resultSet: ResultSet): Account {
 
         val model = AccountModel().apply {
-            identity = resultSet.getLong(AccountTable.identityColumn)
-            name = resultSet.getString(AccountTable.nameColumn)
-            number = resultSet.getString(AccountTable.numberColumn)
-            accountType = resultSet.getLongOrNull(AccountTable.accountTypeColumn)
-            bank = resultSet.getLongOrNull(AccountTable.bankColumn)
-            initialBalance = resultSet.getLongOrNull(AccountTable.initialBalanceColumn)
+            AccountTable.getValues(resultSet, this)
         }
 
         return Account(model).apply {

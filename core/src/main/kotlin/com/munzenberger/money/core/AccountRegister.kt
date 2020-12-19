@@ -30,8 +30,7 @@ data class RegisterEntry(
 ) {
     data class Category(
             val accountId: Long,
-            val accountName: String,
-            val accountIsCategory: Boolean
+            val accountName: String
     )
 
     data class Transfer(
@@ -98,7 +97,6 @@ private class RegisterCollector(val accountId: Long) {
             transferId: Long,
             transferAccountId: Long,
             transferAccountName: String,
-            transferAccountIsCategory: Boolean,
             transferAmount: Long,
             transferNumber: String?,
             transferMemo: String?,
@@ -131,8 +129,7 @@ private class RegisterCollector(val accountId: Long) {
             // use the constituent transfers as the categories
             entry.categories += RegisterEntry.Category(
                     accountId = transferAccountId,
-                    accountName = transferAccountName,
-                    accountIsCategory = transferAccountIsCategory
+                    accountName = transferAccountName
             )
         }
 
@@ -148,9 +145,7 @@ private class RegisterCollector(val accountId: Long) {
             entry.categories = listOf(
                     RegisterEntry.Category(
                             accountId = transactionAccountId,
-                            accountName = transactionAccountName,
-                            // assumes this is a transfer from a non-category account
-                            accountIsCategory = false
+                            accountName = transactionAccountName
                     )
             )
         }
@@ -200,7 +195,6 @@ private class RegisterResultSetHandler(accountId: Long, val initialBalance: Mone
                 TRANSFER_ID,
                 TRANSFER_ACCOUNT_ID,
                 TRANSFER_ACCOUNTS.ACCOUNT_NAME AS TRANSFER_ACCOUNT_NAME,
-                TRANSFER_ACCOUNT_TYPES.ACCOUNT_TYPE_IS_CATEGORY AS TRANSFER_ACCOUNT_IS_CATEGORY,
                 TRANSFER_AMOUNT,
                 TRANSFER_NUMBER,
                 TRANSFER_MEMO,
@@ -239,7 +233,6 @@ private class RegisterResultSetHandler(accountId: Long, val initialBalance: Mone
                     transferId = rs.getLong("TRANSFER_ID"),
                     transferAccountId = rs.getLong("TRANSFER_ACCOUNT_ID"),
                     transferAccountName = rs.getString("TRANSFER_ACCOUNT_NAME"),
-                    transferAccountIsCategory = rs.getBoolean("TRANSFER_ACCOUNT_IS_CATEGORY"),
                     transferAmount = rs.getLong("TRANSFER_AMOUNT"),
                     transferNumber = rs.getString("TRANSFER_NUMBER"),
                     transferMemo = rs.getString("TRANSFER_MEMO"),

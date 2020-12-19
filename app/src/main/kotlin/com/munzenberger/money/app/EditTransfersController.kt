@@ -63,7 +63,7 @@ class EditTransfersController {
                     viewModel.categoriesProperty,
                     BlockStringConverter<DelayedCategory>(
                             toString = { c -> c.name },
-                            toObject = { s -> DelayedCategory.from(s) }))
+                            toObject = { s -> DelayedCategory.Pending(s) }))
 
             cellFactory = Callback { _ ->
                 ComboBoxTableCell<EditTransfer, DelayedCategory>(converter, viewModel.categoriesProperty).apply {

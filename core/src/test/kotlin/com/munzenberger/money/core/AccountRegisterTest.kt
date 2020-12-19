@@ -56,7 +56,6 @@ class AccountRegisterTest : MoneyDatabaseTestSupport() {
 
         assertEquals(account2.identity, category1.accountId)
         assertEquals(account2.name, category1.accountName)
-        assertEquals(account2.accountType!!.isCategory, category1.accountIsCategory)
 
         val register2 = account2.getRegister(database)
 
@@ -79,7 +78,6 @@ class AccountRegisterTest : MoneyDatabaseTestSupport() {
 
         assertEquals(account1.identity, category2.accountId)
         assertEquals(account1.name, category2.accountName)
-        assertEquals(account1.accountType!!.isCategory, category2.accountIsCategory)
     }
 
     @Test

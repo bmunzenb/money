@@ -19,9 +19,8 @@ class MoneyCoreVersion_1 : ApplicableVersion<MoneyDatabase> {
                 .column("ACCOUNT_TYPE_ID", obj.dialect.identityColumnType)
                 .column("ACCOUNT_TYPE_GROUP", "TEXT NOT NULL")
                 .column("ACCOUNT_TYPE_VARIANT", "TEXT NOT NULL")
-                .column("ACCOUNT_TYPE_IS_CATEGORY", obj.dialect.booleanType("NOT NULL"))
-                .constraint("ACCOUNT_TYPE_GROUP_CONSTRAINT", "CHECK (ACCOUNT_TYPE_GROUP IN ('ASSETS', 'LIABILITIES', 'INCOME', 'EXPENSES'))")
-                .constraint("ACCOUNT_TYPE_VARIANT_CONSTRAINT", "CHECK (ACCOUNT_TYPE_VARIANT IN ('SAVINGS', 'CHECKING', 'ASSET', 'CASH', 'CREDIT', 'LOAN', 'INCOME', 'EXPENSE'))")
+                .constraint("ACCOUNT_TYPE_GROUP_CONSTRAINT", "CHECK (ACCOUNT_TYPE_GROUP IN ('ASSETS', 'LIABILITIES'))")
+                .constraint("ACCOUNT_TYPE_VARIANT_CONSTRAINT", "CHECK (ACCOUNT_TYPE_VARIANT IN ('SAVINGS', 'CHECKING', 'ASSET', 'CASH', 'CREDIT', 'LOAN'))")
                 .build())
 
         obj.execute(Query.createTable("PAYEES")
@@ -63,49 +62,31 @@ class MoneyCoreVersion_1 : ApplicableVersion<MoneyDatabase> {
         obj.executeUpdate(Query.insertInto("ACCOUNT_TYPES")
                 .set("ACCOUNT_TYPE_GROUP", "ASSETS")
                 .set("ACCOUNT_TYPE_VARIANT", "SAVINGS")
-                .set("ACCOUNT_TYPE_IS_CATEGORY", false)
                 .build())
 
         obj.executeUpdate(Query.insertInto("ACCOUNT_TYPES")
                 .set("ACCOUNT_TYPE_GROUP", "ASSETS")
                 .set("ACCOUNT_TYPE_VARIANT", "CHECKING")
-                .set("ACCOUNT_TYPE_IS_CATEGORY", false)
                 .build())
 
         obj.executeUpdate(Query.insertInto("ACCOUNT_TYPES")
                 .set("ACCOUNT_TYPE_GROUP", "ASSETS")
                 .set("ACCOUNT_TYPE_VARIANT", "ASSET")
-                .set("ACCOUNT_TYPE_IS_CATEGORY", false)
                 .build())
 
         obj.executeUpdate(Query.insertInto("ACCOUNT_TYPES")
                 .set("ACCOUNT_TYPE_GROUP", "ASSETS")
                 .set("ACCOUNT_TYPE_VARIANT", "CASH")
-                .set("ACCOUNT_TYPE_IS_CATEGORY", false)
                 .build())
 
         obj.executeUpdate(Query.insertInto("ACCOUNT_TYPES")
                 .set("ACCOUNT_TYPE_GROUP", "LIABILITIES")
                 .set("ACCOUNT_TYPE_VARIANT", "CREDIT")
-                .set("ACCOUNT_TYPE_IS_CATEGORY", false)
                 .build())
 
         obj.executeUpdate(Query.insertInto("ACCOUNT_TYPES")
                 .set("ACCOUNT_TYPE_GROUP", "LIABILITIES")
                 .set("ACCOUNT_TYPE_VARIANT", "LOAN")
-                .set("ACCOUNT_TYPE_IS_CATEGORY", false)
-                .build())
-
-        obj.executeUpdate(Query.insertInto("ACCOUNT_TYPES")
-                .set("ACCOUNT_TYPE_GROUP", "INCOME")
-                .set("ACCOUNT_TYPE_VARIANT", "INCOME")
-                .set("ACCOUNT_TYPE_IS_CATEGORY", true)
-                .build())
-
-        obj.executeUpdate(Query.insertInto("ACCOUNT_TYPES")
-                .set("ACCOUNT_TYPE_GROUP", "EXPENSES")
-                .set("ACCOUNT_TYPE_VARIANT", "EXPENSE")
-                .set("ACCOUNT_TYPE_IS_CATEGORY", true)
                 .build())
     }
 }

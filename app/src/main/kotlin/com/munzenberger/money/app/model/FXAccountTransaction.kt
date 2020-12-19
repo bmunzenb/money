@@ -56,4 +56,4 @@ class FXAccountTransaction(private val accountTransaction: RegisterEntry) {
 }
 
 private val RegisterEntry.Category.name: String
-    get() = categoryName(accountName, accountIsCategory)
+    get() = "Transfer : $accountName"

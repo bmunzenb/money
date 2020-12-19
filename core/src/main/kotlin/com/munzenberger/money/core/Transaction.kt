@@ -6,7 +6,6 @@ import com.munzenberger.money.core.model.TransferTable
 import com.munzenberger.money.sql.QueryExecutor
 import com.munzenberger.money.sql.ResultSetMapper
 import com.munzenberger.money.sql.eq
-import com.munzenberger.money.sql.getLongOrNull
 import com.munzenberger.money.sql.transaction
 import java.sql.ResultSet
 import java.time.LocalDate
@@ -14,7 +13,7 @@ import java.time.LocalDate
 class Transaction internal constructor(model: TransactionModel) : Persistable<TransactionModel>(model, TransactionTable) {
 
     constructor() : this(TransactionModel(
-            status = TransactionStatus.UNRECONCILED.name
+            status = TransactionStatus.UNRECONCILED
     ))
 
     var date: LocalDate?
@@ -33,9 +32,9 @@ class Transaction internal constructor(model: TransactionModel) : Persistable<Tr
 
     var payee: Payee? = null
 
-    var status: TransactionStatus
-        get() = TransactionStatus.parse(model.status)
-        set(value) { model.status = value.name }
+    var status: TransactionStatus?
+        get() = model.status
+        set(value) { model.status = value }
 
     override fun save(executor: QueryExecutor) = executor.transaction { tx ->
         model.account = account.getIdentity(tx)
@@ -58,13 +57,7 @@ class TransactionResultSetMapper : ResultSetMapper<Transaction> {
     override fun apply(resultSet: ResultSet): Transaction {
 
         val model = TransactionModel().apply {
-            identity = resultSet.getLong(TransactionTable.identityColumn)
-            account = resultSet.getLongOrNull(TransactionTable.accountColumn)
-            payee = resultSet.getLongOrNull(TransactionTable.payeeColumn)
-            date = resultSet.getLongOrNull(TransactionTable.dateColumn)
-            number = resultSet.getString(TransactionTable.numberColumn)
-            memo = resultSet.getString(TransactionTable.memoColumn)
-            status = resultSet.getString(TransactionTable.statusColumn)
+            TransactionTable.getValues(resultSet, this)
         }
 
         return Transaction(model).apply {

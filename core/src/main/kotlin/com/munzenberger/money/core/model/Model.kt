@@ -1,6 +1,7 @@
 package com.munzenberger.money.core.model
 
 import com.munzenberger.money.sql.*
+import java.sql.ResultSet
 
 abstract class Model(var identity: Long? = null)
 
@@ -11,6 +12,8 @@ abstract class Table<M : Model> {
     abstract val identityColumn: String
 
     abstract fun setValues(settable: SettableQueryBuilder<*>, model: M)
+
+    abstract fun getValues(resultSet: ResultSet, model: M)
 
     open fun applyJoins(select: SelectQueryBuilder) {}
 

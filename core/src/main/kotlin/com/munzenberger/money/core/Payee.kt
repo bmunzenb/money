@@ -29,8 +29,7 @@ class PayeeResultSetMapper : ResultSetMapper<Payee> {
     override fun apply(resultSet: ResultSet): Payee {
 
         val model = PayeeModel().apply {
-            identity = resultSet.getLong(PayeeTable.identityColumn)
-            name = resultSet.getString(PayeeTable.nameColumn)
+            PayeeTable.getValues(resultSet, this)
         }
 
         return Payee(model)

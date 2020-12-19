@@ -2,6 +2,7 @@ package com.munzenberger.money.app
 
 import com.munzenberger.money.core.AccountType
 import com.munzenberger.money.core.Money
+import com.munzenberger.money.core.model.AccountTypeVariant
 
 sealed class TransactionType {
 
@@ -21,8 +22,8 @@ sealed class TransactionType {
         override val variant: Variant = Variant.CREDIT
 
         override val name = when (accountType.variant) {
-            AccountType.Variant.SAVINGS, AccountType.Variant.CHECKING -> "Deposit"
-            AccountType.Variant.ASSET, AccountType.Variant.CASH -> "Increase"
+            AccountTypeVariant.SAVINGS, AccountTypeVariant.CHECKING -> "Deposit"
+            AccountTypeVariant.ASSET, AccountTypeVariant.CASH -> "Increase"
             else -> "Credit"
         }
     }
@@ -32,9 +33,9 @@ sealed class TransactionType {
         override val variant: Variant = Variant.DEBIT
 
         override val name = when (accountType.variant) {
-            AccountType.Variant.SAVINGS, AccountType.Variant.CHECKING -> "Payment"
-            AccountType.Variant.ASSET, AccountType.Variant.CASH -> "Decrease"
-            AccountType.Variant.CREDIT -> "Charge"
+            AccountTypeVariant.SAVINGS, AccountTypeVariant.CHECKING -> "Payment"
+            AccountTypeVariant.ASSET, AccountTypeVariant.CASH -> "Decrease"
+            AccountTypeVariant.CREDIT -> "Charge"
             else -> "Debit"
         }
     }

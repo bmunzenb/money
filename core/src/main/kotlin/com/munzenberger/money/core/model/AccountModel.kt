@@ -2,6 +2,8 @@ package com.munzenberger.money.core.model
 
 import com.munzenberger.money.sql.SelectQueryBuilder
 import com.munzenberger.money.sql.SettableQueryBuilder
+import com.munzenberger.money.sql.getLongOrNull
+import java.sql.ResultSet
 
 data class AccountModel(
         var name: String? = null,
@@ -28,6 +30,15 @@ object AccountTable : Table<AccountModel>() {
         settable.set(accountTypeColumn, model.accountType)
         settable.set(bankColumn, model.bank)
         settable.set(initialBalanceColumn, model.initialBalance)
+    }
+
+    override fun getValues(resultSet: ResultSet, model: AccountModel) {
+        model.identity = resultSet.getLong(identityColumn)
+        model.name = resultSet.getString(nameColumn)
+        model.number = resultSet.getString(numberColumn)
+        model.accountType = resultSet.getLongOrNull(accountTypeColumn)
+        model.bank = resultSet.getLongOrNull(bankColumn)
+        model.initialBalance = resultSet.getLongOrNull(initialBalanceColumn)
     }
 
     override fun applyJoins(select: SelectQueryBuilder) {

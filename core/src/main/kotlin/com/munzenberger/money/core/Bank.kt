@@ -29,11 +29,9 @@ class BankResultSetMapper : ResultSetMapper<Bank> {
     override fun apply(resultSet: ResultSet): Bank {
 
         val model = BankModel().apply {
-            identity = resultSet.getLong(BankTable.identityColumn)
-            name = resultSet.getString(BankTable.nameColumn)
+            BankTable.getValues(resultSet, this)
         }
 
         return Bank(model)
     }
 }
-

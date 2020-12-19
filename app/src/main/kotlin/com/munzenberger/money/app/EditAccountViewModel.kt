@@ -1,6 +1,5 @@
 package com.munzenberger.money.app
 
-import com.munzenberger.money.app.model.getForAccounts
 import com.munzenberger.money.app.property.ReadOnlyAsyncObjectProperty
 import com.munzenberger.money.app.property.ReadOnlyAsyncStatusProperty
 import com.munzenberger.money.app.property.SimpleAsyncObjectProperty
@@ -44,7 +43,7 @@ class EditAccountViewModel {
 
         accountNameProperty.value = account.name
 
-        accountTypes.asyncValue { AccountType.getForAccounts(database) }
+        accountTypes.asyncValue { AccountType.getAll(database) }
 
         selectedAccountTypeProperty.value = account.accountType
 

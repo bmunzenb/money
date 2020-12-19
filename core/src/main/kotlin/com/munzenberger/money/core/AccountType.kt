@@ -1,7 +1,9 @@
 package com.munzenberger.money.core
 
+import com.munzenberger.money.core.model.AccountTypeGroup
 import com.munzenberger.money.core.model.AccountTypeModel
 import com.munzenberger.money.core.model.AccountTypeTable
+import com.munzenberger.money.core.model.AccountTypeVariant
 import com.munzenberger.money.sql.QueryExecutor
 import com.munzenberger.money.sql.ResultSetMapper
 import java.sql.ResultSet
@@ -10,35 +12,13 @@ class AccountType internal constructor(model: AccountTypeModel) : Persistable<Ac
 
     constructor() : this(AccountTypeModel())
 
-    enum class Group {
-        ASSETS,
-        LIABILITIES,
-        INCOME,
-        EXPENSES
-    }
+    var group: AccountTypeGroup?
+        get() = model.group
+        set(value) { model.group = value }
 
-    enum class Variant {
-        SAVINGS,
-        CHECKING,
-        ASSET,
-        CASH,
-        CREDIT,
-        LOAN,
-        INCOME,
-        EXPENSE
-    }
-
-    var group: Group?
-        get() = model.group?.let { Group.valueOf(it) }
-        set(value) { model.group = value?.name }
-
-    var variant: Variant?
-        get() = model.variant?.let { Variant.valueOf(it) }
-        set(value) { model.variant = value?.name }
-
-    var isCategory: Boolean?
-        get() = model.isCategory
-        set(value) { model.isCategory = value }
+    var variant: AccountTypeVariant?
+        get() = model.variant
+        set(value) { model.variant = value }
 
     companion object {
 
@@ -55,10 +35,7 @@ class AccountTypeResultSetMapper : ResultSetMapper<AccountType> {
     override fun apply(resultSet: ResultSet): AccountType {
 
         val model = AccountTypeModel().apply {
-            identity = resultSet.getLong(AccountTypeTable.identityColumn)
-            group = resultSet.getString(AccountTypeTable.groupColumn)
-            variant = resultSet.getString(AccountTypeTable.variantColumn)
-            isCategory = resultSet.getBoolean(AccountTypeTable.isCategoryColumn)
+            AccountTypeTable.getValues(resultSet, this)
         }
 
         return AccountType(model)

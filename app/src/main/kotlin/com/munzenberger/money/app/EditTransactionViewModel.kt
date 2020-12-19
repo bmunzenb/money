@@ -2,7 +2,6 @@ package com.munzenberger.money.app
 
 import com.munzenberger.money.app.model.DelayedCategory
 import com.munzenberger.money.app.model.DelayedCategoryComparator
-import com.munzenberger.money.app.model.getAssetsAndLiabilities
 import com.munzenberger.money.app.property.AsyncObject
 import com.munzenberger.money.app.property.ReadOnlyAsyncObjectProperty
 import com.munzenberger.money.app.property.ReadOnlyAsyncStatusProperty
@@ -91,7 +90,7 @@ class EditTransactionViewModel : EditTransferBase(), AutoCloseable {
                     amountDisabled.value = false
                 }
                 else -> {
-                    category = DelayedCategory.split()
+                    category = DelayedCategory.Split
                     amount = it.list.fold(Money.zero()) { acc, t -> acc.add(t.amount!!) }
                     categoryDisabled.value = true
                     amountDisabled.value = true
@@ -127,7 +126,7 @@ class EditTransactionViewModel : EditTransferBase(), AutoCloseable {
 
         selectedAccountProperty.value = transaction.account
 
-        accounts.asyncValue { Account.getAssetsAndLiabilities(database) }
+        accounts.asyncValue { Account.getAll(database) }
 
         dateProperty.value = transaction.date ?: LocalDate.now()
 
@@ -137,7 +136,7 @@ class EditTransactionViewModel : EditTransferBase(), AutoCloseable {
 
         categories.asyncValue {
             Account.getAll(database)
-                    .map { c -> DelayedCategory.from(c) }
+                    .map { DelayedCategory.Transfer(it) }
                     .sortedWith(DelayedCategoryComparator)
         }
 
@@ -210,7 +209,10 @@ class EditTransactionViewModel : EditTransferBase(), AutoCloseable {
 
                     transfer.apply {
                         this.amount = edit.getAmountValue(transactionType!!)
-                        this.account = edit.category!!.getCategory(tx, transactionType!!)
+                        this.account = when (val c = edit.category) {
+                            is DelayedCategory.Transfer -> c.account
+                            else -> null
+                        }
                         this.number = edit.number
                         this.memo = edit.memo
                         save(tx)

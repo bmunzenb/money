@@ -18,6 +18,7 @@ import com.munzenberger.money.core.PersistableNotFoundException
 import com.munzenberger.money.core.Transaction
 import com.munzenberger.money.core.TransactionStatus
 import com.munzenberger.money.core.getRegister
+import com.munzenberger.money.core.model.AccountTypeGroup
 import com.munzenberger.money.core.model.TransactionTable
 import com.munzenberger.money.core.model.TransferTable
 import com.munzenberger.money.sql.DeleteQueryBuilder
@@ -112,7 +113,7 @@ class AccountRegisterViewModel : AutoCloseable {
             var transactions = account.getRegister(database)
             var endingBalance = account.getBalance(database)
 
-            if (account.accountType!!.group == AccountType.Group.LIABILITIES) {
+            if (account.accountType!!.group == AccountTypeGroup.LIABILITIES) {
                 transactions = transactions.map { it.copy(balance = it.balance.negate()) }
                 endingBalance = endingBalance.negate()
             }

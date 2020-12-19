@@ -1,5 +1,7 @@
 package com.munzenberger.money.core
 
+import com.munzenberger.money.core.model.AccountTypeGroup
+import com.munzenberger.money.core.model.AccountTypeVariant
 import java.time.LocalDate
 import java.util.*
 
@@ -19,9 +21,8 @@ fun Bank.randomize() = this.apply {
 }
 
 fun AccountType.randomize() = this.apply {
-    variant = AccountType.Variant.values().let { it[random.nextInt(it.size)] }
-    group = AccountType.Group.values().let { it[random.nextInt(it.size)] }
-    isCategory = false
+    variant = AccountTypeVariant.values().let { it[random.nextInt(it.size)] }
+    group = AccountTypeGroup.values().let { it[random.nextInt(it.size)] }
 }
 
 fun Account.randomize() = this.apply {

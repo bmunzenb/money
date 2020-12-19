@@ -1,7 +1,10 @@
 package com.munzenberger.money.core.model
 
+import com.munzenberger.money.core.TransactionStatus
 import com.munzenberger.money.sql.SelectQueryBuilder
 import com.munzenberger.money.sql.SettableQueryBuilder
+import com.munzenberger.money.sql.getLongOrNull
+import java.sql.ResultSet
 
 data class TransferModel(
         var transaction: Long? = null,
@@ -9,7 +12,7 @@ data class TransferModel(
         var amount: Long? = null,
         var number: String? = null,
         var memo: String? = null,
-        var status: String? = null
+        var status: TransactionStatus? = null
 ) : Model()
 
 object TransferTable : Table<TransferModel>() {
@@ -31,6 +34,16 @@ object TransferTable : Table<TransferModel>() {
         settable.set(numberColumn, model.number)
         settable.set(memoColumn, model.memo)
         settable.set(statusColumn, model.status)
+    }
+
+    override fun getValues(resultSet: ResultSet, model: TransferModel) {
+        model.identity = resultSet.getLong(identityColumn)
+        model.transaction = resultSet.getLongOrNull(transactionColumn)
+        model.account = resultSet.getLongOrNull(accountColumn)
+        model.amount = resultSet.getLongOrNull(amountColumn)
+        model.number = resultSet.getString(numberColumn)
+        model.memo = resultSet.getString(memoColumn)
+        model.status = resultSet.getString(statusColumn)?.let { TransactionStatus.valueOf(it) }
     }
 
     override fun applyJoins(select: SelectQueryBuilder) {
