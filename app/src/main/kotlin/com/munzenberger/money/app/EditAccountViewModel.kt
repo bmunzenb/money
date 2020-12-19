@@ -1,18 +1,17 @@
 package com.munzenberger.money.app
 
 import com.munzenberger.money.app.model.getForAccounts
-import com.munzenberger.money.app.property.AsyncObject
 import com.munzenberger.money.app.property.ReadOnlyAsyncObjectProperty
 import com.munzenberger.money.app.property.ReadOnlyAsyncStatusProperty
 import com.munzenberger.money.app.property.SimpleAsyncObjectProperty
 import com.munzenberger.money.app.property.SimpleAsyncStatusProperty
-import com.munzenberger.money.app.property.subscribe
+import com.munzenberger.money.app.property.asyncExecute
+import com.munzenberger.money.app.property.asyncValue
 import com.munzenberger.money.core.Account
 import com.munzenberger.money.core.AccountType
 import com.munzenberger.money.core.Bank
 import com.munzenberger.money.core.Money
 import com.munzenberger.money.core.MoneyDatabase
-import io.reactivex.Single
 import javafx.beans.property.ReadOnlyBooleanProperty
 import javafx.beans.property.SimpleBooleanProperty
 import javafx.beans.property.SimpleObjectProperty
@@ -45,19 +44,13 @@ class EditAccountViewModel {
 
         accountNameProperty.value = account.name
 
-        Single.fromCallable { AccountType.getForAccounts(database) }
-                .subscribeOn(SchedulerProvider.database)
-                .observeOn(SchedulerProvider.main)
-                .subscribe(accountTypes)
+        accountTypes.asyncValue { AccountType.getForAccounts(database) }
 
         selectedAccountTypeProperty.value = account.accountType
 
         accountNumberProperty.value = account.number
 
-        Single.fromCallable { Bank.getAll(database).sortedBy { it.name } }
-                .subscribeOn(SchedulerProvider.database)
-                .observeOn(SchedulerProvider.main)
-                .subscribe(banks)
+        banks.asyncValue { Bank.getAll(database).sortedBy { it.name } }
 
         selectedBankProperty.value = account.bank
 
@@ -76,10 +69,6 @@ class EditAccountViewModel {
             initialBalance = initialBalanceProperty.value
         }
 
-        Single.fromCallable { account.save(database) }
-                .subscribeOn(SchedulerProvider.database)
-                .observeOn(SchedulerProvider.main)
-                .doOnSubscribe { saveStatus.value = AsyncObject.Executing() }
-                .subscribe(saveStatus)
+        saveStatus.asyncExecute { account.save(database) }
     }
 }

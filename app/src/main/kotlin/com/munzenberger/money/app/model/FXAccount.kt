@@ -11,7 +11,7 @@ import io.reactivex.Single
 import javafx.beans.property.ReadOnlyStringProperty
 import javafx.beans.property.SimpleStringProperty
 
-class FXAccount(account: Account, database: MoneyDatabase) {
+class FXAccount(private val account: Account, private val database: MoneyDatabase) {
 
     val identity = account.identity!!
 
@@ -22,10 +22,9 @@ class FXAccount(account: Account, database: MoneyDatabase) {
     private val balance = SimpleAsyncObjectProperty<Money>()
     val balanceProperty: ReadOnlyAsyncObjectProperty<Money> = balance
 
-    val observableBalance: Single<Money> by lazy {
-        Single.fromCallable { account.getBalance(database) }
+    val observableBalance: Single<Money>
+        get() = Single.fromCallable { account.getBalance(database) }
                 .doOnSubscribe { balance.value = AsyncObject.Executing() }
                 .doOnError { balance.value = AsyncObject.Error(it) }
                 .doOnSuccess { balance.value = AsyncObject.Complete(it) }
-    }
 }

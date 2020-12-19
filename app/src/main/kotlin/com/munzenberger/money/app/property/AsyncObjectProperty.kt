@@ -1,7 +1,8 @@
 package com.munzenberger.money.app.property
 
+import com.munzenberger.money.app.SchedulerProvider
 import io.reactivex.Completable
-import io.reactivex.Observable
+import io.reactivex.Scheduler
 import io.reactivex.Single
 import io.reactivex.disposables.Disposable
 import javafx.beans.property.Property
@@ -15,8 +16,33 @@ interface AsyncObjectProperty<T> : Property<AsyncObject<T>>, ReadOnlyAsyncObject
 
 interface AsyncStatusProperty : AsyncObjectProperty<Unit>, ReadOnlyAsyncStatusProperty
 
-fun <T> Single<T>.subscribe(property: AsyncObjectProperty<T>): Disposable =
-        subscribe({ property.value = AsyncObject.Complete(it) }, { property.value = AsyncObject.Error(it) })
+fun <T> AsyncObjectProperty<T>.asyncValue(
+        single: Single<T>,
+        subscribeOn: Scheduler = SchedulerProvider.database,
+        observeOn: Scheduler = SchedulerProvider.main
+):Disposable = single.subscribeOn(subscribeOn)
+        .observeOn(observeOn)
+        .doOnSubscribe { value = AsyncObject.Executing() }
+        .subscribe(
+                { value = AsyncObject.Complete(it) },
+                { value = AsyncObject.Error(it) }
+        )
 
-fun Completable.subscribe(property: AsyncStatusProperty): Disposable =
-        subscribe({ property.value = AsyncObject.Complete(Unit) }, { property.value = AsyncObject.Error(it) })
+fun <T> AsyncObjectProperty<T>.asyncValue(
+        subscribeOn: Scheduler = SchedulerProvider.database,
+        observeOn: Scheduler = SchedulerProvider.main,
+        block: () -> T
+):Disposable = asyncValue(Single.fromCallable(block), subscribeOn, observeOn)
+
+fun AsyncStatusProperty.asyncExecute(
+        subscribeOn: Scheduler = SchedulerProvider.database,
+        observeOn: Scheduler = SchedulerProvider.main,
+        block: () -> Unit
+):Disposable = Completable.fromAction(block)
+        .subscribeOn(subscribeOn)
+        .observeOn(observeOn)
+        .doOnSubscribe { value = AsyncObject.Executing() }
+        .subscribe(
+                { value = AsyncObject.Complete(Unit) },
+                { value = AsyncObject.Error(it) }
+        )

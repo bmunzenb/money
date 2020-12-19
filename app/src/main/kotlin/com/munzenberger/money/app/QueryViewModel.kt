@@ -2,11 +2,10 @@ package com.munzenberger.money.app
 
 import com.munzenberger.money.app.property.ReadOnlyAsyncObjectProperty
 import com.munzenberger.money.app.property.SimpleAsyncObjectProperty
-import com.munzenberger.money.app.property.subscribe
+import com.munzenberger.money.app.property.asyncValue
 import com.munzenberger.money.core.MoneyDatabase
 import com.munzenberger.money.sql.Query
 import com.munzenberger.money.sql.ResultSetHandler
-import io.reactivex.Single
 import javafx.beans.property.SimpleStringProperty
 import javafx.collections.FXCollections
 import javafx.collections.ObservableList
@@ -36,24 +35,14 @@ class QueryViewModel {
         get() = listOf(selectedQueryProperty.value, queryProperty.value).firstOrNull { it.isNotBlank() }
 
     fun executeQuery() {
-        queryString?.run {
-            observableQuery(this)
-                    .subscribeOn(SchedulerProvider.database)
-                    .observeOn(SchedulerProvider.main)
-                    .subscribe(result)
-        }
+        queryString?.run { result.asyncValue { executeQuery(this) } }
     }
 
     fun executeUpdate() {
-        queryString?.run {
-            observableUpdate(this)
-                    .subscribeOn(SchedulerProvider.database)
-                    .observeOn(SchedulerProvider.main)
-                    .subscribe(result)
-        }
+        queryString?.run { result.asyncValue { executeUpdate(this) } }
     }
 
-    private fun observableQuery(input: String) = Single.fromCallable {
+    private fun executeQuery(input: String): QueryResult {
 
         val result = QueryResult()
 
@@ -77,15 +66,15 @@ class QueryViewModel {
             }
         })
 
-        result.apply {
+        return result.apply {
             message = "${result.data.size} row(s) returned."
         }
     }
 
-    private fun observableUpdate(input: String) = Single.fromCallable {
+    private fun executeUpdate(input: String): QueryResult {
 
         val updated = database.executeUpdate(Query(input))
 
-        QueryResult(message = "$updated row(s) updated.")
+        return QueryResult(message = "$updated row(s) updated.")
     }
 }

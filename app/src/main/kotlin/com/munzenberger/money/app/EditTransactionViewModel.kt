@@ -8,18 +8,19 @@ import com.munzenberger.money.app.property.ReadOnlyAsyncObjectProperty
 import com.munzenberger.money.app.property.ReadOnlyAsyncStatusProperty
 import com.munzenberger.money.app.property.SimpleAsyncObjectProperty
 import com.munzenberger.money.app.property.SimpleAsyncStatusProperty
-import com.munzenberger.money.app.property.subscribe
+import com.munzenberger.money.app.property.asyncExecute
+import com.munzenberger.money.app.property.asyncValue
 import com.munzenberger.money.core.Account
 import com.munzenberger.money.core.Money
 import com.munzenberger.money.core.MoneyDatabase
 import com.munzenberger.money.core.Payee
 import com.munzenberger.money.core.Transaction
+import com.munzenberger.money.core.TransactionStatus
 import com.munzenberger.money.core.Transfer
+import com.munzenberger.money.core.getTransfers
 import com.munzenberger.money.core.isNegative
 import com.munzenberger.money.core.isPositive
-import com.munzenberger.money.app.database.observableTransaction
-import com.munzenberger.money.core.TransactionStatus
-import com.munzenberger.money.core.getTransfers
+import com.munzenberger.money.sql.transaction
 import io.reactivex.Single
 import javafx.beans.property.ReadOnlyBooleanProperty
 import javafx.beans.property.ReadOnlyListProperty
@@ -126,29 +127,24 @@ class EditTransactionViewModel : EditTransferBase(), AutoCloseable {
 
         selectedAccountProperty.value = transaction.account
 
-        Single.fromCallable { Account.getAssetsAndLiabilities(database) }
-                .subscribeOn(SchedulerProvider.database)
-                .observeOn(SchedulerProvider.main)
-                .subscribe(accounts)
+        accounts.asyncValue { Account.getAssetsAndLiabilities(database) }
 
         dateProperty.value = transaction.date ?: LocalDate.now()
 
         selectedPayeeProperty.value = transaction.payee
 
-        Single.fromCallable { Payee.getAll(database).sortedBy { it.name } }
-                .subscribeOn(SchedulerProvider.database)
-                .observeOn(SchedulerProvider.main)
-                .subscribe(payees)
+        payees.asyncValue { Payee.getAll(database).sortedBy { it.name } }
 
-        Single.fromCallable { Account.getAll(database).map { c -> DelayedCategory.from(c) }.sortedWith(DelayedCategoryComparator) }
-                .subscribeOn(SchedulerProvider.database)
-                .observeOn(SchedulerProvider.main)
-                .subscribe(categories)
+        categories.asyncValue {
+            Account.getAll(database)
+                    .map { c -> DelayedCategory.from(c) }
+                    .sortedWith(DelayedCategoryComparator)
+        }
 
         Single.fromCallable { transaction.getTransfers(database) }
                 .subscribeOn(SchedulerProvider.database)
                 .observeOn(SchedulerProvider.main)
-                .subscribe(::onTransfers)
+                .subscribe(::onTransfers, ::onError)
 
         numberProperty.value = transaction.number
 
@@ -190,46 +186,43 @@ class EditTransactionViewModel : EditTransferBase(), AutoCloseable {
 
     fun save() {
 
-        val save = database.observableTransaction { tx ->
+        saveStatus.asyncExecute {
 
-            transaction.apply {
-                account = selectedAccountProperty.value
-                date = dateProperty.value
-                payee = selectedPayeeProperty.value
-                number = numberProperty.value
-                memo = memoProperty.value
-                save(tx)
-            }
+            database.transaction { tx ->
 
-            editTransfers.forEachIndexed { index, edit ->
-
-                val transfer = when {
-                    // update existing transfer
-                    index < transfers.size -> transfers[index]
-                    // create new transfer
-                    else -> Transfer().apply { setTransaction(transaction) }
-                }
-
-                transfer.apply {
-                    this.amount = edit.getAmountValue(transactionType!!)
-                    this.account = edit.category!!.getCategory(tx, transactionType!!)
-                    this.number = edit.number
-                    this.memo = edit.memo
+                transaction.apply {
+                    account = selectedAccountProperty.value
+                    date = dateProperty.value
+                    payee = selectedPayeeProperty.value
+                    number = numberProperty.value
+                    memo = memoProperty.value
                     save(tx)
                 }
-            }
 
-            // delete any transfers in excess of the number updated/created
-            transfers.drop(editTransfers.size).forEach {
-                it.delete(tx)
+                editTransfers.forEachIndexed { index, edit ->
+
+                    val transfer = when {
+                        // update existing transfer
+                        index < transfers.size -> transfers[index]
+                        // create new transfer
+                        else -> Transfer().apply { setTransaction(transaction) }
+                    }
+
+                    transfer.apply {
+                        this.amount = edit.getAmountValue(transactionType!!)
+                        this.account = edit.category!!.getCategory(tx, transactionType!!)
+                        this.number = edit.number
+                        this.memo = edit.memo
+                        save(tx)
+                    }
+                }
+
+                // delete any transfers in excess of the number updated/created
+                transfers.drop(editTransfers.size).forEach {
+                    it.delete(tx)
+                }
             }
         }
-
-        saveStatus.value = AsyncObject.Executing()
-
-        save.subscribeOn(SchedulerProvider.database)
-                .observeOn(SchedulerProvider.main)
-                .subscribe(saveStatus)
     }
 
     fun prepareSplit(block: (ObservableList<EditTransfer>, List<DelayedCategory>) -> Unit) {
@@ -240,5 +233,9 @@ class EditTransactionViewModel : EditTransferBase(), AutoCloseable {
 
     override fun close() {
         // do nothing
+    }
+
+    private fun onError(error: Throwable) {
+        // TODO handle the error
     }
 }
