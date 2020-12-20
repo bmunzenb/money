@@ -13,5 +13,7 @@ data class Query(val sql: String, val parameters: List<Any?> = emptyList()) {
         fun update(table: String) = UpdateQueryBuilder(table)
 
         fun deleteFrom(table: String) = DeleteQueryBuilder(table)
+
+        fun createIndex(name: String, table: String, unique: Boolean = false) = CreateIndexQueryBuilder(name, table, unique)
     }
 }

@@ -55,6 +55,10 @@ class MoneyCoreVersion_1 : ApplicableVersion<MoneyDatabase> {
                 .constraint("TRANSACTION_STATUS_CONSTRAINT", "CHECK (TRANSACTION_STATUS IN ('UNRECONCILED', 'CLEARED', 'RECONCILED'))")
                 .build())
 
+        obj.execute(Query.createIndex("TRANSACTION_ACCOUNT_INDEX", "TRANSACTIONS")
+                .column("TRANSACTION_ACCOUNT_ID")
+                .build())
+
         obj.execute(Query.createTable("TRANSFERS")
                 .column("TRANSFER_ID", obj.dialect.identityColumnType)
                 .columnWithReference("TRANSFER_TRANSACTION_ID", obj.dialect.identityType("NOT NULL"), "TRANSACTIONS", "TRANSACTION_ID")
@@ -66,12 +70,21 @@ class MoneyCoreVersion_1 : ApplicableVersion<MoneyDatabase> {
                 .constraint("TRANSFER_STATUS_CONSTRAINT", "CHECK (TRANSFER_STATUS IN ('UNRECONCILED', 'CLEARED', 'RECONCILED'))")
                 .build())
 
+        obj.execute(Query.createIndex("TRANSFER_TRANSACTION_ACCOUNT_INDEX", "TRANSFERS")
+                .column("TRANSFER_TRANSACTION_ID")
+                .column("TRANSFER_ACCOUNT_ID")
+                .build())
+
         obj.execute(Query.createTable("ENTRIES")
                 .column("ENTRY_ID", obj.dialect.identityColumnType)
                 .columnWithReference("ENTRY_TRANSACTION_ID", obj.dialect.identityType("NOT NULL"), "TRANSACTIONS", "TRANSACTION_ID")
                 .columnWithReference("ENTRY_CATEGORY_ID", obj.dialect.identityType("NOT NULL"), "CATEGORIES", "CATEGORY_ID")
                 .column("ENTRY_AMOUNT", "BIGINT NOT NULL")
                 .column("ENTRY_MEMO", "TEXT")
+                .build())
+
+        obj.execute(Query.createIndex("ENTRY_TRANSACTION_INDEX", "ENTRIES")
+                .column("ENTRY_TRANSACTION_ID")
                 .build())
 
         obj.executeUpdate(Query.insertInto("ACCOUNT_TYPES")
