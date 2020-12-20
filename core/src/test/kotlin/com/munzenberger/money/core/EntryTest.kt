@@ -22,5 +22,6 @@ class EntryTest : PersistableTest<Entry>() {
         assertEquals(p1.categoryRef.getIdentity(database)!!, p2.categoryRef.getIdentity(database)!!)
         assertEquals(p1.amount, p2.amount)
         assertEquals(p1.memo, p2.memo)
+        assertEquals(p1.orderInTransaction, p2.orderInTransaction)
     }
 }

@@ -67,6 +67,7 @@ class TransactionResultSetMapper : ResultSetMapper<Transaction> {
     }
 }
 
+@Deprecated("This function only returns transfers, use getDetails() instead.")
 fun Transaction.getTransfers(database: MoneyDatabase): List<Transfer> =
         when (val id = identity) {
             null ->

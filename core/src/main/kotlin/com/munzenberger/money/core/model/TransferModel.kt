@@ -12,7 +12,8 @@ data class TransferModel(
         var amount: Long? = null,
         var number: String? = null,
         var memo: String? = null,
-        var status: TransactionStatus? = null
+        var status: TransactionStatus? = null,
+        var orderInTransaction: Long? = null
 ) : Model()
 
 object TransferTable : Table<TransferModel>() {
@@ -26,6 +27,7 @@ object TransferTable : Table<TransferModel>() {
     const val numberColumn = "TRANSFER_NUMBER"
     const val memoColumn = "TRANSFER_MEMO"
     const val statusColumn = "TRANSFER_STATUS"
+    const val orderInTransaction = "TRANSFER_ORDER_IN_TRANSACTION"
 
     override fun setValues(settable: SettableQueryBuilder<*>, model: TransferModel) {
         settable.set(transactionColumn, model.transaction)
@@ -34,6 +36,7 @@ object TransferTable : Table<TransferModel>() {
         settable.set(numberColumn, model.number)
         settable.set(memoColumn, model.memo)
         settable.set(statusColumn, model.status?.name)
+        settable.set(orderInTransaction, model.orderInTransaction)
     }
 
     override fun getValues(resultSet: ResultSet, model: TransferModel) {
@@ -44,6 +47,7 @@ object TransferTable : Table<TransferModel>() {
         model.number = resultSet.getString(numberColumn)
         model.memo = resultSet.getString(memoColumn)
         model.status = resultSet.getString(statusColumn)?.let { TransactionStatus.valueOf(it) }
+        model.orderInTransaction = resultSet.getLong(orderInTransaction)
     }
 
     override fun applyJoins(select: SelectQueryBuilder) {

@@ -67,6 +67,7 @@ class MoneyCoreVersion_1 : ApplicableVersion<MoneyDatabase> {
                 .column("TRANSFER_NUMBER", "TEXT")
                 .column("TRANSFER_MEMO", "TEXT")
                 .column("TRANSFER_STATUS", "TEXT NOT NULL")
+                .column("TRANSFER_ORDER_IN_TRANSACTION", "INTEGER NOT NULL")
                 .constraint("TRANSFER_STATUS_CONSTRAINT", "CHECK (TRANSFER_STATUS IN ('UNRECONCILED', 'CLEARED', 'RECONCILED'))")
                 .build())
 
@@ -81,6 +82,7 @@ class MoneyCoreVersion_1 : ApplicableVersion<MoneyDatabase> {
                 .columnWithReference("ENTRY_CATEGORY_ID", obj.dialect.identityType("NOT NULL"), "CATEGORIES", "CATEGORY_ID")
                 .column("ENTRY_AMOUNT", "BIGINT NOT NULL")
                 .column("ENTRY_MEMO", "TEXT")
+                .column("ENTRY_ORDER_IN_TRANSACTION", "INTEGER NOT NULL")
                 .build())
 
         obj.execute(Query.createIndex("ENTRY_TRANSACTION_INDEX", "ENTRIES")

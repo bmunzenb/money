@@ -10,7 +10,8 @@ import java.sql.ResultSet
 class Transfer internal constructor(model: TransferModel) : Persistable<TransferModel>(model, TransferTable) {
 
     constructor() : this(TransferModel(
-            status = TransactionStatus.UNRECONCILED
+            status = TransactionStatus.UNRECONCILED,
+            orderInTransaction = 0
     ))
 
     var amount: Money?
@@ -30,6 +31,10 @@ class Transfer internal constructor(model: TransferModel) : Persistable<Transfer
     var status: TransactionStatus?
         get() = model.status
         set(value) { model.status = value }
+
+    var orderInTransaction: Long?
+        get() = model.orderInTransaction
+        set(value) { model.orderInTransaction = value }
 
     internal val transactionRef = PersistableIdentityReference(model.transaction)
 

@@ -9,7 +9,9 @@ import java.sql.ResultSet
 
 class Entry internal constructor(model: EntryModel) : Persistable<EntryModel>(model, EntryTable) {
 
-    constructor() : this(EntryModel())
+    constructor() : this(EntryModel(
+            orderInTransaction = 0
+    ))
 
     internal val transactionRef = PersistableIdentityReference(model.transaction)
 
@@ -30,6 +32,10 @@ class Entry internal constructor(model: EntryModel) : Persistable<EntryModel>(mo
     var memo: String?
         get() = model.memo
         set(value) { model.memo = value }
+
+    var orderInTransaction: Long?
+        get() = model.orderInTransaction
+        set(value) { model.orderInTransaction = value }
 
     override fun save(executor: QueryExecutor) = executor.transaction { tx ->
         model.transaction = transactionRef.getIdentity(tx)
