@@ -28,6 +28,13 @@ class MoneyCoreVersion_1 : ApplicableVersion<MoneyDatabase> {
                 .column("PAYEE_NAME", "TEXT NOT NULL")
                 .build())
 
+        obj.execute(Query.createTable("CATEGORIES")
+                .column("CATEGORY_ID", obj.dialect.identityColumnType)
+                .columnWithReference("CATEGORY_PARENT", obj.dialect.identityType, "CATEGORY", "CATEGORY_ID")
+                .column("CATEGORY_NAME", "TEXT NOT NULL")
+                .build()
+        )
+
         obj.execute(Query.createTable("ACCOUNTS")
                 .column("ACCOUNT_ID", obj.dialect.identityColumnType)
                 .column("ACCOUNT_NAME", "TEXT NOT NULL")

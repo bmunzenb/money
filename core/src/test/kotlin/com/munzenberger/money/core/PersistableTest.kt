@@ -1,7 +1,8 @@
 package com.munzenberger.money.core
 
-import com.munzenberger.money.sql.transaction
-import org.junit.Assert.*
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertNull
 import org.junit.Test
 
 abstract class PersistableTest<P : Persistable<*>> : MoneyDatabaseTestSupport() {

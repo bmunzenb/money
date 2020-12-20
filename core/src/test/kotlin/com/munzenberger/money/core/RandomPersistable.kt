@@ -58,4 +58,8 @@ fun Transfer.randomize() = this.apply {
     status = TransactionStatus.random()
 }
 
+fun Category.randomize() = this.apply {
+    name = randomString()
+}
+
 private fun Money.Companion.random() = valueOf(random.nextLong())
