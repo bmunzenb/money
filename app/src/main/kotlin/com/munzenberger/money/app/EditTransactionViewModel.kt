@@ -1,7 +1,7 @@
 package com.munzenberger.money.app
 
+import com.munzenberger.money.app.model.CategoryWithParent
 import com.munzenberger.money.app.model.DelayedCategory
-import com.munzenberger.money.app.model.DelayedCategoryComparator
 import com.munzenberger.money.app.property.AsyncObject
 import com.munzenberger.money.app.property.ReadOnlyAsyncObjectProperty
 import com.munzenberger.money.app.property.ReadOnlyAsyncStatusProperty
@@ -135,9 +135,18 @@ class EditTransactionViewModel : EditTransferBase(), AutoCloseable {
         payees.asyncValue { Payee.getAll(database).sortedBy { it.name } }
 
         categories.asyncValue {
-            Account.getAll(database)
+
+            val categories = mutableListOf<DelayedCategory>()
+
+            categories += CategoryWithParent.getAll(database)
+                    .map { DelayedCategory.Category(it) }
+                    .sortedBy { it.name }
+
+            categories += Account.getAll(database)
                     .map { DelayedCategory.Transfer(it) }
-                    .sortedWith(DelayedCategoryComparator)
+                    .sortedBy { it.name }
+
+            categories
         }
 
         Single.fromCallable { transaction.getTransfers(database) }
