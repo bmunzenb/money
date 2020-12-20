@@ -41,7 +41,7 @@ class AccountTest : PersistableTest<Account>() {
     }
 
     @Test
-    fun balance() {
+    fun `balance with transfers`() {
 
         val account1 = Account().apply {
             randomize()
@@ -104,12 +104,57 @@ class AccountTest : PersistableTest<Account>() {
         }
 
         val balance1 = account1.getBalance(database)
-        assertEquals(Money.valueOf(10 + 42 - 10), balance1)
+        assertEquals(Money.valueOf(10 +42 -10), balance1)
 
         val balance2 = account2.getBalance(database)
-        assertEquals(Money.valueOf(-10 - 42 + 88 + 10), balance2)
+        assertEquals(Money.valueOf(-10 -42 +88 +10), balance2)
 
         val balance3 = account3.getBalance(database)
         assertEquals(Money.valueOf(-88), balance3)
+    }
+
+    @Test
+    fun `balance with entries`() {
+
+        val account = Account().apply {
+            randomize()
+            initialBalance = Money.valueOf(42)
+            save(database)
+        }
+
+        val transaction1 = Transaction().apply {
+            this.account = account
+            this.date = LocalDate.now()
+            save(database)
+        }
+
+        val category1 = Category().apply {
+            randomize()
+            save(database)
+        }
+
+        // add 88 units to account
+        Entry().apply {
+            setTransaction(transaction1)
+            setCategory(category1)
+            amount = Money.valueOf(88)
+            save(database)
+        }
+
+        val category2 = Category().apply {
+            randomize()
+            save(database)
+        }
+
+        // subtract 10 units from account
+        Entry().apply {
+            setTransaction(transaction1)
+            setCategory(category2)
+            amount = Money.valueOf(-10)
+            save(database)
+        }
+
+        val balance = account.getBalance(database)
+        assertEquals(Money.valueOf(42 +88 -10), balance)
     }
 }

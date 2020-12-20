@@ -2,15 +2,10 @@ package com.munzenberger.money.core
 
 import com.munzenberger.money.core.model.AccountModel
 import com.munzenberger.money.core.model.AccountTable
-import com.munzenberger.money.core.model.TransactionTable
-import com.munzenberger.money.core.model.TransferTable
-import com.munzenberger.money.core.model.innerJoin
-import com.munzenberger.money.core.model.selectFrom
 import com.munzenberger.money.sql.Query
 import com.munzenberger.money.sql.QueryExecutor
 import com.munzenberger.money.sql.ResultSetHandler
 import com.munzenberger.money.sql.ResultSetMapper
-import com.munzenberger.money.sql.eq
 import com.munzenberger.money.sql.getLongOrNull
 import com.munzenberger.money.sql.transaction
 import java.sql.ResultSet
@@ -74,13 +69,15 @@ class AccountResultSetMapper : ResultSetMapper<Account> {
 
 private class AccountBalanceCollector(private val accountId: Long?, initialBalance: Long?) : ResultSetHandler {
 
-    // query for all transfers where the specified account is either
-    // the parent of the transaction, or the child as a transfer
-    val query: Query = Query.selectFrom(TransferTable)
-            .cols(TransferTable.amountColumn, TransactionTable.accountColumn, TransferTable.accountColumn)
-            .innerJoin(TransferTable, TransferTable.transactionColumn, TransactionTable, TransactionTable.identityColumn)
-            .where(TransactionTable.accountColumn.eq(accountId) or TransferTable.accountColumn.eq(accountId))
-            .build()
+    val sql = """
+        SELECT TRANSACTION_ACCOUNT_ID, TRANSFER_ACCOUNT_ID, TRANSFER_AMOUNT, ENTRY_AMOUNT
+        FROM TRANSACTIONS
+        LEFT JOIN TRANSFERS ON TRANSACTIONS.TRANSACTION_ID = TRANSFERS.TRANSFER_TRANSACTION_ID
+        LEFT JOIN ENTRIES ON TRANSACTIONS.TRANSACTION_ID = ENTRIES.ENTRY_TRANSACTION_ID
+        WHERE TRANSACTIONS.TRANSACTION_ACCOUNT_ID = ? OR TRANSFERS.TRANSFER_ACCOUNT_ID = ?
+    """.trimIndent()
+
+    val query = Query(sql, listOf(accountId, accountId))
 
     val result: Money
         get() = Money.valueOf(accumulator)
@@ -90,20 +87,28 @@ private class AccountBalanceCollector(private val accountId: Long?, initialBalan
     override fun accept(rs: ResultSet) {
         while (rs.next()) {
 
-            val amount = rs.getLong(TransferTable.amountColumn)
-            val transactionAccount = rs.getLong(TransactionTable.accountColumn)
-            val transferAccount = rs.getLong(TransferTable.accountColumn)
+            val transactionAccount = rs.getLong("TRANSACTION_ACCOUNT_ID")
+            val transferAccount = rs.getLong("TRANSFER_ACCOUNT_ID")
+            val transferAmount = rs.getLongOrNull("TRANSFER_AMOUNT")
+            val entryAmount = rs.getLongOrNull("ENTRY_AMOUNT")
 
-            if (accountId == transactionAccount) {
+            transferAmount?.let { amount ->
+
                 // if the specified account is the parent for the transaction,
                 // then the transfer amount is credited (added) to the accumulator
-                accumulator += amount
-            }
+                if (accountId == transactionAccount) {
+                    accumulator += amount
+                }
 
-            if (accountId == transferAccount) {
                 // if the specified account is the child as the transfer,
                 // then the amount is debited (subtracted) from the accumulator
-                accumulator -= amount
+                if (accountId == transferAccount) {
+                    accumulator -= amount
+                }
+            }
+
+            entryAmount?.let { amount ->
+                accumulator += amount
             }
         }
     }
