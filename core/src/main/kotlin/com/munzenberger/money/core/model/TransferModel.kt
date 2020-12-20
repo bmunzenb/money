@@ -33,7 +33,7 @@ object TransferTable : Table<TransferModel>() {
         settable.set(amountColumn, model.amount)
         settable.set(numberColumn, model.number)
         settable.set(memoColumn, model.memo)
-        settable.set(statusColumn, model.status)
+        settable.set(statusColumn, model.status?.name)
     }
 
     override fun getValues(resultSet: ResultSet, model: TransferModel) {
