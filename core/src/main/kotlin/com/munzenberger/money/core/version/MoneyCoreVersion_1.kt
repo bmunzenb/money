@@ -30,7 +30,7 @@ class MoneyCoreVersion_1 : ApplicableVersion<MoneyDatabase> {
 
         obj.execute(Query.createTable("CATEGORIES")
                 .column("CATEGORY_ID", obj.dialect.identityColumnType)
-                .columnWithReference("CATEGORY_PARENT", obj.dialect.identityType, "CATEGORY", "CATEGORY_ID")
+                .columnWithReference("CATEGORY_PARENT_ID", obj.dialect.identityType, "CATEGORY", "CATEGORY_ID")
                 .column("CATEGORY_NAME", "TEXT NOT NULL")
                 .build()
         )
@@ -64,6 +64,14 @@ class MoneyCoreVersion_1 : ApplicableVersion<MoneyDatabase> {
                 .column("TRANSFER_MEMO", "TEXT")
                 .column("TRANSFER_STATUS", "TEXT NOT NULL")
                 .constraint("TRANSFER_STATUS_CONSTRAINT", "CHECK (TRANSFER_STATUS IN ('UNRECONCILED', 'CLEARED', 'RECONCILED'))")
+                .build())
+
+        obj.execute(Query.createTable("ENTRIES")
+                .column("ENTRY_ID", obj.dialect.identityColumnType)
+                .columnWithReference("ENTRY_TRANSACTION_ID", obj.dialect.identityType("NOT NULL"), "TRANSACTIONS", "TRANSACTION_ID")
+                .columnWithReference("ENTRY_CATEGORY_ID", obj.dialect.identityType("NOT NULL"), "CATEGORIES", "CATEGORY_ID")
+                .column("ENTRY_AMOUNT", "BIGINT NOT NULL")
+                .column("ENTRY_MEMO", "TEXT")
                 .build())
 
         obj.executeUpdate(Query.insertInto("ACCOUNT_TYPES")

@@ -62,4 +62,11 @@ fun Category.randomize() = this.apply {
     name = randomString()
 }
 
+fun Entry.randomize() = this.apply {
+    setTransaction(Transaction().randomize())
+    setCategory(Category().randomize())
+    amount = Money.random()
+    memo = randomString()
+}
+
 private fun Money.Companion.random() = valueOf(random.nextLong())

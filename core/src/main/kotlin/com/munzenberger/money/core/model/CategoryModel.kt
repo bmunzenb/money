@@ -14,7 +14,7 @@ object CategoryTable : Table<CategoryModel>() {
     override val name = "CATEGORIES"
     override val identityColumn = "CATEGORY_ID"
 
-    const val parentColumn = "CATEGORY_PARENT"
+    const val parentColumn = "CATEGORY_PARENT_ID"
     const val nameColumn = "CATEGORY_NAME"
 
     override fun setValues(settable: SettableQueryBuilder<*>, model: CategoryModel) {
