@@ -81,6 +81,7 @@ private class ManagedTransactionQueryExecutor(
 
     @Synchronized
     override fun addRollbackListener(listener: Runnable) {
-        rollbackListeners.add(listener)
+        // treat the listeners as a LIFO queue
+        rollbackListeners.add(0, listener)
     }
 }
