@@ -21,4 +21,5 @@ dependencies {
     implementation "org.xerial:sqlite-jdbc:$versions.sqlite"
 
     testImplementation "io.mockk:mockk:$versions.mockk"
+    testImplementation testFixtures(project(':core'))
 }

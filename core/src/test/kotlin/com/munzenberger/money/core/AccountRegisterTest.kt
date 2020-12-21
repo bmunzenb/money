@@ -42,7 +42,7 @@ class AccountRegisterTest : MoneyDatabaseTestSupport() {
         }
 
         // spend 76 units on category
-        val entry = Entry().apply {
+        Entry().apply {
             randomize()
             amount = Money.valueOf(-76)
             orderInTransaction = 1

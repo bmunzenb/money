@@ -1,8 +1,13 @@
+plugins {
+    id 'java-test-fixtures'
+}
+
 dependencies {
     
     api project(':sql')
     api project(':version')
 
-    testImplementation "com.h2database:h2:$versions.h2"
-    testImplementation "org.xerial:sqlite-jdbc:$versions.sqlite"
+    testFixturesImplementation "junit:junit:$versions.junit"
+    testFixturesImplementation "com.h2database:h2:$versions.h2"
+    testFixturesImplementation "org.xerial:sqlite-jdbc:$versions.sqlite"
 }
