@@ -7,7 +7,7 @@ import com.munzenberger.money.sql.eq
 
 sealed class TransactionDetail {
 
-    abstract val orderInTransaction: Long?
+    abstract val orderInTransaction: Int?
 
     data class Transfer(val transfer: com.munzenberger.money.core.Transfer) : TransactionDetail() {
         override val orderInTransaction = transfer.orderInTransaction

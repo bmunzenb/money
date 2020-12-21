@@ -56,7 +56,7 @@ fun Transfer.randomize() = this.apply {
     number = randomString()
     memo = randomString()
     status = TransactionStatus.random()
-    orderInTransaction = random.nextLong()
+    orderInTransaction = random.nextInt()
 }
 
 fun Category.randomize() = this.apply {
@@ -68,7 +68,7 @@ fun Entry.randomize() = this.apply {
     setCategory(Category().randomize())
     amount = Money.random()
     memo = randomString()
-    orderInTransaction = random.nextLong()
+    orderInTransaction = random.nextInt()
 }
 
 private fun Money.Companion.random() = valueOf(random.nextLong())

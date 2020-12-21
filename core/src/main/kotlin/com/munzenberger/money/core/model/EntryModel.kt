@@ -9,7 +9,7 @@ data class EntryModel(
         var category: Long? = null,
         var amount: Long? = null,
         var memo: String? = null,
-        var orderInTransaction: Long? = null
+        var orderInTransaction: Int? = null
 ) : Model()
 
 object EntryTable : Table<EntryModel>() {
@@ -37,6 +37,6 @@ object EntryTable : Table<EntryModel>() {
         model.category = resultSet.getLongOrNull(categoryColumn)
         model.amount = resultSet.getLongOrNull(amountColumn)
         model.memo = resultSet.getString(memoColumn)
-        model.orderInTransaction = resultSet.getLong(orderInTransaction)
+        model.orderInTransaction = resultSet.getInt(orderInTransaction)
     }
 }

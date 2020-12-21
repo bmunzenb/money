@@ -33,7 +33,7 @@ class Entry internal constructor(model: EntryModel) : Persistable<EntryModel>(mo
         get() = model.memo
         set(value) { model.memo = value }
 
-    var orderInTransaction: Long?
+    var orderInTransaction: Int?
         get() = model.orderInTransaction
         set(value) { model.orderInTransaction = value }
 

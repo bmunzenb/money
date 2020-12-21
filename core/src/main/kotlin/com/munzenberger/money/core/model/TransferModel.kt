@@ -13,7 +13,7 @@ data class TransferModel(
         var number: String? = null,
         var memo: String? = null,
         var status: TransactionStatus? = null,
-        var orderInTransaction: Long? = null
+        var orderInTransaction: Int? = null
 ) : Model()
 
 object TransferTable : Table<TransferModel>() {
@@ -47,7 +47,7 @@ object TransferTable : Table<TransferModel>() {
         model.number = resultSet.getString(numberColumn)
         model.memo = resultSet.getString(memoColumn)
         model.status = resultSet.getString(statusColumn)?.let { TransactionStatus.valueOf(it) }
-        model.orderInTransaction = resultSet.getLong(orderInTransaction)
+        model.orderInTransaction = resultSet.getInt(orderInTransaction)
     }
 
     override fun applyJoins(select: SelectQueryBuilder) {

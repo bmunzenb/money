@@ -13,13 +13,15 @@ interface DatabaseDialect {
 object H2DatabaseDialect : DatabaseDialect {
 
     override val identityType = "INTEGER"
-    override val identityColumnType = identityType("NOT NULL AUTO_INCREMENT PRIMARY KEY")
+    // https://www.h2database.com/html/grammar.html#column_definition
+    override val identityColumnType = identityType("NOT NULL IDENTITY")
     override val booleanType = "BOOLEAN"
 }
 
 object SQLiteDatabaseDialect : DatabaseDialect {
 
     override val identityType = "INTEGER"
-    override val identityColumnType = identityType("NOT NULL PRIMARY KEY AUTOINCREMENT")
+    // https://sqlite.org/autoinc.html
+    override val identityColumnType = identityType("NOT NULL PRIMARY KEY")
     override val booleanType = "INTEGER"
 }

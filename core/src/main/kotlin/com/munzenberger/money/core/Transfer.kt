@@ -32,7 +32,7 @@ class Transfer internal constructor(model: TransferModel) : Persistable<Transfer
         get() = model.status
         set(value) { model.status = value }
 
-    var orderInTransaction: Long?
+    var orderInTransaction: Int?
         get() = model.orderInTransaction
         set(value) { model.orderInTransaction = value }
 
