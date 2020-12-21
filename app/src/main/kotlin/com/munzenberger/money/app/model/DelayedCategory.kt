@@ -10,13 +10,15 @@ sealed class DelayedCategory {
     abstract val name: String
 
     class Transfer(val account: Account) : DelayedCategory() {
+
         override val name = "Transfer $CATEGORY_DELIMITER ${account.name}"
     }
 
-    class Category(val categoryWithParent: CategoryWithParent) : DelayedCategory() {
-        override val name = when (val p = categoryWithParent.parentName) {
-            null -> categoryWithParent.name
-            else -> "$p $CATEGORY_DELIMITER ${categoryWithParent.name}"
+    class Category(val category: com.munzenberger.money.core.Category, parentName: String?) : DelayedCategory() {
+
+        override val name = when (parentName) {
+            null -> category.name ?: ""
+            else -> "$parentName $CATEGORY_DELIMITER ${category.name}"
         }
     }
 

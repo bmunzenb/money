@@ -11,13 +11,11 @@ class DelayedCategoryTest {
     @Test
     fun `delayed category entry formats category name`() {
 
-        val c = CategoryWithParent(
-               identity = 1,
-               name = "Category",
-               parentName = null
-        )
+        val category = mockk<Category>().apply {
+            every { name } returns "Category"
+        }
 
-        val dc = DelayedCategory.Category(c)
+        val dc = DelayedCategory.Category(category, null)
 
         assertEquals("Category", dc.name)
     }
@@ -25,13 +23,11 @@ class DelayedCategoryTest {
     @Test
     fun `delayed category entry formats category name with parent`() {
 
-        val c = CategoryWithParent(
-                identity = 1,
-                name = "Category",
-                parentName = "Parent"
-        )
+        val category = mockk<Category>().apply {
+            every { name } returns "Category"
+        }
 
-        val dc = DelayedCategory.Category(c)
+        val dc = DelayedCategory.Category(category, "Parent")
 
         assertEquals("Parent : Category", dc.name)
     }
