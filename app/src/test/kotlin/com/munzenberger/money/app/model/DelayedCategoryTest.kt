@@ -15,7 +15,7 @@ class DelayedCategoryTest {
             every { name } returns "Category"
         }
 
-        val dc = DelayedCategory.Category(category, null)
+        val dc = DelayedCategory.Entry(category, null)
 
         assertEquals("Category", dc.name)
     }
@@ -27,7 +27,31 @@ class DelayedCategoryTest {
             every { name } returns "Category"
         }
 
-        val dc = DelayedCategory.Category(category, "Parent")
+        val dc = DelayedCategory.Entry(category, "Parent")
+
+        assertEquals("Parent : Category", dc.name)
+    }
+
+    @Test
+    fun `delayed category pending formats category name`() {
+
+        val dc = DelayedCategory.Pending("Category")
+
+        assertEquals("Category", dc.name)
+    }
+
+    @Test
+    fun `delayed category pending formats category name with parent`() {
+
+        val dc = DelayedCategory.Pending("Parent:Category")
+
+        assertEquals("Parent : Category", dc.name)
+    }
+
+    @Test
+    fun `delayed category pending trims category names`() {
+
+        val dc = DelayedCategory.Pending(" Parent  :  Category ")
 
         assertEquals("Parent : Category", dc.name)
     }

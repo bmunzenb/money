@@ -140,7 +140,7 @@ class EditTransactionViewModel : EditTransferBase(), AutoCloseable {
             val categories = mutableListOf<DelayedCategory>()
 
             categories += Category.getAllWithParent(database)
-                    .map { DelayedCategory.Category(it.first, it.second) }
+                    .map { DelayedCategory.Entry(it.first, it.second) }
                     .sortedBy { it.name }
 
             categories += Account.getAll(database)
