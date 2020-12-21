@@ -89,34 +89,18 @@ class MoneyCoreVersion_1 : ApplicableVersion<MoneyDatabase> {
                 .column("ENTRY_TRANSACTION_ID")
                 .build())
 
-        obj.executeUpdate(Query.insertInto("ACCOUNT_TYPES")
-                .set("ACCOUNT_TYPE_GROUP", "ASSETS")
-                .set("ACCOUNT_TYPE_VARIANT", "SAVINGS")
-                .build())
+        obj.insertAccountType("ASSETS", "SAVINGS")
+        obj.insertAccountType("ASSETS", "CHECKING")
+        obj.insertAccountType("ASSETS", "ASSET")
+        obj.insertAccountType("ASSETS", "CASH")
+        obj.insertAccountType("LIABILITIES", "CREDIT")
+        obj.insertAccountType("LIABILITIES", "LOAN")
+    }
 
-        obj.executeUpdate(Query.insertInto("ACCOUNT_TYPES")
-                .set("ACCOUNT_TYPE_GROUP", "ASSETS")
-                .set("ACCOUNT_TYPE_VARIANT", "CHECKING")
-                .build())
-
-        obj.executeUpdate(Query.insertInto("ACCOUNT_TYPES")
-                .set("ACCOUNT_TYPE_GROUP", "ASSETS")
-                .set("ACCOUNT_TYPE_VARIANT", "ASSET")
-                .build())
-
-        obj.executeUpdate(Query.insertInto("ACCOUNT_TYPES")
-                .set("ACCOUNT_TYPE_GROUP", "ASSETS")
-                .set("ACCOUNT_TYPE_VARIANT", "CASH")
-                .build())
-
-        obj.executeUpdate(Query.insertInto("ACCOUNT_TYPES")
-                .set("ACCOUNT_TYPE_GROUP", "LIABILITIES")
-                .set("ACCOUNT_TYPE_VARIANT", "CREDIT")
-                .build())
-
-        obj.executeUpdate(Query.insertInto("ACCOUNT_TYPES")
-                .set("ACCOUNT_TYPE_GROUP", "LIABILITIES")
-                .set("ACCOUNT_TYPE_VARIANT", "LOAN")
+    private fun MoneyDatabase.insertAccountType(group: String, variant: String) {
+        executeUpdate(Query.insertInto("ACCOUNT_TYPES")
+                .set("ACCOUNT_TYPE_GROUP", group)
+                .set("ACCOUNT_TYPE_VARIANT", variant)
                 .build())
     }
 }
