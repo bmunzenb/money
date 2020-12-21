@@ -11,6 +11,14 @@ fun ResultSet.getLongOrNull(columnLabel: String) =
             }
         }
 
+fun ResultSet.getIntOrNull(columnLabel: String) =
+        getObject(columnLabel)?.let {
+            when (it) {
+                is Number -> it.toInt()
+                else -> null
+            }
+        }
+
 fun ResultSet.getLocalDate(columnLabel: String): LocalDate =
         getLong(columnLabel).let { LocalDate.ofEpochDay(it) }
 

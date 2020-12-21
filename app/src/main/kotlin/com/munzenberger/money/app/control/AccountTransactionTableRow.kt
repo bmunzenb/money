@@ -1,6 +1,6 @@
 package com.munzenberger.money.app.control
 
-import com.munzenberger.money.app.model.FXAccountTransaction
+import com.munzenberger.money.app.model.FXRegisterEntry
 import com.munzenberger.money.core.TransactionStatus
 import javafx.beans.binding.Bindings
 import javafx.css.PseudoClass
@@ -14,10 +14,10 @@ import java.time.LocalDate
 
 class AccountTransactionTableRow(
         private val add: () -> Unit,
-        private val edit: (FXAccountTransaction) -> Unit,
-        private val delete: (FXAccountTransaction) -> Unit,
-        private val markAs: (FXAccountTransaction, TransactionStatus) -> Unit
-) : TableRow<FXAccountTransaction>() {
+        private val edit: (FXRegisterEntry) -> Unit,
+        private val delete: (FXRegisterEntry) -> Unit,
+        private val markAs: (FXRegisterEntry, TransactionStatus) -> Unit
+) : TableRow<FXRegisterEntry>() {
 
     companion object {
         private val futureDatePseudoClass: PseudoClass = PseudoClass.getPseudoClass("future-date")
@@ -79,7 +79,7 @@ class AccountTransactionTableRow(
         )
     }
 
-    override fun updateItem(item: FXAccountTransaction?, empty: Boolean) {
+    override fun updateItem(item: FXRegisterEntry?, empty: Boolean) {
         super.updateItem(item, empty)
 
         val isFuture = !empty && item != null && item.dateProperty.value.isAfter(LocalDate.now())

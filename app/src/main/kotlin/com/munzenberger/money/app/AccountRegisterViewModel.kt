@@ -1,7 +1,7 @@
 package com.munzenberger.money.app
 
 import com.munzenberger.money.app.database.ObservableMoneyDatabase
-import com.munzenberger.money.app.model.FXAccountTransaction
+import com.munzenberger.money.app.model.FXRegisterEntry
 import com.munzenberger.money.app.model.FXAccountTransactionFilter
 import com.munzenberger.money.app.model.inCurrentMonth
 import com.munzenberger.money.app.model.inCurrentYear
@@ -11,7 +11,6 @@ import com.munzenberger.money.app.property.ReadOnlyAsyncObjectProperty
 import com.munzenberger.money.app.property.SimpleAsyncObjectProperty
 import com.munzenberger.money.app.property.flatMapAsyncObject
 import com.munzenberger.money.core.Account
-import com.munzenberger.money.core.AccountType
 import com.munzenberger.money.core.Money
 import com.munzenberger.money.core.MoneyDatabase
 import com.munzenberger.money.core.PersistableNotFoundException
@@ -41,27 +40,27 @@ class AccountRegisterViewModel : AutoCloseable {
 
     private data class SubscriptionResult(
             val account: Account,
-            val transactions: List<FXAccountTransaction>,
+            val transactions: List<FXRegisterEntry>,
             val endingBalance: Money
     )
 
     private val disposables = CompositeDisposable()
 
     private val account = SimpleAsyncObjectProperty<Account>()
-    private val transactions = SimpleAsyncObjectProperty<List<FXAccountTransaction>>()
+    private val transactions = SimpleAsyncObjectProperty<List<FXRegisterEntry>>()
     private val endingBalance = SimpleAsyncObjectProperty<Money>()
     private val debitText = SimpleStringProperty()
     private val creditText = SimpleStringProperty()
-    private val activeFilters = SimpleObjectProperty<Predicate<FXAccountTransaction>>()
+    private val activeFilters = SimpleObjectProperty<Predicate<FXRegisterEntry>>()
     private val operationInProgress = SimpleBooleanProperty(false)
 
     val accountProperty: ReadOnlyAsyncObjectProperty<Account> = account
-    val transactionsProperty: ReadOnlyAsyncObjectProperty<List<FXAccountTransaction>> = transactions
+    val transactionsProperty: ReadOnlyAsyncObjectProperty<List<FXRegisterEntry>> = transactions
     val endingBalanceProperty: ReadOnlyAsyncObjectProperty<Money> = endingBalance
     val debitTextProperty: ReadOnlyStringProperty = debitText
     val creditTextProperty: ReadOnlyStringProperty = creditText
     val dateFiltersProperty: ReadOnlyListProperty<FXAccountTransactionFilter>
-    val activeFiltersProperty: ReadOnlyObjectProperty<Predicate<FXAccountTransaction>> = activeFilters
+    val activeFiltersProperty: ReadOnlyObjectProperty<Predicate<FXRegisterEntry>> = activeFilters
     val operationInProgressProperty: ReadOnlyBooleanProperty = operationInProgress
 
     val selectedDateFilterProperty = SimpleObjectProperty<FXAccountTransactionFilter>()
@@ -120,7 +119,7 @@ class AccountRegisterViewModel : AutoCloseable {
 
             SubscriptionResult(
                     account = account,
-                    transactions = transactions.map { FXAccountTransaction(it) },
+                    transactions = transactions.map { FXRegisterEntry(it) },
                     endingBalance = endingBalance
             )
         }
@@ -153,7 +152,7 @@ class AccountRegisterViewModel : AutoCloseable {
                 .also { disposables.add(it) }
     }
 
-    fun getTransaction(transaction: FXAccountTransaction, block: (Transaction?, Throwable?) -> Unit) {
+    fun getTransaction(transaction: FXRegisterEntry, block: (Transaction?, Throwable?) -> Unit) {
 
         Single.fromCallable {
             Transaction.get(transaction.transactionId, database)
@@ -166,7 +165,7 @@ class AccountRegisterViewModel : AutoCloseable {
                 .subscribe { t, error -> block.invoke(t, error) }
     }
 
-    fun deleteTransactions(transactions: List<FXAccountTransaction>, block: (Throwable?) -> Unit) {
+    fun deleteTransactions(transactions: List<FXRegisterEntry>, block: (Throwable?) -> Unit) {
 
         val ids = transactions.map { it.transactionId }
 
@@ -193,7 +192,7 @@ class AccountRegisterViewModel : AutoCloseable {
                 .subscribe { _, error -> block.invoke(error) }
     }
 
-    fun updateTransactionStatus(transaction: FXAccountTransaction, status: TransactionStatus, block: (Throwable?) -> Unit) {
+    fun updateTransactionStatus(transaction: FXRegisterEntry, status: TransactionStatus, block: (Throwable?) -> Unit) {
 
         Single.fromCallable { transaction.updateStatus(status, database) }
                 .subscribeOn(SchedulerProvider.database)

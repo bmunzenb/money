@@ -5,8 +5,8 @@ import java.util.function.Predicate
 
 class FXAccountTransactionFilter(
         val name: String,
-        predicate: Predicate<FXAccountTransaction>
-) : Predicate<FXAccountTransaction> by predicate {
+        predicate: Predicate<FXRegisterEntry>
+) : Predicate<FXRegisterEntry> by predicate {
     override fun toString() = name
 }
 

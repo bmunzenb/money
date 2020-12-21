@@ -6,6 +6,7 @@ import com.munzenberger.money.sql.Query
 import com.munzenberger.money.sql.QueryExecutor
 import com.munzenberger.money.sql.ResultSetHandler
 import com.munzenberger.money.sql.eq
+import com.munzenberger.money.sql.getIntOrNull
 import com.munzenberger.money.sql.getLocalDate
 import com.munzenberger.money.sql.getLongOrNull
 import com.munzenberger.money.sql.inGroup
@@ -18,25 +19,34 @@ data class RegisterEntry(
         val date: LocalDate,
         val payeeId: Long?,
         val payeeName: String?,
-        val categories: List<Category>,
         val amount: Money,
         val balance: Money,
         val memo: String?,
         val number: String?,
         val status: TransactionStatus,
+        val details: List<Detail>,
         private val registerAccountId: Long,
-        private val transactionAccountId: Long,
-        private val transfers: List<Transfer>,
+        private val transactionAccountId: Long
 ) {
-    data class Category(
-            val accountId: Long,
-            val accountName: String
-    )
+    sealed class Detail {
 
-    data class Transfer(
-            val transferId: Long,
-            val accountId: Long
-    )
+        abstract val orderInTransaction: Int
+
+        data class Transfer(
+                val transferId: Long,
+                val accountId: Long,
+                val accountName: String,
+                override val orderInTransaction: Int,
+                internal val isTransactionAccount: Boolean
+        ) : Detail()
+
+        data class Entry(
+                val categoryId: Long,
+                val categoryName: String,
+                val parentCategoryName: String?,
+                override val orderInTransaction: Int
+        ) : Detail()
+    }
 
     fun updateStatus(status: TransactionStatus, executor: QueryExecutor) = executor.transaction { tx ->
 
@@ -50,8 +60,8 @@ data class RegisterEntry(
             tx.executeUpdate(query)
         }
 
-        val ts = transfers
-                .filter { registerAccountId == it.accountId }
+        val ts = details.filterIsInstance<Detail.Transfer>()
+                .filter { it.isTransactionAccount }
                 .map { it.transferId }
 
         if (ts.isNotEmpty()) {
@@ -78,8 +88,7 @@ private class RegisterCollector(val accountId: Long) {
             var memo: String? = null,
             var number: String? = null,
             var status: String? = null,
-            var categories: List<RegisterEntry.Category> = emptyList(),
-            var transfers: List<RegisterEntry.Transfer> = emptyList()
+            var details: List<RegisterEntry.Detail> = emptyList()
     )
 
     private val entries = mutableMapOf<Long, TransactionEntry>()
@@ -94,13 +103,20 @@ private class RegisterCollector(val accountId: Long) {
             transactionStatus: String,
             payeeId: Long?,
             payeeName: String?,
-            transferId: Long,
-            transferAccountId: Long,
-            transferAccountName: String,
-            transferAmount: Long,
+            transferId: Long?,
+            transferAccountId: Long?,
+            transferAccountName: String?,
+            transferAmount: Long?,
             transferNumber: String?,
             transferMemo: String?,
-            transferStatus: String
+            transferStatus: String?,
+            transferOrderInTransaction: Int?,
+            entryId: Long?,
+            entryAmount: Long?,
+            entryCategoryId: Long?,
+            entryCategoryName: String?,
+            entryParentCategoryName: String?,
+            entryOrderInTransaction: Int?
     ) {
 
         val entry = entries.getOrPut(transactionId) {
@@ -113,41 +129,51 @@ private class RegisterCollector(val accountId: Long) {
             )
         }
 
-        entry.transfers += RegisterEntry.Transfer(
-                transferId = transferId,
-                accountId = transferAccountId
-        )
-
-        if (accountId == transactionAccountId) {
-            // this is a parent transaction, so all transfer amounts are
-            // credited (added) to the total amount
-            entry.amount += transferAmount
-            entry.status = transactionStatus
-            entry.number = transactionNumber
-            entry.memo = transactionMemo
-
-            // use the constituent transfers as the categories
-            entry.categories += RegisterEntry.Category(
-                    accountId = transferAccountId,
-                    accountName = transferAccountName
-            )
-        }
-
         if (accountId == transferAccountId) {
-            // this is a child transfer to a larger transaction, so all
-            // transfer amounts are debited (subtracted) from the total amount
-            entry.amount -= transferAmount
+            entry.amount -= transferAmount!!
             entry.status = transferStatus
             entry.number = transferNumber
             entry.memo = transferMemo
 
-            // use the parent transaction as the category
-            entry.categories = listOf(
-                    RegisterEntry.Category(
-                            accountId = transactionAccountId,
-                            accountName = transactionAccountName
-                    )
+            // detail is a transfer to the account on the transaction
+            entry.details += RegisterEntry.Detail.Transfer(
+                    transferId = transferId!!,
+                    accountId = transactionAccountId,
+                    accountName = transactionAccountName,
+                    orderInTransaction = transferOrderInTransaction!!,
+                    isTransactionAccount = true
             )
+        }
+
+        if (accountId == transactionAccountId) {
+            entry.status = transactionStatus
+            entry.number = transactionNumber
+            entry.memo = transactionMemo
+
+            transferId?.let {
+                entry.amount += transferAmount!!
+
+                // detail is a transfer from the account in the transfer record
+                entry.details += RegisterEntry.Detail.Transfer(
+                        transferId = it,
+                        accountId = transferAccountId!!,
+                        accountName = transferAccountName!!,
+                        orderInTransaction = transferOrderInTransaction!!,
+                        isTransactionAccount = false
+                )
+            }
+
+            entryId?.let {
+                entry.amount += entryAmount!!
+
+                // detail is an entry from a category
+                entry.details += RegisterEntry.Detail.Entry(
+                        categoryId = entryCategoryId!!,
+                        categoryName = entryCategoryName!!,
+                        parentCategoryName = entryParentCategoryName,
+                        orderInTransaction = entryOrderInTransaction!!
+                )
+            }
         }
     }
 
@@ -157,22 +183,21 @@ private class RegisterCollector(val accountId: Long) {
 
         return entries.values
                 .sortedBy { it.date }
-                .map {
-                    balance += it.amount
+                .map { e ->
+                    balance += e.amount
                     RegisterEntry(
-                            transactionId = it.transactionId,
-                            date = it.date,
-                            payeeId = it.payeeId,
-                            payeeName = it.payeeName,
-                            categories = it.categories,
-                            amount = Money.valueOf(it.amount),
+                            transactionId = e.transactionId,
+                            date = e.date,
+                            payeeId = e.payeeId,
+                            payeeName = e.payeeName,
+                            details = e.details.sortedBy { it.orderInTransaction },
+                            amount = Money.valueOf(e.amount),
                             balance = Money.valueOf(balance),
-                            number = it.number,
-                            memo = it.memo,
-                            status = TransactionStatus.parse(it.status),
+                            number = e.number,
+                            memo = e.memo,
+                            status = TransactionStatus.parse(e.status),
                             registerAccountId = accountId,
-                            transactionAccountId = it.accountId,
-                            transfers = it.transfers
+                            transactionAccountId = e.accountId
                     )
                 }
     }
@@ -198,13 +223,22 @@ private class RegisterResultSetHandler(accountId: Long, val initialBalance: Mone
                 TRANSFER_AMOUNT,
                 TRANSFER_NUMBER,
                 TRANSFER_MEMO,
-                TRANSFER_STATUS
+                TRANSFER_STATUS,
+                TRANSFER_ORDER_IN_TRANSACTION,
+                ENTRY_ID,
+                ENTRY_AMOUNT,
+                ENTRY_ORDER_IN_TRANSACTION,
+                CATEGORIES.CATEGORY_ID AS ENTRY_CATEGORY_ID,
+                CATEGORIES.CATEGORY_NAME AS ENTRY_CATEGORY_NAME,
+                PARENT_CATEGORIES.CATEGORY_NAME AS ENTRY_PARENT_CATEGORY_NAME
             FROM TRANSACTIONS
-            LEFT JOIN TRANSFERS ON TRANSACTIONS.TRANSACTION_ID = TRANSFERS.TRANSFER_TRANSACTION_ID
-            LEFT JOIN PAYEES ON TRANSACTIONS.TRANSACTION_PAYEE_ID = PAYEES.PAYEE_ID
             LEFT JOIN ACCOUNTS AS TRANSACTION_ACCOUNTS ON TRANSACTIONS.TRANSACTION_ACCOUNT_ID = TRANSACTION_ACCOUNTS.ACCOUNT_ID
+            LEFT JOIN PAYEES ON TRANSACTIONS.TRANSACTION_PAYEE_ID = PAYEES.PAYEE_ID
+            LEFT JOIN TRANSFERS ON TRANSACTIONS.TRANSACTION_ID = TRANSFERS.TRANSFER_TRANSACTION_ID
             LEFT JOIN ACCOUNTS AS TRANSFER_ACCOUNTS ON TRANSFERS.TRANSFER_ACCOUNT_ID = TRANSFER_ACCOUNTS.ACCOUNT_ID
-            LEFT JOIN ACCOUNT_TYPES AS TRANSFER_ACCOUNT_TYPES ON TRANSFER_ACCOUNTS.ACCOUNT_TYPE_ID = TRANSFER_ACCOUNT_TYPES.ACCOUNT_TYPE_ID
+            LEFT JOIN ENTRIES ON TRANSACTIONS.TRANSACTION_ID = ENTRIES.ENTRY_TRANSACTION_ID
+            LEFT JOIN CATEGORIES ON ENTRIES.ENTRY_CATEGORY_ID = CATEGORIES.CATEGORY_ID
+            LEFT JOIN CATEGORIES AS PARENT_CATEGORIES ON CATEGORIES.CATEGORY_PARENT_ID = PARENT_CATEGORIES.CATEGORY_ID
             WHERE TRANSACTIONS.TRANSACTION_ACCOUNT_ID = ? OR TRANSFERS.TRANSFER_ACCOUNT_ID = ?
         """.trimIndent()
     }
@@ -230,13 +264,20 @@ private class RegisterResultSetHandler(accountId: Long, val initialBalance: Mone
                     transactionStatus = rs.getString("TRANSACTION_STATUS"),
                     payeeId = rs.getLongOrNull("PAYEE_ID"),
                     payeeName = rs.getString("PAYEE_NAME"),
-                    transferId = rs.getLong("TRANSFER_ID"),
-                    transferAccountId = rs.getLong("TRANSFER_ACCOUNT_ID"),
+                    transferId = rs.getLongOrNull("TRANSFER_ID"),
+                    transferAccountId = rs.getLongOrNull("TRANSFER_ACCOUNT_ID"),
                     transferAccountName = rs.getString("TRANSFER_ACCOUNT_NAME"),
-                    transferAmount = rs.getLong("TRANSFER_AMOUNT"),
+                    transferAmount = rs.getLongOrNull("TRANSFER_AMOUNT"),
                     transferNumber = rs.getString("TRANSFER_NUMBER"),
                     transferMemo = rs.getString("TRANSFER_MEMO"),
-                    transferStatus = rs.getString("TRANSFER_STATUS")
+                    transferStatus = rs.getString("TRANSFER_STATUS"),
+                    transferOrderInTransaction = rs.getIntOrNull("TRANSFER_ORDER_IN_TRANSACTION"),
+                    entryId = rs.getLongOrNull("ENTRY_ID"),
+                    entryAmount = rs.getLongOrNull("ENTRY_AMOUNT"),
+                    entryCategoryId = rs.getLongOrNull("ENTRY_CATEGORY_ID"),
+                    entryCategoryName = rs.getString("ENTRY_CATEGORY_NAME"),
+                    entryParentCategoryName = rs.getString("ENTRY_PARENT_CATEGORY_NAME"),
+                    entryOrderInTransaction = rs.getIntOrNull("ENTRY_ORDER_IN_TRANSACTION")
             )
         }
     }

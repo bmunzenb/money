@@ -31,53 +31,89 @@ class AccountRegisterTest : MoneyDatabaseTestSupport() {
             randomize()
             account = account2
             amount = Money.valueOf(42)
+            orderInTransaction = 0
+            setTransaction(transaction)
+            save(database)
+        }
+
+        val category = Category().apply {
+            randomize()
+            save(database)
+        }
+
+        // spend 76 units on category
+        val entry = Entry().apply {
+            randomize()
+            amount = Money.valueOf(-76)
+            orderInTransaction = 1
+            setCategory(category)
             setTransaction(transaction)
             save(database)
         }
 
         val register1 = account1.getRegister(database)
 
-        assertEquals(1, register1.size)
+        val expectedRegister1 = listOf(
+                RegisterEntry(
+                        transactionId = transaction.identity!!,
+                        date = transaction.date!!,
+                        payeeId = transaction.payee!!.identity!!,
+                        payeeName = transaction.payee!!.name!!,
+                        amount = Money.valueOf(42 -76),
+                        balance = Money.valueOf(100 +42 -76),
+                        memo = transaction.memo!!,
+                        number = transaction.number!!,
+                        status = transaction.status!!,
+                        details = listOf(
+                                RegisterEntry.Detail.Transfer(
+                                        transferId = transfer.identity!!,
+                                        accountId = transfer.account!!.identity!!,
+                                        accountName = transfer.account!!.name!!,
+                                        orderInTransaction = transfer.orderInTransaction!!,
+                                        isTransactionAccount = false
+                                ),
+                                RegisterEntry.Detail.Entry(
+                                        categoryId = category.identity!!,
+                                        categoryName = category.name!!,
+                                        parentCategoryName = null,
+                                        orderInTransaction = 1
+                                )
+                        ),
+                        registerAccountId = account1.identity!!,
+                        transactionAccountId = transaction.account!!.identity!!
+                )
+        )
 
-        val registerEntry1 = register1[0]
-
-        assertEquals(transaction.identity, registerEntry1.transactionId)
-        assertEquals(transaction.date, registerEntry1.date)
-        assertEquals(transaction.payee!!.identity, registerEntry1.payeeId)
-        assertEquals(transaction.payee!!.name, registerEntry1.payeeName)
-        assertEquals(42, registerEntry1.amount.value)
-        assertEquals(100 + 42, registerEntry1.balance.value)
-        assertEquals(transaction.number, registerEntry1.number)
-        assertEquals(transaction.memo, registerEntry1.memo)
-        assertEquals(transaction.status, registerEntry1.status)
-        assertEquals(1, registerEntry1.categories.size)
-
-        val category1 = registerEntry1.categories[0]
-
-        assertEquals(account2.identity, category1.accountId)
-        assertEquals(account2.name, category1.accountName)
+        assertEquals(expectedRegister1, register1)
 
         val register2 = account2.getRegister(database)
 
-        assertEquals(1, register2.size)
+        val expectedRegister2 = listOf(
+                RegisterEntry(
+                        transactionId = transaction.identity!!,
+                        date = transaction.date!!,
+                        payeeId = transaction.payee!!.identity!!,
+                        payeeName = transaction.payee!!.name!!,
+                        amount = Money.valueOf(-42),
+                        balance = Money.valueOf(-50 -42),
+                        memo = transfer.memo!!,
+                        number = transfer.number!!,
+                        status = transfer.status!!,
+                        details = listOf(
+                                RegisterEntry.Detail.Transfer(
+                                        transferId = transfer.identity!!,
+                                        accountId = transaction.account!!.identity!!,
+                                        accountName = transaction.account!!.name!!,
+                                        orderInTransaction = transfer.orderInTransaction!!,
+                                        isTransactionAccount = true
+                                )
+                        ),
+                        registerAccountId = account2.identity!!,
+                        transactionAccountId = transaction.account!!.identity!!
+                )
+        )
 
-        val registerEntry2 = register2[0]
-
-        assertEquals(transaction.identity, registerEntry2.transactionId)
-        assertEquals(transaction.date, registerEntry2.date)
-        assertEquals(transaction.payee!!.identity, registerEntry2.payeeId)
-        assertEquals(transaction.payee!!.name, registerEntry2.payeeName)
-        assertEquals(-42, registerEntry2.amount.value)
-        assertEquals(-50 - 42, registerEntry2.balance.value)
-        assertEquals(transfer.number, registerEntry2.number)
-        assertEquals(transfer.memo, registerEntry2.memo)
-        assertEquals(transfer.status, registerEntry2.status)
-        assertEquals(1, registerEntry2.categories.size)
-
-        val category2 = registerEntry2.categories[0]
-
-        assertEquals(account1.identity, category2.accountId)
-        assertEquals(account1.name, category2.accountName)
+        assertEquals(expectedRegister2, register2)
     }
 
     @Test
