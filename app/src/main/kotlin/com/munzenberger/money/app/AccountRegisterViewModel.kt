@@ -18,6 +18,7 @@ import com.munzenberger.money.core.Transaction
 import com.munzenberger.money.core.TransactionStatus
 import com.munzenberger.money.core.getRegister
 import com.munzenberger.money.core.model.AccountTypeGroup
+import com.munzenberger.money.core.model.EntryTable
 import com.munzenberger.money.core.model.TransactionTable
 import com.munzenberger.money.core.model.TransferTable
 import com.munzenberger.money.sql.DeleteQueryBuilder
@@ -177,6 +178,12 @@ class AccountRegisterViewModel : AutoCloseable {
                         .build()
 
                 tx.executeUpdate(deleteTransfers)
+
+                val deleteEntries = DeleteQueryBuilder(EntryTable.name)
+                        .where(EntryTable.transactionColumn.inGroup(ids))
+                        .build()
+
+                tx.executeUpdate(deleteEntries)
 
                 val deleteTransactions = DeleteQueryBuilder(TransactionTable.name)
                         .where(TransactionTable.identityColumn.inGroup(ids))

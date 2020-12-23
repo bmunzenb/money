@@ -10,24 +10,14 @@ sealed class TransactionDetail {
     abstract val orderInTransaction: Int?
     abstract val amount: Money?
 
-    abstract fun delete(executor: QueryExecutor)
-
     data class Transfer(val transfer: com.munzenberger.money.core.Transfer) : TransactionDetail() {
         override val orderInTransaction = transfer.orderInTransaction
         override val amount = transfer.amount
-
-        override fun delete(executor: QueryExecutor) {
-            transfer.delete(executor)
-        }
     }
 
     data class Entry(val entry: com.munzenberger.money.core.Entry) : TransactionDetail() {
         override val orderInTransaction = entry.orderInTransaction
         override val amount = entry.amount
-
-        override fun delete(executor: QueryExecutor) {
-            entry.delete(executor)
-        }
     }
 }
 

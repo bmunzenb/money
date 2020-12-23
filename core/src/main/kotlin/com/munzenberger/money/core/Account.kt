@@ -31,9 +31,20 @@ class Account internal constructor(model: AccountModel) : Persistable<AccountMod
         set(value) { model.initialBalance = value?.value }
 
     fun getBalance(executor: QueryExecutor): Money {
-        val collector = AccountBalanceCollector(identity, model.initialBalance)
-        executor.executeQuery(collector.query, collector)
-        return collector.result
+
+        val transferBalance = TransferBalanceCollector(identity).let {
+            executor.executeQuery(it.query, it)
+            it.accumulator
+        }
+
+        val entryBalance = EntryBalanceCollector(identity).let {
+            executor.executeQuery(it.query, it)
+            it.accumulator
+        }
+
+        val balance = (model.initialBalance ?: 0) + transferBalance + entryBalance
+
+        return Money.valueOf(balance)
     }
 
     override fun save(executor: QueryExecutor) = executor.transaction { tx ->
@@ -67,49 +78,57 @@ class AccountResultSetMapper : ResultSetMapper<Account> {
     }
 }
 
-private class AccountBalanceCollector(private val accountId: Long?, initialBalance: Long?) : ResultSetHandler {
+private class TransferBalanceCollector(private val accountId: Long?) : ResultSetHandler {
 
-    val sql = """
-        SELECT TRANSACTION_ACCOUNT_ID, TRANSFER_ACCOUNT_ID, TRANSFER_AMOUNT, ENTRY_AMOUNT
-        FROM TRANSACTIONS
-        LEFT JOIN TRANSFERS ON TRANSACTIONS.TRANSACTION_ID = TRANSFERS.TRANSFER_TRANSACTION_ID
-        LEFT JOIN ENTRIES ON TRANSACTIONS.TRANSACTION_ID = ENTRIES.ENTRY_TRANSACTION_ID
+    private val sql = """
+        SELECT TRANSACTION_ACCOUNT_ID, TRANSFER_ACCOUNT_ID, TRANSFER_AMOUNT
+        FROM TRANSFERS
+        INNER JOIN TRANSACTIONS ON TRANSACTIONS.TRANSACTION_ID = TRANSFERS.TRANSFER_TRANSACTION_ID
         WHERE TRANSACTIONS.TRANSACTION_ACCOUNT_ID = ? OR TRANSFERS.TRANSFER_ACCOUNT_ID = ?
     """.trimIndent()
 
     val query = Query(sql, listOf(accountId, accountId))
 
-    val result: Money
-        get() = Money.valueOf(accumulator)
-
-    private var accumulator: Long = initialBalance ?: 0
+    var accumulator: Long = 0
 
     override fun accept(rs: ResultSet) {
         while (rs.next()) {
 
-            val transactionAccount = rs.getLong("TRANSACTION_ACCOUNT_ID")
-            val transferAccount = rs.getLong("TRANSFER_ACCOUNT_ID")
-            val transferAmount = rs.getLongOrNull("TRANSFER_AMOUNT")
-            val entryAmount = rs.getLongOrNull("ENTRY_AMOUNT")
+            val transactionAccountId = rs.getLong("TRANSACTION_ACCOUNT_ID")
+            val transferAccountId = rs.getLong("TRANSFER_ACCOUNT_ID")
+            val transferAmount = rs.getLong("TRANSFER_AMOUNT")
 
-            transferAmount?.let { amount ->
-
-                // if the specified account is the parent for the transaction,
-                // then the transfer amount is credited (added) to the accumulator
-                if (accountId == transactionAccount) {
-                    accumulator += amount
-                }
-
-                // if the specified account is the child as the transfer,
-                // then the amount is debited (subtracted) from the accumulator
-                if (accountId == transferAccount) {
-                    accumulator -= amount
-                }
+            // if the specified account is the parent for the transaction,
+            // then the transfer amount is credited (added) to the accumulator
+            if (accountId == transactionAccountId) {
+                accumulator += transferAmount
             }
 
-            entryAmount?.let { amount ->
-                accumulator += amount
+            // if the specified account is the child as the transfer,
+            // then the amount is debited (subtracted) from the accumulator
+            if (accountId == transferAccountId) {
+                accumulator -= transferAmount
             }
+        }
+    }
+}
+
+private class EntryBalanceCollector(accountId: Long?) : ResultSetHandler {
+
+    private val sql = """
+        SELECT SUM(ENTRY_AMOUNT) AS TOTAL
+        FROM ENTRIES
+        INNER JOIN TRANSACTIONS ON TRANSACTIONS.TRANSACTION_ID = ENTRIES.ENTRY_TRANSACTION_ID
+        WHERE TRANSACTIONS.TRANSACTION_ACCOUNT_ID = ?
+    """.trimIndent()
+
+    val query = Query(sql, listOf(accountId))
+
+    var accumulator: Long = 0
+
+    override fun accept(rs: ResultSet) {
+        while (rs.next()) {
+            accumulator += rs.getLong("TOTAL")
         }
     }
 }

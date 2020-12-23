@@ -225,8 +225,13 @@ class EditTransactionViewModel : TransactionDetailEditor(), AutoCloseable {
                     save(tx)
                 }
 
-                val transfers = details.filterIsInstance<TransactionDetail.Transfer>().map { it.transfer }
-                val entries = details.filterIsInstance<TransactionDetail.Entry>().map { it.entry }
+                val transfers = details.filterIsInstance<TransactionDetail.Transfer>()
+                        .map { it.transfer }
+                        .toMutableList()
+
+                val entries = details.filterIsInstance<TransactionDetail.Entry>()
+                        .map { it.entry }
+                        .toMutableList()
 
                 editors.forEachIndexed { index, editor ->
 
@@ -235,7 +240,7 @@ class EditTransactionViewModel : TransactionDetailEditor(), AutoCloseable {
                         is TransactionCategory.Transfer -> {
                             val transfer: Transfer = when {
                                 // update existing transfer
-                                index < transfers.size -> transfers[index]
+                                transfers.isNotEmpty() -> transfers.removeAt(0)
                                 // create new transfer
                                 else -> Transfer().apply { setTransaction(transaction) }
                             }
@@ -253,7 +258,7 @@ class EditTransactionViewModel : TransactionDetailEditor(), AutoCloseable {
                         is TransactionCategory.Entry -> {
                             val entry: Entry = when {
                                 // update existing entry
-                                index < entries.size -> entries[index]
+                                entries.isNotEmpty() -> entries.removeAt(0)
                                 // create new entry
                                 else -> Entry().apply { setTransaction(transaction) }
                             }
@@ -270,7 +275,7 @@ class EditTransactionViewModel : TransactionDetailEditor(), AutoCloseable {
                         is TransactionCategory.Pending -> {
                             val entry: Entry = when {
                                 // update existing entry
-                                index < entries.size -> entries[index]
+                                entries.isNotEmpty() -> entries.removeAt(0)
                                 // create new entry
                                 else -> Entry().apply { setTransaction(transaction) }
                             }
@@ -286,10 +291,9 @@ class EditTransactionViewModel : TransactionDetailEditor(), AutoCloseable {
                     }
                 }
 
-                // delete any details in excess of the number updated/created
-                details.drop(editors.size).forEach {
-                    it.delete(tx)
-                }
+                // delete any transfers/entries in excess of the number updated/created
+                transfers.forEach { it.delete(tx) }
+                entries.forEach { it.delete(tx) }
             }
         }
     }
