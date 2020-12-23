@@ -46,3 +46,10 @@ fun AsyncStatusProperty.asyncExecute(
                 { value = AsyncObject.Complete(Unit) },
                 { value = AsyncObject.Error(it) }
         )
+
+fun <T> AsyncObjectProperty<T>.singleValue(
+        block: () -> T
+): Single<T> = Single.fromCallable(block)
+        .doOnSubscribe { value = AsyncObject.Executing() }
+        .doOnSuccess { value = AsyncObject.Complete(it) }
+        .doOnError { value = AsyncObject.Error(it) }

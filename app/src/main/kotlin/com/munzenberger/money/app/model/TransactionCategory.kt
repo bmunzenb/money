@@ -2,6 +2,8 @@ package com.munzenberger.money.app.model
 
 import com.munzenberger.money.core.Account
 import com.munzenberger.money.core.Category
+import com.munzenberger.money.sql.QueryExecutor
+import com.munzenberger.money.sql.transaction
 
 const val SPLIT_CATEGORY_NAME = "Split/Multiple Categories"
 const val CATEGORY_DELIMITER = ":"
@@ -46,6 +48,35 @@ sealed class TransactionCategory {
         override val name = when (parentName) {
             null -> categoryName
             else -> "$parentName $CATEGORY_DELIMITER $categoryName"
+        }
+
+        fun getCategory(executor: QueryExecutor): Category {
+
+            val parentCategory = parentName?.let {
+
+                val c = Category.find(
+                        executor,
+                        name = it,
+                        isParent = true
+                ).firstOrNull()
+
+                c ?: Category().apply {
+                    this.name = parentName
+                    save(executor)
+                }
+            }
+
+            val category = Category.find(
+                    executor,
+                    name = categoryName,
+                    parentId = parentCategory?.identity
+            ).firstOrNull()
+
+            return category ?: Category().apply {
+                this.name = categoryName
+                this.setParent(parentCategory)
+                save(executor)
+            }
         }
     }
 

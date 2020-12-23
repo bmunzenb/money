@@ -20,17 +20,17 @@ import javafx.stage.Stage
 import javafx.util.Callback
 import java.net.URL
 
-class EditTransfersController {
+class SplitTransactionController {
 
     companion object {
-        val LAYOUT: URL = EditTransfersController::class.java.getResource("EditTransfersLayout.fxml")
+        val LAYOUT: URL = SplitTransactionController::class.java.getResource("SplitTransactionLayout.fxml")
     }
 
-    @FXML private lateinit var tableView: TableView<EditTransfer>
-    @FXML private lateinit var numberColumn: TableColumn<EditTransfer, String>
-    @FXML private lateinit var categoryColumn: TableColumn<EditTransfer, TransactionCategory>
-    @FXML private lateinit var memoColumn: TableColumn<EditTransfer, String>
-    @FXML private lateinit var amountColumn: TableColumn<EditTransfer, Money>
+    @FXML private lateinit var tableView: TableView<TransactionDetailEditor>
+    @FXML private lateinit var numberColumn: TableColumn<TransactionDetailEditor, String>
+    @FXML private lateinit var categoryColumn: TableColumn<TransactionDetailEditor, TransactionCategory>
+    @FXML private lateinit var memoColumn: TableColumn<TransactionDetailEditor, String>
+    @FXML private lateinit var amountColumn: TableColumn<TransactionDetailEditor, Money>
     @FXML private lateinit var addButton: Button
     @FXML private lateinit var deleteButton: Button
     @FXML private lateinit var totalLabel: Label
@@ -38,13 +38,13 @@ class EditTransfersController {
 
     private lateinit var stage: Stage
 
-    private val viewModel = EditTransfersViewModel()
+    private val viewModel = SplitTransactionViewModel()
 
     fun initialize() {
 
         tableView.apply {
 
-            items = viewModel.transfersProperty
+            items = viewModel.editorsProperty
 
             selectionModel.selectionMode = SelectionMode.SINGLE
 
@@ -65,7 +65,7 @@ class EditTransfersController {
                             toObject = { s -> TransactionCategory.Pending(s) }))
 
             cellFactory = Callback { _ ->
-                ComboBoxTableCell<EditTransfer, TransactionCategory>(converter, viewModel.categoriesProperty).apply {
+                ComboBoxTableCell<TransactionDetailEditor, TransactionCategory>(converter, viewModel.categoriesProperty).apply {
                     isComboBoxEditable = true
                 }
             }
@@ -100,7 +100,7 @@ class EditTransfersController {
         }
     }
 
-    fun start(stage: Stage, transfers: ObservableList<EditTransfer>, categories: List<TransactionCategory>) {
+    fun start(stage: Stage, transfers: ObservableList<TransactionDetailEditor>, categories: List<TransactionCategory>) {
 
         this.stage = stage
 

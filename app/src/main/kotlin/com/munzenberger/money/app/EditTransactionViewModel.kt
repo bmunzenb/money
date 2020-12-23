@@ -9,19 +9,23 @@ import com.munzenberger.money.app.property.SimpleAsyncObjectProperty
 import com.munzenberger.money.app.property.SimpleAsyncStatusProperty
 import com.munzenberger.money.app.property.asyncExecute
 import com.munzenberger.money.app.property.asyncValue
+import com.munzenberger.money.app.property.singleValue
 import com.munzenberger.money.core.Account
 import com.munzenberger.money.core.Category
+import com.munzenberger.money.core.Entry
 import com.munzenberger.money.core.Money
 import com.munzenberger.money.core.MoneyDatabase
 import com.munzenberger.money.core.Payee
 import com.munzenberger.money.core.Transaction
+import com.munzenberger.money.core.TransactionDetail
 import com.munzenberger.money.core.TransactionStatus
 import com.munzenberger.money.core.Transfer
-import com.munzenberger.money.core.getTransfers
+import com.munzenberger.money.core.getDetails
 import com.munzenberger.money.core.isNegative
 import com.munzenberger.money.core.isPositive
 import com.munzenberger.money.sql.transaction
 import io.reactivex.rxjava3.core.Single
+import io.reactivex.rxjava3.kotlin.Singles
 import javafx.beans.property.ReadOnlyBooleanProperty
 import javafx.beans.property.ReadOnlyListProperty
 import javafx.beans.property.ReadOnlyStringProperty
@@ -34,7 +38,7 @@ import javafx.collections.ListChangeListener
 import javafx.collections.ObservableList
 import java.time.LocalDate
 
-class EditTransactionViewModel : EditTransferBase(), AutoCloseable {
+class EditTransactionViewModel : TransactionDetailEditor(), AutoCloseable {
 
     private val accounts = SimpleAsyncObjectProperty<List<Account>>()
     private val payees = SimpleAsyncObjectProperty<List<Payee>>()
@@ -66,38 +70,42 @@ class EditTransactionViewModel : EditTransferBase(), AutoCloseable {
 
     private lateinit var database: MoneyDatabase
     private lateinit var transaction: Transaction
-    private lateinit var transfers: List<Transfer>
+    private lateinit var details: List<TransactionDetail>
 
     private var transactionType: TransactionType?
         get() = selectedTypeProperty.value
         set(value) { selectedTypeProperty.value = value }
 
-    private val editTransfers: ObservableList<EditTransfer> = FXCollections.observableArrayList<EditTransfer>().apply {
-        addListener(ListChangeListener {
+    // keeps track of the editor in the editors list that this form is bound to
+    private var boundEditor: TransactionDetailEditor? = null
 
-            // TODO: this doesn't feel safe, consider keeping the values in the view model independent of those in this list
-            it.list.first().let { first ->
-                selectedCategoryProperty.unbindBidirectional(first.selectedCategoryProperty)
-                amountProperty.unbindBidirectional(first.amountProperty)
-            }
+    private val editorsChangeListener = ListChangeListener<TransactionDetailEditor> { change ->
+        change.list.apply {
 
-            when (it.list.size){
-                1 -> {
-                    it.list.first().let { first ->
-                        selectedCategoryProperty.bindBidirectional(first.selectedCategoryProperty)
-                        amountProperty.bindBidirectional(first.amountProperty)
-                    }
+            boundEditor?.selectedCategoryProperty?.unbindBidirectional(selectedCategoryProperty)
+            boundEditor?.amountProperty?.unbindBidirectional(amountProperty)
+            boundEditor = null
+
+            when (size) {
+                1 -> first().let { first ->
+                    selectedCategoryProperty.bindBidirectional(first.selectedCategoryProperty)
+                    amountProperty.bindBidirectional(first.amountProperty)
+                    boundEditor = first
                     categoryDisabled.value = false
                     amountDisabled.value = false
                 }
                 else -> {
                     category = TransactionCategory.Split
-                    amount = it.list.fold(Money.zero()) { acc, t -> acc.add(t.amount!!) }
+                    amount = fold(Money.zero()) { acc, t -> acc.add(t.amount!!) }
                     categoryDisabled.value = true
                     amountDisabled.value = true
                 }
             }
-        })
+        }
+    }
+
+    private val editors = FXCollections.observableArrayList<TransactionDetailEditor>().apply {
+        addListener(editorsChangeListener)
     }
 
     init {
@@ -135,7 +143,17 @@ class EditTransactionViewModel : EditTransferBase(), AutoCloseable {
 
         payees.asyncValue { Payee.getAll(database).sortedBy { it.name } }
 
-        categories.asyncValue {
+        numberProperty.value = transaction.number
+
+        memoProperty.value = transaction.memo
+
+        transactionStatus.value = when (transaction.status) {
+            TransactionStatus.CLEARED -> "Cleared"
+            TransactionStatus.RECONCILED -> "Reconciled"
+            else -> ""
+        }
+
+        val singleCategories = categories.singleValue {
 
             val categories = mutableListOf<TransactionCategory>()
 
@@ -150,44 +168,43 @@ class EditTransactionViewModel : EditTransferBase(), AutoCloseable {
             categories
         }
 
-        Single.fromCallable { transaction.getTransfers(database) }
+        val singleDetails = Single.fromCallable { transaction.getDetails(database) }
+                .doOnSuccess { details = it }
+
+        Singles.zip(singleCategories, singleDetails)
                 .subscribeOn(SchedulerProvider.database)
                 .observeOn(SchedulerProvider.main)
-                .subscribe(::onTransfers, ::onError)
-
-        numberProperty.value = transaction.number
-
-        memoProperty.value = transaction.memo
-
-        transactionStatus.value = when (transaction.status) {
-            TransactionStatus.CLEARED -> "Cleared"
-            TransactionStatus.RECONCILED -> "Reconciled"
-            else -> ""
-        }
+                .subscribe(
+                        { (categories, details) -> onCategoriesAndDetails(categories, details) },
+                        ::onError
+                )
     }
 
-    private fun onTransfers(transfers: List<Transfer>) {
+    private fun onCategoriesAndDetails(categories: List<TransactionCategory>, details: List<TransactionDetail>) {
 
-        this.transfers = when {
-            // make sure there's at least one transfer
-            transfers.isEmpty() -> listOf(Transfer().apply { setTransaction(transaction) })
-            else -> transfers
-        }
-
-        val sum = transfers.fold(Money.zero()) { acc, t ->
-            when (val a = t.amount) {
+        // calculate the total transaction amount
+        val total = details.fold(Money.zero()) { acc, detail ->
+            when (val a = detail.amount) {
                 null -> acc
                 else -> acc.add(a)
             }
         }
 
+        // determine the transaction type based on the sign of the total
         transactionType = when {
-            sum.isPositive -> types.find { it.variant == TransactionType.Variant.CREDIT }
-            sum.isNegative -> types.find { it.variant == TransactionType.Variant.DEBIT }
+            total.isPositive -> types.find { it.variant == TransactionType.Variant.CREDIT }
+            total.isNegative -> types.find { it.variant == TransactionType.Variant.DEBIT }
             else -> null
         }
 
-        editTransfers.setAll(this.transfers.map { EditTransfer.from(it, transactionType) })
+        // map to a set of editable transaction details
+        details.map { TransactionDetailEditor(it, categories, transactionType) }
+                .let { editors.setAll(it) }
+
+        // if there are no editors, create one
+        if (editors.isEmpty()) {
+            editors += TransactionDetailEditor()
+        }
 
         typeDisabled.value = false
         splitDisabled.value = false
@@ -208,38 +225,80 @@ class EditTransactionViewModel : EditTransferBase(), AutoCloseable {
                     save(tx)
                 }
 
-                editTransfers.forEachIndexed { index, edit ->
+                val transfers = details.filterIsInstance<TransactionDetail.Transfer>().map { it.transfer }
+                val entries = details.filterIsInstance<TransactionDetail.Entry>().map { it.entry }
 
-                    val transfer = when {
-                        // update existing transfer
-                        index < transfers.size -> transfers[index]
-                        // create new transfer
-                        else -> Transfer().apply { setTransaction(transaction) }
-                    }
+                editors.forEachIndexed { index, editor ->
 
-                    transfer.apply {
-                        this.amount = edit.getAmountValue(transactionType!!)
-                        this.account = when (val c = edit.category) {
-                            is TransactionCategory.Transfer -> c.account
-                            else -> null
+                    when (val c = editor.category) {
+
+                        is TransactionCategory.Transfer -> {
+                            val transfer: Transfer = when {
+                                // update existing transfer
+                                index < transfers.size -> transfers[index]
+                                // create new transfer
+                                else -> Transfer().apply { setTransaction(transaction) }
+                            }
+
+                            transfer.apply {
+                                this.amount = editor.amount?.forTransactionType(transactionType)
+                                this.account = c.account
+                                this.number = editor.number
+                                this.memo = editor.memo
+                                this.orderInTransaction = index
+                                save(tx)
+                            }
                         }
-                        this.number = edit.number
-                        this.memo = edit.memo
-                        save(tx)
+
+                        is TransactionCategory.Entry -> {
+                            val entry: Entry = when {
+                                // update existing entry
+                                index < entries.size -> entries[index]
+                                // create new entry
+                                else -> Entry().apply { setTransaction(transaction) }
+                            }
+
+                            entry.apply {
+                                this.amount = editor.amount?.forTransactionType(transactionType)
+                                this.category = c.category
+                                this.memo = editor.memo
+                                this.orderInTransaction = index
+                                save(tx)
+                            }
+                        }
+
+                        is TransactionCategory.Pending -> {
+                            val entry: Entry = when {
+                                // update existing entry
+                                index < entries.size -> entries[index]
+                                // create new entry
+                                else -> Entry().apply { setTransaction(transaction) }
+                            }
+
+                            entry.apply {
+                                this.amount = editor.amount?.forTransactionType(transactionType)
+                                this.category = c.getCategory(tx)
+                                this.memo = editor.memo
+                                this.orderInTransaction = index
+                                save(tx)
+                            }
+                        }
                     }
                 }
 
-                // delete any transfers in excess of the number updated/created
-                transfers.drop(editTransfers.size).forEach {
+                // delete any details in excess of the number updated/created
+                details.drop(editors.size).forEach {
                     it.delete(tx)
                 }
             }
         }
     }
 
-    fun prepareSplit(block: (ObservableList<EditTransfer>, List<TransactionCategory>) -> Unit) {
-        when (val c = categories.get()) {
-            is AsyncObject.Complete -> block.invoke(editTransfers, c.value)
+    fun prepareSplit(block: (ObservableList<TransactionDetailEditor>, List<TransactionCategory>) -> Unit) {
+        if (splitDisabled.value == false) {
+            when (val c = categories.get()) {
+                is AsyncObject.Complete -> block.invoke(editors, c.value)
+            }
         }
     }
 

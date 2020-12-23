@@ -12,60 +12,60 @@ import javafx.collections.FXCollections
 import javafx.collections.ListChangeListener
 import javafx.collections.ObservableList
 
-class EditTransfersViewModel {
+class SplitTransactionViewModel {
 
-    private val transfers = FXCollections.observableArrayList<EditTransfer> { t -> arrayOf(t.selectedCategoryProperty, t.amountProperty) }
+    private val editors = FXCollections.observableArrayList<TransactionDetailEditor> { e -> arrayOf(e.selectedCategoryProperty, e.amountProperty) }
     private val categories = FXCollections.observableArrayList<TransactionCategory>()
 
     private val doneDisabled = SimpleBooleanProperty(true)
     private val total = SimpleObjectProperty<Money>()
 
-    val transfersProperty: ReadOnlyListProperty<EditTransfer> = SimpleListProperty(transfers)
+    val editorsProperty: ReadOnlyListProperty<TransactionDetailEditor> = SimpleListProperty(editors)
     val categoriesProperty: ReadOnlyListProperty<TransactionCategory> = SimpleListProperty(categories)
     val doneDisabledProperty: ReadOnlyBooleanProperty = doneDisabled
     val totalProperty: ReadOnlyObjectProperty<Money> = total
 
-    private lateinit var originalTransfers: ObservableList<EditTransfer>
+    private lateinit var originalEditors: ObservableList<TransactionDetailEditor>
 
     init {
-        transfers.addListener(ListChangeListener {
-            doneDisabled.value = it.list.isEmpty() || it.list.any { e -> !e.isValid }
-            total.value = it.list.fold(Money.zero()) { acc, m -> acc.add(m.amount ?: Money.zero()) }
+        editors.addListener(ListChangeListener { change ->
+            change.list.apply {
+                doneDisabled.value = isEmpty() || any { e -> !e.isEditorValid }
+                total.value = fold(Money.zero()) { acc, m -> acc.add(m.amount ?: Money.zero()) }
+            }
         })
     }
 
-    fun start(transfers: ObservableList<EditTransfer>, categories: List<TransactionCategory>) {
+    fun start(editors: ObservableList<TransactionDetailEditor>, categories: List<TransactionCategory>) {
 
         this.total.value = Money.zero()
 
-        this.originalTransfers = transfers
+        this.originalEditors = editors
 
         // operate on a copy of the original transfers and
         // apply the changes when the user taps Done
 
-        val copied = transfers
-                .filter { it.category != null || it.amount != null }
-                .map { EditTransfer.from(it) }
+        val copied = editors.map { it.copy() }
 
-        this.transfers.addAll(copied)
+        this.editors.addAll(copied)
 
         this.categories.addAll(categories)
     }
 
     fun add(): Int {
 
-        transfers.add(EditTransfer())
+        editors.add(TransactionDetailEditor())
 
-        return transfers.size - 1
+        return editors.size - 1
     }
 
-    fun delete(items: List<EditTransfer>) {
+    fun delete(items: List<TransactionDetailEditor>) {
 
-        transfers.removeAll(items)
+        editors.removeAll(items)
     }
 
     fun done() {
 
-        originalTransfers.setAll(transfers)
+        originalEditors.setAll(editors)
     }
 }

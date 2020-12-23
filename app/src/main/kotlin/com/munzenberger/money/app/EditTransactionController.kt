@@ -164,11 +164,11 @@ class EditTransactionController {
 
     @FXML fun onCategorySplitButton() {
 
-        viewModel.prepareSplit { transfers, categories ->
-            DialogBuilder.build(EditTransfersController.LAYOUT) { stage, controller: EditTransfersController ->
+        viewModel.prepareSplit { editors, categories ->
+            DialogBuilder.build(SplitTransactionController.LAYOUT) { stage, controller: SplitTransactionController ->
                 stage.title = "Split Transaction"
                 stage.show()
-                controller.start(stage, transfers, categories)
+                controller.start(stage, editors, categories)
             }
         }
     }

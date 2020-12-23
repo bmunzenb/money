@@ -13,7 +13,7 @@ class Category internal constructor(model: CategoryModel) : Persistable<Category
 
     internal val parentRef = PersistableIdentityReference(model.parent)
 
-    fun setParent(category: Category) {
+    fun setParent(category: Category?) {
         parentRef.set(category)
     }
 

@@ -7,7 +7,7 @@ internal class PersistableIdentityReference(private var identity: Long?) {
     private var value: Persistable<*>? = null
     private var updated = false
 
-    fun set(value: Persistable<*>) {
+    fun set(value: Persistable<*>?) {
         this.value = value
         this.updated = true
     }

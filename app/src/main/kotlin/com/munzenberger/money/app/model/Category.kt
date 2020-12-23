@@ -3,8 +3,12 @@ package com.munzenberger.money.app.model
 import com.munzenberger.money.core.Category
 import com.munzenberger.money.core.CategoryResultSetMapper
 import com.munzenberger.money.core.MoneyDatabase
+import com.munzenberger.money.core.model.CategoryTable
 import com.munzenberger.money.sql.Query
+import com.munzenberger.money.sql.QueryExecutor
 import com.munzenberger.money.sql.ResultSetMapper
+import com.munzenberger.money.sql.eq
+import com.munzenberger.money.sql.isNotNull
 import java.sql.ResultSet
 
 fun Category.Companion.getAllWithParent(database: MoneyDatabase): List<Pair<Category, String?>> {
@@ -27,4 +31,32 @@ fun Category.Companion.getAllWithParent(database: MoneyDatabase): List<Pair<Cate
             return category to parentName
         }
     })
+}
+
+fun Category.Companion.find(
+        executor: QueryExecutor,
+        name: String? = null,
+        isParent: Boolean? = null,
+        parentId: Long? = null
+): List<Category> {
+
+    val query = CategoryTable.select()
+
+    var condition = name?.let {
+        CategoryTable.nameColumn.eq(name)
+    }
+
+    isParent?.let {
+        condition = CategoryTable.parentColumn.isNotNull() and condition
+    }
+
+    parentId?.let {
+        condition = CategoryTable.parentColumn.eq(it) and condition
+    }
+
+    condition?.let {
+        query.where(it)
+    }
+
+    return executor.getList(query.build(), CategoryResultSetMapper())
 }
