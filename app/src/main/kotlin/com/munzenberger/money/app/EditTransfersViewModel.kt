@@ -1,6 +1,6 @@
 package com.munzenberger.money.app
 
-import com.munzenberger.money.app.model.DelayedCategory
+import com.munzenberger.money.app.model.TransactionCategory
 import com.munzenberger.money.core.Money
 import javafx.beans.property.ReadOnlyBooleanProperty
 import javafx.beans.property.ReadOnlyListProperty
@@ -15,13 +15,13 @@ import javafx.collections.ObservableList
 class EditTransfersViewModel {
 
     private val transfers = FXCollections.observableArrayList<EditTransfer> { t -> arrayOf(t.selectedCategoryProperty, t.amountProperty) }
-    private val categories = FXCollections.observableArrayList<DelayedCategory>()
+    private val categories = FXCollections.observableArrayList<TransactionCategory>()
 
     private val doneDisabled = SimpleBooleanProperty(true)
     private val total = SimpleObjectProperty<Money>()
 
     val transfersProperty: ReadOnlyListProperty<EditTransfer> = SimpleListProperty(transfers)
-    val categoriesProperty: ReadOnlyListProperty<DelayedCategory> = SimpleListProperty(categories)
+    val categoriesProperty: ReadOnlyListProperty<TransactionCategory> = SimpleListProperty(categories)
     val doneDisabledProperty: ReadOnlyBooleanProperty = doneDisabled
     val totalProperty: ReadOnlyObjectProperty<Money> = total
 
@@ -34,7 +34,7 @@ class EditTransfersViewModel {
         })
     }
 
-    fun start(transfers: ObservableList<EditTransfer>, categories: List<DelayedCategory>) {
+    fun start(transfers: ObservableList<EditTransfer>, categories: List<TransactionCategory>) {
 
         this.total.value = Money.zero()
 

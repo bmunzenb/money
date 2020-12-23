@@ -1,6 +1,6 @@
 package com.munzenberger.money.app
 
-import com.munzenberger.money.app.model.DelayedCategory
+import com.munzenberger.money.app.model.TransactionCategory
 import com.munzenberger.money.app.model.getAllWithParent
 import com.munzenberger.money.app.property.AsyncObject
 import com.munzenberger.money.app.property.ReadOnlyAsyncObjectProperty
@@ -40,7 +40,7 @@ class EditTransactionViewModel : EditTransferBase(), AutoCloseable {
     private val payees = SimpleAsyncObjectProperty<List<Payee>>()
     private val types = FXCollections.observableArrayList<TransactionType>()
     private val typeDisabled = SimpleBooleanProperty(true)
-    private val categories = SimpleAsyncObjectProperty<List<DelayedCategory>>()
+    private val categories = SimpleAsyncObjectProperty<List<TransactionCategory>>()
     private val categoryDisabled = SimpleBooleanProperty(true)
     private val splitDisabled = SimpleBooleanProperty(true)
     private val amountDisabled = SimpleBooleanProperty(true)
@@ -56,7 +56,7 @@ class EditTransactionViewModel : EditTransferBase(), AutoCloseable {
     val dateProperty = SimpleObjectProperty<LocalDate>()
     val payeesProperty: ReadOnlyAsyncObjectProperty<List<Payee>> = payees
     val selectedPayeeProperty = SimpleObjectProperty<Payee?>()
-    val categoriesProperty: ReadOnlyAsyncObjectProperty<List<DelayedCategory>> = categories
+    val categoriesProperty: ReadOnlyAsyncObjectProperty<List<TransactionCategory>> = categories
     val categoryDisabledProperty: ReadOnlyBooleanProperty = categoryDisabled
     val splitDisabledProperty: ReadOnlyBooleanProperty = splitDisabled
     val amountDisabledProperty: ReadOnlyBooleanProperty = amountDisabled
@@ -91,7 +91,7 @@ class EditTransactionViewModel : EditTransferBase(), AutoCloseable {
                     amountDisabled.value = false
                 }
                 else -> {
-                    category = DelayedCategory.Split
+                    category = TransactionCategory.Split
                     amount = it.list.fold(Money.zero()) { acc, t -> acc.add(t.amount!!) }
                     categoryDisabled.value = true
                     amountDisabled.value = true
@@ -137,14 +137,14 @@ class EditTransactionViewModel : EditTransferBase(), AutoCloseable {
 
         categories.asyncValue {
 
-            val categories = mutableListOf<DelayedCategory>()
+            val categories = mutableListOf<TransactionCategory>()
 
             categories += Category.getAllWithParent(database)
-                    .map { DelayedCategory.Entry(it.first, it.second) }
+                    .map { TransactionCategory.Entry(it.first, it.second) }
                     .sortedBy { it.name }
 
             categories += Account.getAll(database)
-                    .map { DelayedCategory.Transfer(it) }
+                    .map { TransactionCategory.Transfer(it) }
                     .sortedBy { it.name }
 
             categories
@@ -220,7 +220,7 @@ class EditTransactionViewModel : EditTransferBase(), AutoCloseable {
                     transfer.apply {
                         this.amount = edit.getAmountValue(transactionType!!)
                         this.account = when (val c = edit.category) {
-                            is DelayedCategory.Transfer -> c.account
+                            is TransactionCategory.Transfer -> c.account
                             else -> null
                         }
                         this.number = edit.number
@@ -237,7 +237,7 @@ class EditTransactionViewModel : EditTransferBase(), AutoCloseable {
         }
     }
 
-    fun prepareSplit(block: (ObservableList<EditTransfer>, List<DelayedCategory>) -> Unit) {
+    fun prepareSplit(block: (ObservableList<EditTransfer>, List<TransactionCategory>) -> Unit) {
         when (val c = categories.get()) {
             is AsyncObject.Complete -> block.invoke(editTransfers, c.value)
         }

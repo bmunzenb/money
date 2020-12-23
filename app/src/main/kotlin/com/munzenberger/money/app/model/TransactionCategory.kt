@@ -6,16 +6,16 @@ import com.munzenberger.money.core.Category
 const val SPLIT_CATEGORY_NAME = "Split/Multiple Categories"
 const val CATEGORY_DELIMITER = ":"
 
-sealed class DelayedCategory {
+sealed class TransactionCategory {
 
     abstract val name: String
 
-    class Transfer(val account: Account) : DelayedCategory() {
+    class Transfer(val account: Account) : TransactionCategory() {
 
         override val name = "Transfer $CATEGORY_DELIMITER ${account.name}"
     }
 
-    class Entry(val category: Category, parentName: String?) : DelayedCategory() {
+    class Entry(val category: Category, parentName: String?) : TransactionCategory() {
 
         override val name = when (parentName) {
             null -> "${category.name}"
@@ -23,7 +23,7 @@ sealed class DelayedCategory {
         }
     }
 
-    class Pending(string: String) : DelayedCategory() {
+    class Pending(string: String) : TransactionCategory() {
 
         private val categoryName: String
         private val parentName: String?
@@ -49,7 +49,7 @@ sealed class DelayedCategory {
         }
     }
 
-    object Split : DelayedCategory() {
+    object Split : TransactionCategory() {
         override val name = SPLIT_CATEGORY_NAME
     }
 }

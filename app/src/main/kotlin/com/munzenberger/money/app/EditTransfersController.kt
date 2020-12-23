@@ -3,7 +3,7 @@ package com.munzenberger.money.app
 import com.munzenberger.money.app.control.BlockStringConverter
 import com.munzenberger.money.app.control.ListLookupStringConverter
 import com.munzenberger.money.app.control.MoneyStringConverter
-import com.munzenberger.money.app.model.DelayedCategory
+import com.munzenberger.money.app.model.TransactionCategory
 import com.munzenberger.money.core.Money
 import javafx.beans.binding.Bindings
 import javafx.collections.ObservableList
@@ -15,7 +15,6 @@ import javafx.scene.control.TableColumn
 import javafx.scene.control.TableView
 import javafx.scene.control.cell.ComboBoxTableCell
 import javafx.scene.control.cell.TextFieldTableCell
-import javafx.scene.input.KeyCode
 import javafx.scene.text.Text
 import javafx.stage.Stage
 import javafx.util.Callback
@@ -29,7 +28,7 @@ class EditTransfersController {
 
     @FXML private lateinit var tableView: TableView<EditTransfer>
     @FXML private lateinit var numberColumn: TableColumn<EditTransfer, String>
-    @FXML private lateinit var categoryColumn: TableColumn<EditTransfer, DelayedCategory>
+    @FXML private lateinit var categoryColumn: TableColumn<EditTransfer, TransactionCategory>
     @FXML private lateinit var memoColumn: TableColumn<EditTransfer, String>
     @FXML private lateinit var amountColumn: TableColumn<EditTransfer, Money>
     @FXML private lateinit var addButton: Button
@@ -61,12 +60,12 @@ class EditTransfersController {
 
             val converter = ListLookupStringConverter(
                     viewModel.categoriesProperty,
-                    BlockStringConverter<DelayedCategory>(
+                    BlockStringConverter<TransactionCategory>(
                             toString = { c -> c.name },
-                            toObject = { s -> DelayedCategory.Pending(s) }))
+                            toObject = { s -> TransactionCategory.Pending(s) }))
 
             cellFactory = Callback { _ ->
-                ComboBoxTableCell<EditTransfer, DelayedCategory>(converter, viewModel.categoriesProperty).apply {
+                ComboBoxTableCell<EditTransfer, TransactionCategory>(converter, viewModel.categoriesProperty).apply {
                     isComboBoxEditable = true
                 }
             }
@@ -101,7 +100,7 @@ class EditTransfersController {
         }
     }
 
-    fun start(stage: Stage, transfers: ObservableList<EditTransfer>, categories: List<DelayedCategory>) {
+    fun start(stage: Stage, transfers: ObservableList<EditTransfer>, categories: List<TransactionCategory>) {
 
         this.stage = stage
 

@@ -1,6 +1,6 @@
 package com.munzenberger.money.app
 
-import com.munzenberger.money.app.model.DelayedCategory
+import com.munzenberger.money.app.model.TransactionCategory
 import com.munzenberger.money.core.Money
 import com.munzenberger.money.core.Transfer
 import javafx.beans.property.SimpleBooleanProperty
@@ -9,12 +9,12 @@ import javafx.beans.property.SimpleStringProperty
 
 abstract class EditTransferBase {
 
-    val selectedCategoryProperty = SimpleObjectProperty<DelayedCategory>()
+    val selectedCategoryProperty = SimpleObjectProperty<TransactionCategory>()
     val amountProperty = SimpleObjectProperty<Money>()
     val numberProperty = SimpleStringProperty()
     val memoProperty = SimpleStringProperty()
 
-    var category: DelayedCategory?
+    var category: TransactionCategory?
         get() = selectedCategoryProperty.value
         set(value) { selectedCategoryProperty.value = value }
 
@@ -36,7 +36,7 @@ class EditTransfer : EditTransferBase() {
     companion object {
 
         fun from(transfer: Transfer, transactionType: TransactionType?) = EditTransfer().apply {
-            category = transfer.account?.let { DelayedCategory.Transfer(it) }
+            category = transfer.account?.let { TransactionCategory.Transfer(it) }
             amount = transfer.amount?.forTransactionType(transactionType)
             number = transfer.number
             memo = transfer.memo

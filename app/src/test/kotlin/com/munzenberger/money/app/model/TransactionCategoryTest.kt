@@ -6,52 +6,52 @@ import io.mockk.mockk
 import org.junit.Assert.assertEquals
 import org.junit.Test
 
-class DelayedCategoryTest {
+class TransactionCategoryTest {
 
     @Test
-    fun `delayed category entry formats category name`() {
+    fun `transaction category entry formats category name`() {
 
         val category = mockk<Category>().apply {
             every { name } returns "Category"
         }
 
-        val dc = DelayedCategory.Entry(category, null)
+        val dc = TransactionCategory.Entry(category, null)
 
         assertEquals("Category", dc.name)
     }
 
     @Test
-    fun `delayed category entry formats category name with parent`() {
+    fun `transaction category entry formats category name with parent`() {
 
         val category = mockk<Category>().apply {
             every { name } returns "Category"
         }
 
-        val dc = DelayedCategory.Entry(category, "Parent")
+        val dc = TransactionCategory.Entry(category, "Parent")
 
         assertEquals("Parent : Category", dc.name)
     }
 
     @Test
-    fun `delayed category pending formats category name`() {
+    fun `transaction category pending formats category name`() {
 
-        val dc = DelayedCategory.Pending("Category")
+        val dc = TransactionCategory.Pending("Category")
 
         assertEquals("Category", dc.name)
     }
 
     @Test
-    fun `delayed category pending formats category name with parent`() {
+    fun `transaction category pending formats category name with parent`() {
 
-        val dc = DelayedCategory.Pending("Parent:Category")
+        val dc = TransactionCategory.Pending("Parent:Category")
 
         assertEquals("Parent : Category", dc.name)
     }
 
     @Test
-    fun `delayed category pending trims category names`() {
+    fun `transaction category pending trims category names`() {
 
-        val dc = DelayedCategory.Pending(" Parent  :  Category ")
+        val dc = TransactionCategory.Pending(" Parent  :  Category ")
 
         assertEquals("Parent : Category", dc.name)
     }

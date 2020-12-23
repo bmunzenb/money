@@ -5,7 +5,7 @@ import com.munzenberger.money.app.control.ListLookupStringConverter
 import com.munzenberger.money.app.control.MoneyStringConverter
 import com.munzenberger.money.app.control.TextListCellFactory
 import com.munzenberger.money.app.control.autoCompleteTextFormatter
-import com.munzenberger.money.app.model.DelayedCategory
+import com.munzenberger.money.app.model.TransactionCategory
 import com.munzenberger.money.app.property.AsyncObject
 import com.munzenberger.money.app.property.bindAsync
 import com.munzenberger.money.app.property.bindAsyncStatus
@@ -36,7 +36,7 @@ class EditTransactionController {
     @FXML lateinit var datePicker: DatePicker
     @FXML lateinit var numberTextField: TextField
     @FXML lateinit var payeeComboBox: ComboBox<Payee>
-    @FXML lateinit var categoryComboBox: ComboBox<DelayedCategory>
+    @FXML lateinit var categoryComboBox: ComboBox<TransactionCategory>
     @FXML lateinit var categorySplitButton: Button
     @FXML lateinit var amountTextField: TextField
     @FXML lateinit var memoTextField: TextField
@@ -104,8 +104,8 @@ class EditTransactionController {
 
         categoryComboBox.apply {
 
-            val categoryConverter = BlockStringConverter<DelayedCategory>(DelayedCategory::name) {
-                DelayedCategory.Pending(it)
+            val categoryConverter = BlockStringConverter<TransactionCategory>(TransactionCategory::name) {
+                TransactionCategory.Pending(it)
             }
 
             cellFactory = TextListCellFactory(categoryConverter::toString)
