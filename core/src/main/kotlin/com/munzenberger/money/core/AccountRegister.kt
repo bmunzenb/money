@@ -6,7 +6,6 @@ import com.munzenberger.money.sql.Query
 import com.munzenberger.money.sql.QueryExecutor
 import com.munzenberger.money.sql.ResultSetHandler
 import com.munzenberger.money.sql.eq
-import com.munzenberger.money.sql.getIntOrNull
 import com.munzenberger.money.sql.getLocalDate
 import com.munzenberger.money.sql.getLongOrNull
 import com.munzenberger.money.sql.inGroup
@@ -103,22 +102,15 @@ private class RegisterCollector(val accountId: Long) {
             transactionStatus: String,
             payeeId: Long?,
             payeeName: String?,
-            transferId: Long?,
-            transferAccountId: Long?,
-            transferAccountName: String?,
-            transferAmount: Long?,
+            transferId: Long,
+            transferAccountId: Long,
+            transferAccountName: String,
+            transferAmount: Long,
             transferNumber: String?,
             transferMemo: String?,
-            transferStatus: String?,
-            transferOrderInTransaction: Int?,
-            entryId: Long?,
-            entryAmount: Long?,
-            entryCategoryId: Long?,
-            entryCategoryName: String?,
-            entryParentCategoryName: String?,
-            entryOrderInTransaction: Int?
+            transferStatus: String,
+            transferOrderInTransaction: Int
     ) {
-
         val entry = entries.getOrPut(transactionId) {
             TransactionEntry(
                     transactionId = transactionId,
@@ -130,51 +122,75 @@ private class RegisterCollector(val accountId: Long) {
         }
 
         if (accountId == transferAccountId) {
-            entry.amount -= transferAmount!!
+            entry.amount -= transferAmount
             entry.status = transferStatus
             entry.number = transferNumber
             entry.memo = transferMemo
 
             // detail is a transfer to the account on the transaction
             entry.details += RegisterEntry.Detail.Transfer(
-                    transferId = transferId!!,
+                    transferId = transferId,
                     accountId = transactionAccountId,
                     accountName = transactionAccountName,
-                    orderInTransaction = transferOrderInTransaction!!,
+                    orderInTransaction = transferOrderInTransaction,
                     isTransactionAccount = true
             )
         }
 
         if (accountId == transactionAccountId) {
+            entry.amount += transferAmount
             entry.status = transactionStatus
             entry.number = transactionNumber
             entry.memo = transactionMemo
 
-            transferId?.let {
-                entry.amount += transferAmount!!
-
-                // detail is a transfer from the account in the transfer record
-                entry.details += RegisterEntry.Detail.Transfer(
-                        transferId = it,
-                        accountId = transferAccountId!!,
-                        accountName = transferAccountName!!,
-                        orderInTransaction = transferOrderInTransaction!!,
-                        isTransactionAccount = false
-                )
-            }
-
-            entryId?.let {
-                entry.amount += entryAmount!!
-
-                // detail is an entry from a category
-                entry.details += RegisterEntry.Detail.Entry(
-                        categoryId = entryCategoryId!!,
-                        categoryName = entryCategoryName!!,
-                        parentCategoryName = entryParentCategoryName,
-                        orderInTransaction = entryOrderInTransaction!!
-                )
-            }
+            // detail is a transfer from the account in the transfer record
+            entry.details += RegisterEntry.Detail.Transfer(
+                    transferId = transferId,
+                    accountId = transferAccountId,
+                    accountName = transferAccountName,
+                    orderInTransaction = transferOrderInTransaction,
+                    isTransactionAccount = false
+            )
         }
+    }
+
+    fun collect(
+            transactionId: Long,
+            transactionAccountId: Long,
+            transactionDate: LocalDate,
+            transactionNumber: String?,
+            transactionMemo: String?,
+            transactionStatus: String,
+            payeeId: Long?,
+            payeeName: String?,
+            entryAmount: Long,
+            entryCategoryId: Long,
+            entryCategoryName: String,
+            entryParentCategoryName: String?,
+            entryOrderInTransaction: Int
+    ) {
+        val entry = entries.getOrPut(transactionId) {
+            TransactionEntry(
+                    transactionId = transactionId,
+                    accountId = transactionAccountId,
+                    date = transactionDate,
+                    payeeId = payeeId,
+                    payeeName = payeeName
+            )
+        }
+
+        entry.amount += entryAmount
+        entry.status = transactionStatus
+        entry.number = transactionNumber
+        entry.memo = transactionMemo
+
+        // detail is an entry from a category
+        entry.details += RegisterEntry.Detail.Entry(
+                categoryId = entryCategoryId,
+                categoryName = entryCategoryName,
+                parentCategoryName = entryParentCategoryName,
+                orderInTransaction = entryOrderInTransaction
+        )
     }
 
     fun getRegisterEntries(initialBalance: Money): List<RegisterEntry> {
@@ -203,10 +219,9 @@ private class RegisterCollector(val accountId: Long) {
     }
 }
 
-private class RegisterResultSetHandler(accountId: Long, val initialBalance: Money) : ResultSetHandler {
+private class TransferRegisterResultSetHandler(accountId: Long, private val collector: RegisterCollector) : ResultSetHandler {
 
-    companion object {
-        private val sql = """
+    private val sql = """
             SELECT
                 TRANSACTION_ID,
                 TRANSACTION_ACCOUNT_ID,
@@ -224,34 +239,18 @@ private class RegisterResultSetHandler(accountId: Long, val initialBalance: Mone
                 TRANSFER_NUMBER,
                 TRANSFER_MEMO,
                 TRANSFER_STATUS,
-                TRANSFER_ORDER_IN_TRANSACTION,
-                ENTRY_ID,
-                ENTRY_AMOUNT,
-                ENTRY_ORDER_IN_TRANSACTION,
-                CATEGORIES.CATEGORY_ID AS ENTRY_CATEGORY_ID,
-                CATEGORIES.CATEGORY_NAME AS ENTRY_CATEGORY_NAME,
-                PARENT_CATEGORIES.CATEGORY_NAME AS ENTRY_PARENT_CATEGORY_NAME
+                TRANSFER_ORDER_IN_TRANSACTION
             FROM TRANSACTIONS
+            INNER JOIN TRANSFERS ON TRANSACTIONS.TRANSACTION_ID = TRANSFERS.TRANSFER_TRANSACTION_ID
             LEFT JOIN ACCOUNTS AS TRANSACTION_ACCOUNTS ON TRANSACTIONS.TRANSACTION_ACCOUNT_ID = TRANSACTION_ACCOUNTS.ACCOUNT_ID
             LEFT JOIN PAYEES ON TRANSACTIONS.TRANSACTION_PAYEE_ID = PAYEES.PAYEE_ID
-            LEFT JOIN TRANSFERS ON TRANSACTIONS.TRANSACTION_ID = TRANSFERS.TRANSFER_TRANSACTION_ID
             LEFT JOIN ACCOUNTS AS TRANSFER_ACCOUNTS ON TRANSFERS.TRANSFER_ACCOUNT_ID = TRANSFER_ACCOUNTS.ACCOUNT_ID
-            LEFT JOIN ENTRIES ON TRANSACTIONS.TRANSACTION_ID = ENTRIES.ENTRY_TRANSACTION_ID
-            LEFT JOIN CATEGORIES ON ENTRIES.ENTRY_CATEGORY_ID = CATEGORIES.CATEGORY_ID
-            LEFT JOIN CATEGORIES AS PARENT_CATEGORIES ON CATEGORIES.CATEGORY_PARENT_ID = PARENT_CATEGORIES.CATEGORY_ID
             WHERE TRANSACTIONS.TRANSACTION_ACCOUNT_ID = ? OR TRANSFERS.TRANSFER_ACCOUNT_ID = ?
-        """.trimIndent()
-    }
+    """.trimIndent()
 
     val query = Query(sql, listOf(accountId, accountId))
 
-    private val collector = RegisterCollector(accountId)
-
-    val results: List<RegisterEntry>
-        get() = collector.getRegisterEntries(initialBalance)
-
     override fun accept(rs: ResultSet) {
-
         while (rs.next()) {
 
             collector.collect(
@@ -264,20 +263,63 @@ private class RegisterResultSetHandler(accountId: Long, val initialBalance: Mone
                     transactionStatus = rs.getString("TRANSACTION_STATUS"),
                     payeeId = rs.getLongOrNull("PAYEE_ID"),
                     payeeName = rs.getString("PAYEE_NAME"),
-                    transferId = rs.getLongOrNull("TRANSFER_ID"),
-                    transferAccountId = rs.getLongOrNull("TRANSFER_ACCOUNT_ID"),
+                    transferId = rs.getLong("TRANSFER_ID"),
+                    transferAccountId = rs.getLong("TRANSFER_ACCOUNT_ID"),
                     transferAccountName = rs.getString("TRANSFER_ACCOUNT_NAME"),
-                    transferAmount = rs.getLongOrNull("TRANSFER_AMOUNT"),
+                    transferAmount = rs.getLong("TRANSFER_AMOUNT"),
                     transferNumber = rs.getString("TRANSFER_NUMBER"),
                     transferMemo = rs.getString("TRANSFER_MEMO"),
                     transferStatus = rs.getString("TRANSFER_STATUS"),
-                    transferOrderInTransaction = rs.getIntOrNull("TRANSFER_ORDER_IN_TRANSACTION"),
-                    entryId = rs.getLongOrNull("ENTRY_ID"),
-                    entryAmount = rs.getLongOrNull("ENTRY_AMOUNT"),
-                    entryCategoryId = rs.getLongOrNull("ENTRY_CATEGORY_ID"),
+                    transferOrderInTransaction = rs.getInt("TRANSFER_ORDER_IN_TRANSACTION")
+            )
+        }
+    }
+}
+
+private class EntryRegisterResultSetHandler(accountId: Long, private val collector: RegisterCollector) : ResultSetHandler {
+
+    private val sql = """
+            SELECT
+                TRANSACTION_ID,
+                TRANSACTION_ACCOUNT_ID,
+                TRANSACTION_DATE,
+                TRANSACTION_NUMBER,
+                TRANSACTION_MEMO,
+                TRANSACTION_STATUS,
+                PAYEE_ID,
+                PAYEE_NAME,
+                ENTRY_AMOUNT,
+                ENTRY_ORDER_IN_TRANSACTION,
+                CATEGORIES.CATEGORY_ID AS ENTRY_CATEGORY_ID,
+                CATEGORIES.CATEGORY_NAME AS ENTRY_CATEGORY_NAME,
+                PARENT_CATEGORIES.CATEGORY_NAME AS ENTRY_PARENT_CATEGORY_NAME
+            FROM TRANSACTIONS
+            INNER JOIN ENTRIES ON TRANSACTIONS.TRANSACTION_ID = ENTRIES.ENTRY_TRANSACTION_ID
+            LEFT JOIN PAYEES ON TRANSACTIONS.TRANSACTION_PAYEE_ID = PAYEES.PAYEE_ID
+            LEFT JOIN CATEGORIES ON ENTRIES.ENTRY_CATEGORY_ID = CATEGORIES.CATEGORY_ID
+            LEFT JOIN CATEGORIES AS PARENT_CATEGORIES ON CATEGORIES.CATEGORY_PARENT_ID = PARENT_CATEGORIES.CATEGORY_ID
+            WHERE TRANSACTIONS.TRANSACTION_ACCOUNT_ID = ?
+    """.trimIndent()
+
+    val query = Query(sql, listOf(accountId))
+
+    override fun accept(rs: ResultSet) {
+        while (rs.next()) {
+
+            collector.collect(
+                    transactionId = rs.getLong("TRANSACTION_ID"),
+                    transactionAccountId = rs.getLong("TRANSACTION_ACCOUNT_ID"),
+                    transactionDate = rs.getLocalDate("TRANSACTION_DATE"),
+                    transactionNumber = rs.getString("TRANSACTION_NUMBER"),
+                    transactionMemo = rs.getString("TRANSACTION_MEMO"),
+                    transactionStatus = rs.getString("TRANSACTION_STATUS"),
+                    payeeId = rs.getLongOrNull("PAYEE_ID"),
+                    payeeName = rs.getString("PAYEE_NAME"),
+                    entryAmount = rs.getLong("ENTRY_AMOUNT"),
+                    entryOrderInTransaction = rs.getInt("ENTRY_ORDER_IN_TRANSACTION"),
+                    entryCategoryId = rs.getLong("ENTRY_CATEGORY_ID"),
                     entryCategoryName = rs.getString("ENTRY_CATEGORY_NAME"),
-                    entryParentCategoryName = rs.getString("ENTRY_PARENT_CATEGORY_NAME"),
-                    entryOrderInTransaction = rs.getIntOrNull("ENTRY_ORDER_IN_TRANSACTION")
+                    entryParentCategoryName = rs.getString("ENTRY_PARENT_CATEGORY_NAME")
             )
         }
     }
@@ -286,9 +328,16 @@ private class RegisterResultSetHandler(accountId: Long, val initialBalance: Mone
 fun Account.getRegister(executor: QueryExecutor): List<RegisterEntry> {
 
     val accountId = identity ?: throw IllegalStateException("Can't get register for an unsaved account.")
-    val handler = RegisterResultSetHandler(accountId, initialBalance ?: Money.zero())
 
-    executor.executeQuery(handler.query, handler)
+    val collector = RegisterCollector(accountId)
 
-    return handler.results
+    TransferRegisterResultSetHandler(accountId, collector).let {
+        executor.executeQuery(it.query, it)
+    }
+
+    EntryRegisterResultSetHandler(accountId, collector).let {
+        executor.executeQuery(it.query, it)
+    }
+
+    return collector.getRegisterEntries(initialBalance ?: Money.zero())
 }
