@@ -1,8 +1,11 @@
 package com.munzenberger.money.core
 
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNotEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
+import org.junit.Assert.assertTrue
 import org.junit.Test
 
 abstract class PersistableTest<P : Persistable<*>> : MoneyDatabaseTestSupport() {
@@ -91,6 +94,27 @@ abstract class PersistableTest<P : Persistable<*>> : MoneyDatabaseTestSupport() 
             assertEquals(this!!.identity, p.identity)
             assertPersistablePropertiesAreEquals(p, this)
         }
+    }
+
+    @Test
+    fun `persistable equals and hashCode`() {
+
+        val p1 = createPersistable()
+        p1.save(database)
+
+        val p2 = getPersistable(p1.identity!!)
+        assertTrue(p1 == p2)
+        assertEquals(p1.hashCode(), p2.hashCode())
+
+        val p3 = createPersistable()
+        p3.save(database)
+
+        assertFalse(p2 == p3)
+        assertNotEquals(p2, p3)
+
+        updatePersistable(p1)
+        assertFalse(p1 == p2)
+        assertNotEquals(p1, p2)
     }
 
     @Test
