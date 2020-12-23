@@ -136,7 +136,7 @@ class AccountTest : PersistableTest<Account>() {
         // add 88 units to account
         Entry().apply {
             setTransaction(transaction1)
-            setCategory(category1)
+            category = category1
             amount = Money.valueOf(88)
             save(database)
         }
@@ -149,7 +149,7 @@ class AccountTest : PersistableTest<Account>() {
         // subtract 10 units from account
         Entry().apply {
             setTransaction(transaction1)
-            setCategory(category2)
+            category = category2
             amount = Money.valueOf(-10)
             save(database)
         }

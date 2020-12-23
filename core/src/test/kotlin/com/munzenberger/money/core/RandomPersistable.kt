@@ -65,7 +65,7 @@ fun Category.randomize() = this.apply {
 
 fun Entry.randomize() = this.apply {
     setTransaction(Transaction().randomize())
-    setCategory(Category().randomize())
+    category = Category().randomize()
     amount = Money.random()
     memo = randomString()
     orderInTransaction = random.nextInt()

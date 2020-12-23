@@ -1,5 +1,6 @@
 package com.munzenberger.money.core.model
 
+import com.munzenberger.money.sql.SelectQueryBuilder
 import com.munzenberger.money.sql.SettableQueryBuilder
 import com.munzenberger.money.sql.getLongOrNull
 import java.sql.ResultSet
@@ -38,5 +39,9 @@ object EntryTable : Table<EntryModel>() {
         model.amount = resultSet.getLongOrNull(amountColumn)
         model.memo = resultSet.getString(memoColumn)
         model.orderInTransaction = resultSet.getInt(orderInTransaction)
+    }
+
+    override fun applyJoins(select: SelectQueryBuilder) {
+        select.leftJoin(categoryColumn, CategoryTable)
     }
 }

@@ -46,7 +46,7 @@ class AccountRegisterTest : MoneyDatabaseTestSupport() {
             randomize()
             amount = Money.valueOf(-76)
             orderInTransaction = 1
-            setCategory(category)
+            this.category = category
             setTransaction(transaction)
             save(database)
         }

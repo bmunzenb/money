@@ -19,7 +19,7 @@ class EntryTest : PersistableTest<Entry>() {
 
     override fun assertPersistablePropertiesAreEquals(p1: Entry, p2: Entry) {
         assertEquals(p1.transactionRef.getIdentity(database)!!, p2.transactionRef.getIdentity(database)!!)
-        assertEquals(p1.categoryRef.getIdentity(database)!!, p2.categoryRef.getIdentity(database)!!)
+        assertEquals(p1.category!!.identity!!, p2.category!!.identity!!)
         assertEquals(p1.amount, p2.amount)
         assertEquals(p1.memo, p2.memo)
         assertEquals(p1.orderInTransaction, p2.orderInTransaction)

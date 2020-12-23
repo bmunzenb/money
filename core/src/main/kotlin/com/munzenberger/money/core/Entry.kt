@@ -19,11 +19,7 @@ class Entry internal constructor(model: EntryModel) : Persistable<EntryModel>(mo
         transactionRef.set(transaction)
     }
 
-    internal val categoryRef = PersistableIdentityReference(model.category)
-
-    fun setCategory(category: Category) {
-        categoryRef.set(category)
-    }
+    var category: Category? = null
 
     var amount: Money?
         get() = model.amount?.let { Money.valueOf(it) }
@@ -39,7 +35,7 @@ class Entry internal constructor(model: EntryModel) : Persistable<EntryModel>(mo
 
     override fun save(executor: QueryExecutor) = executor.transaction { tx ->
         model.transaction = transactionRef.getIdentity(tx)
-        model.category = categoryRef.getIdentity(tx)
+        model.category = category.getIdentity(tx)
         super.save(tx)
     }
 
@@ -61,6 +57,8 @@ class EntryResultSetMapper : ResultSetMapper<Entry> {
             EntryTable.getValues(resultSet, this)
         }
 
-        return Entry(model)
+        return Entry(model).apply {
+            category = model.category?.let { CategoryResultSetMapper().apply(resultSet) }
+        }
     }
 }
