@@ -2,9 +2,7 @@ package com.munzenberger.money.core
 
 import com.munzenberger.money.core.model.AccountModel
 import com.munzenberger.money.core.model.AccountTable
-import com.munzenberger.money.sql.Query
 import com.munzenberger.money.sql.QueryExecutor
-import com.munzenberger.money.sql.ResultSetHandler
 import com.munzenberger.money.sql.ResultSetMapper
 import com.munzenberger.money.sql.transaction
 import java.sql.ResultSet
@@ -31,17 +29,13 @@ class Account internal constructor(model: AccountModel) : Persistable<AccountMod
 
     fun getBalance(executor: QueryExecutor): Money {
 
-        val transferBalance = TransferBalanceCollector(identity).let {
+        val balance = listOf(
+                TransferBalanceCollector(identity),
+                EntryBalanceCollector(identity)
+        ).map {
             executor.executeQuery(it.query, it)
-            it.accumulator
-        }
-
-        val entryBalance = EntryBalanceCollector(identity).let {
-            executor.executeQuery(it.query, it)
-            it.accumulator
-        }
-
-        val balance = (model.initialBalance ?: 0) + transferBalance + entryBalance
+            it.result
+        }.fold(model.initialBalance ?: 0) { acc, v -> acc + v }
 
         return Money.valueOf(balance)
     }
@@ -73,61 +67,6 @@ class AccountResultSetMapper : ResultSetMapper<Account> {
         return Account(model).apply {
             accountType = model.accountType?.let { AccountTypeResultSetMapper().apply(resultSet) }
             bank = model.bank?.let { BankResultSetMapper().apply(resultSet) }
-        }
-    }
-}
-
-private class TransferBalanceCollector(private val accountId: Long?) : ResultSetHandler {
-
-    private val sql = """
-        SELECT TRANSACTION_ACCOUNT_ID, TRANSFER_ACCOUNT_ID, TRANSFER_AMOUNT
-        FROM TRANSFERS
-        INNER JOIN TRANSACTIONS ON TRANSACTIONS.TRANSACTION_ID = TRANSFERS.TRANSFER_TRANSACTION_ID
-        WHERE TRANSACTIONS.TRANSACTION_ACCOUNT_ID = ? OR TRANSFERS.TRANSFER_ACCOUNT_ID = ?
-    """.trimIndent()
-
-    val query = Query(sql, listOf(accountId, accountId))
-
-    var accumulator: Long = 0
-
-    override fun accept(rs: ResultSet) {
-        while (rs.next()) {
-
-            val transactionAccountId = rs.getLong("TRANSACTION_ACCOUNT_ID")
-            val transferAccountId = rs.getLong("TRANSFER_ACCOUNT_ID")
-            val transferAmount = rs.getLong("TRANSFER_AMOUNT")
-
-            // if the specified account is the parent for the transaction,
-            // then the transfer amount is credited (added) to the accumulator
-            if (accountId == transactionAccountId) {
-                accumulator += transferAmount
-            }
-
-            // if the specified account is the child as the transfer,
-            // then the amount is debited (subtracted) from the accumulator
-            if (accountId == transferAccountId) {
-                accumulator -= transferAmount
-            }
-        }
-    }
-}
-
-private class EntryBalanceCollector(accountId: Long?) : ResultSetHandler {
-
-    private val sql = """
-        SELECT SUM(ENTRY_AMOUNT) AS TOTAL
-        FROM ENTRIES
-        INNER JOIN TRANSACTIONS ON TRANSACTIONS.TRANSACTION_ID = ENTRIES.ENTRY_TRANSACTION_ID
-        WHERE TRANSACTIONS.TRANSACTION_ACCOUNT_ID = ?
-    """.trimIndent()
-
-    val query = Query(sql, listOf(accountId))
-
-    var accumulator: Long = 0
-
-    override fun accept(rs: ResultSet) {
-        while (rs.next()) {
-            accumulator += rs.getLong("TOTAL")
         }
     }
 }
