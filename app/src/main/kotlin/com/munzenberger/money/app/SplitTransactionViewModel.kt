@@ -45,7 +45,9 @@ class SplitTransactionViewModel {
         // operate on a copy of the original transfers and
         // apply the changes when the user taps Done
 
-        val copied = editors.map { it.copy() }
+        val copied = editors
+                .filter { it.isEditorValid }
+                .map { it.copy() }
 
         this.editors.addAll(copied)
 
