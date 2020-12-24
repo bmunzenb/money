@@ -16,7 +16,7 @@ class AccountRegisterTest : MoneyDatabaseTestSupport() {
 
         val account2 = Account().apply {
             randomize()
-            initialBalance = Money.valueOf(0)
+            initialBalance = Money.valueOf(-50)
             save(database)
         }
 
@@ -95,7 +95,6 @@ class AccountRegisterTest : MoneyDatabaseTestSupport() {
 
         assertEquals(expectedRegister1, register1)
 
-        /*
         val register2 = account2.getRegister(database)
 
         val expectedRegister2 = listOf(
@@ -104,8 +103,8 @@ class AccountRegisterTest : MoneyDatabaseTestSupport() {
                         date = transaction.date!!,
                         payeeId = transaction.payee!!.identity!!,
                         payeeName = transaction.payee!!.name!!,
-                        amount = Money.valueOf(-42),
-                        balance = Money.valueOf(-50 -42),
+                        amount = Money.valueOf(500),
+                        balance = Money.valueOf(-50 +500),
                         memo = transfer.memo!!,
                         number = transfer.number!!,
                         status = transfer.status!!,
@@ -124,8 +123,6 @@ class AccountRegisterTest : MoneyDatabaseTestSupport() {
         )
 
         assertEquals(expectedRegister2, register2)
-
-         */
     }
 
     @Test
