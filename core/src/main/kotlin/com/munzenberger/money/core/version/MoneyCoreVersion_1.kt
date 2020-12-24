@@ -30,8 +30,10 @@ class MoneyCoreVersion_1 : ApplicableVersion<MoneyDatabase> {
 
         obj.execute(Query.createTable("CATEGORIES")
                 .column("CATEGORY_ID", obj.dialect.identityColumnType)
-                .columnWithReference("CATEGORY_PARENT_ID", obj.dialect.identityType, "CATEGORIES", "CATEGORY_ID")
                 .column("CATEGORY_NAME", "TEXT NOT NULL")
+                .columnWithReference("CATEGORY_PARENT_ID", obj.dialect.identityType, "CATEGORIES", "CATEGORY_ID")
+                .column("CATEGORY_TYPE", "TEXT NOT NULL")
+                .constraint("CATEGORY_TYPE_CONSTRAINT", "CHECK (CATEGORY_TYPE IN ('INCOME', 'EXPENSE'))")
                 .build()
         )
 

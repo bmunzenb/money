@@ -2,6 +2,7 @@ package com.munzenberger.money.core
 
 import com.munzenberger.money.core.model.CategoryModel
 import com.munzenberger.money.core.model.CategoryTable
+import com.munzenberger.money.core.model.CategoryType
 import com.munzenberger.money.sql.QueryExecutor
 import com.munzenberger.money.sql.ResultSetMapper
 import com.munzenberger.money.sql.transaction
@@ -11,15 +12,19 @@ class Category internal constructor(model: CategoryModel) : Persistable<Category
 
     constructor() : this(CategoryModel())
 
+    var name: String?
+        get() = model.name
+        set(value) { model.name = value }
+
     internal val parentRef = PersistableIdentityReference(model.parent)
 
     fun setParent(category: Category?) {
         parentRef.set(category)
     }
 
-    var name: String?
-        get() = model.name
-        set(value) { model.name = value }
+    var type: CategoryType?
+        get() = model.type
+        set(value) { model.type = value }
 
     override fun save(executor: QueryExecutor) = executor.transaction { tx ->
         model.parent = parentRef.getIdentity(tx)

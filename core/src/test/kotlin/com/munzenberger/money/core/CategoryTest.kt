@@ -20,6 +20,7 @@ class CategoryTest : PersistableTest<Category>() {
 
     override fun assertPersistablePropertiesAreEquals(p1: Category, p2: Category) {
         assertEquals(p1.name, p2.name)
+        assertEquals(p1.type, p2.type)
     }
 
     @Test

@@ -282,7 +282,7 @@ class EditTransactionViewModel : TransactionDetailEditor(), AutoCloseable {
 
                             entry.apply {
                                 this.amount = editor.amount?.forTransactionType(transactionType)
-                                this.category = c.getCategory(tx)
+                                this.category = c.getCategory(tx, editor.amount?.isNegative, transactionType)
                                 this.memo = editor.memo
                                 this.orderInTransaction = index
                                 save(tx)

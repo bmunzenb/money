@@ -24,6 +24,7 @@ sealed class TransactionType {
         override val name = when (accountType.variant) {
             AccountTypeVariant.SAVINGS, AccountTypeVariant.CHECKING -> "Deposit"
             AccountTypeVariant.ASSET, AccountTypeVariant.CASH -> "Increase"
+            AccountTypeVariant.LOAN -> "Payment"
             else -> "Credit"
         }
     }
@@ -36,6 +37,7 @@ sealed class TransactionType {
             AccountTypeVariant.SAVINGS, AccountTypeVariant.CHECKING -> "Payment"
             AccountTypeVariant.ASSET, AccountTypeVariant.CASH -> "Decrease"
             AccountTypeVariant.CREDIT -> "Charge"
+            AccountTypeVariant.LOAN -> "Increase"
             else -> "Debit"
         }
     }

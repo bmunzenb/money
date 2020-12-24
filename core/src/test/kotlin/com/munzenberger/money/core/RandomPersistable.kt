@@ -2,6 +2,7 @@ package com.munzenberger.money.core
 
 import com.munzenberger.money.core.model.AccountTypeGroup
 import com.munzenberger.money.core.model.AccountTypeVariant
+import com.munzenberger.money.core.model.CategoryType
 import java.time.LocalDate
 import java.util.*
 
@@ -37,16 +38,13 @@ fun Payee.randomize() = this.apply {
     name = randomString()
 }
 
-fun TransactionStatus.Companion.random() =
-        TransactionStatus.values().random()
-
 fun Transaction.randomize() = this.apply {
     account = Account().randomize()
     payee = Payee().randomize()
     date = LocalDate.now()
     number = randomString()
     memo = randomString()
-    status = TransactionStatus.random()
+    status = TransactionStatus.values().random()
 }
 
 fun Transfer.randomize() = this.apply {
@@ -55,12 +53,13 @@ fun Transfer.randomize() = this.apply {
     amount = Money.random()
     number = randomString()
     memo = randomString()
-    status = TransactionStatus.random()
+    status = TransactionStatus.values().random()
     orderInTransaction = random.nextInt()
 }
 
 fun Category.randomize() = this.apply {
     name = randomString()
+    type = CategoryType.values().random()
 }
 
 fun Entry.randomize() = this.apply {

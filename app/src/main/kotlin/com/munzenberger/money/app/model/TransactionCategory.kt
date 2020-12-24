@@ -1,7 +1,9 @@
 package com.munzenberger.money.app.model
 
+import com.munzenberger.money.app.TransactionType
 import com.munzenberger.money.core.Account
 import com.munzenberger.money.core.Category
+import com.munzenberger.money.core.model.CategoryType
 import com.munzenberger.money.sql.QueryExecutor
 import com.munzenberger.money.sql.transaction
 
@@ -50,7 +52,7 @@ sealed class TransactionCategory {
             else -> "$parentName $CATEGORY_DELIMITER $categoryName"
         }
 
-        fun getCategory(executor: QueryExecutor): Category {
+        fun getCategory(executor: QueryExecutor, isNegative: Boolean?, transactionType: TransactionType?): Category {
 
             val parentCategory = parentName?.let {
 
@@ -62,6 +64,7 @@ sealed class TransactionCategory {
 
                 c ?: Category().apply {
                     this.name = parentName
+                    this.type = transactionType.categoryType(isNegative)
                     save(executor)
                 }
             }
@@ -75,6 +78,7 @@ sealed class TransactionCategory {
 
             return category ?: Category().apply {
                 this.name = categoryName
+                this.type = transactionType.categoryType(isNegative)
                 this.setParent(parentCategory)
                 save(executor)
             }
@@ -83,5 +87,19 @@ sealed class TransactionCategory {
 
     object Split : TransactionCategory() {
         override val name = SPLIT_CATEGORY_NAME
+    }
+}
+
+private fun TransactionType?.categoryType(isNegative: Boolean?): CategoryType {
+
+    val type = when (this?.variant) {
+        TransactionType.Variant.CREDIT -> CategoryType.INCOME
+        else -> CategoryType.EXPENSE
+    }
+
+    return when {
+        isNegative == true && type == CategoryType.INCOME -> CategoryType.EXPENSE
+        isNegative == true && type == CategoryType.EXPENSE -> CategoryType.INCOME
+        else -> type
     }
 }
