@@ -69,6 +69,7 @@ sealed class TransactionCategory {
             val category = Category.find(
                     executor,
                     name = categoryName,
+                    isParent = parentName == null,
                     parentId = parentCategory?.identity
             ).firstOrNull()
 

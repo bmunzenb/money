@@ -6,7 +6,6 @@ import com.munzenberger.money.sql.Query
 import com.munzenberger.money.sql.QueryExecutor
 import com.munzenberger.money.sql.ResultSetHandler
 import com.munzenberger.money.sql.ResultSetMapper
-import com.munzenberger.money.sql.getLongOrNull
 import com.munzenberger.money.sql.transaction
 import java.sql.ResultSet
 

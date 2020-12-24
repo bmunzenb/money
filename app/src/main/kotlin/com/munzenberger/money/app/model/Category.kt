@@ -9,6 +9,7 @@ import com.munzenberger.money.sql.QueryExecutor
 import com.munzenberger.money.sql.ResultSetMapper
 import com.munzenberger.money.sql.eq
 import com.munzenberger.money.sql.isNotNull
+import com.munzenberger.money.sql.isNull
 import java.sql.ResultSet
 
 fun Category.Companion.getAllWithParent(database: MoneyDatabase): List<Pair<Category, String?>> {
@@ -47,7 +48,12 @@ fun Category.Companion.find(
     }
 
     isParent?.let {
-        condition = CategoryTable.parentColumn.isNotNull() and condition
+        val c = when (it) {
+            true -> CategoryTable.parentColumn.isNull()
+            else -> CategoryTable.parentColumn.isNotNull()
+        }
+
+        condition = c and condition
     }
 
     parentId?.let {
