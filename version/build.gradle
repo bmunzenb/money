@@ -1,0 +1,3 @@
+dependencies {
+    testImplementation "io.mockk:mockk:$versions.mockk"
+}
