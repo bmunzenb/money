@@ -158,7 +158,7 @@ class EditTransactionViewModel : TransactionDetailEditor(), AutoCloseable {
             val categories = mutableListOf<TransactionCategory>()
 
             categories += Category.getAllWithParent(database)
-                    .map { TransactionCategory.Entry(it.first, it.second) }
+                    .map { TransactionCategory.Entry(it.category, it.parentName) }
                     .sortedBy { it.name }
 
             categories += Account.getAll(database)

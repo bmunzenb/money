@@ -11,7 +11,7 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
-<GridPane hgap="6.0" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="0.0" minWidth="0.0" vgap="6.0" xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/11.0.1" fx:controller="com.munzenberger.money.app.CategoryListController">
+<GridPane hgap="6.0" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="0.0" minWidth="0.0" vgap="6.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.munzenberger.money.app.CategoryListController">
   <columnConstraints>
     <ColumnConstraints fillWidth="false" hgrow="NEVER" />
     <ColumnConstraints hgrow="ALWAYS" maxWidth="1.7976931348623157E308" minWidth="0.0" />
@@ -34,10 +34,10 @@
             <Button disable="true" mnemonicParsing="false" text="Add Category" />
          </children>
       </VBox>
-      <TreeTableView maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="0.0" minWidth="0.0" GridPane.columnIndex="1" GridPane.rowIndex="1">
+      <TreeTableView fx:id="treeTableView" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="0.0" minWidth="0.0" GridPane.columnIndex="1" GridPane.rowIndex="1">
         <columns>
-          <TreeTableColumn editable="false" prefWidth="75.0" sortable="false" text="Name" />
-          <TreeTableColumn editable="false" prefWidth="75.0" sortable="false" text="Type" />
+          <TreeTableColumn fx:id="nameColumn" editable="false" prefWidth="75.0" sortable="false" text="Name" />
+          <TreeTableColumn fx:id="typeColumn" editable="false" prefWidth="75.0" sortable="false" text="Type" />
         </columns>
          <columnResizePolicy>
             <TreeTableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
