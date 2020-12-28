@@ -7,7 +7,7 @@ import com.munzenberger.money.app.control.TableCellFactory
 import com.munzenberger.money.app.control.bindAsync
 import com.munzenberger.money.app.control.bindWaiting
 import com.munzenberger.money.app.model.FXRegisterEntry
-import com.munzenberger.money.app.model.FXAccountTransactionFilter
+import com.munzenberger.money.app.model.FXRegisterEntryFilter
 import com.munzenberger.money.app.model.moneyNegativePseudoClass
 import com.munzenberger.money.app.navigation.LayoutControllerNavigation
 import com.munzenberger.money.app.property.AsyncObject
@@ -52,7 +52,8 @@ class AccountRegisterController : AutoCloseable {
     @FXML lateinit var accountNameLabel: Label
     @FXML lateinit var editAccountButton: Button
     @FXML lateinit var addTransactionButton: Button
-    @FXML lateinit var dateFilterChoiceBox: ChoiceBox<FXAccountTransactionFilter>
+    @FXML lateinit var dateFilterChoiceBox: ChoiceBox<FXRegisterEntryFilter>
+    @FXML lateinit var statusFilterChoiceBox: ChoiceBox<FXRegisterEntryFilter>
     @FXML lateinit var tableView: TableView<FXRegisterEntry>
     @FXML lateinit var numberColumn: TableColumn<FXRegisterEntry, String>
     @FXML lateinit var dateColumn: TableColumn<FXRegisterEntry, LocalDate>
@@ -95,6 +96,11 @@ class AccountRegisterController : AutoCloseable {
         dateFilterChoiceBox.apply {
             items = viewModel.dateFiltersProperty
             valueProperty().bindBidirectional(viewModel.selectedDateFilterProperty)
+        }
+
+        statusFilterChoiceBox.apply {
+            items = viewModel.statusFiltersProperty
+            valueProperty().bindBidirectional(viewModel.selectedStatusFilterProperty)
         }
 
         tableView.apply {
@@ -192,8 +198,9 @@ class AccountRegisterController : AutoCloseable {
         this.database = database
         this.accountIdentity = accountIdentity
 
-        // TODO: eventually save as a preference by account
-        dateFilterChoiceBox.selectionModel.select(0)
+        // TODO: save as preferences by account and restore here
+        //dateFilterChoiceBox.selectionModel.select(0)
+        //statusFilterChoiceBox.selectionModel.select(0)
 
         stage.bindWaiting(viewModel.operationInProgressProperty)
 

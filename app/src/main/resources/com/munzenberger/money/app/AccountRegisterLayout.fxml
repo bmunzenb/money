@@ -75,6 +75,7 @@
          <children>
             <Label text="View:" />
             <ChoiceBox fx:id="dateFilterChoiceBox" />
+            <ChoiceBox fx:id="statusFilterChoiceBox" />
          </children>
       </HBox>
    </children>

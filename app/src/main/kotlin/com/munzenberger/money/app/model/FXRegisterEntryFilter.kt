@@ -3,7 +3,7 @@ package com.munzenberger.money.app.model
 import java.time.LocalDate
 import java.util.function.Predicate
 
-class FXAccountTransactionFilter(
+class FXRegisterEntryFilter(
         val name: String,
         predicate: Predicate<FXRegisterEntry>
 ) : Predicate<FXRegisterEntry> by predicate {

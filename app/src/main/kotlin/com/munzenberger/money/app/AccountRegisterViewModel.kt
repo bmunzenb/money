@@ -2,7 +2,7 @@ package com.munzenberger.money.app
 
 import com.munzenberger.money.app.database.ObservableMoneyDatabase
 import com.munzenberger.money.app.model.FXRegisterEntry
-import com.munzenberger.money.app.model.FXAccountTransactionFilter
+import com.munzenberger.money.app.model.FXRegisterEntryFilter
 import com.munzenberger.money.app.model.inCurrentMonth
 import com.munzenberger.money.app.model.inCurrentYear
 import com.munzenberger.money.app.model.inLastMonths
@@ -26,6 +26,7 @@ import com.munzenberger.money.sql.inGroup
 import com.munzenberger.money.sql.transaction
 import io.reactivex.rxjava3.core.Single
 import io.reactivex.rxjava3.disposables.CompositeDisposable
+import javafx.beans.binding.Bindings
 import javafx.beans.property.ReadOnlyBooleanProperty
 import javafx.beans.property.ReadOnlyListProperty
 import javafx.beans.property.ReadOnlyObjectProperty
@@ -60,31 +61,50 @@ class AccountRegisterViewModel : AutoCloseable {
     val endingBalanceProperty: ReadOnlyAsyncObjectProperty<Money> = endingBalance
     val debitTextProperty: ReadOnlyStringProperty = debitText
     val creditTextProperty: ReadOnlyStringProperty = creditText
-    val dateFiltersProperty: ReadOnlyListProperty<FXAccountTransactionFilter>
+    val dateFiltersProperty: ReadOnlyListProperty<FXRegisterEntryFilter>
+    val statusFiltersProperty: ReadOnlyListProperty<FXRegisterEntryFilter>
     val activeFiltersProperty: ReadOnlyObjectProperty<Predicate<FXRegisterEntry>> = activeFilters
     val operationInProgressProperty: ReadOnlyBooleanProperty = operationInProgress
 
-    val selectedDateFilterProperty = SimpleObjectProperty<FXAccountTransactionFilter>()
+    val selectedDateFilterProperty = SimpleObjectProperty<FXRegisterEntryFilter>()
+    val selectedStatusFilterProperty = SimpleObjectProperty<FXRegisterEntryFilter>()
 
     lateinit var database: MoneyDatabase
 
     init {
 
-        val dateFilters = FXCollections.observableArrayList<FXAccountTransactionFilter>().apply {
+        val dateFilters = FXCollections.observableArrayList<FXRegisterEntryFilter>().apply {
             addAll(
-                    FXAccountTransactionFilter("All Dates") { true },
-                    FXAccountTransactionFilter("Current Month") { it.dateProperty.value.inCurrentMonth() },
-                    FXAccountTransactionFilter("Current Year") { it.dateProperty.value.inCurrentYear() },
-                    FXAccountTransactionFilter("Last 3 Months") { it.dateProperty.value.inLastMonths(3) },
-                    FXAccountTransactionFilter("Last 12 Months") { it.dateProperty.value.inLastMonths(12) }
+                    FXRegisterEntryFilter("All Dates") { true },
+                    FXRegisterEntryFilter("Current Month") { it.dateProperty.value.inCurrentMonth() },
+                    FXRegisterEntryFilter("Current Year") { it.dateProperty.value.inCurrentYear() },
+                    FXRegisterEntryFilter("Last 3 Months") { it.dateProperty.value.inLastMonths(3) },
+                    FXRegisterEntryFilter("Last 12 Months") { it.dateProperty.value.inLastMonths(12) }
             )
         }
 
         dateFiltersProperty = SimpleListProperty(dateFilters)
 
-        selectedDateFilterProperty.addListener { _, _, filter ->
-            activeFilters.value = filter
+        selectedDateFilterProperty.value = dateFilters[0]
+
+        val statusFilters = FXCollections.observableArrayList<FXRegisterEntryFilter>().apply {
+            addAll(
+                    FXRegisterEntryFilter("All Transactions") { true },
+                    FXRegisterEntryFilter("Unreconciled Transactions") { it.statusProperty.value != TransactionStatus.RECONCILED }
+            )
         }
+
+        statusFiltersProperty = SimpleListProperty(statusFilters)
+
+        selectedStatusFilterProperty.value = statusFilters[0]
+
+        val filtersBinding = Bindings.createObjectBinding(
+                { selectedDateFilterProperty.value.and(selectedStatusFilterProperty.value) },
+                selectedDateFilterProperty,
+                selectedStatusFilterProperty
+        )
+
+        activeFilters.bind(filtersBinding)
 
         account.addListener { _, _, newValue ->
             when (newValue) {
