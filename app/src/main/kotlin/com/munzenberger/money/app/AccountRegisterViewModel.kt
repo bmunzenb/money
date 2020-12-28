@@ -16,6 +16,7 @@ import com.munzenberger.money.core.MoneyDatabase
 import com.munzenberger.money.core.PersistableNotFoundException
 import com.munzenberger.money.core.Transaction
 import com.munzenberger.money.core.TransactionStatus
+import com.munzenberger.money.core.getBalance
 import com.munzenberger.money.core.getRegister
 import com.munzenberger.money.core.model.AccountTypeGroup
 import com.munzenberger.money.core.model.EntryTable

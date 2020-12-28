@@ -27,19 +27,6 @@ class Account internal constructor(model: AccountModel) : Persistable<AccountMod
         get() = model.initialBalance?.let { Money.valueOf(it) }
         set(value) { model.initialBalance = value?.value }
 
-    fun getBalance(executor: QueryExecutor): Money {
-
-        val balance = listOf(
-                TransferBalanceCollector(identity),
-                EntryBalanceCollector(identity)
-        ).map {
-            executor.executeQuery(it.query, it)
-            it.result
-        }.fold(model.initialBalance ?: 0) { acc, v -> acc + v }
-
-        return Money.valueOf(balance)
-    }
-
     override fun save(executor: QueryExecutor) = executor.transaction { tx ->
         model.accountType = accountType.getIdentity(tx)
         model.bank = bank.getIdentity(tx)

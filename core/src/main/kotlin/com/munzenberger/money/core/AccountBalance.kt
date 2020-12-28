@@ -1,6 +1,7 @@
 package com.munzenberger.money.core
 
 import com.munzenberger.money.sql.Query
+import com.munzenberger.money.sql.QueryExecutor
 import com.munzenberger.money.sql.ResultSetHandler
 import java.sql.ResultSet
 
@@ -70,4 +71,19 @@ internal class EntryBalanceCollector(accountId: Long?) : AccountBalanceCollector
             accumulator += rs.getLong("TOTAL")
         }
     }
+}
+
+fun Account.getBalance(executor: QueryExecutor): Money {
+
+    val initialBalance: Long = initialBalance?.value ?: 0
+
+    val balance = listOf(
+            TransferBalanceCollector(identity),
+            EntryBalanceCollector(identity)
+    ).map {
+        executor.executeQuery(it.query, it)
+        it.result
+    }.fold(initialBalance) { acc, v -> acc + v }
+
+    return Money.valueOf(balance)
 }
