@@ -13,6 +13,7 @@
             <Button fx:id="forwardButton" mnemonicParsing="false" onAction="#onForwardButton" text="&gt;" />
             <Separator orientation="VERTICAL" />
             <Button mnemonicParsing="false" onAction="#onAccountsButton" text="Accounts" />
+            <Button mnemonicParsing="false" onAction="#onCategoriesButton" text="Categories" />
             <Button mnemonicParsing="false" onAction="#onPayeesButton" text="Payees" />
             <Separator orientation="VERTICAL" />
             <Button mnemonicParsing="false" onAction="#onQueryButton" text="Query" />

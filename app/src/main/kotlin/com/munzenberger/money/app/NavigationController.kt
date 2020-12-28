@@ -25,6 +25,10 @@ class NavigationController : AutoCloseable {
         controller: AccountListController -> controller.start(stage, database, navigator)
     }
 
+    private val categoriesNavigation = LayoutControllerNavigation(CategoryListController.LAYOUT) {
+        controller: CategoryListController -> controller.start(database)
+    }
+
     private val payeesNavigation = LayoutControllerNavigation(PayeeListController.LAYOUT) {
         controller: PayeeListController -> controller.start(database)
     }
@@ -59,6 +63,10 @@ class NavigationController : AutoCloseable {
 
     @FXML fun onAccountsButton() {
         navigator.goTo(accountsNavigation)
+    }
+
+    @FXML fun onCategoriesButton() {
+        navigator.goTo(categoriesNavigation)
     }
 
     @FXML fun onPayeesButton() {
