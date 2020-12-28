@@ -40,7 +40,7 @@ object NewFileDatabase : DatabaseConnectorCallbacks {
         // Do nothing
     }
 
-    override fun onConnected(database: ObservableMoneyDatabase) {
+    override fun onConnected(database: ObservableMoneyDatabase, isFirstUse: Boolean) {
         // Do nothing
     }
 

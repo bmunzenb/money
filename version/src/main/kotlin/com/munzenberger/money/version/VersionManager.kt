@@ -6,7 +6,7 @@ object UnsupportedVersion : VersionStatus()
 
 object CurrentVersion : VersionStatus()
 
-abstract class PendingUpgrades : VersionStatus() {
+abstract class PendingUpgrades(val isFirstUse: Boolean) : VersionStatus() {
     abstract fun apply()
 }
 
@@ -42,7 +42,7 @@ abstract class VersionManager<T> {
 
         // check for pending upgrades
         if (iter2.hasNext()) {
-            return object : PendingUpgrades() {
+            return object : PendingUpgrades(applied.isEmpty()) {
                 override fun apply() = iter2.forEachRemaining {
                     it.apply(obj)
                     onVersionApplied(obj, it)

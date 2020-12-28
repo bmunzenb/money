@@ -70,7 +70,7 @@ class VersionManagerTest {
     }
 
     @Test
-    fun `get version status with no applied and applicable versions returns Pending with new flag`() {
+    fun `get version status with no applied and applicable versions returns Pending with first flag`() {
 
         val applicable = listOf(TestableVersion(1L))
 
@@ -78,11 +78,11 @@ class VersionManagerTest {
 
         val status = vm.getVersionStatus(Unit)
 
-        assertTrue(status is PendingUpgrades)
+        assertTrue(status is PendingUpgrades && status.isFirstUse)
     }
 
     @Test
-    fun `get version status with applied and more applicable versions returns Pending without new flag`() {
+    fun `get version status with applied and more applicable versions returns Pending without first flag`() {
 
         val applied = listOf(TestableVersion(1L))
         val applicable = applied + TestableVersion(2L)
@@ -91,7 +91,7 @@ class VersionManagerTest {
 
         val status = vm.getVersionStatus(Unit)
 
-        assertTrue(status is PendingUpgrades)
+        assertTrue(status is PendingUpgrades && !status.isFirstUse)
     }
 
     @Test

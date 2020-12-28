@@ -18,7 +18,7 @@ interface DatabaseConnectorCallbacks {
     fun onCanceled()
     fun onUnsupportedVersion()
     fun onPendingUpgrades(): Boolean
-    fun onConnected(database: ObservableMoneyDatabase)
+    fun onConnected(database: ObservableMoneyDatabase, isFirstUse: Boolean)
     fun onConnectError(error: Throwable)
 }
 
@@ -70,7 +70,7 @@ abstract class DatabaseConnector {
         when (status) {
 
             is CurrentVersion ->
-                callbacks.onConnected(database)
+                callbacks.onConnected(database, false)
 
             is UnsupportedVersion -> {
                 database.close()
@@ -94,6 +94,6 @@ abstract class DatabaseConnector {
                 .subscribeOn(SchedulerProvider.database)
                 .observeOn(SchedulerProvider.main)
                 .doOnError { database.close() }
-                .subscribe({ callbacks.onConnected(database) }, { callbacks.onConnectError(it) })
+                .subscribe({ callbacks.onConnected(database, upgrades.isFirstUse) }, { callbacks.onConnectError(it) })
     }
 }

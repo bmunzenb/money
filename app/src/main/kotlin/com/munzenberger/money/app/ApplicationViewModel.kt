@@ -56,8 +56,8 @@ class ApplicationViewModel : AutoCloseable {
                 isConnectionInProgress.value = false
             }
 
-            override fun onConnected(database: ObservableMoneyDatabase) {
-                callbacks.onConnected(database)
+            override fun onConnected(database: ObservableMoneyDatabase, isFirstUse: Boolean) {
+                callbacks.onConnected(database, isFirstUse)
                 isConnectionInProgress.value = false
                 connectedDatabase.value?.close()
                 connectedDatabase.value = database
