@@ -80,7 +80,7 @@ class AccountRegisterController : AutoCloseable {
 
         accountNameLabel.apply {
             visibleProperty().bindAsyncStatus(viewModel.accountProperty, AsyncObject.Status.COMPLETE)
-            textProperty().bindAsync(viewModel.accountProperty) { "Account Register : ${it.name}" }
+            textProperty().bindAsync(viewModel.accountProperty) { it.name }
         }
 
         editAccountButton.disableProperty().bindAsyncStatus(viewModel.accountProperty,

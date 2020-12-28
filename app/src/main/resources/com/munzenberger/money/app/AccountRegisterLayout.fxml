@@ -27,16 +27,25 @@
     <RowConstraints fillHeight="false" vgrow="NEVER" />
   </rowConstraints>
    <children>
-      <StackPane maxWidth="1.7976931348623157E308" GridPane.columnIndex="1">
+      <HBox alignment="CENTER_LEFT" spacing="8.0" GridPane.columnIndex="1">
          <children>
-            <Label fx:id="accountNameLabel" text="Account Register" StackPane.alignment="CENTER_LEFT">
+            <Label text="Account Register :">
                <font>
                   <Font size="18.0" />
                </font>
             </Label>
-            <ProgressIndicator fx:id="accountNameProgress" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="20.0" prefWidth="20.0" StackPane.alignment="CENTER_LEFT" />
+            <StackPane maxWidth="1.7976931348623157E308">
+               <children>
+                  <ProgressIndicator fx:id="accountNameProgress" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="20.0" prefWidth="20.0" StackPane.alignment="CENTER_LEFT" />
+                  <Label fx:id="accountNameLabel">
+                     <font>
+                        <Font size="18.0" />
+                     </font>
+                  </Label>
+               </children>
+            </StackPane>
          </children>
-      </StackPane>
+      </HBox>
       <VBox minHeight="0.0" minWidth="0.0" spacing="8.0" GridPane.rowIndex="2" GridPane.rowSpan="2147483647" GridPane.valignment="TOP">
          <children>
             <Button fx:id="editAccountButton" maxWidth="1.7976931348623157E308" minWidth="-Infinity" mnemonicParsing="false" onAction="#onEditAccount" text="Edit Account" />
