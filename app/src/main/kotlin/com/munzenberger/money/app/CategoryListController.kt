@@ -1,6 +1,5 @@
 package com.munzenberger.money.app
 
-import com.munzenberger.money.app.control.HyperlinkTableCellFactory
 import com.munzenberger.money.app.control.bindAsync
 import com.munzenberger.money.app.database.ObservableMoneyDatabase
 import com.munzenberger.money.app.model.FXCategory
@@ -31,7 +30,6 @@ class CategoryListController : AutoCloseable {
         )
 
         nameColumn.apply {
-            cellFactory = HyperlinkTableCellFactory { /* TODO present category details page */ }
             cellValueFactory = Callback { it.value.nameProperty }
         }
 

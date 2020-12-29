@@ -40,9 +40,9 @@
             <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
          </columnResizePolicy>
       </TableView>
-      <VBox minHeight="0.0" minWidth="0.0" GridPane.rowIndex="1" GridPane.rowSpan="2147483647" GridPane.valignment="TOP">
+      <VBox maxHeight="1.7976931348623157E308" minHeight="-Infinity" minWidth="120.0" spacing="8.0" GridPane.rowIndex="1" GridPane.rowSpan="2147483647" GridPane.valignment="TOP">
          <children>
-            <Button fx:id="createAccountButton" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#onCreateAccount" text="Create Account" />
+            <Button fx:id="createAccountButton" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#onCreateAccount" text="Add Account" />
          </children>
          <padding>
             <Insets right="6.0" />

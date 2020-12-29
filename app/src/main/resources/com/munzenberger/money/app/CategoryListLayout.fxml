@@ -26,12 +26,13 @@
             <Font size="18.0" />
          </font>
       </Label>
-      <VBox GridPane.rowIndex="1" GridPane.rowSpan="2147483647">
+      <VBox maxHeight="1.7976931348623157E308" minHeight="-Infinity" minWidth="120.0" spacing="8.0" GridPane.rowIndex="1" GridPane.rowSpan="2147483647">
          <padding>
             <Insets right="6.0" />
          </padding>
          <children>
-            <Button disable="true" mnemonicParsing="false" text="Add Category" />
+            <Button disable="true" maxWidth="1.7976931348623157E308" mnemonicParsing="false" text="Go to Category" />
+            <Button disable="true" maxWidth="1.7976931348623157E308" mnemonicParsing="false" text="Add Category" />
          </children>
       </VBox>
       <TableView fx:id="tableView" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="0.0" minWidth="0.0" GridPane.columnIndex="1" GridPane.rowIndex="1">

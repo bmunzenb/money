@@ -35,8 +35,9 @@
             <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
          </columnResizePolicy>
       </TableView>
-      <VBox minHeight="0.0" minWidth="0.0" GridPane.rowIndex="1" GridPane.rowSpan="2147483647" GridPane.valignment="TOP">
+      <VBox maxHeight="1.7976931348623157E308" minHeight="-Infinity" minWidth="120.0" spacing="8.0" GridPane.rowIndex="1" GridPane.rowSpan="2147483647" GridPane.valignment="TOP">
          <children>
+            <Button disable="true" maxWidth="1.7976931348623157E308" mnemonicParsing="false" text="Go to Payee" />
             <Button disable="true" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#onAddPayee" text="Add Payee" />
          </children>
          <padding>

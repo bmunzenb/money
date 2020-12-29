@@ -46,11 +46,11 @@
             </StackPane>
          </children>
       </HBox>
-      <VBox minHeight="0.0" minWidth="0.0" spacing="8.0" GridPane.rowIndex="2" GridPane.rowSpan="2147483647" GridPane.valignment="TOP">
+      <VBox maxHeight="1.7976931348623157E308" minHeight="-Infinity" minWidth="120.0" spacing="8.0" GridPane.rowIndex="2" GridPane.rowSpan="2147483647" GridPane.valignment="TOP">
          <children>
-            <Button fx:id="editAccountButton" maxWidth="1.7976931348623157E308" minWidth="-Infinity" mnemonicParsing="false" onAction="#onEditAccount" text="Edit Account" />
-            <Button fx:id="addTransactionButton" maxWidth="1.7976931348623157E308" minWidth="-Infinity" mnemonicParsing="false" onAction="#onAddTransaction" text="New Transaction" />
-            <Button fx:id="balanceAccountButton" maxWidth="1.7976931348623157E308" minWidth="-Infinity" mnemonicParsing="false" onAction="#onBalanceAccount" text="Balance Account" />
+            <Button fx:id="editAccountButton" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#onEditAccount" text="Edit Account" />
+            <Button fx:id="addTransactionButton" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#onAddTransaction" text="Add Transaction" />
+            <Button fx:id="balanceAccountButton" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#onBalanceAccount" text="Balance Account" />
          </children>
          <padding>
             <Insets right="6.0" />
