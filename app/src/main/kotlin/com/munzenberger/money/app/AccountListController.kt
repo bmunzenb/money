@@ -3,17 +3,17 @@ package com.munzenberger.money.app
 import com.munzenberger.money.app.control.HyperlinkTableCellFactory
 import com.munzenberger.money.app.control.MoneyAsyncTableCellFactory
 import com.munzenberger.money.app.control.bindAsync
+import com.munzenberger.money.app.database.ObservableMoneyDatabase
 import com.munzenberger.money.app.model.FXAccount
 import com.munzenberger.money.app.model.moneyNegativePseudoClass
 import com.munzenberger.money.app.navigation.Navigator
 import com.munzenberger.money.app.property.AsyncObject
 import com.munzenberger.money.app.property.AsyncObjectComparator
-import com.munzenberger.money.app.property.bindAsync
 import com.munzenberger.money.app.property.bindAsyncStatus
+import com.munzenberger.money.app.property.bindAsyncValue
 import com.munzenberger.money.core.Account
 import com.munzenberger.money.core.Money
 import com.munzenberger.money.core.isNegative
-import com.munzenberger.money.app.database.ObservableMoneyDatabase
 import javafx.fxml.FXML
 import javafx.scene.control.Button
 import javafx.scene.control.Hyperlink
@@ -82,7 +82,7 @@ class AccountListController : AutoCloseable {
 
         totalBalanceLabel.apply {
             visibleProperty().bindAsyncStatus(viewModel.totalBalanceProperty, AsyncObject.Status.COMPLETE)
-            textProperty().bindAsync(viewModel.totalBalanceProperty) { "Total Account Balance: $it" }
+            textProperty().bindAsyncValue(viewModel.totalBalanceProperty) { "Total Account Balance: $it" }
         }
 
         viewModel.totalBalanceProperty.addListener { _, _, newValue ->

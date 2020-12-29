@@ -2,11 +2,13 @@ package com.munzenberger.money.app
 
 import com.munzenberger.money.app.database.ObservableMoneyDatabase
 import com.munzenberger.money.app.model.FXAccount
+import com.munzenberger.money.app.property.AsyncObject
 import com.munzenberger.money.app.property.ReadOnlyAsyncObjectProperty
 import com.munzenberger.money.app.property.SimpleAsyncObjectProperty
 import com.munzenberger.money.app.property.bindAsync
 import com.munzenberger.money.app.property.flatMapAsyncObject
 import com.munzenberger.money.app.property.asyncValue
+import com.munzenberger.money.app.property.map
 import com.munzenberger.money.core.Account
 import com.munzenberger.money.core.Money
 import io.reactivex.rxjava3.core.Single
@@ -24,18 +26,23 @@ class AccountListViewModel : AutoCloseable {
 
     init {
 
-        totalBalance.bindAsync(accountsProperty) { accounts ->
+        accountsProperty.addListener { _, _, newValue ->
+            when (newValue) {
+                is AsyncObject.Complete -> {
 
-            val observableBalances = accounts.map { it.observableBalance }
+                    val observableBalances = newValue.value.map { it.observableBalance }
 
-            val observableTotal = when (observableBalances.isEmpty()) {
-                true -> Single.just(Money.zero())
-                else -> Single.zip(observableBalances) {
-                    it.fold(Money.zero()) { acc, b -> acc.add(b as Money) }
+                    val observableTotal = when (observableBalances.isEmpty()) {
+                        true -> Single.just(Money.zero())
+                        else -> Single.zip(observableBalances) {
+                            it.fold(Money.zero()) { acc, b -> acc.add(b as Money) }
+                        }
+                    }
+
+                    totalBalance.asyncValue(observableTotal)
                 }
+                else -> totalBalance.value = newValue.map { Money.zero() }
             }
-
-            asyncValue(observableTotal)
         }
     }
 

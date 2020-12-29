@@ -1,7 +1,7 @@
 package com.munzenberger.money.app.control
 
 import com.munzenberger.money.app.ErrorAlert
-import com.munzenberger.money.app.property.AsyncObjectMapper
+import com.munzenberger.money.app.property.AsyncObject
 import com.munzenberger.money.app.property.ReadOnlyAsyncObjectProperty
 import com.munzenberger.money.app.property.bindAsync
 import javafx.beans.property.ReadOnlyObjectProperty
@@ -11,7 +11,6 @@ import javafx.collections.transformation.FilteredList
 import javafx.collections.transformation.SortedList
 import javafx.scene.Node
 import javafx.scene.control.Hyperlink
-import javafx.scene.control.Label
 import javafx.scene.control.ProgressIndicator
 import javafx.scene.control.TableView
 import javafx.scene.paint.Color
@@ -38,20 +37,20 @@ inline fun <reified T> TableView<T>.bindAsync(
 
     items = sortedList
 
-    placeholderProperty().bindAsync(listProperty, object : AsyncObjectMapper<List<T>, Node> {
+    placeholderProperty().bindAsync(listProperty) { async ->
+        when (async) {
 
-        override fun pending() = executing()
+            is AsyncObject.Pending, is AsyncObject.Executing -> ProgressIndicator().apply {
+                setPrefSize(60.0, 60.0)
+                setMaxSize(60.0, 60.0)
+            }
 
-        override fun executing() = ProgressIndicator().apply {
-            setPrefSize(60.0, 60.0)
-            setMaxSize(60.0, 60.0)
+            is AsyncObject.Complete -> placeholder
+
+            is AsyncObject.Error -> Hyperlink(async.error.message).apply {
+                textFill = Color.RED
+                setOnAction { ErrorAlert(async.error).showAndWait() }
+            }
         }
-
-        override fun complete(obj: List<T>) = placeholder
-
-        override fun error(error: Throwable) = Hyperlink(error.message).apply {
-            textFill = Color.RED
-            setOnAction { ErrorAlert(error).showAndWait() }
-        }
-    })
+    }
 }

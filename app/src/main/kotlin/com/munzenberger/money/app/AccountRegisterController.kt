@@ -6,21 +6,21 @@ import com.munzenberger.money.app.control.MoneyTableCellFactory
 import com.munzenberger.money.app.control.TableCellFactory
 import com.munzenberger.money.app.control.bindAsync
 import com.munzenberger.money.app.control.bindWaiting
+import com.munzenberger.money.app.database.ObservableMoneyDatabase
 import com.munzenberger.money.app.model.FXRegisterEntry
 import com.munzenberger.money.app.model.FXRegisterEntryFilter
 import com.munzenberger.money.app.model.moneyNegativePseudoClass
 import com.munzenberger.money.app.navigation.LayoutControllerNavigation
 import com.munzenberger.money.app.property.AsyncObject
-import com.munzenberger.money.app.property.bindAsync
+import com.munzenberger.money.app.property.NumberStringComparator
 import com.munzenberger.money.app.property.bindAsyncStatus
+import com.munzenberger.money.app.property.bindAsyncValue
 import com.munzenberger.money.core.Account
 import com.munzenberger.money.core.Money
 import com.munzenberger.money.core.MoneyDatabase
 import com.munzenberger.money.core.Transaction
-import com.munzenberger.money.core.isNegative
-import com.munzenberger.money.app.database.ObservableMoneyDatabase
-import com.munzenberger.money.app.property.NumberStringComparator
 import com.munzenberger.money.core.TransactionStatus
+import com.munzenberger.money.core.isNegative
 import javafx.fxml.FXML
 import javafx.scene.control.Alert
 import javafx.scene.control.Button
@@ -80,7 +80,7 @@ class AccountRegisterController : AutoCloseable {
 
         accountNameLabel.apply {
             visibleProperty().bindAsyncStatus(viewModel.accountProperty, AsyncObject.Status.COMPLETE)
-            textProperty().bindAsync(viewModel.accountProperty) { it.name }
+            textProperty().bindAsyncValue(viewModel.accountProperty) { it.name }
         }
 
         editAccountButton.disableProperty().bindAsyncStatus(viewModel.accountProperty,
@@ -184,7 +184,7 @@ class AccountRegisterController : AutoCloseable {
 
         endingBalanceLabel.apply {
             visibleProperty().bindAsyncStatus(viewModel.endingBalanceProperty, AsyncObject.Status.COMPLETE)
-            textProperty().bindAsync(viewModel.endingBalanceProperty) { "Ending Balance: $it" }
+            textProperty().bindAsyncValue(viewModel.endingBalanceProperty) { "Ending Balance: $it" }
         }
 
         viewModel.endingBalanceProperty.addListener { _, _, newValue ->
