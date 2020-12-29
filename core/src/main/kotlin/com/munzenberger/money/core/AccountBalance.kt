@@ -5,52 +5,56 @@ import com.munzenberger.money.sql.QueryExecutor
 import com.munzenberger.money.sql.ResultSetHandler
 import java.sql.ResultSet
 
-internal interface AccountBalanceCollector : ResultSetHandler {
+private interface AccountBalanceCollector : ResultSetHandler {
 
     val query: Query
 
     val result: Long
 }
 
-internal class TransferBalanceCollector(private val accountId: Long?) : AccountBalanceCollector {
+private class TransactionBalanceCollector(accountId: Long?) : AccountBalanceCollector {
 
     private val sql = """
-        SELECT TRANSACTION_ACCOUNT_ID, TRANSFER_ACCOUNT_ID, TRANSFER_AMOUNT
-        FROM TRANSFERS
-        INNER JOIN TRANSACTIONS ON TRANSACTIONS.TRANSACTION_ID = TRANSFERS.TRANSFER_TRANSACTION_ID
-        WHERE TRANSACTIONS.TRANSACTION_ACCOUNT_ID = ? OR TRANSFERS.TRANSFER_ACCOUNT_ID = ?
+        SELECT SUM(TRANSFER_AMOUNT) AS TOTAL
+        FROM TRANSACTIONS
+        INNER JOIN TRANSFERS ON TRANSFERS.TRANSFER_TRANSACTION_ID = TRANSACTIONS.TRANSACTION_ID
+        WHERE TRANSACTION_ACCOUNT_ID = ?
     """.trimIndent()
 
-    override val query = Query(sql, listOf(accountId, accountId))
-
-    private var accumulator: Long = 0
+    override val query = Query(sql, listOf(accountId))
 
     override val result: Long
-        get() = accumulator
+        get() = total
+
+    private var total: Long = 0
 
     override fun accept(rs: ResultSet) {
-        while (rs.next()) {
-
-            val transactionAccountId = rs.getLong("TRANSACTION_ACCOUNT_ID")
-            val transferAccountId = rs.getLong("TRANSFER_ACCOUNT_ID")
-            val transferAmount = rs.getLong("TRANSFER_AMOUNT")
-
-            // if the specified account is the parent for the transaction,
-            // then the transfer amount is credited (added) to the accumulator
-            if (accountId == transactionAccountId) {
-                accumulator += transferAmount
-            }
-
-            // if the specified account is the child as the transfer,
-            // then the amount is debited (subtracted) from the accumulator
-            if (accountId == transferAccountId) {
-                accumulator -= transferAmount
-            }
-        }
+        total = rs.getLong("TOTAL")
     }
 }
 
-internal class EntryBalanceCollector(accountId: Long?) : AccountBalanceCollector {
+private class TransferBalanceCollector(accountId: Long?) : AccountBalanceCollector {
+
+    private val sql = """
+        SELECT -SUM(TRANSFER_AMOUNT) AS TOTAL
+        FROM TRANSFERS
+        INNER JOIN TRANSACTIONS ON TRANSACTIONS.TRANSACTION_ID = TRANSFERS.TRANSFER_TRANSACTION_ID
+        WHERE TRANSFER_ACCOUNT_ID = ?
+    """.trimIndent()
+
+    override val query = Query(sql, listOf(accountId))
+
+    override val result: Long
+        get() = total
+
+    private var total: Long = 0
+
+    override fun accept(rs: ResultSet) {
+        total = rs.getLong("TOTAL")
+    }
+}
+
+private class EntryBalanceCollector(accountId: Long?) : AccountBalanceCollector {
 
     private val sql = """
         SELECT SUM(ENTRY_AMOUNT) AS TOTAL
@@ -61,15 +65,13 @@ internal class EntryBalanceCollector(accountId: Long?) : AccountBalanceCollector
 
     override val query = Query(sql, listOf(accountId))
 
-    private var accumulator: Long = 0
-
     override val result: Long
-        get() = accumulator
+        get() = total
+
+    private var total: Long = 0
 
     override fun accept(rs: ResultSet) {
-        while (rs.next()) {
-            accumulator += rs.getLong("TOTAL")
-        }
+        total = rs.getLong("TOTAL")
     }
 }
 
@@ -77,13 +79,20 @@ fun Account.getBalance(executor: QueryExecutor): Money {
 
     val initialBalance: Long = initialBalance?.value ?: 0
 
-    val balance = listOf(
+    val collectors = listOf(
+            TransactionBalanceCollector(identity),
             TransferBalanceCollector(identity),
             EntryBalanceCollector(identity)
-    ).map {
+    )
+
+    val totals = collectors.map {
         executor.executeQuery(it.query, it)
         it.result
-    }.fold(initialBalance) { acc, v -> acc + v }
+    }
+
+    val balance = totals.fold(initialBalance) { acc, t ->
+        acc + t
+    }
 
     return Money.valueOf(balance)
 }
