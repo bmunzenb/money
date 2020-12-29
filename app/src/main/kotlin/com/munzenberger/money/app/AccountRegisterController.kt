@@ -17,7 +17,6 @@ import com.munzenberger.money.app.property.bindAsyncStatus
 import com.munzenberger.money.app.property.bindAsyncValue
 import com.munzenberger.money.core.Account
 import com.munzenberger.money.core.Money
-import com.munzenberger.money.core.MoneyDatabase
 import com.munzenberger.money.core.Transaction
 import com.munzenberger.money.core.TransactionStatus
 import com.munzenberger.money.core.isNegative
@@ -52,6 +51,7 @@ class AccountRegisterController : AutoCloseable {
     @FXML lateinit var accountNameLabel: Label
     @FXML lateinit var editAccountButton: Button
     @FXML lateinit var addTransactionButton: Button
+    @FXML lateinit var balanceAccountButton: Button
     @FXML lateinit var dateFilterChoiceBox: ChoiceBox<FXRegisterEntryFilter>
     @FXML lateinit var statusFilterChoiceBox: ChoiceBox<FXRegisterEntryFilter>
     @FXML lateinit var tableView: TableView<FXRegisterEntry>
@@ -67,7 +67,7 @@ class AccountRegisterController : AutoCloseable {
     @FXML lateinit var endingBalanceProgressIndicator: ProgressIndicator
 
     private lateinit var stage: Stage
-    private lateinit var database: MoneyDatabase
+    private lateinit var database: ObservableMoneyDatabase
     private var accountIdentity: Long = -1
 
     private val viewModel = AccountRegisterViewModel()
@@ -89,6 +89,11 @@ class AccountRegisterController : AutoCloseable {
                 AsyncObject.Status.ERROR)
 
         addTransactionButton.disableProperty().bindAsyncStatus(viewModel.accountProperty,
+                AsyncObject.Status.PENDING,
+                AsyncObject.Status.EXECUTING,
+                AsyncObject.Status.ERROR)
+
+        balanceAccountButton.disableProperty().bindAsyncStatus(viewModel.accountProperty,
                 AsyncObject.Status.PENDING,
                 AsyncObject.Status.EXECUTING,
                 AsyncObject.Status.ERROR)
@@ -223,6 +228,12 @@ class AccountRegisterController : AutoCloseable {
         }
     }
 
+    @FXML fun onBalanceAccount() {
+        viewModel.getAccount {
+            startBalanceAccount(it)
+        }
+    }
+
     private fun onEditTransaction(transaction: FXRegisterEntry) {
         viewModel.getTransaction(transaction) { t, e ->
             when {
@@ -259,6 +270,14 @@ class AccountRegisterController : AutoCloseable {
             stage.title = title
             stage.show()
             controller.start(stage, database, transaction)
+        }
+    }
+
+    private fun startBalanceAccount(account: Account) {
+        DialogBuilder.build(StartBalanceAccountController.LAYOUT) { stage, controller: StartBalanceAccountController ->
+            stage.title = "${account.name} - Balance Account"
+            stage.show()
+            controller.start(stage, database, account)
         }
     }
 

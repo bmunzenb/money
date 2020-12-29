@@ -49,7 +49,8 @@
       <VBox minHeight="0.0" minWidth="0.0" spacing="8.0" GridPane.rowIndex="2" GridPane.rowSpan="2147483647" GridPane.valignment="TOP">
          <children>
             <Button fx:id="editAccountButton" maxWidth="1.7976931348623157E308" minWidth="-Infinity" mnemonicParsing="false" onAction="#onEditAccount" text="Edit Account" />
-            <Button fx:id="addTransactionButton" maxWidth="1.7976931348623157E308" minWidth="-Infinity" mnemonicParsing="false" onAction="#onAddTransaction" text="Add Transaction" />
+            <Button fx:id="addTransactionButton" maxWidth="1.7976931348623157E308" minWidth="-Infinity" mnemonicParsing="false" onAction="#onAddTransaction" text="New Transaction" />
+            <Button fx:id="balanceAccountButton" maxWidth="1.7976931348623157E308" minWidth="-Infinity" mnemonicParsing="false" onAction="#onBalanceAccount" text="Balance Account" />
          </children>
          <padding>
             <Insets right="6.0" />
@@ -57,7 +58,7 @@
       </VBox>
       <StackPane maxWidth="1.7976931348623157E308" GridPane.columnIndex="1" GridPane.rowIndex="3">
          <children>
-            <Label fx:id="endingBalanceLabel" text="Ending Balance" StackPane.alignment="CENTER_RIGHT">
+            <Label fx:id="endingBalanceLabel" StackPane.alignment="CENTER_RIGHT">
                <font>
                   <Font name="System Bold" size="12.0" />
                </font>
