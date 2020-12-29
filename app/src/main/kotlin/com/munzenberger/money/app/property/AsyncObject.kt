@@ -25,3 +25,11 @@ class AsyncObjectComparator<T : Comparable<T>> : Comparator<AsyncObject<T>> {
         }
     }
 }
+
+fun <T, R> AsyncObject<T>.map(block: (T) -> R): AsyncObject<R> =
+    when (this) {
+        is AsyncObject.Pending -> AsyncObject.Pending()
+        is AsyncObject.Executing -> AsyncObject.Executing()
+        is AsyncObject.Complete -> AsyncObject.Complete(block.invoke(value))
+        is AsyncObject.Error -> AsyncObject.Error(error)
+    }

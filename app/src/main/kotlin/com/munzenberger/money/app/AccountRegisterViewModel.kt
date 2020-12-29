@@ -10,6 +10,7 @@ import com.munzenberger.money.app.property.AsyncObject
 import com.munzenberger.money.app.property.ReadOnlyAsyncObjectProperty
 import com.munzenberger.money.app.property.SimpleAsyncObjectProperty
 import com.munzenberger.money.app.property.flatMapAsyncObject
+import com.munzenberger.money.app.property.map
 import com.munzenberger.money.core.Account
 import com.munzenberger.money.core.Money
 import com.munzenberger.money.core.MoneyDatabase
@@ -147,29 +148,10 @@ class AccountRegisterViewModel : AutoCloseable {
         }
                 .subscribeOn(SchedulerProvider.database)
                 .observeOn(SchedulerProvider.main)
-                .subscribe {
-                    when (it) {
-                        is AsyncObject.Pending -> {
-                            account.value = AsyncObject.Pending()
-                            transactions.value = AsyncObject.Pending()
-                            endingBalance.value = AsyncObject.Pending()
-                        }
-                        is AsyncObject.Executing -> {
-                            account.value = AsyncObject.Executing()
-                            transactions.value = AsyncObject.Executing()
-                            endingBalance.value = AsyncObject.Executing()
-                        }
-                        is AsyncObject.Complete -> {
-                            account.value = AsyncObject.Complete(it.value.account)
-                            transactions.value = AsyncObject.Complete(it.value.transactions)
-                            endingBalance.value = AsyncObject.Complete(it.value.endingBalance)
-                        }
-                        is AsyncObject.Error -> {
-                            account.value = AsyncObject.Error(it.error)
-                            transactions.value = AsyncObject.Error(it.error)
-                            endingBalance.value = AsyncObject.Error(it.error)
-                        }
-                    }
+                .subscribe { async ->
+                    account.value = async.map { it.account }
+                    transactions.value = async.map { it.transactions }
+                    endingBalance.value = async.map { it.endingBalance }
                 }
                 .also { disposables.add(it) }
     }
