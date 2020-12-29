@@ -34,7 +34,7 @@
             <Button disable="true" mnemonicParsing="false" text="Add Category" />
          </children>
       </VBox>
-      <TreeTableView fx:id="treeTableView" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="0.0" minWidth="0.0" GridPane.columnIndex="1" GridPane.rowIndex="1">
+      <TreeTableView fx:id="treeTableView" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="0.0" minWidth="0.0" showRoot="false" GridPane.columnIndex="1" GridPane.rowIndex="1">
         <columns>
           <TreeTableColumn fx:id="nameColumn" editable="false" prefWidth="75.0" sortable="false" text="Name" />
           <TreeTableColumn fx:id="typeColumn" editable="false" prefWidth="75.0" sortable="false" text="Type" />

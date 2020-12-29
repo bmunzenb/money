@@ -1,44 +1,42 @@
 package com.munzenberger.money.app
 
 import com.munzenberger.money.app.database.ObservableMoneyDatabase
-import com.munzenberger.money.app.model.CategoryWithParent
 import com.munzenberger.money.app.model.FXCategory
-import com.munzenberger.money.app.property.AsyncObject
+import com.munzenberger.money.app.model.getAllWithParent
 import com.munzenberger.money.app.property.ReadOnlyAsyncObjectProperty
 import com.munzenberger.money.app.property.SimpleAsyncObjectProperty
 import com.munzenberger.money.app.property.flatMapAsyncObject
-import com.munzenberger.money.app.property.map
-import javafx.beans.property.ReadOnlyObjectProperty
-import javafx.beans.property.SimpleObjectProperty
+import com.munzenberger.money.core.Category
+import io.reactivex.rxjava3.disposables.CompositeDisposable
 import javafx.scene.control.TreeItem
 
 class CategoryListViewModel : AutoCloseable {
 
-    private val root = SimpleObjectProperty<TreeItem<FXCategory>>()
-    private val categories = SimpleAsyncObjectProperty<List<CategoryWithParent>>()
+    private val disposables = CompositeDisposable()
 
-    val categoriesProperty: ReadOnlyAsyncObjectProperty<List<CategoryWithParent>> = categories
-    val rootProperty: ReadOnlyObjectProperty<TreeItem<FXCategory>> = root
+    private val categories = SimpleAsyncObjectProperty<TreeItem<FXCategory>>()
+
+    val categoriesProperty: ReadOnlyAsyncObjectProperty<TreeItem<FXCategory>> = categories
 
     fun start(database: ObservableMoneyDatabase) {
 
         database.onUpdate.flatMapAsyncObject { loadCategories(database) }
                 .subscribeOn(SchedulerProvider.database)
                 .observeOn(SchedulerProvider.main)
-                .subscribe { async ->
-                    categories.value = async.map { it.first }
-                    root.value = when (async) {
-                        is AsyncObject.Complete -> async.value.second
-                        else -> null
-                    }
-                }
+                .subscribe { categories.value = it }
+                .also { disposables.add(it) }
     }
 
-    private fun loadCategories(database: ObservableMoneyDatabase): Pair<List<CategoryWithParent>, TreeItem<FXCategory>> {
-        TODO()
+    private fun loadCategories(database: ObservableMoneyDatabase): TreeItem<FXCategory> {
+
+        val root = TreeItem<FXCategory>(FXCategory.Root)
+
+        val list = Category.getAllWithParent(database)
+
+        return root
     }
 
     override fun close() {
-        // do nothing
+        disposables.clear()
     }
 }
