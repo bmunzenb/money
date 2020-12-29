@@ -1,20 +1,30 @@
 package com.munzenberger.money.app.model
 
 import com.munzenberger.money.core.Category
+import com.munzenberger.money.core.model.CategoryType
 import javafx.beans.property.ReadOnlyStringProperty
 import javafx.beans.property.SimpleStringProperty
 
-sealed class FXCategory(name: String?, type: String? = null) {
+class FXCategory(category: Category, parentName: String?) {
 
-    val nameProperty: ReadOnlyStringProperty = SimpleStringProperty(name)
-    val typeProperty: ReadOnlyStringProperty = SimpleStringProperty(type)
+    val nameProperty: ReadOnlyStringProperty
+    val typeProperty: ReadOnlyStringProperty
 
-    data class Value(val category: Category) : FXCategory(
-            name = category.name,
-            type = category.type?.name
-    )
+    init {
 
-    object Root : FXCategory(
-            name = "Categories"
-    )
+        val name = when (parentName) {
+            null -> category.name
+            else -> "$parentName $CATEGORY_DELIMITER ${category.name}"
+        }
+
+        nameProperty = SimpleStringProperty(name)
+
+        val type = when (category.type) {
+            CategoryType.INCOME -> "Income"
+            CategoryType.EXPENSE -> "Expense"
+            else -> null
+        }
+
+        typeProperty = SimpleStringProperty(type)
+    }
 }

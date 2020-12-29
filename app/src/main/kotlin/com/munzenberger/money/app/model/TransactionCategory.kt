@@ -5,7 +5,6 @@ import com.munzenberger.money.core.Account
 import com.munzenberger.money.core.Category
 import com.munzenberger.money.core.model.CategoryType
 import com.munzenberger.money.sql.QueryExecutor
-import com.munzenberger.money.sql.transaction
 
 const val SPLIT_CATEGORY_NAME = "Split/Multiple Categories"
 const val CATEGORY_DELIMITER = ":"

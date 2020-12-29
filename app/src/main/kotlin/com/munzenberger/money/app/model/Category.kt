@@ -19,6 +19,9 @@ data class CategoryWithParent(
         val parentId: Long?,
         val parentName: String?
 ) {
+    val identity: Long
+        get() = category.identity!!
+
     val name: String?
         get() = category.name
 
