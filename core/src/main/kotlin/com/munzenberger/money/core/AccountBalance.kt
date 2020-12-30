@@ -93,9 +93,7 @@ fun Account.getBalance(executor: QueryExecutor): Money {
         it.result
     }
 
-    val balance = totals.fold(initialBalance) { acc, t ->
-        acc + t
-    }
+    val balance = initialBalance + totals.sum()
 
     return Money.valueOf(balance)
 }

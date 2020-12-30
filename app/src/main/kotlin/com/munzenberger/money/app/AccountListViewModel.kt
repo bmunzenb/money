@@ -33,15 +33,15 @@ class AccountListViewModel : AutoCloseable {
                     val observableBalances = newValue.value.map { it.observableBalance }
 
                     val observableTotal = when (observableBalances.isEmpty()) {
-                        true -> Single.just(Money.zero())
+                        true -> Single.just(Money.ZERO)
                         else -> Single.zip(observableBalances) {
-                            it.fold(Money.zero()) { acc, b -> acc.add(b as Money) }
+                            it.fold(Money.ZERO) { acc, b -> acc + b as Money }
                         }
                     }
 
                     totalBalance.asyncValue(observableTotal)
                 }
-                else -> totalBalance.value = newValue.map { Money.zero() }
+                else -> totalBalance.value = newValue.map { Money.ZERO }
             }
         }
     }

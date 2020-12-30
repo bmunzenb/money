@@ -12,13 +12,14 @@ import com.munzenberger.money.app.property.SimpleAsyncObjectProperty
 import com.munzenberger.money.app.property.flatMapAsyncObject
 import com.munzenberger.money.app.property.map
 import com.munzenberger.money.core.Account
+import com.munzenberger.money.core.AccountEntry
 import com.munzenberger.money.core.Money
 import com.munzenberger.money.core.MoneyDatabase
 import com.munzenberger.money.core.PersistableNotFoundException
 import com.munzenberger.money.core.Transaction
 import com.munzenberger.money.core.TransactionStatus
+import com.munzenberger.money.core.getAccountEntries
 import com.munzenberger.money.core.getBalance
-import com.munzenberger.money.core.getRegister
 import com.munzenberger.money.core.model.AccountTypeGroup
 import com.munzenberger.money.core.model.EntryTable
 import com.munzenberger.money.core.model.TransactionTable
@@ -132,11 +133,11 @@ class AccountRegisterViewModel : AutoCloseable {
             val account = Account.get(accountIdentity, database)
                     ?: throw PersistableNotFoundException(Account::class, accountIdentity)
 
-            var transactions = account.getRegister(database)
+            var transactions = account.getAccountEntries(database)
             var endingBalance = account.getBalance(database)
 
-            if (account.accountType!!.group == AccountTypeGroup.LIABILITIES) {
-                transactions = transactions.map { it.copy(balance = it.balance.negate()) }
+            if (account.accountType?.group == AccountTypeGroup.LIABILITIES) {
+                transactions = transactions.map { it.negateBalance() }
                 endingBalance = endingBalance.negate()
             }
 
@@ -214,5 +215,12 @@ class AccountRegisterViewModel : AutoCloseable {
 
     override fun close() {
         disposables.clear()
+    }
+}
+
+private fun AccountEntry.negateBalance(): AccountEntry {
+    return when (this) {
+        is AccountEntry.Transaction -> copy(balance = balance.negate())
+        is AccountEntry.Transfer -> copy(balance = balance.negate())
     }
 }

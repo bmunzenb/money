@@ -96,7 +96,7 @@ class EditTransactionViewModel : TransactionDetailEditor(), AutoCloseable {
                 }
                 else -> {
                     category = TransactionCategory.Split
-                    amount = fold(Money.zero()) { acc, t -> acc.add(t.amount!!) }
+                    amount = fold(Money.ZERO) { acc, t -> acc + t.amount!! }
                     categoryDisabled.value = true
                     amountDisabled.value = true
                 }
@@ -183,10 +183,10 @@ class EditTransactionViewModel : TransactionDetailEditor(), AutoCloseable {
     private fun onCategoriesAndDetails(categories: List<TransactionCategory>, details: List<TransactionDetail>) {
 
         // calculate the total transaction amount
-        val total = details.fold(Money.zero()) { acc, detail ->
+        val total = details.fold(Money.ZERO) { acc, detail ->
             when (val a = detail.amount) {
                 null -> acc
-                else -> acc.add(a)
+                else -> acc + a
             }
         }
 

@@ -12,6 +12,9 @@ class Money private constructor(val currency: Currency, val value: Long): Compar
 
     companion object {
 
+        val ZERO: Money
+            get() = zero()
+
         private val defaultCurrency = Currency.getInstance("USD")
 
         private val defaultLocale = Locale.getDefault()
@@ -76,7 +79,7 @@ class Money private constructor(val currency: Currency, val value: Long): Compar
         else -> 0
     }
 
-    fun add(money: Money): Money {
+    operator fun plus(money: Money): Money {
 
         if (currency != money.currency) {
             throw UnsupportedOperationException("Can't add money values of different currencies: $currency != ${money.currency}")
@@ -84,6 +87,16 @@ class Money private constructor(val currency: Currency, val value: Long): Compar
 
         val sum = value + money.value
         return Money(currency, sum)
+    }
+
+    operator fun minus(money: Money): Money {
+
+        if (currency != money.currency) {
+            throw UnsupportedOperationException("Can't add money values of different currencies: $currency != ${money.currency}")
+        }
+
+        val diff = value - money.value
+        return Money(currency, diff)
     }
 
     fun negate(): Money = Money(currency, -value)

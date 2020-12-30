@@ -31,14 +31,14 @@ class SplitTransactionViewModel {
         editors.addListener(ListChangeListener { change ->
             change.list.apply {
                 doneDisabled.value = isEmpty() || any { e -> !e.isEditorValid }
-                total.value = fold(Money.zero()) { acc, m -> acc.add(m.amount ?: Money.zero()) }
+                total.value = fold(Money.ZERO) { acc, m -> acc + (m.amount ?: Money.ZERO) }
             }
         })
     }
 
     fun start(editors: ObservableList<TransactionDetailEditor>, categories: List<TransactionCategory>) {
 
-        this.total.value = Money.zero()
+        this.total.value = Money.ZERO
 
         this.originalEditors = editors
 
