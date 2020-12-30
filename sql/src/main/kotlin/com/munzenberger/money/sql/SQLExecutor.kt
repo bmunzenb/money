@@ -51,9 +51,9 @@ object SQLExecutor {
 
     private fun toString(sql: String, parameters: List<Any?>) = when {
             parameters.isEmpty() -> sql
-            else -> "$sql <<= ${parameters.joinToString(prefix = "[", postfix = "]") {
+            else -> "$sql -- ${parameters.joinToString(prefix = "[", postfix = "]") {
                 when (it) {
-                    is String -> "\"$it\""
+                    is String -> "'$it'"
                     else -> it.toString()
                 }
             }}"
