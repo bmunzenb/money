@@ -3,6 +3,7 @@ package com.munzenberger.money.core
 import com.munzenberger.money.sql.Query
 import com.munzenberger.money.sql.QueryExecutor
 import com.munzenberger.money.sql.ResultSetHandler
+import java.lang.IllegalStateException
 import java.sql.ResultSet
 
 private interface AccountBalanceCollector : ResultSetHandler {
@@ -12,7 +13,7 @@ private interface AccountBalanceCollector : ResultSetHandler {
     val result: Long
 }
 
-private class TransactionBalanceCollector(accountId: Long?) : AccountBalanceCollector {
+private class TransactionBalanceCollector(accountId: Long) : AccountBalanceCollector {
 
     private val sql = """
         SELECT SUM(TRANSFER_AMOUNT) AS TOTAL
@@ -33,7 +34,7 @@ private class TransactionBalanceCollector(accountId: Long?) : AccountBalanceColl
     }
 }
 
-private class TransferBalanceCollector(accountId: Long?) : AccountBalanceCollector {
+private class TransferBalanceCollector(accountId: Long) : AccountBalanceCollector {
 
     private val sql = """
         SELECT -SUM(TRANSFER_AMOUNT) AS TOTAL
@@ -54,7 +55,7 @@ private class TransferBalanceCollector(accountId: Long?) : AccountBalanceCollect
     }
 }
 
-private class EntryBalanceCollector(accountId: Long?) : AccountBalanceCollector {
+private class EntryBalanceCollector(accountId: Long) : AccountBalanceCollector {
 
     private val sql = """
         SELECT SUM(ENTRY_AMOUNT) AS TOTAL
@@ -77,12 +78,14 @@ private class EntryBalanceCollector(accountId: Long?) : AccountBalanceCollector 
 
 fun Account.getBalance(executor: QueryExecutor): Money {
 
+    val accountId = identity ?: throw IllegalStateException("Can't get balance for an unsaved account.")
+
     val initialBalance: Long = initialBalance?.value ?: 0
 
     val collectors = listOf(
-            TransactionBalanceCollector(identity),
-            TransferBalanceCollector(identity),
-            EntryBalanceCollector(identity)
+            TransactionBalanceCollector(accountId),
+            TransferBalanceCollector(accountId),
+            EntryBalanceCollector(accountId)
     )
 
     val totals = collectors.map {
