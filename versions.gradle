@@ -3,11 +3,11 @@ def versions = [:]
 versions.kotlin = '1.4.21'
 versions.gradle_versions = '0.36.0'
 versions.junit = '4.13.1'
-versions.rxjava = '3.0.8'
+versions.rxjava = '3.0.9'
 versions.rxkotlin = '3.0.1'
 versions.h2 = '1.4.200'
 versions.sqlite = '3.34.0'
 versions.javafx = '14'
-versions.mockk = '1.10.3'
+versions.mockk = '1.10.4'
 
 ext.versions = versions
