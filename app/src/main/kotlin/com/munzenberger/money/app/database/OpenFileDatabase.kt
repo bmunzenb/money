@@ -37,11 +37,12 @@ object OpenFileDatabase : DatabaseConnectorCallbacks {
 
     override fun onPendingUpgrades(): Boolean {
 
-        val result = Alert(Alert.AlertType.CONFIRMATION).apply {
-            title = "Confirm Upgrade"
-            headerText = "Database upgrade required."
-            contentText = "The database file requires an upgrade to work with this version of Money. This operation cannot be undone. It is recommended you make a backup of your existing file before upgrading it. Would you like to proceed with the upgrade?"
-        }.showAndWait()
+        val result = Alert(Alert.AlertType.CONFIRMATION).let {
+            it.title = "Confirm Upgrade"
+            it.headerText = "Database upgrade required."
+            it.contentText = "The database file requires an upgrade to work with this version of Money. This operation cannot be undone. It is recommended you make a backup of your existing file before upgrading it. Would you like to proceed with the upgrade?"
+            it.showAndWait()
+        }
 
         return result.isPresent && result.get() == ButtonType.OK
     }

@@ -13,6 +13,11 @@ import java.time.LocalDate
 
 class FXRegisterEntry(private val accountEntry: AccountEntry) {
 
+    sealed class Type {
+        data class Transaction(val transactionId: Long) : Type()
+        data class Transfer(val transferId: Long) : Type()
+    }
+
     internal val transactionId = accountEntry.transactionId
 
     private val status = SimpleObjectProperty(accountEntry.status)
@@ -26,6 +31,11 @@ class FXRegisterEntry(private val accountEntry: AccountEntry) {
     val statusProperty: ReadOnlyObjectProperty<TransactionStatus> = status
     val debitProperty: ReadOnlyObjectProperty<Money>
     val creditProperty: ReadOnlyObjectProperty<Money>
+
+    val type = when (accountEntry) {
+        is AccountEntry.Transaction -> Type.Transaction(accountEntry.transactionId)
+        is AccountEntry.Transfer -> Type.Transfer(accountEntry.transferId)
+    }
 
     init {
 

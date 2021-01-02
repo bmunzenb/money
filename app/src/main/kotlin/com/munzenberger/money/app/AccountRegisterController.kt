@@ -1,8 +1,8 @@
 package com.munzenberger.money.app
 
-import com.munzenberger.money.app.control.AccountTransactionTableRow
 import com.munzenberger.money.app.control.DateTableCellFactory
 import com.munzenberger.money.app.control.MoneyTableCellFactory
+import com.munzenberger.money.app.control.RegisterEntryTableRow
 import com.munzenberger.money.app.control.TableCellFactory
 import com.munzenberger.money.app.control.bindAsync
 import com.munzenberger.money.app.control.bindWaiting
@@ -31,7 +31,6 @@ import javafx.scene.control.ProgressIndicator
 import javafx.scene.control.SelectionMode
 import javafx.scene.control.TableColumn
 import javafx.scene.control.TableView
-import javafx.scene.input.KeyCode
 import javafx.stage.Stage
 import javafx.util.Callback
 import java.net.URL
@@ -111,22 +110,17 @@ class AccountRegisterController : AutoCloseable {
         tableView.apply {
 
             rowFactory = Callback {
-                AccountTransactionTableRow(
-                        add = this@AccountRegisterController::onAddTransaction,
-                        edit = this@AccountRegisterController::onEditTransaction,
-                        delete = { onDeleteTransactions(listOf(it)) },
-                        markAs = this@AccountRegisterController::updateTransactionStatus
-                )
+                RegisterEntryTableRow { action ->
+                    when (action) {
+                        is RegisterEntryTableRow.Action.Add -> onAddTransaction()
+                        is RegisterEntryTableRow.Action.Edit -> editEntry(action.entry)
+                        is RegisterEntryTableRow.Action.Delete -> deleteEntry(action.entry)
+                        is RegisterEntryTableRow.Action.UpdateStatus -> updateEntryStatus(action.entry, action.status)
+                    }
+                }
             }
 
             selectionModel.selectionMode = SelectionMode.SINGLE
-
-            setOnKeyReleased {
-                when (it.code) {
-                    KeyCode.DELETE -> onDeleteTransactions(selectionModel.selectedItems)
-                    else -> Unit
-                }
-            }
 
             bindAsync(
                     listProperty = viewModel.transactionsProperty,
@@ -234,34 +228,39 @@ class AccountRegisterController : AutoCloseable {
         }
     }
 
-    private fun onEditTransaction(transaction: FXRegisterEntry) {
-        viewModel.getTransaction(transaction) { t, e ->
-            when {
-                t != null -> startEditTransaction("Edit Transaction", t)
-                e != null -> ErrorAlert.showAndWait(e)
+    private fun editEntry(entry: FXRegisterEntry) {
+        viewModel.prepareEditEntry(entry) {
+            when (it) {
+                is AccountRegisterViewModel.Edit.Transaction ->
+                    startEditTransaction("Edit Transaction", it.transaction)
+
+                is AccountRegisterViewModel.Edit.Transfer ->
+                    startEditTransfer(it.transferId)
+
+                is AccountRegisterViewModel.Edit.Error ->
+                    ErrorAlert.showAndWait(it.error)
             }
         }
     }
 
-    private fun onDeleteTransactions(transactions: List<FXRegisterEntry>) {
+    private fun deleteEntry(entry: FXRegisterEntry) {
 
-        Alert(Alert.AlertType.CONFIRMATION).apply {
-            title = "Confirm Delete"
-            contentText = "Are you sure you want to delete this transaction?"
-        }.showAndDoWhen(ButtonType.OK) {
-            viewModel.deleteTransactions(transactions) { error ->
-                if (error != null) {
-                    ErrorAlert.showAndWait(error)
-                }
+        val result = Alert(Alert.AlertType.CONFIRMATION).let {
+            it.title = "Confirm Delete"
+            it.contentText = "Are you sure you want to delete this transaction?"
+            it.showAndWait()
+        }
+
+        if (result.isPresent && result.get() == ButtonType.OK) {
+            viewModel.deleteEntry(entry) { error ->
+                error?.let { ErrorAlert.showAndWait(it) }
             }
         }
     }
 
-    private fun updateTransactionStatus(transaction: FXRegisterEntry, status: TransactionStatus) {
-        viewModel.updateTransactionStatus(transaction, status) { error ->
-            if (error != null) {
-                ErrorAlert.showAndWait(error)
-            }
+    private fun updateEntryStatus(entry: FXRegisterEntry, status: TransactionStatus) {
+        viewModel.updateEntryStatus(entry, status) { error ->
+            error?.let { ErrorAlert.showAndWait(it) }
         }
     }
 
@@ -270,6 +269,14 @@ class AccountRegisterController : AutoCloseable {
             stage.title = title
             stage.show()
             controller.start(stage, database, transaction)
+        }
+    }
+
+    private fun startEditTransfer(transferId: Long) {
+        DialogBuilder.build(EditTransferController.LAYOUT) { stage, controller: EditTransferController ->
+            stage.title = "Edit Transfer"
+            stage.show()
+            controller.start(stage, database, transferId)
         }
     }
 

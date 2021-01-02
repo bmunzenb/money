@@ -25,7 +25,8 @@ import com.munzenberger.money.core.model.EntryTable
 import com.munzenberger.money.core.model.TransactionTable
 import com.munzenberger.money.core.model.TransferTable
 import com.munzenberger.money.sql.DeleteQueryBuilder
-import com.munzenberger.money.sql.inGroup
+import com.munzenberger.money.sql.QueryExecutor
+import com.munzenberger.money.sql.eq
 import com.munzenberger.money.sql.transaction
 import io.reactivex.rxjava3.core.Single
 import io.reactivex.rxjava3.disposables.CompositeDisposable
@@ -42,6 +43,12 @@ import javafx.collections.FXCollections
 import java.util.function.Predicate
 
 class AccountRegisterViewModel : AutoCloseable {
+
+    sealed class Edit {
+        data class Transaction(val transaction: com.munzenberger.money.core.Transaction) : Edit()
+        data class Transfer(val transferId: Long) : Edit()
+        data class Error(val error: Throwable) : Edit()
+    }
 
     private data class SubscriptionResult(
             val account: Account,
@@ -157,60 +164,48 @@ class AccountRegisterViewModel : AutoCloseable {
                 .also { disposables.add(it) }
     }
 
-    fun getTransaction(transaction: FXRegisterEntry, block: (Transaction?, Throwable?) -> Unit) {
-
-        Single.fromCallable {
-            Transaction.get(transaction.transactionId, database)
-                    ?: throw PersistableNotFoundException(Transaction::class, transaction.transactionId)
+    fun prepareEditEntry(entry: FXRegisterEntry, block: (Edit) -> Unit) {
+        when (val t = entry.type) {
+            is FXRegisterEntry.Type.Transaction -> prepareEditTransaction(t.transactionId, block)
+            is FXRegisterEntry.Type.Transfer -> block.invoke(Edit.Transfer(t.transferId))
         }
-                .subscribeOn(SchedulerProvider.database)
-                .observeOn(SchedulerProvider.main)
-                .doOnSubscribe { operationInProgress.value = true }
-                .doFinally { operationInProgress.value = false }
-                .subscribe { t, error -> block.invoke(t, error) }
     }
 
-    fun deleteTransactions(transactions: List<FXRegisterEntry>, block: (Throwable?) -> Unit) {
-
-        val ids = transactions.map { it.transactionId }
-
-        Single.fromCallable {
-            database.transaction { tx ->
-
-                val deleteTransfers = DeleteQueryBuilder(TransferTable.name)
-                        .where(TransferTable.transactionColumn.inGroup(ids))
-                        .build()
-
-                tx.executeUpdate(deleteTransfers)
-
-                val deleteEntries = DeleteQueryBuilder(EntryTable.name)
-                        .where(EntryTable.transactionColumn.inGroup(ids))
-                        .build()
-
-                tx.executeUpdate(deleteEntries)
-
-                val deleteTransactions = DeleteQueryBuilder(TransactionTable.name)
-                        .where(TransactionTable.identityColumn.inGroup(ids))
-                        .build()
-
-                tx.executeUpdate(deleteTransactions)
-            }
-        }
+    private fun prepareEditTransaction(transactionId: Long, block: (Edit) -> Unit) {
+        Single.fromCallable { Transaction.get(transactionId, database) ?: throw PersistableNotFoundException(Transaction::class, transactionId) }
                 .subscribeOn(SchedulerProvider.database)
                 .observeOn(SchedulerProvider.main)
                 .doOnSubscribe { operationInProgress.value = true }
                 .doFinally { operationInProgress.value = false }
-                .subscribe { _, error -> block.invoke(error) }
+                .subscribe(
+                        { block.invoke(Edit.Transaction(it)) },
+                        { block.invoke(Edit.Error(it)) }
+                )
     }
 
-    fun updateTransactionStatus(transaction: FXRegisterEntry, status: TransactionStatus, block: (Throwable?) -> Unit) {
+    fun deleteEntry(entry: FXRegisterEntry, completionBlock: (Throwable?) -> Unit) {
+        when (val t = entry.type) {
+            is FXRegisterEntry.Type.Transaction -> deleteTransaction(t.transactionId, completionBlock)
+            // TODO: Determine if there's an easy way to delete a transfer without leaving orphaned transactions
+        }
+    }
 
-        Single.fromCallable { transaction.updateStatus(status, database) }
+    private fun deleteTransaction(transactionId: Long, completionBlock: (Throwable?) -> Unit) {
+        Single.fromCallable { deleteTransaction.invoke(database, transactionId) }
                 .subscribeOn(SchedulerProvider.database)
                 .observeOn(SchedulerProvider.main)
                 .doOnSubscribe { operationInProgress.value = true }
                 .doFinally { operationInProgress.value = false }
-                .subscribe { _, error -> block.invoke(error) }
+                .subscribe { _, error -> completionBlock.invoke(error) }
+    }
+
+    fun updateEntryStatus(entry: FXRegisterEntry, status: TransactionStatus, completionBlock: (Throwable?) -> Unit) {
+        Single.fromCallable { entry.updateStatus(status, database) }
+                .subscribeOn(SchedulerProvider.database)
+                .observeOn(SchedulerProvider.main)
+                .doOnSubscribe { operationInProgress.value = true }
+                .doFinally { operationInProgress.value = false }
+                .subscribe { _, error -> completionBlock.invoke(error) }
     }
 
     override fun close() {
@@ -222,5 +217,25 @@ private fun AccountEntry.negateBalance(): AccountEntry {
     return when (this) {
         is AccountEntry.Transaction -> copy(balance = balance.negate())
         is AccountEntry.Transfer -> copy(balance = balance.negate())
+    }
+}
+
+private val deleteTransaction: (executor: QueryExecutor, transactionId: Long) -> Unit = { executor, transactionId ->
+    executor.transaction { tx ->
+
+        DeleteQueryBuilder(TransferTable.name)
+                .where(TransferTable.transactionColumn.eq(transactionId))
+                .build()
+                .let { tx.executeUpdate(it) }
+
+        DeleteQueryBuilder(EntryTable.name)
+                .where(EntryTable.transactionColumn.eq(transactionId))
+                .build()
+                .let { tx.executeUpdate(it) }
+
+        DeleteQueryBuilder(TransactionTable.name)
+                .where(TransactionTable.identityColumn.eq(transactionId))
+                .build()
+                .let { tx.executeUpdate(it) }
     }
 }
