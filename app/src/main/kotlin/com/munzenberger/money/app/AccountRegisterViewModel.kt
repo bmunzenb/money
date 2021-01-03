@@ -176,12 +176,21 @@ class AccountRegisterViewModel : AutoCloseable {
     fun deleteEntry(entry: FXRegisterEntry, completionBlock: (Throwable?) -> Unit) {
         when (val t = entry.type) {
             is FXRegisterEntry.Type.Transaction -> deleteTransaction(t.transactionId, completionBlock)
-            // TODO: Determine if there's an easy way to delete a transfer without leaving orphaned transactions
+            is FXRegisterEntry.Type.Transfer -> deleteTransfer(t.transferId, completionBlock)
         }
     }
 
     private fun deleteTransaction(transactionId: Long, completionBlock: (Throwable?) -> Unit) {
         Single.fromCallable { deleteTransaction(database, transactionId) }
+                .subscribeOn(SchedulerProvider.database)
+                .observeOn(SchedulerProvider.main)
+                .doOnSubscribe { operationInProgress.value = true }
+                .doFinally { operationInProgress.value = false }
+                .subscribe { _, error -> completionBlock.invoke(error) }
+    }
+
+    private fun deleteTransfer(transferId: Long, completionBlock: (Throwable?) -> Unit) {
+        Single.fromCallable { deleteTransfer(database, transferId) }
                 .subscribeOn(SchedulerProvider.database)
                 .observeOn(SchedulerProvider.main)
                 .doOnSubscribe { operationInProgress.value = true }
@@ -228,4 +237,12 @@ private fun deleteTransaction(executor: QueryExecutor, transactionId: Long) {
                 .build()
                 .let { tx.executeUpdate(it) }
     }
+}
+
+private fun deleteTransfer(executor: QueryExecutor, transferId: Long) {
+
+    DeleteQueryBuilder(TransferTable.name)
+            .where(TransferTable.identityColumn.eq(transferId))
+            .build()
+            .let { executor.executeUpdate(it) }
 }

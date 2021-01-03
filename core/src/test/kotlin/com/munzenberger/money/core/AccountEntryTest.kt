@@ -1,7 +1,6 @@
 package com.munzenberger.money.core
 
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class AccountEntryTest : MoneyDatabaseTestSupport() {
@@ -146,6 +145,46 @@ class AccountEntryTest : MoneyDatabaseTestSupport() {
                                         orderInTransaction = entry.orderInTransaction!!
                                 )
                         )
+                )
+        )
+
+        assertEquals(expected, entries)
+    }
+
+    @Test
+    fun `get account entries for orphaned transactions`() {
+
+        val account = Account().apply {
+            randomize()
+            save(database)
+        }
+
+        val payee = Payee().apply {
+            randomize()
+            save(database)
+        }
+
+        val transaction = Transaction().apply {
+            randomize()
+            this.account = account
+            this.payee = payee
+            save(database)
+        }
+
+        val entries = account.getAccountEntries(database)
+
+        val expected = listOf<AccountEntry>(
+                AccountEntry.Transaction(
+                        transactionId = transaction.identity!!,
+                        date = transaction.date!!,
+                        payeeId = payee.identity!!,
+                        payeeName = payee.name!!,
+                        amount = Money.ZERO,
+                        balance = account.initialBalance!!,
+                        memo = transaction.memo,
+                        number = transaction.number,
+                        status = transaction.status!!,
+                        details = emptyList()
                 )
         )
 

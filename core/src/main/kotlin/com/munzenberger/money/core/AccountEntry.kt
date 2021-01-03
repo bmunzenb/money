@@ -139,21 +139,16 @@ private class AccountEntryCollector {
 
     private val transfers = mutableListOf<Collector.Transfer>()
 
-    fun collectTransactionTransfer(
+    fun collectTransaction(
             transactionId: Long,
             date: LocalDate,
             payeeId: Long?,
             payeeName: String?,
-            amount: Long,
             memo: String?,
             number: String?,
-            status: String,
-            transferId: Long,
-            transferAccountId: Long,
-            transferAccountName: String,
-            transferOrderInTransaction: Int
+            status: String
     ) {
-        val t = transactions.getOrPut(transactionId) {
+        transactions.getOrPut(transactionId) {
             Collector.Transaction(
                     transactionId = transactionId,
                     date = date,
@@ -164,6 +159,17 @@ private class AccountEntryCollector {
                     status = status
             )
         }
+    }
+
+    fun collectTransactionTransfer(
+            transactionId: Long,
+            amount: Long,
+            transferId: Long,
+            transferAccountId: Long,
+            transferAccountName: String,
+            transferOrderInTransaction: Int
+    ) {
+        val t = transactions[transactionId] ?: throw IllegalStateException("No transaction with id: $transactionId")
 
         t.amount += amount
 
@@ -177,30 +183,14 @@ private class AccountEntryCollector {
 
     fun collectTransactionEntry(
             transactionId: Long,
-            date: LocalDate,
-            payeeId: Long?,
-            payeeName: String?,
             amount: Long,
-            memo: String?,
-            number: String?,
-            status: String,
             entryId: Long,
             entryCategoryId: Long,
             entryCategoryName: String,
             entryParentCategoryName: String?,
             entryOrderInTransaction: Int
     ) {
-        val t = transactions.getOrPut(transactionId) {
-            Collector.Transaction(
-                    transactionId = transactionId,
-                    date = date,
-                    payeeId = payeeId,
-                    payeeName = payeeName,
-                    memo = memo,
-                    number = number,
-                    status = status
-            )
-        }
+        val t = transactions[transactionId] ?: throw IllegalStateException("No transaction with id: $transactionId")
 
         t.amount += amount
 
@@ -286,7 +276,7 @@ private class AccountEntryCollector {
     }
 }
 
-private class TransactionTransferResultSetHandler(accountId: Long, private val collector: AccountEntryCollector) : ResultSetHandler {
+private class TransactionResultSetHandler(accountId: Long, private val collector: AccountEntryCollector) : ResultSetHandler {
 
     private val sql = """
         SELECT
@@ -294,17 +284,43 @@ private class TransactionTransferResultSetHandler(accountId: Long, private val c
             TRANSACTION_DATE,
             PAYEE_ID,
             PAYEE_NAME,
-            TRANSFER_AMOUNT,
             TRANSACTION_MEMO,
             TRANSACTION_NUMBER,
-            TRANSACTION_STATUS,
+            TRANSACTION_STATUS
+        FROM TRANSACTIONS
+        LEFT JOIN PAYEES ON PAYEES.PAYEE_ID = TRANSACTIONS.TRANSACTION_PAYEE_ID
+        WHERE TRANSACTION_ACCOUNT_ID = ?
+    """.trimIndent()
+
+    val query = Query(sql, listOf(accountId))
+
+    override fun accept(rs: ResultSet) {
+        while (rs.next()) {
+            collector.collectTransaction(
+                    transactionId = rs.getLong("TRANSACTION_ID"),
+                    date = rs.getLocalDate("TRANSACTION_DATE"),
+                    payeeId = rs.getLongOrNull("PAYEE_ID"),
+                    payeeName = rs.getString("PAYEE_NAME"),
+                    memo = rs.getString("TRANSACTION_MEMO"),
+                    number = rs.getString("TRANSACTION_NUMBER"),
+                    status = rs.getString("TRANSACTION_STATUS")
+            )
+        }
+    }
+}
+
+private class TransactionTransferResultSetHandler(accountId: Long, private val collector: AccountEntryCollector) : ResultSetHandler {
+
+    private val sql = """
+        SELECT
+            TRANSACTION_ID,
+            TRANSFER_AMOUNT,
             TRANSFER_ID,
             ACCOUNT_ID,
             ACCOUNT_NAME,
             TRANSFER_ORDER_IN_TRANSACTION
         FROM TRANSACTIONS
         INNER JOIN TRANSFERS ON TRANSFERS.TRANSFER_TRANSACTION_ID = TRANSACTIONS.TRANSACTION_ID
-        LEFT JOIN PAYEES ON PAYEES.PAYEE_ID = TRANSACTIONS.TRANSACTION_PAYEE_ID
         INNER JOIN ACCOUNTS ON ACCOUNTS.ACCOUNT_ID = TRANSFERS.TRANSFER_ACCOUNT_ID
         WHERE TRANSACTION_ACCOUNT_ID = ?
     """.trimIndent()
@@ -315,13 +331,7 @@ private class TransactionTransferResultSetHandler(accountId: Long, private val c
         while (rs.next()) {
             collector.collectTransactionTransfer(
                     transactionId = rs.getLong("TRANSACTION_ID"),
-                    date = rs.getLocalDate("TRANSACTION_DATE"),
-                    payeeId = rs.getLongOrNull("PAYEE_ID"),
-                    payeeName = rs.getString("PAYEE_NAME"),
                     amount = rs.getLong("TRANSFER_AMOUNT"),
-                    memo = rs.getString("TRANSACTION_MEMO"),
-                    number = rs.getString("TRANSACTION_NUMBER"),
-                    status = rs.getString("TRANSACTION_STATUS"),
                     transferId = rs.getLong("TRANSFER_ID"),
                     transferAccountId = rs.getLong("ACCOUNT_ID"),
                     transferAccountName = rs.getString("ACCOUNT_NAME"),
@@ -336,21 +346,14 @@ private class TransactionEntryResultSetHandler(accountId: Long, private val coll
     private val sql = """
         SELECT
             TRANSACTION_ID,
-            TRANSACTION_DATE,
-            PAYEE_ID,
-            PAYEE_NAME,
             ENTRY_ID,
             ENTRY_AMOUNT,
-            TRANSACTION_MEMO,
-            TRANSACTION_NUMBER,
-            TRANSACTION_STATUS,
             CATEGORIES.CATEGORY_ID AS CATEGORY_ID,
             CATEGORIES.CATEGORY_NAME AS CATEGORY_NAME,
             PARENT_CATEGORIES.CATEGORY_NAME AS PARENT_CATEGORY_NAME,
             ENTRY_ORDER_IN_TRANSACTION
         FROM TRANSACTIONS
         INNER JOIN ENTRIES ON ENTRIES.ENTRY_TRANSACTION_ID = TRANSACTIONS.TRANSACTION_ID
-        LEFT JOIN PAYEES ON PAYEES.PAYEE_ID = TRANSACTIONS.TRANSACTION_PAYEE_ID
         INNER JOIN CATEGORIES ON CATEGORIES.CATEGORY_ID = ENTRIES.ENTRY_CATEGORY_ID
         LEFT JOIN CATEGORIES AS PARENT_CATEGORIES ON CATEGORIES.CATEGORY_PARENT_ID = PARENT_CATEGORIES.CATEGORY_ID 
         WHERE TRANSACTION_ACCOUNT_ID = ?
@@ -362,13 +365,7 @@ private class TransactionEntryResultSetHandler(accountId: Long, private val coll
         while (rs.next()) {
             collector.collectTransactionEntry(
                     transactionId = rs.getLong("TRANSACTION_ID"),
-                    date = rs.getLocalDate("TRANSACTION_DATE"),
-                    payeeId = rs.getLongOrNull("PAYEE_ID"),
-                    payeeName = rs.getString("PAYEE_NAME"),
                     amount = rs.getLong("ENTRY_AMOUNT"),
-                    memo = rs.getString("TRANSACTION_MEMO"),
-                    number = rs.getString("TRANSACTION_NUMBER"),
-                    status = rs.getString("TRANSACTION_STATUS"),
                     entryId = rs.getLong("ENTRY_ID"),
                     entryCategoryId = rs.getLong("CATEGORY_ID"),
                     entryCategoryName = rs.getString("CATEGORY_NAME"),
@@ -428,6 +425,10 @@ fun Account.getAccountEntries(executor: QueryExecutor): List<AccountEntry> {
     val accountId = identity ?: throw IllegalStateException("Can't get entries for an unsaved account.")
 
     val collector = AccountEntryCollector()
+
+    TransactionResultSetHandler(accountId, collector).apply {
+        executor.executeQuery(query, this)
+    }
 
     TransactionTransferResultSetHandler(accountId, collector).apply {
         executor.executeQuery(query, this)

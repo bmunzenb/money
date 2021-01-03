@@ -245,9 +245,15 @@ class AccountRegisterController : AutoCloseable {
 
     private fun deleteEntry(entry: FXRegisterEntry) {
 
+        val contentText = when (entry.type) {
+            is FXRegisterEntry.Type.Transaction -> "Are you sure you want to delete this transaction?"
+            is FXRegisterEntry.Type.Transfer -> "Are you sure you want to delete this transfer?"
+        }
+
         val result = Alert(Alert.AlertType.CONFIRMATION).let {
             it.title = "Confirm Delete"
-            it.contentText = "Are you sure you want to delete this transaction?"
+            it.headerText = null
+            it.contentText = contentText
             it.showAndWait()
         }
 

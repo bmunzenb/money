@@ -60,8 +60,6 @@ class RegisterEntryTableRow(
 
         contextMenu = if (empty) null else transactionContextMenu
 
-        deleteItem.isDisable = item?.type is FXRegisterEntry.Type.Transfer
-
         val isFuture = !empty && item != null && item.dateProperty.value.isAfter(LocalDate.now())
         pseudoClassStateChanged(futureDatePseudoClass, isFuture)
     }
