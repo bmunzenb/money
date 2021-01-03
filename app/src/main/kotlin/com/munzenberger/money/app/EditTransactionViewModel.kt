@@ -123,19 +123,19 @@ class EditTransactionViewModel : TransactionDetailEditor(), AutoCloseable {
 
         selectedAccountProperty.addListener { _, _, newValue ->
 
-            val selectedType = transactionType
+            val selectedVariant = transactionType?.variant
 
             when (newValue) {
                 null -> types.clear()
                 else -> types.setAll(TransactionType.getTypes(newValue.accountType!!))
             }
 
-            transactionType = types.find { it.variant == selectedType?.variant }
+            transactionType = types.find { it.variant == selectedVariant }
         }
 
         selectedAccountProperty.value = transaction.account
 
-        accounts.asyncValue { Account.getAll(database) }
+        accounts.asyncValue { Account.getAll(database).sortedBy { it.name } }
 
         dateProperty.value = transaction.date ?: LocalDate.now()
 

@@ -10,18 +10,12 @@ sealed class TransactionType {
         CREDIT, DEBIT
     }
 
-    companion object {
-        fun getTypes(accountType: AccountType) = listOf(Credit(accountType), Debit(accountType))
-    }
-
     abstract val variant: Variant
     abstract val name: String
 
-    private class Credit(accountType: AccountType) : TransactionType() {
-
-        override val variant: Variant = Variant.CREDIT
-
-        override val name = when (accountType.variant) {
+    class Credit(accountType: AccountType?) : TransactionType() {
+        override val variant = Variant.CREDIT
+        override val name = when (accountType?.variant) {
             AccountTypeVariant.SAVINGS, AccountTypeVariant.CHECKING -> "Deposit"
             AccountTypeVariant.ASSET, AccountTypeVariant.CASH -> "Increase"
             AccountTypeVariant.LOAN -> "Payment"
@@ -29,17 +23,19 @@ sealed class TransactionType {
         }
     }
 
-    private class Debit(accountType: AccountType) : TransactionType() {
-
-        override val variant: Variant = Variant.DEBIT
-
-        override val name = when (accountType.variant) {
+    class Debit(accountType: AccountType?) : TransactionType() {
+        override val variant = Variant.DEBIT
+        override val name = when (accountType?.variant) {
             AccountTypeVariant.SAVINGS, AccountTypeVariant.CHECKING -> "Payment"
             AccountTypeVariant.ASSET, AccountTypeVariant.CASH -> "Decrease"
             AccountTypeVariant.CREDIT -> "Charge"
             AccountTypeVariant.LOAN -> "Increase"
             else -> "Debit"
         }
+    }
+
+    companion object {
+        fun getTypes(accountType: AccountType) = listOf(Credit(accountType), Debit(accountType))
     }
 }
 

@@ -6,9 +6,9 @@ import com.munzenberger.money.app.model.FXRegisterEntryFilter
 import com.munzenberger.money.app.model.inCurrentMonth
 import com.munzenberger.money.app.model.inCurrentYear
 import com.munzenberger.money.app.model.inLastMonths
-import com.munzenberger.money.app.property.AsyncObject
 import com.munzenberger.money.app.property.ReadOnlyAsyncObjectProperty
 import com.munzenberger.money.app.property.SimpleAsyncObjectProperty
+import com.munzenberger.money.app.property.bindAsyncValue
 import com.munzenberger.money.app.property.flatMapAsyncObject
 import com.munzenberger.money.app.property.map
 import com.munzenberger.money.core.Account
@@ -83,26 +83,22 @@ class AccountRegisterViewModel : AutoCloseable {
 
     init {
 
-        val dateFilters = FXCollections.observableArrayList<FXRegisterEntryFilter>().apply {
-            addAll(
-                    FXRegisterEntryFilter("All Dates") { true },
-                    FXRegisterEntryFilter("Current Month") { it.dateProperty.value.inCurrentMonth() },
-                    FXRegisterEntryFilter("Current Year") { it.dateProperty.value.inCurrentYear() },
-                    FXRegisterEntryFilter("Last 3 Months") { it.dateProperty.value.inLastMonths(3) },
-                    FXRegisterEntryFilter("Last 12 Months") { it.dateProperty.value.inLastMonths(12) }
-            )
-        }
+        val dateFilters = FXCollections.observableArrayList(
+                FXRegisterEntryFilter("All Dates") { true },
+                FXRegisterEntryFilter("Current Month") { it.dateProperty.value.inCurrentMonth() },
+                FXRegisterEntryFilter("Current Year") { it.dateProperty.value.inCurrentYear() },
+                FXRegisterEntryFilter("Last 3 Months") { it.dateProperty.value.inLastMonths(3) },
+                FXRegisterEntryFilter("Last 12 Months") { it.dateProperty.value.inLastMonths(12) }
+        )
 
         dateFiltersProperty = SimpleListProperty(dateFilters)
 
         selectedDateFilterProperty.value = dateFilters[0]
 
-        val statusFilters = FXCollections.observableArrayList<FXRegisterEntryFilter>().apply {
-            addAll(
-                    FXRegisterEntryFilter("All Transactions") { true },
-                    FXRegisterEntryFilter("Unreconciled Transactions") { it.statusProperty.value != TransactionStatus.RECONCILED }
-            )
-        }
+        val statusFilters = FXCollections.observableArrayList(
+                FXRegisterEntryFilter("All Transactions") { true },
+                FXRegisterEntryFilter("Unreconciled Transactions") { it.statusProperty.value != TransactionStatus.RECONCILED }
+        )
 
         statusFiltersProperty = SimpleListProperty(statusFilters)
 
@@ -116,18 +112,12 @@ class AccountRegisterViewModel : AutoCloseable {
 
         activeFilters.bind(filtersBinding)
 
-        account.addListener { _, _, newValue ->
-            when (newValue) {
-                is AsyncObject.Complete -> newValue.value.accountType?.run {
-                    TransactionType.getTypes(this).run {
-                        debitText.value = find { it.variant == TransactionType.Variant.DEBIT }?.name
-                        creditText.value = find { it.variant == TransactionType.Variant.CREDIT }?.name
-                    }
-                }
-                else -> {
-                    // don't bother clearing the titles as we don't want flicker
-                }
-            }
+        debitText.bindAsyncValue(accountProperty) { account ->
+            TransactionType.Debit(account.accountType).name
+        }
+
+        creditText.bindAsyncValue(accountProperty) { account ->
+            TransactionType.Credit(account.accountType).name
         }
     }
 
@@ -191,7 +181,7 @@ class AccountRegisterViewModel : AutoCloseable {
     }
 
     private fun deleteTransaction(transactionId: Long, completionBlock: (Throwable?) -> Unit) {
-        Single.fromCallable { deleteTransaction.invoke(database, transactionId) }
+        Single.fromCallable { deleteTransaction(database, transactionId) }
                 .subscribeOn(SchedulerProvider.database)
                 .observeOn(SchedulerProvider.main)
                 .doOnSubscribe { operationInProgress.value = true }
@@ -220,7 +210,7 @@ private fun AccountEntry.negateBalance(): AccountEntry {
     }
 }
 
-private val deleteTransaction: (executor: QueryExecutor, transactionId: Long) -> Unit = { executor, transactionId ->
+private fun deleteTransaction(executor: QueryExecutor, transactionId: Long) {
     executor.transaction { tx ->
 
         DeleteQueryBuilder(TransferTable.name)
