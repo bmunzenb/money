@@ -7,8 +7,8 @@ class IdentityResultSetHandler : ResultSetHandler {
 
     private var mutableIdentity: Long? = null
 
-    val identity: Long
-        get() = mutableIdentity!!
+    val identity: Long?
+        get() = mutableIdentity
 
     override fun accept(resultSet: ResultSet) {
 

@@ -28,7 +28,7 @@ abstract class Persistable<M : Model>(
 
         executor.executeUpdate(query, handler)
 
-        model.identity = handler.identity
+        model.identity = handler.identity!!
 
         if (executor is TransactionQueryExecutor) {
             executor.addRollbackListener {

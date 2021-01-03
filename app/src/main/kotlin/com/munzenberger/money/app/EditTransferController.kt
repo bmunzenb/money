@@ -52,11 +52,18 @@ class EditTransferController {
             items = viewModel.typesProperty
 
             valueProperty().bindBidirectional(viewModel.selectedTypeProperty)
+            disableProperty().bind(viewModel.disabledProperty)
         }
 
-        datePicker.valueProperty().bindBidirectional(viewModel.dateProperty)
+        datePicker.apply {
+            valueProperty().bindBidirectional(viewModel.dateProperty)
+            disableProperty().bind(viewModel.disabledProperty)
+        }
 
-        numberTextField.textProperty().bindBidirectional(viewModel.numberProperty)
+        numberTextField.apply {
+            textProperty().bindBidirectional(viewModel.numberProperty)
+            disableProperty().bind(viewModel.disabledProperty)
+        }
 
         payeeComboBox.apply {
 
@@ -72,11 +79,7 @@ class EditTransferController {
             converter = ListLookupStringConverter(items, payeeConverter)
 
             valueProperty().bindBidirectional(viewModel.selectedPayeeProperty)
-
-            disableProperty().bindAsyncStatus(viewModel.payeesProperty,
-                    AsyncObject.Status.PENDING,
-                    AsyncObject.Status.EXECUTING,
-                    AsyncObject.Status.ERROR)
+            disableProperty().bind(viewModel.disabledProperty)
         }
 
         amountTextField.apply {
@@ -86,9 +89,14 @@ class EditTransferController {
             textFormatter = TextFormatter(moneyConverter).apply {
                 valueProperty().bindBidirectional(viewModel.amountProperty)
             }
+
+            disableProperty().bind(viewModel.disabledProperty)
         }
 
-        memoTextField.textProperty().bindBidirectional(viewModel.memoProperty)
+        memoTextField.apply {
+            textProperty().bindBidirectional(viewModel.memoProperty)
+            disableProperty().bind(viewModel.disabledProperty)
+        }
 
         statusLabel.textProperty().bind(viewModel.transactionStatusProperty)
 

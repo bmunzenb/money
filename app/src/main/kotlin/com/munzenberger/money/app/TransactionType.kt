@@ -40,8 +40,23 @@ sealed class TransactionType {
 }
 
 fun Money.forTransactionType(transactionType: TransactionType?): Money {
-    return when (transactionType?.variant) {
+    return forTransactionType(transactionType?.variant)
+}
+
+fun Money.forTransactionType(variant: TransactionType.Variant?): Money {
+    return when (variant) {
         TransactionType.Variant.DEBIT -> negate()
+        else -> this
+    }
+}
+
+fun Money.forTransferType(transactionType: TransactionType?): Money {
+    return forTransferType(transactionType?.variant)
+}
+
+fun Money.forTransferType(variant: TransactionType.Variant?): Money {
+    return when (variant) {
+        TransactionType.Variant.CREDIT -> negate()
         else -> this
     }
 }

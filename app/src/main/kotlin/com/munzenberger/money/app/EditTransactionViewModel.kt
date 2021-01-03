@@ -1,6 +1,7 @@
 package com.munzenberger.money.app
 
 import com.munzenberger.money.app.model.TransactionCategory
+import com.munzenberger.money.app.model.displayName
 import com.munzenberger.money.app.model.getAllWithParent
 import com.munzenberger.money.app.property.AsyncObject
 import com.munzenberger.money.app.property.ReadOnlyAsyncObjectProperty
@@ -18,7 +19,6 @@ import com.munzenberger.money.core.MoneyDatabase
 import com.munzenberger.money.core.Payee
 import com.munzenberger.money.core.Transaction
 import com.munzenberger.money.core.TransactionDetail
-import com.munzenberger.money.core.TransactionStatus
 import com.munzenberger.money.core.Transfer
 import com.munzenberger.money.core.getDetails
 import com.munzenberger.money.core.isNegative
@@ -147,11 +147,7 @@ class EditTransactionViewModel : TransactionDetailEditor(), AutoCloseable {
 
         memoProperty.value = transaction.memo
 
-        transactionStatus.value = when (transaction.status) {
-            TransactionStatus.CLEARED -> "Cleared"
-            TransactionStatus.RECONCILED -> "Reconciled"
-            else -> ""
-        }
+        transactionStatus.value = transaction.status?.displayName
 
         val singleCategories = categories.singleValue {
 
@@ -312,6 +308,7 @@ class EditTransactionViewModel : TransactionDetailEditor(), AutoCloseable {
 
     private fun onError(error: Throwable) {
         // TODO refactor this to the controller
+        // idea: create a "disabled" async object property that can be bound by the controller
         ErrorAlert(error).showAndWait()
     }
 }
