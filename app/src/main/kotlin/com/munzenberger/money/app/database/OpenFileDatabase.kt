@@ -10,13 +10,14 @@ import java.io.File
 
 object OpenFileDatabase : DatabaseConnectorCallbacks {
 
-    fun openFile(ownerWindow: Window): File? = FileChooser().apply {
-        title = "Open Money Database"
-        initialDirectory = File(System.getProperty("user.home"))
-        extensionFilters.addAll(
+    fun openFile(ownerWindow: Window): File? = FileChooser().let {
+        it.title = "Open Money Database"
+        it.initialDirectory = File(System.getProperty("user.home"))
+        it.extensionFilters.addAll(
                 FileChooser.ExtensionFilter("Money Database Files", "*$SUFFIX"),
                 FileChooser.ExtensionFilter("All Files", "*"))
-    }.showOpenDialog(ownerWindow)
+        it.showOpenDialog(ownerWindow)
+    }
 
     override fun onCanceled() {
         // Do nothing
@@ -32,7 +33,8 @@ object OpenFileDatabase : DatabaseConnectorCallbacks {
             title = "Error"
             headerText = "Could not open database file."
             contentText = "The database file is unsupported by this version of Money. This is likely due to having used the database file with a newer version of Money. Please update your version of Money and try again."
-        }.showAndWait()
+            showAndWait()
+        }
     }
 
     override fun onPendingUpgrades(): Boolean {

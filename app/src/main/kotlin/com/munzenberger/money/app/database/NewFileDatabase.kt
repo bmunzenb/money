@@ -10,14 +10,15 @@ import java.io.File
 object NewFileDatabase : DatabaseConnectorCallbacks {
 
     fun openFile(ownerWindow: Window): File? {
-        val file: File? = FileChooser().apply {
-            title = "New Money Database"
-            initialDirectory = File(System.getProperty("user.home"))
-            initialFileName = "Money$SUFFIX"
-            extensionFilters.addAll(
+        val file: File? = FileChooser().let {
+            it.title = "New Money Database"
+            it.initialDirectory = File(System.getProperty("user.home"))
+            it.initialFileName = "Money$SUFFIX"
+            it.extensionFilters.addAll(
                     FileChooser.ExtensionFilter("Money Database Files", "*$SUFFIX"),
                     FileChooser.ExtensionFilter("All Files", "*"))
-        }.showSaveDialog(ownerWindow)
+            it.showSaveDialog(ownerWindow)
+        }
 
         file?.run {
             if (exists()) {
@@ -26,7 +27,8 @@ object NewFileDatabase : DatabaseConnectorCallbacks {
                     Alert(Alert.AlertType.ERROR).apply {
                         title = "Error"
                         contentText = "Could not delete existing file."
-                    }.showAndWait()
+                        showAndWait()
+                    }
 
                     return null
                 }
