@@ -27,7 +27,6 @@ class SplitTransactionController {
     }
 
     @FXML private lateinit var tableView: TableView<TransactionDetailEditor>
-    @FXML private lateinit var numberColumn: TableColumn<TransactionDetailEditor, String>
     @FXML private lateinit var categoryColumn: TableColumn<TransactionDetailEditor, TransactionCategory>
     @FXML private lateinit var memoColumn: TableColumn<TransactionDetailEditor, String>
     @FXML private lateinit var amountColumn: TableColumn<TransactionDetailEditor, Money>
@@ -51,11 +50,6 @@ class SplitTransactionController {
             placeholder = Text("Click the Add button to add transaction details.")
         }
 
-        numberColumn.apply {
-            cellFactory = TextFieldTableCell.forTableColumn()
-            cellValueFactory = Callback { t -> t.value.numberProperty }
-        }
-
         categoryColumn.apply {
 
             val converter = ListLookupStringConverter(
@@ -64,7 +58,7 @@ class SplitTransactionController {
                             toString = { c -> c.name },
                             toObject = { s -> TransactionCategory.Pending(s) }))
 
-            cellFactory = Callback { _ ->
+            cellFactory = Callback {
                 ComboBoxTableCell<TransactionDetailEditor, TransactionCategory>(converter, viewModel.categoriesProperty).apply {
                     isComboBoxEditable = true
                 }

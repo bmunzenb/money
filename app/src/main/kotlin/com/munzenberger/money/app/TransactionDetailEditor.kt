@@ -15,6 +15,8 @@ open class TransactionDetailEditor() {
             type: TransactionType? = null
     ) : this() {
 
+        this._detail = detail
+
         when (detail) {
 
             is TransactionDetail.Transfer -> {
@@ -22,7 +24,6 @@ open class TransactionDetailEditor() {
                     it.account == detail.transfer.account
                 }
                 amount = detail.transfer.amount?.forTransactionType(type)
-                number = detail.transfer.number
                 memo = detail.transfer.memo
             }
 
@@ -36,9 +37,13 @@ open class TransactionDetailEditor() {
         }
     }
 
+    private var _detail: TransactionDetail? = null
+
+    val detail: TransactionDetail?
+        get() = _detail
+
     val selectedCategoryProperty = SimpleObjectProperty<TransactionCategory>()
     val amountProperty = SimpleObjectProperty<Money>()
-    val numberProperty = SimpleStringProperty()
     val memoProperty = SimpleStringProperty()
 
     private val editorValidProperty = SimpleBooleanProperty(false).apply {
@@ -53,10 +58,6 @@ open class TransactionDetailEditor() {
         get() = amountProperty.value
         set(value) { amountProperty.value = value }
 
-    var number: String?
-        get() = numberProperty.value
-        set(value) { numberProperty.value = value }
-
     var memo: String?
         get() = memoProperty.value
         set(value) { memoProperty.value = value }
@@ -65,9 +66,9 @@ open class TransactionDetailEditor() {
         get() = editorValidProperty.value
 
     fun copy() = TransactionDetailEditor().apply {
+        this._detail = this@TransactionDetailEditor.detail
         this.category = this@TransactionDetailEditor.category
         this.amount = this@TransactionDetailEditor.amount
-        this.number = this@TransactionDetailEditor.number
         this.memo = this@TransactionDetailEditor.memo
     }
 }
