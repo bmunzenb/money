@@ -94,9 +94,9 @@ class ApplicationController : DatabaseConnectorDelegate, AutoCloseable {
         activeController?.close()
         activeController = controller
 
-        contentPane.children.also {
-            it.clear()
-            it.add(content)
+        contentPane.children.apply {
+            clear()
+            add(content)
         }
 
         AnchorPane.setTopAnchor(content, 0.0)

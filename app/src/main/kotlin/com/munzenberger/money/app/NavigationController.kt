@@ -1,11 +1,11 @@
 package com.munzenberger.money.app
 
+import com.munzenberger.money.app.database.ObservableMoneyDatabase
 import com.munzenberger.money.app.navigation.LayoutControllerNavigation
 import com.munzenberger.money.app.navigation.Navigator
-import com.munzenberger.money.app.database.ObservableMoneyDatabase
 import javafx.fxml.FXML
 import javafx.scene.control.Button
-import javafx.scene.layout.BorderPane
+import javafx.scene.layout.AnchorPane
 import javafx.stage.Stage
 import java.net.URL
 
@@ -15,11 +15,22 @@ class NavigationController : AutoCloseable {
         val LAYOUT: URL = NavigationController::class.java.getResource("NavigationLayout.fxml")
     }
 
-    @FXML lateinit var borderPane: BorderPane
+    @FXML lateinit var contentPane: AnchorPane
     @FXML lateinit var backButton: Button
     @FXML lateinit var forwardButton: Button
 
-    private val navigator = Navigator { borderPane.center = it }
+    private val navigator = Navigator {
+
+        contentPane.children.apply {
+            clear()
+            add(it)
+        }
+
+        AnchorPane.setTopAnchor(it, 0.0)
+        AnchorPane.setLeftAnchor(it, 0.0)
+        AnchorPane.setRightAnchor(it, 0.0)
+        AnchorPane.setBottomAnchor(it, 0.0)
+    }
 
     private val accountsNavigation = LayoutControllerNavigation(AccountListController.LAYOUT) {
         controller: AccountListController -> controller.start(stage, database, navigator)

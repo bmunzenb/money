@@ -46,6 +46,13 @@
             </StackPane>
          </children>
       </HBox>
+      <HBox alignment="CENTER_LEFT" spacing="8.0" GridPane.columnIndex="1" GridPane.rowIndex="1">
+         <children>
+            <Label text="View:" />
+            <ChoiceBox fx:id="dateFilterChoiceBox" />
+            <ChoiceBox fx:id="statusFilterChoiceBox" />
+         </children>
+      </HBox>
       <VBox maxHeight="1.7976931348623157E308" minHeight="-Infinity" minWidth="120.0" spacing="8.0" GridPane.rowIndex="2" GridPane.rowSpan="2147483647" GridPane.valignment="TOP">
          <children>
             <Button fx:id="editAccountButton" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#onEditAccount" text="Edit Account" />
@@ -56,16 +63,6 @@
             <Insets right="6.0" />
          </padding>
       </VBox>
-      <StackPane maxWidth="1.7976931348623157E308" GridPane.columnIndex="1" GridPane.rowIndex="3">
-         <children>
-            <Label fx:id="endingBalanceLabel" StackPane.alignment="CENTER_RIGHT">
-               <font>
-                  <Font name="System Bold" size="12.0" />
-               </font>
-            </Label>
-            <ProgressIndicator fx:id="endingBalanceProgressIndicator" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="12.0" prefWidth="12.0" StackPane.alignment="CENTER_RIGHT" />
-         </children>
-      </StackPane>
       <TableView fx:id="tableView" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="0.0" minWidth="0.0" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS" GridPane.rowIndex="2" GridPane.vgrow="ALWAYS">
          <columnResizePolicy>
             <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
@@ -81,13 +78,16 @@
             <TableColumn fx:id="balanceColumn" editable="false" maxWidth="1000.0" minWidth="-Infinity" prefWidth="75.0" style="-fx-alignment: CENTER-RIGHT;" text="Balance" />
          </columns>
       </TableView>
-      <HBox alignment="CENTER_LEFT" spacing="8.0" GridPane.columnIndex="1" GridPane.rowIndex="1">
+      <StackPane maxWidth="1.7976931348623157E308" GridPane.columnIndex="1" GridPane.rowIndex="3">
          <children>
-            <Label text="View:" />
-            <ChoiceBox fx:id="dateFilterChoiceBox" />
-            <ChoiceBox fx:id="statusFilterChoiceBox" />
+            <Label fx:id="endingBalanceLabel" StackPane.alignment="CENTER_RIGHT">
+               <font>
+                  <Font name="System Bold" size="12.0" />
+               </font>
+            </Label>
+            <ProgressIndicator fx:id="endingBalanceProgressIndicator" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="12.0" prefWidth="12.0" StackPane.alignment="CENTER_RIGHT" />
          </children>
-      </HBox>
+      </StackPane>
    </children>
    <padding>
       <Insets bottom="12.0" left="12.0" right="12.0" top="12.0" />
