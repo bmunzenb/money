@@ -3,7 +3,10 @@ plugins {
     id 'org.openjfx.javafxplugin' version '0.0.9'
 }
 
-mainClassName = 'com.munzenberger.money.app.MoneyApplicationKt'
+application {
+    mainClass.set('com.munzenberger.money.app.MoneyApplicationKt')
+    applicationName = 'Money'
+}
 
 javafx {
     version = versions.javafx
