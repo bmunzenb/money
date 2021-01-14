@@ -107,7 +107,7 @@ class Money private constructor(val currency: Currency, val value: Long): Compar
 
         val fraction = valueToFraction(currency, value)
 
-        val format = NumberFormat.getCurrencyInstance(locale).apply {
+        val format = NumberFormat.getCurrencyInstance(locale.accountNumberFormat).apply {
             this.currency = currency
         }
 
@@ -153,3 +153,9 @@ val Money.isNegative: Boolean
 
 val Money.isPositive: Boolean
     get() = value > 0L
+
+private val Locale.accountNumberFormat: Locale
+    get() = Locale.Builder()
+        .setLocale(this)
+        .setExtension(Locale.UNICODE_LOCALE_EXTENSION, "cf-account")
+        .build()
