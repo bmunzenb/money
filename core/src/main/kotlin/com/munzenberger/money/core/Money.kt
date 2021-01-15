@@ -32,8 +32,9 @@ class Money private constructor(val currency: Currency, val value: Long): Compar
                 locale: Locale = defaultLocale
         ): Money {
 
-            val format = NumberFormat.getNumberInstance(locale) as DecimalFormat
-            format.isParseBigDecimal = true
+            val format = (NumberFormat.getNumberInstance(locale) as DecimalFormat).apply {
+                isParseBigDecimal = true
+            }
 
             val f = (format.parse(fraction) as BigDecimal)
                     // round down to the nearest fractional digit
