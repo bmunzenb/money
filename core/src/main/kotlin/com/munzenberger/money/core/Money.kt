@@ -92,7 +92,7 @@ class Money private constructor(val currency: Currency, val value: Long): Compar
     operator fun minus(money: Money): Money {
 
         if (currency != money.currency) {
-            throw UnsupportedOperationException("Can't add money values of different currencies: $currency != ${money.currency}")
+            throw UnsupportedOperationException("Can't subtract money values of different currencies: $currency != ${money.currency}")
         }
 
         val diff = value - money.value
@@ -108,7 +108,7 @@ class Money private constructor(val currency: Currency, val value: Long): Compar
         val fraction = valueToFraction(currency, value)
 
         val format = NumberFormat.getCurrencyInstance(locale.accountNumberFormat).apply {
-            this.currency = currency
+            this.currency = this@Money.currency
         }
 
         return format.format(fraction)
