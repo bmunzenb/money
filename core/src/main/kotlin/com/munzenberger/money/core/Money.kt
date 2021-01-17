@@ -49,26 +49,23 @@ class Money private constructor(val currency: Currency, val value: Long): Compar
 
             val multiplier = getMultiplier(currency.defaultFractionDigits)
 
-            val m = BigDecimal.valueOf(multiplier.toLong())
-
-            return fraction.multiply(m).longValueExact()
+            return fraction.multiply(multiplier).longValueExact()
         }
 
         private fun valueToFraction(currency: Currency, value: Long): BigDecimal {
 
             val divisor = getMultiplier(currency.defaultFractionDigits)
 
-            val d = BigDecimal.valueOf(divisor.toLong())
             val b = BigDecimal.valueOf(value)
 
-            return b.divide(d)
+            return b.divide(divisor)
         }
 
-        private fun getMultiplier(fractionDigits: Int): Int {
+        private fun getMultiplier(fractionDigits: Int): BigDecimal {
 
-            var multiplier = 1
+            var multiplier = BigDecimal.ONE
 
-            repeat(fractionDigits) { multiplier *= 10 }
+            repeat(fractionDigits) { multiplier *= BigDecimal.TEN }
 
             return multiplier
         }
