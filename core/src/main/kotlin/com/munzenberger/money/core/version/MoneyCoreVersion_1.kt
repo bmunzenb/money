@@ -91,6 +91,15 @@ class MoneyCoreVersion_1 : ApplicableVersion<MoneyDatabase> {
                 .column("ENTRY_TRANSACTION_ID")
                 .build())
 
+        obj.execute(Query.createTable("STATEMENTS")
+                .column("STATEMENT_ID", obj.dialect.identityColumnType)
+                .columnWithReference("STATEMENT_ACCOUNT_ID", obj.dialect.identityType("NOT NULL"), "ACCOUNTS", "ACCOUNT_ID")
+                .column("STATEMENT_CLOSING_DATE", "BIGINT NOT NULL")
+                .column("STATEMENT_STARTING_BALANCE", "BIGINT NOT NULL")
+                .column("STATEMENT_ENDING_BALANCE", "BIGINT NOT NULL")
+                .column("STATEMENT_IS_RECONCILED", obj.dialect.booleanType("NOT NULL"))
+                .build())
+
         obj.insertAccountType("ASSETS", "SAVINGS")
         obj.insertAccountType("ASSETS", "CHECKING")
         obj.insertAccountType("ASSETS", "ASSET")

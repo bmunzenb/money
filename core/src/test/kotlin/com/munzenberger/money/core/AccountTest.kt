@@ -29,7 +29,7 @@ class AccountTest : PersistableTest<Account>() {
     fun `optional fields`() {
 
         val account = Account().apply {
-            name = randomString()
+            name = random.nextString()
             accountType = AccountType().randomize()
             save(database)
         }

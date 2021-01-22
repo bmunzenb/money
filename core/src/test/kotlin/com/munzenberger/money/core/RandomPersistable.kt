@@ -6,9 +6,9 @@ import com.munzenberger.money.core.model.CategoryType
 import java.time.LocalDate
 import java.util.*
 
-private val random = Random()
+val random = Random()
 
-fun randomString(length: Int = 50): String {
+fun Random.nextString(length: Int = 50): String {
 
     val alphabet = "AaBbCcDdEeFfGgHhIiJjKkLlMmNnOoPpQqRrSsTtUuVvWwXxYyZz "
 
@@ -17,8 +17,10 @@ fun randomString(length: Int = 50): String {
             .joinTo(StringBuilder(), "").toString()
 }
 
+fun Random.nextMoney() = Money.valueOf(random.nextLong())
+
 fun Bank.randomize() = this.apply {
-    name = randomString()
+    name = random.nextString()
 }
 
 fun AccountType.randomize() = this.apply {
@@ -27,47 +29,53 @@ fun AccountType.randomize() = this.apply {
 }
 
 fun Account.randomize() = this.apply {
-    name = randomString()
-    number = randomString()
+    name = random.nextString()
+    number = random.nextString()
     accountType = AccountType().randomize()
     bank = Bank().randomize()
-    initialBalance = Money.random()
+    initialBalance = random.nextMoney()
 }
 
 fun Payee.randomize() = this.apply {
-    name = randomString()
+    name = random.nextString()
 }
 
 fun Transaction.randomize() = this.apply {
     account = Account().randomize()
     payee = Payee().randomize()
     date = LocalDate.now()
-    number = randomString()
-    memo = randomString()
+    number = random.nextString()
+    memo = random.nextString()
     status = TransactionStatus.values().random()
 }
 
 fun Transfer.randomize() = this.apply {
     setTransaction(Transaction().randomize())
     account = Account().randomize()
-    amount = Money.random()
-    number = randomString()
-    memo = randomString()
+    amount = random.nextMoney()
+    number = random.nextString()
+    memo = random.nextString()
     status = TransactionStatus.values().random()
     orderInTransaction = random.nextInt()
 }
 
 fun Category.randomize() = this.apply {
-    name = randomString()
+    name = random.nextString()
     type = CategoryType.values().random()
 }
 
 fun Entry.randomize() = this.apply {
     setTransaction(Transaction().randomize())
     category = Category().randomize()
-    amount = Money.random()
-    memo = randomString()
+    amount = random.nextMoney()
+    memo = random.nextString()
     orderInTransaction = random.nextInt()
 }
 
-private fun Money.Companion.random() = valueOf(random.nextLong())
+fun Statement.randomize() = this.apply {
+    setAccount(Account().randomize())
+    closingDate = LocalDate.now()
+    startingBalance = random.nextMoney()
+    endingBalance = random.nextMoney()
+    isReconciled = random.nextBoolean()
+}

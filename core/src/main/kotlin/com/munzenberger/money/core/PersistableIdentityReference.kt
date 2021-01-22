@@ -5,17 +5,17 @@ import com.munzenberger.money.sql.QueryExecutor
 internal class PersistableIdentityReference(private var identity: Long?) {
 
     private var value: Persistable<*>? = null
-    private var updated = false
+    private var dirty = false
 
     fun set(value: Persistable<*>?) {
         this.value = value
-        this.updated = true
+        this.dirty = true
     }
 
     fun getIdentity(executor: QueryExecutor): Long? {
-        if (updated) {
+        if (dirty) {
             identity = value.getIdentity(executor)
-            updated = false
+            dirty = false
         }
         return identity
     }
