@@ -8,6 +8,6 @@ versions.rxkotlin = '3.0.1'
 versions.h2 = '1.4.200'
 versions.sqlite = '3.34.0'
 versions.javafx = '15.0.1'
-versions.mockk = '1.10.5'
+versions.mockk = '1.10.6'
 
 ext.versions = versions
