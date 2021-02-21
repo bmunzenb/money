@@ -1,20 +1,13 @@
 package com.munzenberger.money.app.control
 
-import javafx.beans.property.BooleanProperty
-import javafx.beans.property.ReadOnlyBooleanProperty
 import javafx.scene.Cursor
-import javafx.stage.Stage
+import javafx.scene.Scene
 
-private fun Stage.setWaiting(waiting: Boolean) {
-    scene.cursor = when (waiting) {
+@Deprecated("Bind to the disable and cursor properties directly")
+fun Scene.setWaiting(waiting: Boolean, defaultCursor: Cursor = Cursor.DEFAULT) {
+    cursor = when (waiting) {
         true -> Cursor.WAIT
-        else -> Cursor.DEFAULT
+        else -> defaultCursor
     }
-    scene.root.isDisable = waiting
-}
-
-fun Stage.bindWaiting(booleanProperty: ReadOnlyBooleanProperty) {
-    booleanProperty.addListener { _, _, newValue ->
-        setWaiting(newValue)
-    }
+    root.isDisable = waiting
 }

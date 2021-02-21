@@ -1,10 +1,10 @@
 package com.munzenberger.money.app
 
-import com.munzenberger.money.app.control.bindWaiting
+import com.munzenberger.money.app.control.setWaiting
 import com.munzenberger.money.app.database.MemoryDatabase
 import com.munzenberger.money.app.database.NewFileDatabase
-import com.munzenberger.money.app.database.OpenFileDatabase
 import com.munzenberger.money.app.database.ObservableMoneyDatabase
+import com.munzenberger.money.app.database.OpenFileDatabase
 import javafx.fxml.FXML
 import javafx.fxml.FXMLLoader
 import javafx.scene.Node
@@ -43,7 +43,8 @@ class ApplicationController : DatabaseConnectorDelegate, AutoCloseable {
         this.stage = stage
 
         stage.titleProperty().bind(viewModel.titleProperty)
-        stage.bindWaiting(viewModel.isConnectionInProgressProperty)
+
+        viewModel.isConnectionInProgressProperty.addListener { _, _, newValue -> stage.scene.setWaiting(newValue) }
 
         presentWelcome()
     }

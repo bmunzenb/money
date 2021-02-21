@@ -5,7 +5,7 @@ import com.munzenberger.money.app.control.MoneyTableCellFactory
 import com.munzenberger.money.app.control.RegisterEntryTableRow
 import com.munzenberger.money.app.control.TableCellFactory
 import com.munzenberger.money.app.control.bindAsync
-import com.munzenberger.money.app.control.bindWaiting
+import com.munzenberger.money.app.control.setWaiting
 import com.munzenberger.money.app.database.ObservableMoneyDatabase
 import com.munzenberger.money.app.model.FXRegisterEntry
 import com.munzenberger.money.app.model.FXRegisterEntryFilter
@@ -201,7 +201,8 @@ class AccountRegisterController : AutoCloseable {
         //dateFilterChoiceBox.selectionModel.select(0)
         //statusFilterChoiceBox.selectionModel.select(0)
 
-        stage.bindWaiting(viewModel.operationInProgressProperty)
+        stage.scene.setWaiting(viewModel.operationInProgressProperty.value)
+        viewModel.operationInProgressProperty.addListener { _, _, newValue -> stage.scene.setWaiting(newValue) }
 
         viewModel.start(database, accountIdentity)
     }
