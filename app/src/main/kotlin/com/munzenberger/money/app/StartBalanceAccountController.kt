@@ -2,6 +2,8 @@ package com.munzenberger.money.app
 
 import com.munzenberger.money.app.control.MoneyStringConverter
 import com.munzenberger.money.app.database.ObservableMoneyDatabase
+import com.munzenberger.money.app.property.AsyncObject
+import com.munzenberger.money.app.property.bindAsyncStatus
 import com.munzenberger.money.core.Account
 import javafx.fxml.FXML
 import javafx.scene.Node
@@ -31,18 +33,31 @@ class StartBalanceAccountController {
 
     fun initialize() {
 
-        statementClosingDatePicker.valueProperty().bindBidirectional(viewModel.statementDateProperty)
+        statementClosingDatePicker.apply {
+            valueProperty().bindBidirectional(viewModel.statementDateProperty)
+            disableProperty().bindAsyncStatus(viewModel.loadStatusProperty, AsyncObject.Status.ERROR)
+        }
 
         statementBalanceTextField.apply {
             val moneyConverter = MoneyStringConverter()
             textFormatter = TextFormatter(moneyConverter).apply {
                 valueProperty().bindBidirectional(viewModel.statementBalanceProperty)
             }
+            disableProperty().bindAsyncStatus(viewModel.loadStatusProperty, AsyncObject.Status.ERROR)
         }
 
-        continueButton.disableProperty().bind(viewModel.isInvalidProperty)
+        continueButton.disableProperty().bind(viewModel.isInvalidBinding)
 
-        container.disableProperty().bind(viewModel.isLoadingProperty)
+        container.disableProperty().bindAsyncStatus(viewModel.loadStatusProperty,
+            AsyncObject.Status.PENDING,
+                AsyncObject.Status.EXECUTING)
+
+        viewModel.loadStatusProperty.addListener { _, _, status ->
+            when (status) {
+                is AsyncObject.Error -> ErrorAlert.showAndWait(status.error)
+                else -> Unit
+            }
+        }
     }
 
     fun start(stage: Stage, database: ObservableMoneyDatabase, account: Account) {
@@ -62,6 +77,8 @@ class StartBalanceAccountController {
     }
 
     @FXML fun onContinueButton() {
-
+        viewModel.prepareStatement().let { statement ->
+            // TODO present the balance account controller
+        }
     }
 }

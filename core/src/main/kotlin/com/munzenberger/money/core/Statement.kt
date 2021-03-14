@@ -22,10 +22,6 @@ class Statement internal constructor(model: StatementModel) : Persistable<Statem
         get() = model.closingDate?.let { LocalDate.ofEpochDay(it) }
         set(value) { model.closingDate = value?.toEpochDay() }
 
-    var startingBalance: Money?
-        get() = model.startingBalance?.let { Money.valueOf(it) }
-        set(value) { model.startingBalance = value?.value }
-
     var endingBalance: Money?
         get() = model.endingBalance?.let { Money.valueOf(it) }
         set(value) { model.endingBalance = value?.value }

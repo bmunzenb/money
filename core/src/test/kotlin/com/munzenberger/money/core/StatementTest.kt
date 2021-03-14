@@ -16,7 +16,6 @@ class StatementTest : PersistableTest<Statement>() {
 
     override fun assertPersistablePropertiesAreEquals(p1: Statement, p2: Statement) {
         assertEquals(p1.closingDate, p2.closingDate)
-        assertEquals(p1.startingBalance, p2.startingBalance)
         assertEquals(p1.endingBalance, p2.endingBalance)
         assertEquals(p1.isReconciled, p2.isReconciled)
     }
