@@ -1,7 +1,7 @@
 def versions = [:]
 
 versions.kotlin = '1.5.0'
-versions.gradle_versions = '0.36.0'
+versions.gradle_versions = '0.38.0'
 versions.junit = '4.13.2'
 versions.rxjava = '3.0.12'
 versions.rxkotlin = '3.0.1'
