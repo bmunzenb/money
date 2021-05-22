@@ -4,7 +4,8 @@ buildscript {
     apply from: 'versions.gradle'
     
     repositories {
-        jcenter()
+        mavenCentral()
+        gradlePluginPortal()
     }
 
     dependencies {
@@ -15,7 +16,7 @@ buildscript {
 
 allprojects {
     repositories {
-        jcenter()
+        mavenCentral()
     }
 }
 
