@@ -15,7 +15,6 @@ class FileDatabaseConnector(private val file: File) : DatabaseConnector() {
         val connectionUrl = "jdbc:sqlite:$name"
 
         connect(name = name,
-                driver = "org.sqlite.JDBC",
                 dialect = SQLiteDatabaseDialect,
                 connectionUrl = connectionUrl,
                 callbacks = callbacks)

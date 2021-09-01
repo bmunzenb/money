@@ -28,7 +28,6 @@ abstract class DatabaseConnector {
 
     protected fun connect(
             name: String,
-            driver: String,
             dialect: DatabaseDialect,
             connectionUrl: String,
             user: String? = null,
@@ -37,8 +36,6 @@ abstract class DatabaseConnector {
     ) {
 
         Single.fromCallable {
-
-                    Class.forName(driver)
 
                     val connection = DriverManager.getConnection(connectionUrl, user, password)
 
