@@ -10,6 +10,7 @@ fun createIndexQuery(name: String, table: String, block: IndexDefinition.() -> U
     return def.toQuery()
 }
 
+@CreateIndexQuery
 class IndexDefinition(name: String, table: String) {
 
     private val builder = CreateIndexQueryBuilder(name, table)
@@ -22,5 +23,8 @@ class IndexDefinition(name: String, table: String) {
         builder.column(name)
     }
 
-    fun toQuery() = builder.build()
+    internal fun toQuery() = builder.build()
 }
+
+@DslMarker
+annotation class CreateIndexQuery

@@ -10,6 +10,7 @@ fun createTableQuery(name: String, block: TableDefinition.() -> Unit): Query {
     return def.toQuery()
 }
 
+@CreateTableQuery
 class TableDefinition(name: String) {
 
     private val builder = CreateTableQueryBuilder(name)
@@ -34,6 +35,7 @@ class TableDefinition(name: String) {
     internal fun toQuery(): Query = builder.build()
 }
 
+@CreateTableQuery
 class ColumnProperties {
 
     internal var reference: Pair<String, String>? = null
@@ -42,3 +44,6 @@ class ColumnProperties {
         reference = table to column
     }
 }
+
+@DslMarker
+annotation class CreateTableQuery
