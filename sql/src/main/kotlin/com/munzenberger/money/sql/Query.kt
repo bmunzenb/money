@@ -4,16 +4,16 @@ data class Query(val sql: String, val parameters: List<Any?> = emptyList()) {
 
     companion object {
 
+        // TODO: convert to DSL
         fun selectFrom(table: String) = SelectQueryBuilder(table)
 
-        fun createTable(table: String) = CreateTableQueryBuilder(table)
-
+        // TODO: convert to DSL
         fun insertInto(table: String) = InsertQueryBuilder(table)
 
+        // TODO: convert to DSL
         fun update(table: String) = UpdateQueryBuilder(table)
 
+        // TODO: convert to DSL
         fun deleteFrom(table: String) = DeleteQueryBuilder(table)
-
-        fun createIndex(name: String, table: String, unique: Boolean = false) = CreateIndexQueryBuilder(name, table, unique)
     }
 }

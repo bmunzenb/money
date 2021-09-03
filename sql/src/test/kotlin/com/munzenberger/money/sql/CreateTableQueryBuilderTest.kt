@@ -8,7 +8,7 @@ class CreateTableQueryBuilderTest {
     @Test
     fun `create table with constraints`() {
 
-        val query = Query.createTable("FOO")
+        val query = CreateTableQueryBuilder("FOO")
                 .ifNotExists()
                 .column("FIZZ", "TEXT")
                 .columnWithReference("BUZZ", "INTEGER", "BAR", "BAZ")

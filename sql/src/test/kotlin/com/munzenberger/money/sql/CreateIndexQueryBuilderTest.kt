@@ -19,7 +19,8 @@ class CreateIndexQueryBuilderTest {
     @Test
     fun `create unique index`() {
 
-        val query = CreateIndexQueryBuilder("indexName", "tableName", true)
+        val query = CreateIndexQueryBuilder("indexName", "tableName")
+                .unique()
                 .column("columnA")
                 .column("columnB")
                 .build()
