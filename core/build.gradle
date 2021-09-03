@@ -2,6 +2,12 @@ plugins {
     id 'java-test-fixtures'
 }
 
+compileTestFixturesKotlin {
+    kotlinOptions {
+        jvmTarget = "$versions.jvm"
+    }
+}
+
 dependencies {
     
     api project(':sql')

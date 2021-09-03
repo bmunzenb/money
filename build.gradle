@@ -23,12 +23,22 @@ allprojects {
 subprojects {
     apply plugin: 'kotlin'
 
+    compileKotlin {
+        kotlinOptions {
+            jvmTarget = "$versions.jvm"
+        }
+    }
+
+    compileTestKotlin {
+        kotlinOptions {
+            jvmTarget = "$versions.jvm"
+        }
+    }
+
     version = 'SNAPSHOT'
     archivesBaseName = "${rootProject.name}-${project.name}"
 
     dependencies {
-        implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
-
         testImplementation "junit:junit:$versions.junit"
     }
 }
