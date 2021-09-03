@@ -44,9 +44,9 @@ class AccountBalanceTest : MoneyDatabaseTestSupport() {
         }
 
         val balance1 = account1.getBalance(database)
-        Assert.assertEquals("Account1 balance", Money.valueOf(100 + 42 + 76), balance1)
+        Assert.assertEquals("Account1 balance", Money.valueOf(100L + 42L + 76L), balance1)
 
         val balance2 = account2.getBalance(database)
-        Assert.assertEquals("Account2 balance", Money.valueOf(-100 - 42), balance2)
+        Assert.assertEquals("Account2 balance", Money.valueOf(-100L - 42L), balance2)
     }
 }
