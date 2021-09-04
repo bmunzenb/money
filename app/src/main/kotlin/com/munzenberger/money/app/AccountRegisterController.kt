@@ -5,7 +5,6 @@ import com.munzenberger.money.app.control.MoneyTableCellFactory
 import com.munzenberger.money.app.control.RegisterEntryTableRow
 import com.munzenberger.money.app.control.TableCellFactory
 import com.munzenberger.money.app.control.bindAsync
-import com.munzenberger.money.app.control.setWaiting
 import com.munzenberger.money.app.database.ObservableMoneyDatabase
 import com.munzenberger.money.app.model.FXRegisterEntry
 import com.munzenberger.money.app.model.FXRegisterEntryFilter
@@ -15,6 +14,8 @@ import com.munzenberger.money.app.property.AsyncObject
 import com.munzenberger.money.app.property.NumberStringComparator
 import com.munzenberger.money.app.property.bindAsyncStatus
 import com.munzenberger.money.app.property.bindAsyncValue
+import com.munzenberger.money.app.property.booleanToCursor
+import com.munzenberger.money.app.property.map
 import com.munzenberger.money.core.Account
 import com.munzenberger.money.core.Money
 import com.munzenberger.money.core.Transaction
@@ -201,8 +202,8 @@ class AccountRegisterController : AutoCloseable {
         //dateFilterChoiceBox.selectionModel.select(0)
         //statusFilterChoiceBox.selectionModel.select(0)
 
-        stage.scene.setWaiting(viewModel.operationInProgressProperty.value)
-        viewModel.operationInProgressProperty.addListener { _, _, newValue -> stage.scene.setWaiting(newValue) }
+        stage.scene.cursorProperty().bind(viewModel.operationInProgressProperty.map(::booleanToCursor))
+        stage.scene.root.disableProperty().bind(viewModel.operationInProgressProperty)
 
         viewModel.start(database, accountIdentity)
     }

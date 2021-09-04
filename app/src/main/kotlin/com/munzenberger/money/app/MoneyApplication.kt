@@ -18,7 +18,7 @@ class MoneyApplication : Application() {
 
         FXMLLoader(ApplicationController.LAYOUT).load { root: Parent, controller: ApplicationController ->
 
-            this.controller = controller.apply { start(primaryStage) }
+            this.controller = controller
 
             primaryStage.apply {
 
@@ -30,8 +30,11 @@ class MoneyApplication : Application() {
                 height = 600.0
                 minWidth = width
                 minHeight = height
+
                 show()
             }
+
+            controller.start(primaryStage)
         }
     }
 
