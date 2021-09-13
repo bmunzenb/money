@@ -1,11 +1,12 @@
 package com.munzenberger.money.app
 
+import com.munzenberger.money.app.concurrent.executeAsync
+import com.munzenberger.money.app.concurrent.setValueAsync
 import com.munzenberger.money.app.model.displayName
 import com.munzenberger.money.app.property.ReadOnlyAsyncObjectProperty
 import com.munzenberger.money.app.property.ReadOnlyAsyncStatusProperty
 import com.munzenberger.money.app.property.SimpleAsyncObjectProperty
 import com.munzenberger.money.app.property.SimpleAsyncStatusProperty
-import com.munzenberger.money.app.property.asyncExecute
 import com.munzenberger.money.app.property.asyncValue
 import com.munzenberger.money.core.Money
 import com.munzenberger.money.core.MoneyDatabase
@@ -72,7 +73,7 @@ class EditTransferViewModel {
 
         this.database = database
 
-        payees.asyncValue { Payee.getAll(database).sortedBy { it.name } }
+        payees.setValueAsync { Payee.getAll(database).sortedBy { it.name } }
 
         Single.fromCallable { getTransferResult(database, transferId) }
                 .subscribeOn(SchedulerProvider.database)
@@ -144,7 +145,7 @@ class EditTransferViewModel {
 
     fun save() {
 
-        saveStatus.asyncExecute {
+        saveStatus.executeAsync {
 
             database.transaction { tx ->
 

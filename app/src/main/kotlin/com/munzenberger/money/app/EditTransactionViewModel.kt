@@ -1,5 +1,7 @@
 package com.munzenberger.money.app
 
+import com.munzenberger.money.app.concurrent.executeAsync
+import com.munzenberger.money.app.concurrent.setValueAsync
 import com.munzenberger.money.app.model.TransactionCategory
 import com.munzenberger.money.app.model.displayName
 import com.munzenberger.money.app.model.getAllWithParent
@@ -8,7 +10,6 @@ import com.munzenberger.money.app.property.ReadOnlyAsyncObjectProperty
 import com.munzenberger.money.app.property.ReadOnlyAsyncStatusProperty
 import com.munzenberger.money.app.property.SimpleAsyncObjectProperty
 import com.munzenberger.money.app.property.SimpleAsyncStatusProperty
-import com.munzenberger.money.app.property.asyncExecute
 import com.munzenberger.money.app.property.asyncValue
 import com.munzenberger.money.app.property.singleValue
 import com.munzenberger.money.core.Account
@@ -136,13 +137,13 @@ class EditTransactionViewModel : TransactionDetailEditor(), AutoCloseable {
 
         selectedAccountProperty.value = transaction.account
 
-        accounts.asyncValue { Account.getAll(database).sortedBy { it.name } }
+        accounts.setValueAsync { Account.getAll(database).sortedBy { it.name } }
 
         dateProperty.value = transaction.date ?: LocalDate.now()
 
         selectedPayeeProperty.value = transaction.payee
 
-        payees.asyncValue { Payee.getAll(database).sortedBy { it.name } }
+        payees.setValueAsync { Payee.getAll(database).sortedBy { it.name } }
 
         numberProperty.value = transaction.number
 
@@ -209,7 +210,7 @@ class EditTransactionViewModel : TransactionDetailEditor(), AutoCloseable {
 
     fun save() {
 
-        saveStatus.asyncExecute {
+        saveStatus.executeAsync {
 
             database.transaction { tx ->
 

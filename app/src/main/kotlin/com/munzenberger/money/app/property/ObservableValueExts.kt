@@ -13,7 +13,7 @@ fun <T, R> ObservableValue<T>.map(block: (T) -> R): ObservableValue<R> {
     return property.apply { bind(binding) }
 }
 
-fun booleanToCursor(input: Boolean): Cursor =
+fun booleanToWaitCursor(input: Boolean): Cursor =
         when (input) {
             true -> Cursor.WAIT
             else -> Cursor.DEFAULT

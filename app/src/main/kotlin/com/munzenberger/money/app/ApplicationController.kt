@@ -4,7 +4,7 @@ import com.munzenberger.money.app.database.MemoryDatabase
 import com.munzenberger.money.app.database.NewFileDatabase
 import com.munzenberger.money.app.database.ObservableMoneyDatabase
 import com.munzenberger.money.app.database.OpenFileDatabase
-import com.munzenberger.money.app.property.booleanToCursor
+import com.munzenberger.money.app.property.booleanToWaitCursor
 import com.munzenberger.money.app.property.map
 import javafx.fxml.FXML
 import javafx.fxml.FXMLLoader
@@ -45,7 +45,7 @@ class ApplicationController : DatabaseConnectorDelegate, AutoCloseable {
 
         stage.titleProperty().bind(viewModel.titleProperty)
 
-        stage.scene.cursorProperty().bind(viewModel.isConnectionInProgressProperty.map(::booleanToCursor))
+        stage.scene.cursorProperty().bind(viewModel.isConnectionInProgressProperty.map(::booleanToWaitCursor))
         stage.scene.root.disableProperty().bind(viewModel.isConnectionInProgressProperty)
 
         presentWelcome()

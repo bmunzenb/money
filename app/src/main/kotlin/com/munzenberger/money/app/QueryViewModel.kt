@@ -1,5 +1,6 @@
 package com.munzenberger.money.app
 
+import com.munzenberger.money.app.concurrent.setValueAsync
 import com.munzenberger.money.app.property.ReadOnlyAsyncObjectProperty
 import com.munzenberger.money.app.property.SimpleAsyncObjectProperty
 import com.munzenberger.money.app.property.asyncValue
@@ -35,11 +36,11 @@ class QueryViewModel {
         get() = listOf(selectedQueryProperty.value, queryProperty.value).firstOrNull { it.isNotBlank() }
 
     fun executeQuery() {
-        queryString?.run { result.asyncValue { executeQuery(this) } }
+        queryString?.run { result.setValueAsync { executeQuery(this) } }
     }
 
     fun executeUpdate() {
-        queryString?.run { result.asyncValue { executeUpdate(this) } }
+        queryString?.run { result.setValueAsync { executeUpdate(this) } }
     }
 
     private fun executeQuery(input: String): QueryResult {

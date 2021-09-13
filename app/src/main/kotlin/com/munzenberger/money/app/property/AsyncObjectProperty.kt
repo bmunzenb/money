@@ -1,8 +1,6 @@
 package com.munzenberger.money.app.property
 
 import com.munzenberger.money.app.SchedulerProvider
-import com.munzenberger.money.app.concurrent.setValueAsync
-import io.reactivex.rxjava3.core.Completable
 import io.reactivex.rxjava3.core.Scheduler
 import io.reactivex.rxjava3.core.Single
 import io.reactivex.rxjava3.disposables.Disposable
@@ -26,29 +24,6 @@ fun <T> AsyncObjectProperty<T>.asyncValue(
         .doOnSubscribe { value = AsyncObject.Executing() }
         .subscribe(
                 { value = AsyncObject.Complete(it) },
-                { value = AsyncObject.Error(it) }
-        )
-
-@Deprecated("Use setAsyncValue instead.")
-fun <T> AsyncObjectProperty<T>.asyncValue(
-        subscribeOn: Scheduler = SchedulerProvider.database,
-        observeOn: Scheduler = SchedulerProvider.main,
-        block: () -> T
-): Disposable {
-        setValueAsync { block.invoke() }
-        return Disposable.empty()
-}
-
-fun AsyncStatusProperty.asyncExecute(
-        subscribeOn: Scheduler = SchedulerProvider.database,
-        observeOn: Scheduler = SchedulerProvider.main,
-        block: () -> Unit
-): Disposable = Completable.fromAction(block)
-        .subscribeOn(subscribeOn)
-        .observeOn(observeOn)
-        .doOnSubscribe { value = AsyncObject.Executing() }
-        .subscribe(
-                { value = AsyncObject.Complete(Unit) },
                 { value = AsyncObject.Error(it) }
         )
 

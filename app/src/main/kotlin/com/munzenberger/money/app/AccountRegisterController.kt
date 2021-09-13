@@ -14,7 +14,7 @@ import com.munzenberger.money.app.property.AsyncObject
 import com.munzenberger.money.app.property.NumberStringComparator
 import com.munzenberger.money.app.property.bindAsyncStatus
 import com.munzenberger.money.app.property.bindAsyncValue
-import com.munzenberger.money.app.property.booleanToCursor
+import com.munzenberger.money.app.property.booleanToWaitCursor
 import com.munzenberger.money.app.property.map
 import com.munzenberger.money.core.Account
 import com.munzenberger.money.core.Money
@@ -202,7 +202,7 @@ class AccountRegisterController : AutoCloseable {
         //dateFilterChoiceBox.selectionModel.select(0)
         //statusFilterChoiceBox.selectionModel.select(0)
 
-        stage.scene.cursorProperty().bind(viewModel.operationInProgressProperty.map(::booleanToCursor))
+        stage.scene.cursorProperty().bind(viewModel.operationInProgressProperty.map(::booleanToWaitCursor))
         stage.scene.root.disableProperty().bind(viewModel.operationInProgressProperty)
 
         viewModel.start(database, accountIdentity)
