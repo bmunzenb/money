@@ -10,8 +10,7 @@ import com.munzenberger.money.app.property.ReadOnlyAsyncObjectProperty
 import com.munzenberger.money.app.property.ReadOnlyAsyncStatusProperty
 import com.munzenberger.money.app.property.SimpleAsyncObjectProperty
 import com.munzenberger.money.app.property.SimpleAsyncStatusProperty
-import com.munzenberger.money.app.property.asyncValue
-import com.munzenberger.money.app.property.singleValue
+import com.munzenberger.money.app.property.bindProperty
 import com.munzenberger.money.core.Account
 import com.munzenberger.money.core.Category
 import com.munzenberger.money.core.Entry
@@ -26,6 +25,7 @@ import com.munzenberger.money.core.isNegative
 import com.munzenberger.money.core.isPositive
 import com.munzenberger.money.sql.transaction
 import io.reactivex.rxjava3.core.Single
+import io.reactivex.rxjava3.disposables.CompositeDisposable
 import io.reactivex.rxjava3.kotlin.Singles
 import javafx.beans.property.ReadOnlyBooleanProperty
 import javafx.beans.property.ReadOnlyListProperty
@@ -38,8 +38,11 @@ import javafx.collections.FXCollections
 import javafx.collections.ListChangeListener
 import javafx.collections.ObservableList
 import java.time.LocalDate
+import java.util.*
 
 class EditTransactionViewModel : TransactionDetailEditor(), AutoCloseable {
+
+    private val disposables = CompositeDisposable()
 
     private val accounts = SimpleAsyncObjectProperty<List<Account>>()
     private val payees = SimpleAsyncObjectProperty<List<Payee>>()
@@ -151,7 +154,7 @@ class EditTransactionViewModel : TransactionDetailEditor(), AutoCloseable {
 
         transactionStatus.value = transaction.status?.displayName
 
-        val singleCategories = categories.singleValue {
+        val singleCategories = Single.fromCallable {
 
             val categories = mutableListOf<TransactionCategory>()
 
@@ -163,19 +166,21 @@ class EditTransactionViewModel : TransactionDetailEditor(), AutoCloseable {
                     .map { TransactionCategory.Transfer(it) }
                     .sortedBy { it.name }
 
-            categories
-        }
+            Collections.unmodifiableList(categories)
+
+        }.bindProperty(categories)
 
         val singleDetails = Single.fromCallable { transaction.getDetails(database) }
                 .doOnSuccess { details = it }
 
         Singles.zip(singleCategories, singleDetails)
-                .subscribeOn(SchedulerProvider.database)
-                .observeOn(SchedulerProvider.main)
+                .subscribeOn(SchedulerProvider.SINGLE)
+                .observeOn(SchedulerProvider.PLATFORM)
                 .subscribe(
                         { (categories, details) -> onCategoriesAndDetails(categories, details) },
                         ::onError
                 )
+                .also { disposables.add(it) }
     }
 
     private fun onCategoriesAndDetails(categories: List<TransactionCategory>, details: List<TransactionDetail>) {
@@ -314,7 +319,7 @@ class EditTransactionViewModel : TransactionDetailEditor(), AutoCloseable {
     }
 
     override fun close() {
-        // do nothing
+        disposables.clear()
     }
 
     private fun onError(error: Throwable) {

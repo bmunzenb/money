@@ -2,7 +2,7 @@ package com.munzenberger.money.app.model
 
 import com.munzenberger.money.app.property.ReadOnlyAsyncObjectProperty
 import com.munzenberger.money.app.property.SimpleAsyncObjectProperty
-import com.munzenberger.money.app.property.singleValue
+import com.munzenberger.money.app.property.bindProperty
 import com.munzenberger.money.app.sanitize
 import com.munzenberger.money.core.Account
 import com.munzenberger.money.core.Money
@@ -23,6 +23,6 @@ class FXAccount(private val account: Account, private val database: MoneyDatabas
     private val balance = SimpleAsyncObjectProperty<Money>()
     val balanceProperty: ReadOnlyAsyncObjectProperty<Money> = balance
 
-    val observableBalance: Single<Money>
-        get() = balance.singleValue { account.getBalance(database) }
+    val singleBalance: Single<Money>
+        get() = Single.fromCallable { account.getBalance(database) }.bindProperty(balance)
 }

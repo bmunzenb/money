@@ -3,7 +3,6 @@ package com.munzenberger.money.app
 import com.munzenberger.money.app.concurrent.setValueAsync
 import com.munzenberger.money.app.property.ReadOnlyAsyncObjectProperty
 import com.munzenberger.money.app.property.SimpleAsyncObjectProperty
-import com.munzenberger.money.app.property.asyncValue
 import com.munzenberger.money.core.MoneyDatabase
 import com.munzenberger.money.sql.Query
 import com.munzenberger.money.sql.ResultSetHandler

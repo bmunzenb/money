@@ -7,7 +7,6 @@ import com.munzenberger.money.app.property.ReadOnlyAsyncObjectProperty
 import com.munzenberger.money.app.property.ReadOnlyAsyncStatusProperty
 import com.munzenberger.money.app.property.SimpleAsyncObjectProperty
 import com.munzenberger.money.app.property.SimpleAsyncStatusProperty
-import com.munzenberger.money.app.property.asyncValue
 import com.munzenberger.money.core.Money
 import com.munzenberger.money.core.MoneyDatabase
 import com.munzenberger.money.core.Payee
@@ -76,8 +75,8 @@ class EditTransferViewModel {
         payees.setValueAsync { Payee.getAll(database).sortedBy { it.name } }
 
         Single.fromCallable { getTransferResult(database, transferId) }
-                .subscribeOn(SchedulerProvider.database)
-                .observeOn(SchedulerProvider.main)
+                .subscribeOn(SchedulerProvider.SINGLE)
+                .observeOn(SchedulerProvider.PLATFORM)
                 .subscribe({ onTransferResult(it.transfer, it.transaction) }, ::onError)
     }
 

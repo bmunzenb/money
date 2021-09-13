@@ -6,6 +6,6 @@ import io.reactivex.rxjava3.schedulers.Schedulers
 import io.reactivex.rxjavafx.schedulers.JavaFxScheduler
 
 object SchedulerProvider {
-    val database: Scheduler = Schedulers.from(Executors.SINGLE)
-    val main: Scheduler = JavaFxScheduler.platform()
+    val SINGLE: Scheduler = Schedulers.from(Executors.SINGLE)
+    val PLATFORM: Scheduler = JavaFxScheduler.platform()
 }

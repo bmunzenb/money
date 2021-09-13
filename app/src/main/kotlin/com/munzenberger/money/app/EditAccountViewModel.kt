@@ -6,7 +6,6 @@ import com.munzenberger.money.app.property.ReadOnlyAsyncObjectProperty
 import com.munzenberger.money.app.property.ReadOnlyAsyncStatusProperty
 import com.munzenberger.money.app.property.SimpleAsyncObjectProperty
 import com.munzenberger.money.app.property.SimpleAsyncStatusProperty
-import com.munzenberger.money.app.property.asyncValue
 import com.munzenberger.money.core.Account
 import com.munzenberger.money.core.AccountType
 import com.munzenberger.money.core.Bank

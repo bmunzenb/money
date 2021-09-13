@@ -65,6 +65,7 @@ class AccountRegisterViewModel : AutoCloseable {
     private val creditText = SimpleStringProperty()
     private val activeFilters = SimpleObjectProperty<Predicate<FXRegisterEntry>>()
     private val operationInProgress = SimpleBooleanProperty(false)
+    private val register = SimpleAsyncObjectProperty<Register>()
 
     val accountProperty: ReadOnlyAsyncObjectProperty<Account> = account
     val transactionsProperty: ReadOnlyAsyncObjectProperty<List<FXRegisterEntry>> = transactions
@@ -119,19 +120,17 @@ class AccountRegisterViewModel : AutoCloseable {
         creditText.bindAsyncValue(accountProperty) { account ->
             TransactionType.Credit(account.accountType).name
         }
-    }
-
-    fun start(database: ObservableMoneyDatabase, accountIdentity: Long) {
-
-        this.database = database
-
-        val register = SimpleAsyncObjectProperty<Register>()
 
         register.addListener { _, _, newValue ->
             account.value = newValue.map { it.account }
             transactions.value = newValue.map { it.transactions }
             endingBalance.value = newValue.map { it.endingBalance }
         }
+    }
+
+    fun start(database: ObservableMoneyDatabase, accountIdentity: Long) {
+
+        this.database = database
 
         database.onUpdate.subscribe {
             register.setValueAsync {
@@ -164,8 +163,8 @@ class AccountRegisterViewModel : AutoCloseable {
 
     private fun prepareEditTransaction(transactionId: Long, block: (Edit) -> Unit) {
         Single.fromCallable { Transaction.get(transactionId, database) ?: throw PersistableNotFoundException(Transaction::class, transactionId) }
-                .subscribeOn(SchedulerProvider.database)
-                .observeOn(SchedulerProvider.main)
+                .subscribeOn(SchedulerProvider.SINGLE)
+                .observeOn(SchedulerProvider.PLATFORM)
                 .doOnSubscribe { operationInProgress.value = true }
                 .doFinally { operationInProgress.value = false }
                 .subscribe(
@@ -183,8 +182,8 @@ class AccountRegisterViewModel : AutoCloseable {
 
     private fun deleteTransaction(transactionId: Long, completionBlock: (Throwable?) -> Unit) {
         Single.fromCallable { deleteTransaction(database, transactionId) }
-                .subscribeOn(SchedulerProvider.database)
-                .observeOn(SchedulerProvider.main)
+                .subscribeOn(SchedulerProvider.SINGLE)
+                .observeOn(SchedulerProvider.PLATFORM)
                 .doOnSubscribe { operationInProgress.value = true }
                 .doFinally { operationInProgress.value = false }
                 .subscribe { _, error -> completionBlock.invoke(error) }
@@ -192,8 +191,8 @@ class AccountRegisterViewModel : AutoCloseable {
 
     private fun deleteTransfer(transferId: Long, completionBlock: (Throwable?) -> Unit) {
         Single.fromCallable { deleteTransfer(database, transferId) }
-                .subscribeOn(SchedulerProvider.database)
-                .observeOn(SchedulerProvider.main)
+                .subscribeOn(SchedulerProvider.SINGLE)
+                .observeOn(SchedulerProvider.PLATFORM)
                 .doOnSubscribe { operationInProgress.value = true }
                 .doFinally { operationInProgress.value = false }
                 .subscribe { _, error -> completionBlock.invoke(error) }
@@ -201,8 +200,8 @@ class AccountRegisterViewModel : AutoCloseable {
 
     fun updateEntryStatus(entry: FXRegisterEntry, status: TransactionStatus, completionBlock: (Throwable?) -> Unit) {
         Single.fromCallable { entry.updateStatus(status, database) }
-                .subscribeOn(SchedulerProvider.database)
-                .observeOn(SchedulerProvider.main)
+                .subscribeOn(SchedulerProvider.SINGLE)
+                .observeOn(SchedulerProvider.PLATFORM)
                 .doOnSubscribe { operationInProgress.value = true }
                 .doFinally { operationInProgress.value = false }
                 .subscribe { _, error -> completionBlock.invoke(error) }

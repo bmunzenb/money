@@ -48,16 +48,16 @@ abstract class DatabaseConnector {
                         }
                     }
                 }
-                .subscribeOn(SchedulerProvider.database)
-                .observeOn(SchedulerProvider.main)
+                .subscribeOn(SchedulerProvider.SINGLE)
+                .observeOn(SchedulerProvider.PLATFORM)
                 .subscribe({ onConnectSuccess(it, callbacks) }, { callbacks.onConnectError(it) })
     }
 
     private fun onConnectSuccess(database: ObservableMoneyDatabase, callbacks: DatabaseConnectorCallbacks) {
 
         Single.fromCallable { MoneyCoreVersionManager().getVersionStatus(database) }
-                .subscribeOn(SchedulerProvider.database)
-                .observeOn(SchedulerProvider.main)
+                .subscribeOn(SchedulerProvider.SINGLE)
+                .observeOn(SchedulerProvider.PLATFORM)
                 .doOnError { database.close() }
                 .subscribe({ onVersionStatus(database, it, callbacks) }, { callbacks.onConnectError(it) })
     }
@@ -88,8 +88,8 @@ abstract class DatabaseConnector {
     private fun applyPendingUpgrades(database: ObservableMoneyDatabase, upgrades: PendingUpgrades, callbacks: DatabaseConnectorCallbacks) {
 
         Completable.fromRunnable { upgrades.apply() }
-                .subscribeOn(SchedulerProvider.database)
-                .observeOn(SchedulerProvider.main)
+                .subscribeOn(SchedulerProvider.SINGLE)
+                .observeOn(SchedulerProvider.PLATFORM)
                 .doOnError { database.close() }
                 .subscribe({ callbacks.onConnected(database, upgrades.isFirstUse) }, { callbacks.onConnectError(it) })
     }

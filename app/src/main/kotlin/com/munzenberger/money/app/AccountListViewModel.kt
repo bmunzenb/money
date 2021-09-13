@@ -6,7 +6,6 @@ import com.munzenberger.money.app.model.FXAccount
 import com.munzenberger.money.app.property.AsyncObject
 import com.munzenberger.money.app.property.ReadOnlyAsyncObjectProperty
 import com.munzenberger.money.app.property.SimpleAsyncObjectProperty
-import com.munzenberger.money.app.property.asyncValue
 import com.munzenberger.money.app.property.map
 import com.munzenberger.money.core.Account
 import com.munzenberger.money.core.Money
@@ -29,7 +28,7 @@ class AccountListViewModel : AutoCloseable {
             when (newValue) {
                 is AsyncObject.Complete -> {
 
-                    val observableBalances = newValue.value.map { it.observableBalance }
+                    val observableBalances = newValue.value.map { it.singleBalance }
 
                     val observableTotal = when (observableBalances.isEmpty()) {
                         true -> Single.just(Money.ZERO)
@@ -38,7 +37,16 @@ class AccountListViewModel : AutoCloseable {
                         }
                     }
 
-                    totalBalance.asyncValue(observableTotal)
+                    totalBalance.value = AsyncObject.Executing()
+
+                    observableTotal
+                            .subscribeOn(SchedulerProvider.SINGLE)
+                            .observeOn(SchedulerProvider.PLATFORM)
+                            .subscribe(
+                                    { totalBalance.value = AsyncObject.Complete(it) },
+                                    { totalBalance.value = AsyncObject.Error(it) }
+                            )
+                            .also { disposables.add(it) }
                 }
                 else -> totalBalance.value = newValue.map { Money.ZERO }
             }
