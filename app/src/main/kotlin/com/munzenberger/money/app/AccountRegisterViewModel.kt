@@ -1,5 +1,6 @@
 package com.munzenberger.money.app
 
+import com.munzenberger.money.app.concurrent.setValueAsync
 import com.munzenberger.money.app.database.ObservableMoneyDatabase
 import com.munzenberger.money.app.model.FXRegisterEntry
 import com.munzenberger.money.app.model.FXRegisterEntryFilter
@@ -9,7 +10,6 @@ import com.munzenberger.money.app.model.inLastMonths
 import com.munzenberger.money.app.property.ReadOnlyAsyncObjectProperty
 import com.munzenberger.money.app.property.SimpleAsyncObjectProperty
 import com.munzenberger.money.app.property.bindAsyncValue
-import com.munzenberger.money.app.property.flatMapAsyncObject
 import com.munzenberger.money.app.property.map
 import com.munzenberger.money.core.Account
 import com.munzenberger.money.core.AccountEntry
@@ -50,7 +50,7 @@ class AccountRegisterViewModel : AutoCloseable {
         data class Error(val error: Throwable) : Edit()
     }
 
-    private data class SubscriptionResult(
+    private data class Register(
             val account: Account,
             val transactions: List<FXRegisterEntry>,
             val endingBalance: Money
@@ -125,33 +125,34 @@ class AccountRegisterViewModel : AutoCloseable {
 
         this.database = database
 
-        database.onUpdate.flatMapAsyncObject {
+        val register = SimpleAsyncObjectProperty<Register>()
 
-            val account = Account.get(accountIdentity, database)
-                    ?: throw PersistableNotFoundException(Account::class, accountIdentity)
-
-            var transactions = account.getAccountEntries(database)
-            var endingBalance = account.getBalance(database)
-
-            if (account.accountType?.group == AccountTypeGroup.LIABILITIES) {
-                transactions = transactions.map { it.negateBalance() }
-                endingBalance = endingBalance.negate()
-            }
-
-            SubscriptionResult(
-                    account = account,
-                    transactions = transactions.map { FXRegisterEntry(it) },
-                    endingBalance = endingBalance
-            )
+        register.addListener { _, _, newValue ->
+            account.value = newValue.map { it.account }
+            transactions.value = newValue.map { it.transactions }
+            endingBalance.value = newValue.map { it.endingBalance }
         }
-                .subscribeOn(SchedulerProvider.database)
-                .observeOn(SchedulerProvider.main)
-                .subscribe { async ->
-                    account.value = async.map { it.account }
-                    transactions.value = async.map { it.transactions }
-                    endingBalance.value = async.map { it.endingBalance }
+
+        database.onUpdate.subscribe {
+            register.setValueAsync {
+                val account = Account.get(accountIdentity, database)
+                        ?: throw PersistableNotFoundException(Account::class, accountIdentity)
+
+                var transactions = account.getAccountEntries(database)
+                var endingBalance = account.getBalance(database)
+
+                if (account.accountType?.group == AccountTypeGroup.LIABILITIES) {
+                    transactions = transactions.map { it.negateBalance() }
+                    endingBalance = endingBalance.negate()
                 }
-                .also { disposables.add(it) }
+
+                Register(
+                        account = account,
+                        transactions = transactions.map { FXRegisterEntry(it) },
+                        endingBalance = endingBalance
+                )
+            }
+        }.also { disposables.add(it) }
     }
 
     fun prepareEditEntry(entry: FXRegisterEntry, block: (Edit) -> Unit) {

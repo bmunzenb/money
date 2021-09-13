@@ -1,12 +1,11 @@
 package com.munzenberger.money.app
 
+import com.munzenberger.money.app.concurrent.setValueAsync
 import com.munzenberger.money.app.database.ObservableMoneyDatabase
 import com.munzenberger.money.app.model.FXAccount
 import com.munzenberger.money.app.property.AsyncObject
 import com.munzenberger.money.app.property.ReadOnlyAsyncObjectProperty
 import com.munzenberger.money.app.property.SimpleAsyncObjectProperty
-import com.munzenberger.money.app.property.bindAsync
-import com.munzenberger.money.app.property.flatMapAsyncObject
 import com.munzenberger.money.app.property.asyncValue
 import com.munzenberger.money.app.property.map
 import com.munzenberger.money.core.Account
@@ -47,12 +46,9 @@ class AccountListViewModel : AutoCloseable {
     }
 
     fun start(database: ObservableMoneyDatabase) {
-
-        database.onUpdate.flatMapAsyncObject { Account.getAll(database).map { FXAccount(it, database) } }
-                .subscribeOn(SchedulerProvider.database)
-                .observeOn(SchedulerProvider.main)
-                .subscribe { accounts.value = it }
-                .also { disposables.add(it) }
+        database.onUpdate.subscribe {
+            accounts.setValueAsync { Account.getAll(database).map { FXAccount(it, database) } }
+        }.also { disposables.add(it) }
     }
 
     override fun close() {

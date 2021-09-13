@@ -1,6 +1,7 @@
 package com.munzenberger.money.app.property
 
 import com.munzenberger.money.app.SchedulerProvider
+import com.munzenberger.money.app.concurrent.setValueAsync
 import io.reactivex.rxjava3.core.Completable
 import io.reactivex.rxjava3.core.Scheduler
 import io.reactivex.rxjava3.core.Single
@@ -28,11 +29,15 @@ fun <T> AsyncObjectProperty<T>.asyncValue(
                 { value = AsyncObject.Error(it) }
         )
 
+@Deprecated("Use setAsyncValue instead.")
 fun <T> AsyncObjectProperty<T>.asyncValue(
         subscribeOn: Scheduler = SchedulerProvider.database,
         observeOn: Scheduler = SchedulerProvider.main,
         block: () -> T
-): Disposable = asyncValue(Single.fromCallable(block), subscribeOn, observeOn)
+): Disposable {
+        setValueAsync { block.invoke() }
+        return Disposable.empty()
+}
 
 fun AsyncStatusProperty.asyncExecute(
         subscribeOn: Scheduler = SchedulerProvider.database,
