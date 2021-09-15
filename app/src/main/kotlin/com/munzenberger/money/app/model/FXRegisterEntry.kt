@@ -11,6 +11,8 @@ import javafx.beans.property.SimpleObjectProperty
 import javafx.beans.property.SimpleStringProperty
 import java.time.LocalDate
 
+// TODO split into separate classes for transaction and transfer
+//      and add function to delete, then refactor the register view model
 class FXRegisterEntry(private val accountEntry: AccountEntry) {
 
     sealed class Type {
