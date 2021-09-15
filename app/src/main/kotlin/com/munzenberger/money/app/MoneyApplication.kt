@@ -1,5 +1,6 @@
 package com.munzenberger.money.app
 
+import com.munzenberger.money.app.concurrent.Executors
 import javafx.application.Application
 import javafx.fxml.FXMLLoader
 import javafx.scene.Parent
@@ -40,5 +41,6 @@ class MoneyApplication : Application() {
 
     override fun stop() {
         controller.close()
+        Executors.shutdown()
     }
 }

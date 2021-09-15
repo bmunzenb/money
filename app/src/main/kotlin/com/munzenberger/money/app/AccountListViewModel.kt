@@ -1,5 +1,6 @@
 package com.munzenberger.money.app
 
+import com.munzenberger.money.app.concurrent.Schedulers
 import com.munzenberger.money.app.concurrent.setValueAsync
 import com.munzenberger.money.app.database.ObservableMoneyDatabase
 import com.munzenberger.money.app.model.FXAccount
@@ -41,7 +42,7 @@ class AccountListViewModel : AutoCloseable {
                     totalBalance.value = AsyncObject.Executing()
 
                     observableTotal
-                            .subscribeOn(SchedulerProvider.SINGLE)
+                            .subscribeOn(Schedulers.SINGLE)
                             .bindProperty(totalBalance)
                             .subscribe()
                             .also { disposables.add(it) }

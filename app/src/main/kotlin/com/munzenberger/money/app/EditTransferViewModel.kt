@@ -1,5 +1,6 @@
 package com.munzenberger.money.app
 
+import com.munzenberger.money.app.concurrent.Schedulers
 import com.munzenberger.money.app.concurrent.executeAsync
 import com.munzenberger.money.app.concurrent.setValueAsync
 import com.munzenberger.money.app.model.displayName
@@ -75,8 +76,8 @@ class EditTransferViewModel {
         payees.setValueAsync { Payee.getAll(database).sortedBy { it.name } }
 
         Single.fromCallable { getTransferResult(database, transferId) }
-                .subscribeOn(SchedulerProvider.SINGLE)
-                .observeOn(SchedulerProvider.PLATFORM)
+                .subscribeOn(Schedulers.SINGLE)
+                .observeOn(Schedulers.PLATFORM)
                 .subscribe({ onTransferResult(it.transfer, it.transaction) }, ::onError)
     }
 

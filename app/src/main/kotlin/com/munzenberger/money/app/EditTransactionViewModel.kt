@@ -1,5 +1,6 @@
 package com.munzenberger.money.app
 
+import com.munzenberger.money.app.concurrent.Schedulers
 import com.munzenberger.money.app.concurrent.executeAsync
 import com.munzenberger.money.app.concurrent.setValueAsync
 import com.munzenberger.money.app.model.TransactionCategory
@@ -174,8 +175,8 @@ class EditTransactionViewModel : TransactionDetailEditor(), AutoCloseable {
                 .doOnSuccess { details = it }
 
         Singles.zip(singleCategories, singleDetails)
-                .subscribeOn(SchedulerProvider.SINGLE)
-                .observeOn(SchedulerProvider.PLATFORM)
+                .subscribeOn(Schedulers.SINGLE)
+                .observeOn(Schedulers.PLATFORM)
                 .subscribe(
                         { (categories, details) -> onCategoriesAndDetails(categories, details) },
                         ::onError

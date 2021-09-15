@@ -1,5 +1,6 @@
 package com.munzenberger.money.app
 
+import com.munzenberger.money.app.concurrent.Schedulers
 import com.munzenberger.money.app.concurrent.setValueAsync
 import com.munzenberger.money.app.database.ObservableMoneyDatabase
 import com.munzenberger.money.app.model.FXRegisterEntry
@@ -163,8 +164,8 @@ class AccountRegisterViewModel : AutoCloseable {
 
     private fun prepareEditTransaction(transactionId: Long, block: (Edit) -> Unit) {
         Single.fromCallable { Transaction.get(transactionId, database) ?: throw PersistableNotFoundException(Transaction::class, transactionId) }
-                .subscribeOn(SchedulerProvider.SINGLE)
-                .observeOn(SchedulerProvider.PLATFORM)
+                .subscribeOn(Schedulers.SINGLE)
+                .observeOn(Schedulers.PLATFORM)
                 .doOnSubscribe { operationInProgress.value = true }
                 .doFinally { operationInProgress.value = false }
                 .subscribe(
@@ -182,8 +183,8 @@ class AccountRegisterViewModel : AutoCloseable {
 
     private fun deleteTransaction(transactionId: Long, completionBlock: (Throwable?) -> Unit) {
         Single.fromCallable { deleteTransaction(database, transactionId) }
-                .subscribeOn(SchedulerProvider.SINGLE)
-                .observeOn(SchedulerProvider.PLATFORM)
+                .subscribeOn(Schedulers.SINGLE)
+                .observeOn(Schedulers.PLATFORM)
                 .doOnSubscribe { operationInProgress.value = true }
                 .doFinally { operationInProgress.value = false }
                 .subscribe { _, error -> completionBlock.invoke(error) }
@@ -191,8 +192,8 @@ class AccountRegisterViewModel : AutoCloseable {
 
     private fun deleteTransfer(transferId: Long, completionBlock: (Throwable?) -> Unit) {
         Single.fromCallable { deleteTransfer(database, transferId) }
-                .subscribeOn(SchedulerProvider.SINGLE)
-                .observeOn(SchedulerProvider.PLATFORM)
+                .subscribeOn(Schedulers.SINGLE)
+                .observeOn(Schedulers.PLATFORM)
                 .doOnSubscribe { operationInProgress.value = true }
                 .doFinally { operationInProgress.value = false }
                 .subscribe { _, error -> completionBlock.invoke(error) }
@@ -200,8 +201,8 @@ class AccountRegisterViewModel : AutoCloseable {
 
     fun updateEntryStatus(entry: FXRegisterEntry, status: TransactionStatus, completionBlock: (Throwable?) -> Unit) {
         Single.fromCallable { entry.updateStatus(status, database) }
-                .subscribeOn(SchedulerProvider.SINGLE)
-                .observeOn(SchedulerProvider.PLATFORM)
+                .subscribeOn(Schedulers.SINGLE)
+                .observeOn(Schedulers.PLATFORM)
                 .doOnSubscribe { operationInProgress.value = true }
                 .doFinally { operationInProgress.value = false }
                 .subscribe { _, error -> completionBlock.invoke(error) }
