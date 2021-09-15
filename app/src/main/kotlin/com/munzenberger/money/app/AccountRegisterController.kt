@@ -5,6 +5,7 @@ import com.munzenberger.money.app.control.MoneyTableCellFactory
 import com.munzenberger.money.app.control.RegisterEntryTableRow
 import com.munzenberger.money.app.control.TableCellFactory
 import com.munzenberger.money.app.control.bindAsync
+import com.munzenberger.money.app.control.booleanToWaitCursor
 import com.munzenberger.money.app.database.ObservableMoneyDatabase
 import com.munzenberger.money.app.model.FXRegisterEntry
 import com.munzenberger.money.app.model.FXRegisterEntryFilter
@@ -14,7 +15,6 @@ import com.munzenberger.money.app.property.AsyncObject
 import com.munzenberger.money.app.property.NumberStringComparator
 import com.munzenberger.money.app.property.bindAsyncStatus
 import com.munzenberger.money.app.property.bindAsyncValue
-import com.munzenberger.money.app.property.booleanToWaitCursor
 import com.munzenberger.money.app.property.map
 import com.munzenberger.money.core.Account
 import com.munzenberger.money.core.Money

@@ -1,10 +1,10 @@
 package com.munzenberger.money.app
 
+import com.munzenberger.money.app.control.booleanToWaitCursor
 import com.munzenberger.money.app.database.MemoryDatabase
 import com.munzenberger.money.app.database.NewFileDatabase
 import com.munzenberger.money.app.database.ObservableMoneyDatabase
 import com.munzenberger.money.app.database.OpenFileDatabase
-import com.munzenberger.money.app.property.booleanToWaitCursor
 import com.munzenberger.money.app.property.map
 import javafx.fxml.FXML
 import javafx.fxml.FXMLLoader
