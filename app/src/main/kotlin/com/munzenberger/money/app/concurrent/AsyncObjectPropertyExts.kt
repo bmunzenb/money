@@ -24,20 +24,12 @@ fun <T> AsyncObjectProperty<T>.setValueAsync(executor: Executor = Executors.SING
         }
     }
 
-    val execute = {
+    Platform.runLater {
         value = AsyncObject.Executing()
         executor.execute(task)
-    }
-
-    if (Platform.isFxApplicationThread()) {
-        execute()
-    } else {
-        Platform.runLater(execute)
     }
 }
 
 fun AsyncStatusProperty.executeAsync(executor: Executor = Executors.SINGLE, block: () -> Unit) {
-    setValueAsync(executor) {
-        block.invoke()
-    }
+    setValueAsync(executor) { block.invoke() }
 }

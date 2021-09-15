@@ -6,6 +6,7 @@ import com.munzenberger.money.app.model.FXAccount
 import com.munzenberger.money.app.property.AsyncObject
 import com.munzenberger.money.app.property.ReadOnlyAsyncObjectProperty
 import com.munzenberger.money.app.property.SimpleAsyncObjectProperty
+import com.munzenberger.money.app.property.bindProperty
 import com.munzenberger.money.app.property.map
 import com.munzenberger.money.core.Account
 import com.munzenberger.money.core.Money
@@ -41,11 +42,8 @@ class AccountListViewModel : AutoCloseable {
 
                     observableTotal
                             .subscribeOn(SchedulerProvider.SINGLE)
-                            .observeOn(SchedulerProvider.PLATFORM)
-                            .subscribe(
-                                    { totalBalance.value = AsyncObject.Complete(it) },
-                                    { totalBalance.value = AsyncObject.Error(it) }
-                            )
+                            .bindProperty(totalBalance)
+                            .subscribe()
                             .also { disposables.add(it) }
                 }
                 else -> totalBalance.value = newValue.map { Money.ZERO }
