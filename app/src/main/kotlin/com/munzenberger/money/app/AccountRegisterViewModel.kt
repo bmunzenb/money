@@ -65,7 +65,7 @@ class AccountRegisterViewModel : AutoCloseable {
     private val debitText = SimpleStringProperty()
     private val creditText = SimpleStringProperty()
     private val activeFilters = SimpleObjectProperty<Predicate<FXRegisterEntry>>()
-    private val operationInProgress = SimpleBooleanProperty(false)
+    private val isOperationInProgress = SimpleBooleanProperty(false)
     private val register = SimpleAsyncObjectProperty<Register>()
 
     val accountProperty: ReadOnlyAsyncObjectProperty<Account> = account
@@ -76,7 +76,7 @@ class AccountRegisterViewModel : AutoCloseable {
     val dateFiltersProperty: ReadOnlyListProperty<FXRegisterEntryFilter>
     val statusFiltersProperty: ReadOnlyListProperty<FXRegisterEntryFilter>
     val activeFiltersProperty: ReadOnlyObjectProperty<Predicate<FXRegisterEntry>> = activeFilters
-    val operationInProgressProperty: ReadOnlyBooleanProperty = operationInProgress
+    val isOperationInProgressProperty: ReadOnlyBooleanProperty = isOperationInProgress
 
     val selectedDateFilterProperty = SimpleObjectProperty<FXRegisterEntryFilter>()
     val selectedStatusFilterProperty = SimpleObjectProperty<FXRegisterEntryFilter>()
@@ -166,8 +166,8 @@ class AccountRegisterViewModel : AutoCloseable {
         Single.fromCallable { Transaction.get(transactionId, database) ?: throw PersistableNotFoundException(Transaction::class, transactionId) }
                 .subscribeOn(Schedulers.SINGLE)
                 .observeOn(Schedulers.PLATFORM)
-                .doOnSubscribe { operationInProgress.value = true }
-                .doFinally { operationInProgress.value = false }
+                .doOnSubscribe { isOperationInProgress.value = true }
+                .doFinally { isOperationInProgress.value = false }
                 .subscribe(
                         { block.invoke(Edit.Transaction(it)) },
                         { block.invoke(Edit.Error(it)) }
@@ -185,8 +185,8 @@ class AccountRegisterViewModel : AutoCloseable {
         Single.fromCallable { deleteTransaction(database, transactionId) }
                 .subscribeOn(Schedulers.SINGLE)
                 .observeOn(Schedulers.PLATFORM)
-                .doOnSubscribe { operationInProgress.value = true }
-                .doFinally { operationInProgress.value = false }
+                .doOnSubscribe { isOperationInProgress.value = true }
+                .doFinally { isOperationInProgress.value = false }
                 .subscribe { _, error -> completionBlock.invoke(error) }
     }
 
@@ -194,8 +194,8 @@ class AccountRegisterViewModel : AutoCloseable {
         Single.fromCallable { deleteTransfer(database, transferId) }
                 .subscribeOn(Schedulers.SINGLE)
                 .observeOn(Schedulers.PLATFORM)
-                .doOnSubscribe { operationInProgress.value = true }
-                .doFinally { operationInProgress.value = false }
+                .doOnSubscribe { isOperationInProgress.value = true }
+                .doFinally { isOperationInProgress.value = false }
                 .subscribe { _, error -> completionBlock.invoke(error) }
     }
 
@@ -203,8 +203,8 @@ class AccountRegisterViewModel : AutoCloseable {
         Single.fromCallable { entry.updateStatus(status, database) }
                 .subscribeOn(Schedulers.SINGLE)
                 .observeOn(Schedulers.PLATFORM)
-                .doOnSubscribe { operationInProgress.value = true }
-                .doFinally { operationInProgress.value = false }
+                .doOnSubscribe { isOperationInProgress.value = true }
+                .doFinally { isOperationInProgress.value = false }
                 .subscribe { _, error -> completionBlock.invoke(error) }
     }
 

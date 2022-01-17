@@ -4,7 +4,7 @@ import com.munzenberger.money.app.ErrorAlert
 import com.munzenberger.money.app.property.AsyncObject
 import com.munzenberger.money.app.property.ReadOnlyAsyncObjectProperty
 import com.munzenberger.money.app.property.bindAsync
-import com.munzenberger.money.app.property.bindAsyncList
+import com.munzenberger.money.app.property.toObservableList
 import javafx.beans.property.ReadOnlyObjectProperty
 import javafx.beans.property.SimpleObjectProperty
 import javafx.collections.FXCollections
@@ -23,9 +23,7 @@ inline fun <reified T> TableView<T>.bindAsync(
         placeholder: Node
 ) {
 
-    val observableList = FXCollections.observableArrayList<T>().apply {
-        bindAsyncList(listProperty)
-    }
+    val observableList = listProperty.toObservableList()
 
     val filteredList = FilteredList(observableList).apply {
         predicateProperty().bind(filterProperty)

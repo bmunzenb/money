@@ -1,10 +1,25 @@
 package com.munzenberger.money.app.property
 
-import javafx.beans.binding.Bindings
-import javafx.beans.property.SimpleObjectProperty
-import javafx.beans.value.ObservableValue
+import javafx.beans.value.ChangeListener
+import javafx.collections.FXCollections
+import javafx.collections.ObservableList
 
-fun <T, R> ObservableValue<T>.map(block: (T) -> R): ObservableValue<R> {
-    val binding = Bindings.createObjectBinding({ block.invoke(value) }, this)
-    return SimpleObjectProperty<R>().apply { bind(binding) }
+fun <T> ReadOnlyAsyncObjectProperty<List<T>>.toObservableList() : ObservableList<T> {
+
+    return FXCollections.observableArrayList<T>().apply {
+
+        // update the items in the list if the value of the property changes
+        val callable = { obj: AsyncObject<List<T>> -> when (obj) {
+            is AsyncObject.Pending -> clear()
+            is AsyncObject.Executing -> clear()
+            is AsyncObject.Complete -> setAll(obj.value)
+            is AsyncObject.Error -> clear()
+        }}
+
+        callable.invoke(value)
+
+        val listener = ChangeListener { _, _, obj: AsyncObject<List<T>> -> callable.invoke(obj) }
+
+        addListener(listener)
+    }
 }
