@@ -6,7 +6,7 @@ import com.munzenberger.money.app.control.MoneyStringConverter
 import com.munzenberger.money.app.control.TextListCellFactory
 import com.munzenberger.money.app.control.autoCompleteTextFormatter
 import com.munzenberger.money.app.property.AsyncObject
-import com.munzenberger.money.app.property.bindAsync
+import com.munzenberger.money.app.property.bindAsyncList
 import com.munzenberger.money.app.property.bindAsyncStatus
 import com.munzenberger.money.core.MoneyDatabase
 import com.munzenberger.money.core.Payee
@@ -72,7 +72,7 @@ class EditTransferController {
             cellFactory = TextListCellFactory(payeeConverter::toString)
             buttonCell = cellFactory.call(null)
 
-            items.bindAsync(viewModel.payeesProperty)
+            items.bindAsyncList(viewModel.payeesProperty)
 
             editor.textFormatter = autoCompleteTextFormatter(items, payeeConverter)
 

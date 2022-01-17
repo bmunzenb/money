@@ -22,7 +22,8 @@ class ObservableMoneyDatabase(private val database: MoneyDatabase) : MoneyDataba
 
     override fun execute(query: Query): Boolean {
         return database.execute(query).also {
-            when (it) { false -> updateSubject.onNext(Unit) }
+            // result is false if the database was updated
+            if (!it) { updateSubject.onNext(Unit) }
         }
     }
 

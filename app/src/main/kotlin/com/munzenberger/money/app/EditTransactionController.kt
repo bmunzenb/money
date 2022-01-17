@@ -7,7 +7,7 @@ import com.munzenberger.money.app.control.TextListCellFactory
 import com.munzenberger.money.app.control.autoCompleteTextFormatter
 import com.munzenberger.money.app.model.TransactionCategory
 import com.munzenberger.money.app.property.AsyncObject
-import com.munzenberger.money.app.property.bindAsync
+import com.munzenberger.money.app.property.bindAsyncList
 import com.munzenberger.money.app.property.bindAsyncStatus
 import com.munzenberger.money.core.Account
 import com.munzenberger.money.core.MoneyDatabase
@@ -55,7 +55,7 @@ class EditTransactionController {
             cellFactory = TextListCellFactory(Account::name)
             buttonCell = cellFactory.call(null)
 
-            items.bindAsync(viewModel.accountsProperty)
+            items.bindAsyncList(viewModel.accountsProperty)
 
             valueProperty().bindBidirectional(viewModel.selectedAccountProperty)
 
@@ -88,7 +88,7 @@ class EditTransactionController {
             cellFactory = TextListCellFactory(payeeConverter::toString)
             buttonCell = cellFactory.call(null)
 
-            items.bindAsync(viewModel.payeesProperty)
+            items.bindAsyncList(viewModel.payeesProperty)
 
             editor.textFormatter = autoCompleteTextFormatter(items, payeeConverter)
 
@@ -111,7 +111,7 @@ class EditTransactionController {
             cellFactory = TextListCellFactory(categoryConverter::toString)
             buttonCell = cellFactory.call(null)
 
-            items.bindAsync(viewModel.categoriesProperty)
+            items.bindAsyncList(viewModel.categoriesProperty)
 
             editor.textFormatter = autoCompleteTextFormatter(items, categoryConverter)
 

@@ -32,7 +32,7 @@ fun <T, R> Property<R>.bindAsyncValue(asyncObjectProperty: ReadOnlyAsyncObjectPr
     bind(binding)
 }
 
-fun <T> ObservableList<T>.bindAsync(asyncObjectProperty: ReadOnlyAsyncObjectProperty<List<T>>) {
+fun <T> ObservableList<T>.bindAsyncList(asyncObjectProperty: ReadOnlyAsyncObjectProperty<List<T>>) {
 
     val callable = { obj: AsyncObject<List<T>> -> when (obj) {
         is AsyncObject.Pending -> clear()

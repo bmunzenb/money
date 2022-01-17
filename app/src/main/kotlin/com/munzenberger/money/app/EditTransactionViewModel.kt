@@ -297,6 +297,9 @@ class EditTransactionViewModel : TransactionDetailEditor(), AutoCloseable {
                                 save(tx)
                             }
                         }
+
+                        else ->
+                            throw IllegalStateException("Invalid TransactionCategory type: ${c?.javaClass?.simpleName}")
                     }
                 }
 
@@ -315,6 +318,7 @@ class EditTransactionViewModel : TransactionDetailEditor(), AutoCloseable {
         if (splitDisabled.value == false) {
             when (val c = categories.get()) {
                 is AsyncObject.Complete -> block.invoke(editors, c.value)
+                else -> Unit // do nothing
             }
         }
     }
