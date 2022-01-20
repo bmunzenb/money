@@ -155,6 +155,7 @@ class EditTransactionViewModel : TransactionDetailEditor(), AutoCloseable {
 
         transactionStatus.value = transaction.status?.displayName
 
+        // TODO: replace these two singles with one Task
         val singleCategories = Single.fromCallable {
 
             val categories = mutableListOf<TransactionCategory>()

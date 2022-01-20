@@ -419,7 +419,6 @@ private class TransferResultSetHandler(accountId: Long, private val collector: A
     }
 }
 
-
 fun Account.getAccountEntries(executor: QueryExecutor): List<AccountEntry> {
 
     val accountId = identity ?: throw IllegalStateException("Can't get entries for an unsaved account.")

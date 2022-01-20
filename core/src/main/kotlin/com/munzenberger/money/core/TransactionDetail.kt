@@ -5,6 +5,7 @@ import com.munzenberger.money.core.model.TransferTable
 import com.munzenberger.money.sql.QueryExecutor
 import com.munzenberger.money.sql.eq
 
+// TODO move this down into the persistable instead of wrapping in another object
 sealed class TransactionDetail {
 
     abstract val orderInTransaction: Int?

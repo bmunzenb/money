@@ -1,5 +1,6 @@
 package com.munzenberger.money.app.model
 
+import com.munzenberger.money.app.concurrent.setValueAsync
 import com.munzenberger.money.app.property.ReadOnlyAsyncObjectProperty
 import com.munzenberger.money.app.property.SimpleAsyncObjectProperty
 import com.munzenberger.money.app.property.bindProperty
@@ -23,6 +24,11 @@ class FXAccount(private val account: Account, private val database: MoneyDatabas
     private val balance = SimpleAsyncObjectProperty<Money>()
     val balanceProperty: ReadOnlyAsyncObjectProperty<Money> = balance
 
+    fun fetchBalance() {
+        balance.setValueAsync { account.getBalance(database) }
+    }
+
+    @Deprecated("Use fetchBalance() instead.")
     val singleBalance: Single<Money>
         get() = Single.fromCallable { account.getBalance(database) }.bindProperty(balance)
 }
