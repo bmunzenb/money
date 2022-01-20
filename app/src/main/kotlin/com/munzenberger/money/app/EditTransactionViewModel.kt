@@ -1,6 +1,6 @@
 package com.munzenberger.money.app
 
-import com.munzenberger.money.app.concurrent.Schedulers
+import com.munzenberger.money.app.concurrent.Executors
 import com.munzenberger.money.app.concurrent.executeAsync
 import com.munzenberger.money.app.concurrent.setValueAsync
 import com.munzenberger.money.app.model.TransactionCategory
@@ -11,7 +11,6 @@ import com.munzenberger.money.app.property.ReadOnlyAsyncObjectProperty
 import com.munzenberger.money.app.property.ReadOnlyAsyncStatusProperty
 import com.munzenberger.money.app.property.SimpleAsyncObjectProperty
 import com.munzenberger.money.app.property.SimpleAsyncStatusProperty
-import com.munzenberger.money.app.property.bindProperty
 import com.munzenberger.money.core.Account
 import com.munzenberger.money.core.Category
 import com.munzenberger.money.core.Entry
@@ -25,9 +24,7 @@ import com.munzenberger.money.core.getDetails
 import com.munzenberger.money.core.isNegative
 import com.munzenberger.money.core.isPositive
 import com.munzenberger.money.sql.transaction
-import io.reactivex.rxjava3.core.Single
 import io.reactivex.rxjava3.disposables.CompositeDisposable
-import io.reactivex.rxjava3.kotlin.Singles
 import javafx.beans.property.ReadOnlyBooleanProperty
 import javafx.beans.property.ReadOnlyListProperty
 import javafx.beans.property.ReadOnlyStringProperty
@@ -38,8 +35,9 @@ import javafx.beans.property.SimpleStringProperty
 import javafx.collections.FXCollections
 import javafx.collections.ListChangeListener
 import javafx.collections.ObservableList
+import javafx.concurrent.Task
 import java.time.LocalDate
-import java.util.*
+import java.util.Collections
 
 class EditTransactionViewModel : TransactionDetailEditor(), AutoCloseable {
 
@@ -155,34 +153,43 @@ class EditTransactionViewModel : TransactionDetailEditor(), AutoCloseable {
 
         transactionStatus.value = transaction.status?.displayName
 
-        // TODO: replace these two singles with one Task
-        val singleCategories = Single.fromCallable {
+        val task = object : Task<Pair<List<TransactionCategory>, List<TransactionDetail>>>() {
 
-            val categories = mutableListOf<TransactionCategory>()
+            override fun running() {
+                categories.set(AsyncObject.Executing())
+            }
 
-            categories += Category.getAllWithParent(database)
-                    .map { TransactionCategory.Entry(it.category, it.parentName) }
-                    .sortedBy { it.name }
+            override fun call(): Pair<List<TransactionCategory>, List<TransactionDetail>> {
 
-            categories += Account.getAll(database)
-                    .map { TransactionCategory.Transfer(it) }
-                    .sortedBy { it.name }
+                val categories = mutableListOf<TransactionCategory>()
 
-            Collections.unmodifiableList(categories)
+                categories += Category.getAllWithParent(database)
+                        .map { TransactionCategory.Entry(it.category, it.parentName) }
+                        .sortedBy { it.name }
 
-        }.bindProperty(categories)
+                categories += Account.getAll(database)
+                        .map { TransactionCategory.Transfer(it) }
+                        .sortedBy { it.name }
 
-        val singleDetails = Single.fromCallable { transaction.getDetails(database) }
-                .doOnSuccess { details = it }
+                return Collections.unmodifiableList(categories) to transaction.getDetails(database)
+            }
 
-        Singles.zip(singleCategories, singleDetails)
-                .subscribeOn(Schedulers.SINGLE)
-                .observeOn(Schedulers.PLATFORM)
-                .subscribe(
-                        { (categories, details) -> onCategoriesAndDetails(categories, details) },
-                        { onError.invoke(it) }
-                )
-                .also { disposables.add(it) }
+            override fun succeeded() {
+                val (cats, dets) = value
+
+                categories.set(AsyncObject.Complete(cats))
+                details = dets
+
+                onCategoriesAndDetails(cats, dets)
+            }
+
+            override fun failed() {
+                categories.set(AsyncObject.Error(exception))
+                onError.invoke(exception)
+            }
+        }
+
+        Executors.SINGLE.execute(task)
     }
 
     private fun onCategoriesAndDetails(categories: List<TransactionCategory>, details: List<TransactionDetail>) {
