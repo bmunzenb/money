@@ -75,25 +75,25 @@ class MoneyCoreVersion_1 : ApplicableVersion<MoneyDatabase> {
                 column("TRANSACTION_ACCOUNT_ID")
             }
 
-            createTable("TRANSFERS") {
-                    column("TRANSFER_ID", dialect.identityColumnType)
-                    column("TRANSFER_TRANSACTION_ID", dialect.identityType("NOT NULL")) {
+            createTable("TRANSFER_ENTRIES") {
+                    column("TRANSFER_ENTRY_ID", dialect.identityColumnType)
+                    column("TRANSFER_ENTRY_TRANSACTION_ID", dialect.identityType("NOT NULL")) {
                         references("TRANSACTIONS", "TRANSACTION_ID")
                     }
-                    column("TRANSFER_ACCOUNT_ID", dialect.identityType("NOT NULL")) {
+                    column("TRANSFER_ENTRY_ACCOUNT_ID", dialect.identityType("NOT NULL")) {
                         references("ACCOUNTS", "ACCOUNT_ID")
                     }
-                    column("TRANSFER_AMOUNT", "BIGINT NOT NULL")
-                    column("TRANSFER_NUMBER", "TEXT")
-                    column("TRANSFER_MEMO", "TEXT")
-                    column("TRANSFER_STATUS", "TEXT NOT NULL")
-                    column("TRANSFER_ORDER_IN_TRANSACTION", "INTEGER NOT NULL")
-                    constraint("TRANSFER_STATUS_CONSTRAINT", "CHECK (TRANSFER_STATUS IN ('UNRECONCILED', 'CLEARED', 'RECONCILED'))")
+                    column("TRANSFER_ENTRY_AMOUNT", "BIGINT NOT NULL")
+                    column("TRANSFER_ENTRY_NUMBER", "TEXT")
+                    column("TRANSFER_ENTRY_MEMO", "TEXT")
+                    column("TRANSFER_ENTRY_STATUS", "TEXT NOT NULL")
+                    column("TRANSFER_ENTRY_ORDER_IN_TRANSACTION", "INTEGER NOT NULL")
+                    constraint("TRANSFER_ENTRY_STATUS_CONSTRAINT", "CHECK (TRANSFER_ENTRY_STATUS IN ('UNRECONCILED', 'CLEARED', 'RECONCILED'))")
             }
 
-            createIndex("TRANSFER_TRANSACTION_ACCOUNT_INDEX", "TRANSFERS") {
-                column("TRANSFER_TRANSACTION_ID")
-                column("TRANSFER_ACCOUNT_ID")
+            createIndex("TRANSFER_ENTRY_TRANSACTION_ACCOUNT_INDEX", "TRANSFER_ENTRIES") {
+                column("TRANSFER_ENTRY_TRANSACTION_ID")
+                column("TRANSFER_ENTRY_ACCOUNT_ID")
             }
 
             createTable("CATEGORY_ENTRIES") {

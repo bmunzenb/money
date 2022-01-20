@@ -16,9 +16,9 @@ private interface AccountBalanceCollector : ResultSetHandler {
 private class TransactionBalanceCollector(accountId: Long) : AccountBalanceCollector {
 
     private val sql = """
-        SELECT SUM(TRANSFER_AMOUNT) AS TOTAL
+        SELECT SUM(TRANSFER_ENTRY_AMOUNT) AS TOTAL
         FROM TRANSACTIONS
-        INNER JOIN TRANSFERS ON TRANSFERS.TRANSFER_TRANSACTION_ID = TRANSACTIONS.TRANSACTION_ID
+        INNER JOIN TRANSFER_ENTRIES ON TRANSFER_ENTRIES.TRANSFER_ENTRY_TRANSACTION_ID = TRANSACTIONS.TRANSACTION_ID
         WHERE TRANSACTION_ACCOUNT_ID = ?
     """.trimIndent()
 
@@ -34,13 +34,13 @@ private class TransactionBalanceCollector(accountId: Long) : AccountBalanceColle
     }
 }
 
-private class TransferBalanceCollector(accountId: Long) : AccountBalanceCollector {
+private class TransferEntryBalanceCollector(accountId: Long) : AccountBalanceCollector {
 
     private val sql = """
-        SELECT -SUM(TRANSFER_AMOUNT) AS TOTAL
-        FROM TRANSFERS
-        INNER JOIN TRANSACTIONS ON TRANSACTIONS.TRANSACTION_ID = TRANSFERS.TRANSFER_TRANSACTION_ID
-        WHERE TRANSFER_ACCOUNT_ID = ?
+        SELECT -SUM(TRANSFER_ENTRY_AMOUNT) AS TOTAL
+        FROM TRANSFER_ENTRIES
+        INNER JOIN TRANSACTIONS ON TRANSACTIONS.TRANSACTION_ID = TRANSFER_ENTRIES.TRANSFER_ENTRY_TRANSACTION_ID
+        WHERE TRANSFER_ENTRY_ACCOUNT_ID = ?
     """.trimIndent()
 
     override val query = Query(sql, listOf(accountId))
@@ -84,7 +84,7 @@ fun Account.getBalance(executor: QueryExecutor): Money {
 
     val collectors = listOf(
             TransactionBalanceCollector(accountId),
-            TransferBalanceCollector(accountId),
+            TransferEntryBalanceCollector(accountId),
             CategoryEntryBalanceCollector(accountId)
     )
 

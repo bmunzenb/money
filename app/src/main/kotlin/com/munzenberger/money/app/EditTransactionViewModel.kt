@@ -19,7 +19,7 @@ import com.munzenberger.money.core.MoneyDatabase
 import com.munzenberger.money.core.Payee
 import com.munzenberger.money.core.Transaction
 import com.munzenberger.money.core.TransactionDetail
-import com.munzenberger.money.core.Transfer
+import com.munzenberger.money.core.TransferEntry
 import com.munzenberger.money.core.getDetails
 import com.munzenberger.money.core.isNegative
 import com.munzenberger.money.core.isPositive
@@ -250,7 +250,7 @@ class EditTransactionViewModel : TransactionDetailEditor(), AutoCloseable {
                                 is TransactionDetail.Transfer -> d.transfer.also {
                                     mutableDetails.remove(d)
                                 }
-                                else -> Transfer().apply {
+                                else -> TransferEntry().apply {
                                     setTransaction(transaction)
                                 }
                             }

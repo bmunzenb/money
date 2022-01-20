@@ -13,10 +13,10 @@ import com.munzenberger.money.core.MoneyDatabase
 import com.munzenberger.money.core.Payee
 import com.munzenberger.money.core.PersistableNotFoundException
 import com.munzenberger.money.core.Transaction
-import com.munzenberger.money.core.Transfer
-import com.munzenberger.money.core.TransferResultSetMapper
+import com.munzenberger.money.core.TransferEntry
+import com.munzenberger.money.core.TransferEntryResultSetMapper
 import com.munzenberger.money.core.isNegative
-import com.munzenberger.money.core.model.TransferTable
+import com.munzenberger.money.core.model.TransferEntryTable
 import com.munzenberger.money.sql.ResultSetMapper
 import com.munzenberger.money.sql.transaction
 import javafx.beans.property.BooleanProperty
@@ -34,7 +34,7 @@ import java.time.LocalDate
 class EditTransferViewModel {
 
     private data class TransferResult(
-            val transfer: Transfer,
+            val transfer: TransferEntry,
             val transaction: Transaction
     )
 
@@ -59,7 +59,7 @@ class EditTransferViewModel {
     val disabledProperty: BooleanProperty = disabled
 
     private lateinit var database: MoneyDatabase
-    private lateinit var transfer: Transfer
+    private lateinit var transferEntry: TransferEntry
     private lateinit var transaction: Transaction
 
     init {
@@ -97,18 +97,18 @@ class EditTransferViewModel {
 
         var transactionId: Long? = null
 
-        val transferMapper = object : ResultSetMapper<Transfer> {
-            override fun apply(rs: ResultSet): Transfer {
-                transactionId = rs.getLong(TransferTable.transactionColumn)
-                return TransferResultSetMapper().apply(rs)
+        val transferMapper = object : ResultSetMapper<TransferEntry> {
+            override fun apply(rs: ResultSet): TransferEntry {
+                transactionId = rs.getLong(TransferEntryTable.transactionColumn)
+                return TransferEntryResultSetMapper().apply(rs)
             }
         }
 
-        val transfer = TransferTable
+        val transfer = TransferEntryTable
                 .select(transferId)
                 .build()
                 .let { database.getFirst(it, transferMapper) }
-                ?: throw PersistableNotFoundException(Transfer::class, transferId)
+                ?: throw PersistableNotFoundException(TransferEntry::class, transferId)
 
         val transaction = Transaction.get(transactionId!!, database)
                 ?: throw PersistableNotFoundException(Transaction::class, transactionId!!)
@@ -116,9 +116,9 @@ class EditTransferViewModel {
         return TransferResult(transfer = transfer, transaction = transaction)
     }
 
-    private fun onTransferResult(transfer: Transfer, transaction: Transaction) {
+    private fun onTransferResult(transfer: TransferEntry, transaction: Transaction) {
 
-        this.transfer = transfer
+        this.transferEntry = transfer
         this.transaction = transaction
 
         val typesList = TransactionType.getTypes(transfer.account!!.accountType!!)
@@ -161,7 +161,7 @@ class EditTransferViewModel {
                     save(tx)
                 }
 
-                transfer.apply {
+                transferEntry.apply {
                     this.number = numberProperty.value
                     this.amount = amountProperty.value.forTransferType(selectedTypeProperty.value)
                     this.memo = memoProperty.value

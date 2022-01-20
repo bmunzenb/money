@@ -1,15 +1,15 @@
 package com.munzenberger.money.core
 
-import com.munzenberger.money.core.model.TransferModel
-import com.munzenberger.money.core.model.TransferTable
+import com.munzenberger.money.core.model.TransferEntryModel
+import com.munzenberger.money.core.model.TransferEntryTable
 import com.munzenberger.money.sql.QueryExecutor
 import com.munzenberger.money.sql.ResultSetMapper
 import com.munzenberger.money.sql.transaction
 import java.sql.ResultSet
 
-class Transfer internal constructor(model: TransferModel) : Persistable<TransferModel>(model, TransferTable) {
+class TransferEntry internal constructor(model: TransferEntryModel) : Persistable<TransferEntryModel>(model, TransferEntryTable) {
 
-    constructor() : this(TransferModel(
+    constructor() : this(TransferEntryModel(
             status = TransactionStatus.UNRECONCILED,
             orderInTransaction = 0
     ))
@@ -51,22 +51,22 @@ class Transfer internal constructor(model: TransferModel) : Persistable<Transfer
     companion object {
 
         fun getAll(executor: QueryExecutor) =
-                getAll(executor, TransferTable, TransferResultSetMapper())
+                getAll(executor, TransferEntryTable, TransferEntryResultSetMapper())
 
         fun get(identity: Long, executor: QueryExecutor) =
-                get(identity, executor, TransferTable, TransferResultSetMapper())
+                get(identity, executor, TransferEntryTable, TransferEntryResultSetMapper())
     }
 }
 
-class TransferResultSetMapper : ResultSetMapper<Transfer> {
+class TransferEntryResultSetMapper : ResultSetMapper<TransferEntry> {
 
-    override fun apply(resultSet: ResultSet): Transfer {
+    override fun apply(resultSet: ResultSet): TransferEntry {
 
-        val model = TransferModel().apply {
-            TransferTable.getValues(resultSet, this)
+        val model = TransferEntryModel().apply {
+            TransferEntryTable.getValues(resultSet, this)
         }
 
-        return Transfer(model).apply {
+        return TransferEntry(model).apply {
             account = model.account?.let { AccountResultSetMapper().apply(resultSet) }
         }
     }

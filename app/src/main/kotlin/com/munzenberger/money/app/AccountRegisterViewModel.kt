@@ -24,7 +24,7 @@ import com.munzenberger.money.core.getBalance
 import com.munzenberger.money.core.model.AccountTypeGroup
 import com.munzenberger.money.core.model.CategoryEntryTable
 import com.munzenberger.money.core.model.TransactionTable
-import com.munzenberger.money.core.model.TransferTable
+import com.munzenberger.money.core.model.TransferEntryTable
 import com.munzenberger.money.sql.DeleteQueryBuilder
 import com.munzenberger.money.sql.QueryExecutor
 import com.munzenberger.money.sql.eq
@@ -261,8 +261,8 @@ private fun AccountEntry.negateBalance(): AccountEntry {
 private fun deleteTransaction(executor: QueryExecutor, transactionId: Long) {
     executor.transaction { tx ->
 
-        DeleteQueryBuilder(TransferTable.name)
-                .where(TransferTable.transactionColumn.eq(transactionId))
+        DeleteQueryBuilder(TransferEntryTable.name)
+                .where(TransferEntryTable.transactionColumn.eq(transactionId))
                 .build()
                 .let { tx.executeUpdate(it) }
 
@@ -280,8 +280,8 @@ private fun deleteTransaction(executor: QueryExecutor, transactionId: Long) {
 
 private fun deleteTransfer(executor: QueryExecutor, transferId: Long) {
 
-    DeleteQueryBuilder(TransferTable.name)
-            .where(TransferTable.identityColumn.eq(transferId))
+    DeleteQueryBuilder(TransferEntryTable.name)
+            .where(TransferEntryTable.identityColumn.eq(transferId))
             .build()
             .let { executor.executeUpdate(it) }
 }

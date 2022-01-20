@@ -1,7 +1,7 @@
 package com.munzenberger.money.core
 
 import com.munzenberger.money.core.model.TransactionTable
-import com.munzenberger.money.core.model.TransferTable
+import com.munzenberger.money.core.model.TransferEntryTable
 import com.munzenberger.money.sql.Query
 import com.munzenberger.money.sql.QueryExecutor
 import com.munzenberger.money.sql.ResultSetHandler
@@ -87,9 +87,9 @@ sealed class AccountEntry {
 
         override fun updateStatus(status: TransactionStatus, executor: QueryExecutor) {
 
-            val query = Query.update(TransferTable.name)
-                    .set(TransferTable.statusColumn, status.name)
-                    .where(TransferTable.identityColumn.eq(transferId))
+            val query = Query.update(TransferEntryTable.name)
+                    .set(TransferEntryTable.statusColumn, status.name)
+                    .where(TransferEntryTable.identityColumn.eq(transferId))
                     .build()
 
             executor.executeUpdate(query)
@@ -309,19 +309,19 @@ private class TransactionResultSetHandler(accountId: Long, private val collector
     }
 }
 
-private class TransactionTransferResultSetHandler(accountId: Long, private val collector: AccountEntryCollector) : ResultSetHandler {
+private class TransactionTransferEntryResultSetHandler(accountId: Long, private val collector: AccountEntryCollector) : ResultSetHandler {
 
     private val sql = """
         SELECT
             TRANSACTION_ID,
-            TRANSFER_AMOUNT,
-            TRANSFER_ID,
+            TRANSFER_ENTRY_AMOUNT,
+            TRANSFER_ENTRY_ID,
             ACCOUNT_ID,
             ACCOUNT_NAME,
-            TRANSFER_ORDER_IN_TRANSACTION
+            TRANSFER_ENTRY_ORDER_IN_TRANSACTION
         FROM TRANSACTIONS
-        INNER JOIN TRANSFERS ON TRANSFERS.TRANSFER_TRANSACTION_ID = TRANSACTIONS.TRANSACTION_ID
-        INNER JOIN ACCOUNTS ON ACCOUNTS.ACCOUNT_ID = TRANSFERS.TRANSFER_ACCOUNT_ID
+        INNER JOIN TRANSFER_ENTRIES ON TRANSFER_ENTRIES.TRANSFER_ENTRY_TRANSACTION_ID = TRANSACTIONS.TRANSACTION_ID
+        INNER JOIN ACCOUNTS ON ACCOUNTS.ACCOUNT_ID = TRANSFER_ENTRIES.TRANSFER_ENTRY_ACCOUNT_ID
         WHERE TRANSACTION_ACCOUNT_ID = ?
     """.trimIndent()
 
@@ -331,11 +331,11 @@ private class TransactionTransferResultSetHandler(accountId: Long, private val c
         while (rs.next()) {
             collector.collectTransactionTransfer(
                     transactionId = rs.getLong("TRANSACTION_ID"),
-                    amount = rs.getLong("TRANSFER_AMOUNT"),
-                    transferId = rs.getLong("TRANSFER_ID"),
+                    amount = rs.getLong("TRANSFER_ENTRY_AMOUNT"),
+                    transferId = rs.getLong("TRANSFER_ENTRY_ID"),
                     transferAccountId = rs.getLong("ACCOUNT_ID"),
                     transferAccountName = rs.getString("ACCOUNT_NAME"),
-                    transferOrderInTransaction = rs.getInt("TRANSFER_ORDER_IN_TRANSACTION")
+                    transferOrderInTransaction = rs.getInt("TRANSFER_ENTRY_ORDER_IN_TRANSACTION")
             )
         }
     }
@@ -376,26 +376,26 @@ private class TransactionCategoryEntryResultSetHandler(accountId: Long, private 
     }
 }
 
-private class TransferResultSetHandler(accountId: Long, private val collector: AccountEntryCollector) : ResultSetHandler {
+private class TransferEntryResultSetHandler(accountId: Long, private val collector: AccountEntryCollector) : ResultSetHandler {
 
     private val sql = """
         SELECT
-            TRANSFER_ID,
+            TRANSFER_ENTRY_ID,
             TRANSACTION_ID,
             TRANSACTION_DATE,
             PAYEE_ID,
             PAYEE_NAME,
-            TRANSFER_AMOUNT,
-            TRANSFER_MEMO,
-            TRANSFER_NUMBER,
-            TRANSFER_STATUS,
+            TRANSFER_ENTRY_AMOUNT,
+            TRANSFER_ENTRY_MEMO,
+            TRANSFER_ENTRY_NUMBER,
+            TRANSFER_ENTRY_STATUS,
             ACCOUNT_ID,
             ACCOUNT_NAME
-        FROM TRANSFERS
-        INNER JOIN TRANSACTIONS ON TRANSACTIONS.TRANSACTION_ID = TRANSFERS.TRANSFER_TRANSACTION_ID
+        FROM TRANSFER_ENTRIES
+        INNER JOIN TRANSACTIONS ON TRANSACTIONS.TRANSACTION_ID = TRANSFER_ENTRIES.TRANSFER_ENTRY_TRANSACTION_ID
         LEFT JOIN PAYEES ON PAYEES.PAYEE_ID = TRANSACTIONS.TRANSACTION_PAYEE_ID
         INNER JOIN ACCOUNTS ON TRANSACTIONS.TRANSACTION_ACCOUNT_ID = ACCOUNTS.ACCOUNT_ID
-        WHERE TRANSFER_ACCOUNT_ID = ?
+        WHERE TRANSFER_ENTRY_ACCOUNT_ID = ?
     """.trimIndent()
 
     val query = Query(sql, listOf(accountId))
@@ -403,15 +403,15 @@ private class TransferResultSetHandler(accountId: Long, private val collector: A
     override fun accept(rs: ResultSet) {
         while (rs.next()) {
             collector.collectTransfer(
-                    transferId = rs.getLong("TRANSFER_ID"),
+                    transferId = rs.getLong("TRANSFER_ENTRY_ID"),
                     transactionId = rs.getLong("TRANSACTION_ID"),
                     date = rs.getLocalDate("TRANSACTION_DATE"),
                     payeeId = rs.getLongOrNull("PAYEE_ID"),
                     payeeName = rs.getString("PAYEE_NAME"),
-                    amount = rs.getLong("TRANSFER_AMOUNT"),
-                    memo = rs.getString("TRANSFER_MEMO"),
-                    number = rs.getString("TRANSFER_NUMBER"),
-                    status = rs.getString("TRANSFER_STATUS"),
+                    amount = rs.getLong("TRANSFER_ENTRY_AMOUNT"),
+                    memo = rs.getString("TRANSFER_ENTRY_MEMO"),
+                    number = rs.getString("TRANSFER_ENTRY_NUMBER"),
+                    status = rs.getString("TRANSFER_ENTRY_STATUS"),
                     transactionAccountId = rs.getLong("ACCOUNT_ID"),
                     transactionAccountName = rs.getString("ACCOUNT_NAME")
             )
@@ -429,7 +429,7 @@ fun Account.getAccountEntries(executor: QueryExecutor): List<AccountEntry> {
         executor.executeQuery(query, this)
     }
 
-    TransactionTransferResultSetHandler(accountId, collector).apply {
+    TransactionTransferEntryResultSetHandler(accountId, collector).apply {
         executor.executeQuery(query, this)
     }
 
@@ -437,7 +437,7 @@ fun Account.getAccountEntries(executor: QueryExecutor): List<AccountEntry> {
         executor.executeQuery(query, this)
     }
 
-    TransferResultSetHandler(accountId, collector).apply {
+    TransferEntryResultSetHandler(accountId, collector).apply {
         executor.executeQuery(query, this)
     }
 

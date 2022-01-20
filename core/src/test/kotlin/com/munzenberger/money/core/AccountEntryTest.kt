@@ -30,7 +30,7 @@ class AccountEntryTest : MoneyDatabaseTestSupport() {
             save(database)
         }
 
-        val transfer = Transfer().apply {
+        val transfer = TransferEntry().apply {
             randomize()
             setTransaction(transaction)
             account = account2

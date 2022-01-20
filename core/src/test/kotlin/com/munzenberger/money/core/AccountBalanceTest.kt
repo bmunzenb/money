@@ -28,7 +28,7 @@ class AccountBalanceTest : MoneyDatabaseTestSupport() {
 
         transaction1.let {
 
-            Transfer().apply {
+            TransferEntry().apply {
                 setTransaction(it)
                 account = account2
                 amount = Money.valueOf(42)

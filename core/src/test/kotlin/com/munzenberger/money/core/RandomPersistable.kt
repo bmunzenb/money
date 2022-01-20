@@ -49,7 +49,7 @@ fun Transaction.randomize() = this.apply {
     status = TransactionStatus.values().random()
 }
 
-fun Transfer.randomize() = this.apply {
+fun TransferEntry.randomize() = this.apply {
     setTransaction(Transaction().randomize())
     account = Account().randomize()
     amount = random.nextMoney()

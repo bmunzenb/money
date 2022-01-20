@@ -14,14 +14,14 @@ class TransactionDetailTest : MoneyDatabaseTestSupport() {
             save(database)
         }
 
-        val transfer1 = Transfer().apply {
+        val transfer1 = TransferEntry().apply {
             randomize()
             setTransaction(transaction)
             orderInTransaction = 3
             save(database)
         }
 
-        val transfer2 = Transfer().apply {
+        val transfer2 = TransferEntry().apply {
             randomize()
             setTransaction(transaction)
             orderInTransaction = 0
