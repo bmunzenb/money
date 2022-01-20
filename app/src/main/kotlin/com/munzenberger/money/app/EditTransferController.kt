@@ -121,7 +121,10 @@ class EditTransferController {
         stage.minHeight = stage.height
         stage.maxHeight = stage.height
 
-        viewModel.start(database, transferId)
+        viewModel.start(database, transferId) {
+            ErrorAlert.showAndWait(it)
+            onCancelButton()
+        }
     }
 
     @FXML fun onSaveButton() {

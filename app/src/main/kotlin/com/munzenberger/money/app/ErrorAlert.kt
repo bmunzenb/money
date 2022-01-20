@@ -47,6 +47,9 @@ class ErrorAlert(error: Throwable) : Alert(AlertType.ERROR) {
 
     companion object {
 
-        fun showAndWait(error: Throwable): Optional<ButtonType> = ErrorAlert(error).showAndWait()
+        fun showAndWait(error: Throwable): Optional<ButtonType> {
+            error.printStackTrace(System.err)
+            return ErrorAlert(error).showAndWait()
+        }
     }
 }

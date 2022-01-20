@@ -122,7 +122,7 @@ class EditTransactionViewModel : TransactionDetailEditor(), AutoCloseable {
                 .or(amountProperty.isNull))
     }
 
-    fun start(database: MoneyDatabase, transaction: Transaction) {
+    fun start(database: MoneyDatabase, transaction: Transaction, onError: (Throwable) -> Unit) {
 
         this.database = database
         this.transaction = transaction
@@ -179,7 +179,7 @@ class EditTransactionViewModel : TransactionDetailEditor(), AutoCloseable {
                 .observeOn(Schedulers.PLATFORM)
                 .subscribe(
                         { (categories, details) -> onCategoriesAndDetails(categories, details) },
-                        ::onError
+                        { onError.invoke(it) }
                 )
                 .also { disposables.add(it) }
     }
@@ -325,11 +325,5 @@ class EditTransactionViewModel : TransactionDetailEditor(), AutoCloseable {
 
     override fun close() {
         disposables.clear()
-    }
-
-    private fun onError(error: Throwable) {
-        // TODO refactor this to the controller
-        // idea: create a "disabled" async object property that can be bound by the controller
-        ErrorAlert(error).showAndWait()
     }
 }

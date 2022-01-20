@@ -1,6 +1,6 @@
 package com.munzenberger.money.app
 
-import com.munzenberger.money.app.concurrent.Schedulers
+import com.munzenberger.money.app.concurrent.Executors
 import com.munzenberger.money.app.concurrent.setValueAsync
 import com.munzenberger.money.app.database.ObservableMoneyDatabase
 import com.munzenberger.money.app.model.FXRegisterEntry
@@ -29,7 +29,6 @@ import com.munzenberger.money.sql.DeleteQueryBuilder
 import com.munzenberger.money.sql.QueryExecutor
 import com.munzenberger.money.sql.eq
 import com.munzenberger.money.sql.transaction
-import io.reactivex.rxjava3.core.Single
 import io.reactivex.rxjava3.disposables.CompositeDisposable
 import javafx.beans.binding.Bindings
 import javafx.beans.property.ReadOnlyBooleanProperty
@@ -41,6 +40,7 @@ import javafx.beans.property.SimpleListProperty
 import javafx.beans.property.SimpleObjectProperty
 import javafx.beans.property.SimpleStringProperty
 import javafx.collections.FXCollections
+import javafx.concurrent.Task
 import java.util.function.Predicate
 
 class AccountRegisterViewModel : AutoCloseable {
@@ -163,15 +163,26 @@ class AccountRegisterViewModel : AutoCloseable {
     }
 
     private fun prepareEditTransaction(transactionId: Long, block: (Edit) -> Unit) {
-        Single.fromCallable { Transaction.get(transactionId, database) ?: throw PersistableNotFoundException(Transaction::class, transactionId) }
-                .subscribeOn(Schedulers.SINGLE)
-                .observeOn(Schedulers.PLATFORM)
-                .doOnSubscribe { isOperationInProgress.value = true }
-                .doFinally { isOperationInProgress.value = false }
-                .subscribe(
-                        { block.invoke(Edit.Transaction(it)) },
-                        { block.invoke(Edit.Error(it)) }
-                )
+
+        val task = object : Task<Transaction>() {
+
+            override fun call(): Transaction {
+                return Transaction.get(transactionId, database)
+                        ?: throw PersistableNotFoundException(Transaction::class, transactionId)
+            }
+
+            override fun succeeded() {
+                block.invoke(Edit.Transaction(value))
+            }
+
+            override fun failed() {
+                block.invoke(Edit.Error(exception))
+            }
+        }
+
+        isOperationInProgress.bind(task.runningProperty())
+
+        Executors.SINGLE.execute(task)
     }
 
     fun deleteEntry(entry: FXRegisterEntry, completionBlock: (Throwable?) -> Unit) {
@@ -182,30 +193,57 @@ class AccountRegisterViewModel : AutoCloseable {
     }
 
     private fun deleteTransaction(transactionId: Long, completionBlock: (Throwable?) -> Unit) {
-        Single.fromCallable { deleteTransaction(database, transactionId) }
-                .subscribeOn(Schedulers.SINGLE)
-                .observeOn(Schedulers.PLATFORM)
-                .doOnSubscribe { isOperationInProgress.value = true }
-                .doFinally { isOperationInProgress.value = false }
-                .subscribe { _, error -> completionBlock.invoke(error) }
+
+        val task = object : Task<Unit>() {
+
+            override fun call() {
+                deleteTransaction(database, transactionId)
+            }
+
+            override fun failed() {
+                completionBlock.invoke(exception)
+            }
+        }
+
+        isOperationInProgress.bind(task.runningProperty())
+
+        Executors.SINGLE.execute(task)
     }
 
     private fun deleteTransfer(transferId: Long, completionBlock: (Throwable?) -> Unit) {
-        Single.fromCallable { deleteTransfer(database, transferId) }
-                .subscribeOn(Schedulers.SINGLE)
-                .observeOn(Schedulers.PLATFORM)
-                .doOnSubscribe { isOperationInProgress.value = true }
-                .doFinally { isOperationInProgress.value = false }
-                .subscribe { _, error -> completionBlock.invoke(error) }
+
+        val task = object : Task<Unit>() {
+
+            override fun call() {
+                deleteTransfer(database, transferId)
+            }
+
+            override fun failed() {
+                completionBlock.invoke(exception)
+            }
+        }
+
+        isOperationInProgress.bind(task.runningProperty())
+
+        Executors.SINGLE.execute(task)
     }
 
     fun updateEntryStatus(entry: FXRegisterEntry, status: TransactionStatus, completionBlock: (Throwable?) -> Unit) {
-        Single.fromCallable { entry.updateStatus(status, database) }
-                .subscribeOn(Schedulers.SINGLE)
-                .observeOn(Schedulers.PLATFORM)
-                .doOnSubscribe { isOperationInProgress.value = true }
-                .doFinally { isOperationInProgress.value = false }
-                .subscribe { _, error -> completionBlock.invoke(error) }
+
+        val task = object : Task<Unit>() {
+
+            override fun call() {
+                entry.updateStatus(status, database)
+            }
+
+            override fun failed() {
+                completionBlock.invoke(exception)
+            }
+        }
+
+        isOperationInProgress.bind(task.runningProperty())
+
+        Executors.SINGLE.execute(task)
     }
 
     override fun close() {

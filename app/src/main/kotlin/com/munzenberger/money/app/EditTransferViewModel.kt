@@ -1,6 +1,6 @@
 package com.munzenberger.money.app
 
-import com.munzenberger.money.app.concurrent.Schedulers
+import com.munzenberger.money.app.concurrent.Executors
 import com.munzenberger.money.app.concurrent.executeAsync
 import com.munzenberger.money.app.concurrent.setValueAsync
 import com.munzenberger.money.app.model.displayName
@@ -19,7 +19,6 @@ import com.munzenberger.money.core.isNegative
 import com.munzenberger.money.core.model.TransferTable
 import com.munzenberger.money.sql.ResultSetMapper
 import com.munzenberger.money.sql.transaction
-import io.reactivex.rxjava3.core.Single
 import javafx.beans.property.BooleanProperty
 import javafx.beans.property.ReadOnlyListProperty
 import javafx.beans.property.ReadOnlyStringProperty
@@ -28,6 +27,7 @@ import javafx.beans.property.SimpleListProperty
 import javafx.beans.property.SimpleObjectProperty
 import javafx.beans.property.SimpleStringProperty
 import javafx.collections.FXCollections
+import javafx.concurrent.Task
 import java.sql.ResultSet
 import java.time.LocalDate
 
@@ -69,16 +69,28 @@ class EditTransferViewModel {
                 .or(amountProperty.isNull))
     }
 
-    fun start(database: MoneyDatabase, transferId: Long) {
+    fun start(database: MoneyDatabase, transferId: Long, onError: (Throwable) -> Unit) {
 
         this.database = database
 
         payees.setValueAsync { Payee.getAll(database).sortedBy { it.name } }
 
-        Single.fromCallable { getTransferResult(database, transferId) }
-                .subscribeOn(Schedulers.SINGLE)
-                .observeOn(Schedulers.PLATFORM)
-                .subscribe({ onTransferResult(it.transfer, it.transaction) }, ::onError)
+        val task = object : Task<TransferResult>() {
+
+            override fun call(): TransferResult {
+                return getTransferResult(database, transferId)
+            }
+
+            override fun succeeded() {
+                value.let { onTransferResult(it.transfer, it.transaction) }
+            }
+
+            override fun failed() {
+                onError.invoke(exception)
+            }
+        }
+
+        Executors.SINGLE.execute(task)
     }
 
     private fun getTransferResult(database: MoneyDatabase, transferId: Long): TransferResult {
@@ -135,12 +147,6 @@ class EditTransferViewModel {
         transactionStatus.value = transfer.status?.displayName
 
         disabled.value = false
-    }
-
-    private fun onError(error: Throwable) {
-        // TODO move to controller
-        // idea: create a "disabled" async object property that can be bound by the controller
-        ErrorAlert.showAndWait(error)
     }
 
     fun save() {

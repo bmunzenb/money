@@ -1,6 +1,6 @@
 package com.munzenberger.money.app.database
 
-import com.munzenberger.money.app.concurrent.Schedulers
+import com.munzenberger.money.app.concurrent.Executors
 import com.munzenberger.money.core.ConnectionMoneyDatabase
 import com.munzenberger.money.core.DatabaseDialect
 import com.munzenberger.money.core.SQLiteDatabaseDialect
@@ -10,8 +10,7 @@ import com.munzenberger.money.version.CurrentVersion
 import com.munzenberger.money.version.PendingUpgrades
 import com.munzenberger.money.version.UnsupportedVersion
 import com.munzenberger.money.version.VersionStatus
-import io.reactivex.rxjava3.core.Completable
-import io.reactivex.rxjava3.core.Single
+import javafx.concurrent.Task
 import java.sql.DriverManager
 
 interface DatabaseConnectorCallbacks {
@@ -35,31 +34,52 @@ abstract class DatabaseConnector {
             callbacks: DatabaseConnectorCallbacks
     ) {
 
-        Single.fromCallable {
+        val task = object : Task<ObservableMoneyDatabase>() {
 
-                    val connection = DriverManager.getConnection(connectionUrl, user, password)
+            override fun call(): ObservableMoneyDatabase {
+                val connection = DriverManager.getConnection(connectionUrl, user, password)
 
-                    ObservableMoneyDatabase(ConnectionMoneyDatabase(name, dialect, connection)).also {
-                        when (dialect) {
-                            SQLiteDatabaseDialect ->
-                                // SQLite requires explicitly enabling foreign key constraints
-                                // https://www.sqlite.org/foreignkeys.html#fk_enable
-                                it.execute(Query("PRAGMA foreign_keys = ON"))
-                        }
+                return ObservableMoneyDatabase(ConnectionMoneyDatabase(name, dialect, connection)).also {
+                    when (dialect) {
+                        SQLiteDatabaseDialect ->
+                            // SQLite requires explicitly enabling foreign key constraints
+                            // https://www.sqlite.org/foreignkeys.html#fk_enable
+                            it.execute(Query("PRAGMA foreign_keys = ON"))
                     }
                 }
-                .subscribeOn(Schedulers.SINGLE)
-                .observeOn(Schedulers.PLATFORM)
-                .subscribe({ onConnectSuccess(it, callbacks) }, { callbacks.onConnectError(it) })
+            }
+
+            override fun succeeded() {
+                onConnectSuccess(value, callbacks)
+            }
+
+            override fun failed() {
+                callbacks.onConnectError(exception)
+            }
+        }
+
+        Executors.SINGLE.execute(task)
     }
 
     private fun onConnectSuccess(database: ObservableMoneyDatabase, callbacks: DatabaseConnectorCallbacks) {
 
-        Single.fromCallable { MoneyCoreVersionManager().getVersionStatus(database) }
-                .subscribeOn(Schedulers.SINGLE)
-                .observeOn(Schedulers.PLATFORM)
-                .doOnError { database.close() }
-                .subscribe({ onVersionStatus(database, it, callbacks) }, { callbacks.onConnectError(it) })
+        val task = object : Task<VersionStatus>() {
+
+            override fun call(): VersionStatus {
+                return MoneyCoreVersionManager().getVersionStatus(database)
+            }
+
+            override fun succeeded() {
+                onVersionStatus(database, value, callbacks)
+            }
+
+            override fun failed() {
+                database.close()
+                callbacks.onConnectError(exception)
+            }
+        }
+
+        Executors.SINGLE.execute(task)
     }
 
     private fun onVersionStatus(database: ObservableMoneyDatabase, status: VersionStatus, callbacks: DatabaseConnectorCallbacks) {
@@ -87,10 +107,22 @@ abstract class DatabaseConnector {
 
     private fun applyPendingUpgrades(database: ObservableMoneyDatabase, upgrades: PendingUpgrades, callbacks: DatabaseConnectorCallbacks) {
 
-        Completable.fromRunnable { upgrades.apply() }
-                .subscribeOn(Schedulers.SINGLE)
-                .observeOn(Schedulers.PLATFORM)
-                .doOnError { database.close() }
-                .subscribe({ callbacks.onConnected(database, upgrades.isFirstUse) }, { callbacks.onConnectError(it) })
+        val task = object : Task<Unit>() {
+
+            override fun call() {
+                upgrades.apply()
+            }
+
+            override fun succeeded() {
+                callbacks.onConnected(database, upgrades.isFirstUse)
+            }
+
+            override fun failed() {
+                database.close()
+                callbacks.onConnectError(exception)
+            }
+        }
+
+        Executors.SINGLE.execute(task)
     }
 }

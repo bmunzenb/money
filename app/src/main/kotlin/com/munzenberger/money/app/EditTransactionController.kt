@@ -159,7 +159,10 @@ class EditTransactionController {
         stage.minHeight = stage.height
         stage.maxHeight = stage.height
 
-        viewModel.start(database, transaction)
+        viewModel.start(database, transaction) {
+            ErrorAlert.showAndWait(it)
+            onCancelButton()
+        }
     }
 
     @FXML fun onCategorySplitButton() {

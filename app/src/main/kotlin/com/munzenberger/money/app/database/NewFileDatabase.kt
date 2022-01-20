@@ -51,7 +51,10 @@ object NewFileDatabase : DatabaseConnectorCallbacks {
         ErrorAlert.showAndWait(IllegalStateException("Received unsupported database error while creating new database file."))
     }
 
-    override fun onPendingUpgrades() = true
+    override fun onPendingUpgrades(): Boolean {
+        // always apply updates
+        return true
+    }
 
     override fun onConnectError(error: Throwable) {
         ErrorAlert.showAndWait(error)
