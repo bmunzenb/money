@@ -8,7 +8,7 @@ import com.munzenberger.money.sql.QueryExecutor
 import com.munzenberger.money.sql.ResultSetMapper
 import java.sql.ResultSet
 
-class AccountType internal constructor(model: AccountTypeModel) : Persistable<AccountTypeModel>(model, AccountTypeTable) {
+class AccountType internal constructor(model: AccountTypeModel) : AbstractPersistable<AccountTypeModel>(model, AccountTypeTable) {
 
     constructor() : this(AccountTypeModel())
 

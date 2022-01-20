@@ -8,7 +8,7 @@ import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
-abstract class PersistableTest<P : Persistable<*>> : MoneyDatabaseTestSupport() {
+abstract class PersistableTest<P : Persistable> : MoneyDatabaseTestSupport() {
 
     abstract fun createPersistable(): P
 

@@ -8,7 +8,7 @@ import com.munzenberger.money.sql.transaction
 import java.sql.ResultSet
 import java.time.LocalDate
 
-class Transaction internal constructor(model: TransactionModel) : Persistable<TransactionModel>(model, TransactionTable) {
+class Transaction internal constructor(model: TransactionModel) : AbstractPersistable<TransactionModel>(model, TransactionTable) {
 
     constructor() : this(TransactionModel(
             status = TransactionStatus.UNRECONCILED

@@ -7,7 +7,7 @@ import com.munzenberger.money.sql.ResultSetMapper
 import com.munzenberger.money.sql.transaction
 import java.sql.ResultSet
 
-class CategoryEntry internal constructor(model: CategoryEntryModel) : Persistable<CategoryEntryModel>(model, CategoryEntryTable) {
+class CategoryEntry internal constructor(model: CategoryEntryModel) : AbstractPersistable<CategoryEntryModel>(model, CategoryEntryTable) {
 
     constructor() : this(CategoryEntryModel(
             orderInTransaction = 0

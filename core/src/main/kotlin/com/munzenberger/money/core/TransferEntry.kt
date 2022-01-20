@@ -7,7 +7,7 @@ import com.munzenberger.money.sql.ResultSetMapper
 import com.munzenberger.money.sql.transaction
 import java.sql.ResultSet
 
-class TransferEntry internal constructor(model: TransferEntryModel) : Persistable<TransferEntryModel>(model, TransferEntryTable) {
+class TransferEntry internal constructor(model: TransferEntryModel) : AbstractPersistable<TransferEntryModel>(model, TransferEntryTable) {
 
     constructor() : this(TransferEntryModel(
             status = TransactionStatus.UNRECONCILED,

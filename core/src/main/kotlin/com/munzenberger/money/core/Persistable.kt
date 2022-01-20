@@ -7,14 +7,24 @@ import com.munzenberger.money.sql.ResultSetMapper
 import com.munzenberger.money.sql.TransactionQueryExecutor
 import java.lang.IllegalStateException
 
-abstract class Persistable<M : Model>(
-        protected val model: M,
-        private val table: Table<M>) {
+interface Persistable {
 
     val identity: Long?
+
+    fun save(executor: QueryExecutor)
+
+    fun delete(executor: QueryExecutor)
+}
+
+abstract class AbstractPersistable<M : Model>(
+        protected val model: M,
+        private val table: Table<M>
+) : Persistable {
+
+    override val identity: Long?
         get() = model.identity
 
-    open fun save(executor: QueryExecutor) {
+    override fun save(executor: QueryExecutor) {
         when (model.identity) {
             null -> insert(executor)
             else -> update(executor)
@@ -46,7 +56,7 @@ abstract class Persistable<M : Model>(
         }
     }
 
-    open fun delete(executor: QueryExecutor) {
+    override fun delete(executor: QueryExecutor) {
 
         if (model.identity != null) {
 
@@ -72,7 +82,7 @@ abstract class Persistable<M : Model>(
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
 
-        other as Persistable<*>
+        other as AbstractPersistable<*>
 
         if (model != other.model) return false
         if (table != other.table) return false
@@ -88,13 +98,13 @@ abstract class Persistable<M : Model>(
 
     companion object {
 
-        internal fun <M : Model, P : Persistable<M>> getAll(
+        internal fun <M : Model, P : AbstractPersistable<M>> getAll(
                 executor: QueryExecutor,
                 table: Table<M>,
                 mapper: ResultSetMapper<P>
         ) = table.select().orderBy(table.identityColumn).build().let { executor.getList(it, mapper) }
 
-        internal fun <M : Model, P : Persistable<M>> get(
+        internal fun <M : Model, P : AbstractPersistable<M>> get(
                 identity: Long,
                 executor: QueryExecutor,
                 table: Table<M>,
@@ -103,7 +113,7 @@ abstract class Persistable<M : Model>(
     }
 }
 
-fun Persistable<*>?.getIdentity(executor: QueryExecutor) =
+fun Persistable?.getIdentity(executor: QueryExecutor) =
         when {
             this == null ->
                 null

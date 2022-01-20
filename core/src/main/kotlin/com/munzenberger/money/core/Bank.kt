@@ -6,7 +6,7 @@ import com.munzenberger.money.sql.QueryExecutor
 import com.munzenberger.money.sql.ResultSetMapper
 import java.sql.ResultSet
 
-class Bank internal constructor(model: BankModel) : Persistable<BankModel>(model, BankTable) {
+class Bank internal constructor(model: BankModel) : AbstractPersistable<BankModel>(model, BankTable) {
 
     constructor() : this(BankModel())
 

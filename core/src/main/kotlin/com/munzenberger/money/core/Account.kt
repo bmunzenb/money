@@ -7,7 +7,7 @@ import com.munzenberger.money.sql.ResultSetMapper
 import com.munzenberger.money.sql.transaction
 import java.sql.ResultSet
 
-class Account internal constructor(model: AccountModel) : Persistable<AccountModel>(model, AccountTable) {
+class Account internal constructor(model: AccountModel) : AbstractPersistable<AccountModel>(model, AccountTable) {
 
     constructor() : this(AccountModel())
 

@@ -8,7 +8,7 @@ import com.munzenberger.money.sql.transaction
 import java.sql.ResultSet
 import java.time.LocalDate
 
-class Statement internal constructor(model: StatementModel) : Persistable<StatementModel>(model, StatementTable) {
+class Statement internal constructor(model: StatementModel) : AbstractPersistable<StatementModel>(model, StatementTable) {
 
     constructor() : this(StatementModel())
 
