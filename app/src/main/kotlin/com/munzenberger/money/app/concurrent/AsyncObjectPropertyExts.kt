@@ -31,5 +31,5 @@ fun <T> AsyncObjectProperty<T>.setValueAsync(executor: Executor = Executors.SING
 }
 
 fun AsyncStatusProperty.executeAsync(executor: Executor = Executors.SINGLE, block: () -> Unit) {
-    setValueAsync(executor) { block.invoke() }
+    setValueAsync(executor, block)
 }
