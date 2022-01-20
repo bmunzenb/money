@@ -341,20 +341,20 @@ private class TransactionTransferResultSetHandler(accountId: Long, private val c
     }
 }
 
-private class TransactionEntryResultSetHandler(accountId: Long, private val collector: AccountEntryCollector) : ResultSetHandler {
+private class TransactionCategoryEntryResultSetHandler(accountId: Long, private val collector: AccountEntryCollector) : ResultSetHandler {
 
     private val sql = """
         SELECT
             TRANSACTION_ID,
-            ENTRY_ID,
-            ENTRY_AMOUNT,
+            CATEGORY_ENTRY_ID,
+            CATEGORY_ENTRY_AMOUNT,
             CATEGORIES.CATEGORY_ID AS CATEGORY_ID,
             CATEGORIES.CATEGORY_NAME AS CATEGORY_NAME,
             PARENT_CATEGORIES.CATEGORY_NAME AS PARENT_CATEGORY_NAME,
-            ENTRY_ORDER_IN_TRANSACTION
+            CATEGORY_ENTRY_ORDER_IN_TRANSACTION
         FROM TRANSACTIONS
-        INNER JOIN ENTRIES ON ENTRIES.ENTRY_TRANSACTION_ID = TRANSACTIONS.TRANSACTION_ID
-        INNER JOIN CATEGORIES ON CATEGORIES.CATEGORY_ID = ENTRIES.ENTRY_CATEGORY_ID
+        INNER JOIN CATEGORY_ENTRIES ON CATEGORY_ENTRIES.CATEGORY_ENTRY_TRANSACTION_ID = TRANSACTIONS.TRANSACTION_ID
+        INNER JOIN CATEGORIES ON CATEGORIES.CATEGORY_ID = CATEGORY_ENTRIES.CATEGORY_ENTRY_CATEGORY_ID
         LEFT JOIN CATEGORIES AS PARENT_CATEGORIES ON CATEGORIES.CATEGORY_PARENT_ID = PARENT_CATEGORIES.CATEGORY_ID 
         WHERE TRANSACTION_ACCOUNT_ID = ?
     """.trimIndent()
@@ -365,12 +365,12 @@ private class TransactionEntryResultSetHandler(accountId: Long, private val coll
         while (rs.next()) {
             collector.collectTransactionEntry(
                     transactionId = rs.getLong("TRANSACTION_ID"),
-                    amount = rs.getLong("ENTRY_AMOUNT"),
-                    entryId = rs.getLong("ENTRY_ID"),
+                    amount = rs.getLong("CATEGORY_ENTRY_AMOUNT"),
+                    entryId = rs.getLong("CATEGORY_ENTRY_ID"),
                     entryCategoryId = rs.getLong("CATEGORY_ID"),
                     entryCategoryName = rs.getString("CATEGORY_NAME"),
                     entryParentCategoryName = rs.getString("PARENT_CATEGORY_NAME"),
-                    entryOrderInTransaction = rs.getInt("ENTRY_ORDER_IN_TRANSACTION")
+                    entryOrderInTransaction = rs.getInt("CATEGORY_ENTRY_ORDER_IN_TRANSACTION")
             )
         }
     }
@@ -433,7 +433,7 @@ fun Account.getAccountEntries(executor: QueryExecutor): List<AccountEntry> {
         executor.executeQuery(query, this)
     }
 
-    TransactionEntryResultSetHandler(accountId, collector).apply {
+    TransactionCategoryEntryResultSetHandler(accountId, collector).apply {
         executor.executeQuery(query, this)
     }
 

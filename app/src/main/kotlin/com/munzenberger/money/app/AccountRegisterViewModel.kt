@@ -22,7 +22,7 @@ import com.munzenberger.money.core.TransactionStatus
 import com.munzenberger.money.core.getAccountEntries
 import com.munzenberger.money.core.getBalance
 import com.munzenberger.money.core.model.AccountTypeGroup
-import com.munzenberger.money.core.model.EntryTable
+import com.munzenberger.money.core.model.CategoryEntryTable
 import com.munzenberger.money.core.model.TransactionTable
 import com.munzenberger.money.core.model.TransferTable
 import com.munzenberger.money.sql.DeleteQueryBuilder
@@ -266,8 +266,8 @@ private fun deleteTransaction(executor: QueryExecutor, transactionId: Long) {
                 .build()
                 .let { tx.executeUpdate(it) }
 
-        DeleteQueryBuilder(EntryTable.name)
-                .where(EntryTable.transactionColumn.eq(transactionId))
+        DeleteQueryBuilder(CategoryEntryTable.name)
+                .where(CategoryEntryTable.transactionColumn.eq(transactionId))
                 .build()
                 .let { tx.executeUpdate(it) }
 

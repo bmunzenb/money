@@ -35,7 +35,7 @@ class AccountBalanceTest : MoneyDatabaseTestSupport() {
                 save(database)
             }
 
-            Entry().apply {
+            CategoryEntry().apply {
                 setTransaction(it)
                 category = Category().randomize()
                 amount = Money.valueOf(76)

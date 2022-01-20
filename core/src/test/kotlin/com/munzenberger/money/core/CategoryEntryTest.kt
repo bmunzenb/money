@@ -2,22 +2,22 @@ package com.munzenberger.money.core
 
 import org.junit.Assert.assertEquals
 
-class EntryTest : PersistableTest<Entry>() {
+class CategoryEntryTest : PersistableTest<CategoryEntry>() {
 
     override fun createPersistable() =
-            Entry().randomize()
+            CategoryEntry().randomize()
 
     override fun getPersistable(identity: Long) =
-            Entry.get(identity, database)
+            CategoryEntry.get(identity, database)
 
     override fun getAllPersistables() =
-            Entry.getAll(database)
+            CategoryEntry.getAll(database)
 
-    override fun updatePersistable(persistable: Entry) {
+    override fun updatePersistable(persistable: CategoryEntry) {
         persistable.randomize()
     }
 
-    override fun assertPersistablePropertiesAreEquals(p1: Entry, p2: Entry) {
+    override fun assertPersistablePropertiesAreEquals(p1: CategoryEntry, p2: CategoryEntry) {
         assertEquals(p1.transactionRef.getIdentity(database)!!, p2.transactionRef.getIdentity(database)!!)
         assertEquals(p1.category!!.identity!!, p2.category!!.identity!!)
         assertEquals(p1.amount, p2.amount)

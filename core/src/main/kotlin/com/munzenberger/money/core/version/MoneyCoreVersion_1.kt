@@ -96,21 +96,21 @@ class MoneyCoreVersion_1 : ApplicableVersion<MoneyDatabase> {
                 column("TRANSFER_ACCOUNT_ID")
             }
 
-            createTable("ENTRIES") {
-                    column("ENTRY_ID", dialect.identityColumnType)
-                    column("ENTRY_TRANSACTION_ID", dialect.identityType("NOT NULL")) {
+            createTable("CATEGORY_ENTRIES") {
+                    column("CATEGORY_ENTRY_ID", dialect.identityColumnType)
+                    column("CATEGORY_ENTRY_TRANSACTION_ID", dialect.identityType("NOT NULL")) {
                         references("TRANSACTIONS", "TRANSACTION_ID")
                     }
-                    column("ENTRY_CATEGORY_ID", dialect.identityType("NOT NULL")) {
+                    column("CATEGORY_ENTRY_CATEGORY_ID", dialect.identityType("NOT NULL")) {
                         references("CATEGORIES", "CATEGORY_ID")
                     }
-                    column("ENTRY_AMOUNT", "BIGINT NOT NULL")
-                    column("ENTRY_MEMO", "TEXT")
-                    column("ENTRY_ORDER_IN_TRANSACTION", "INTEGER NOT NULL")
+                    column("CATEGORY_ENTRY_AMOUNT", "BIGINT NOT NULL")
+                    column("CATEGORY_ENTRY_MEMO", "TEXT")
+                    column("CATEGORY_ENTRY_ORDER_IN_TRANSACTION", "INTEGER NOT NULL")
             }
 
-            createIndex("ENTRY_TRANSACTION_INDEX", "ENTRIES") {
-                column("ENTRY_TRANSACTION_ID")
+            createIndex("CATEGORY_ENTRY_TRANSACTION_INDEX", "CATEGORY_ENTRIES") {
+                column("CATEGORY_ENTRY_TRANSACTION_ID")
             }
 
             createTable("STATEMENTS") {

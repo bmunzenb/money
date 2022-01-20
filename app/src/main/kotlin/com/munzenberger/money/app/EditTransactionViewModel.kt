@@ -13,7 +13,7 @@ import com.munzenberger.money.app.property.SimpleAsyncObjectProperty
 import com.munzenberger.money.app.property.SimpleAsyncStatusProperty
 import com.munzenberger.money.core.Account
 import com.munzenberger.money.core.Category
-import com.munzenberger.money.core.Entry
+import com.munzenberger.money.core.CategoryEntry
 import com.munzenberger.money.core.Money
 import com.munzenberger.money.core.MoneyDatabase
 import com.munzenberger.money.core.Payee
@@ -268,10 +268,10 @@ class EditTransactionViewModel : TransactionDetailEditor(), AutoCloseable {
 
                             // if the underlying detail is an entry, update it
                             val entry = when (val d = editor.detail) {
-                                is TransactionDetail.Entry -> d.entry.also {
+                                is TransactionDetail.Entry -> d.categoryEntry.also {
                                     mutableDetails.remove(d)
                                 }
-                                else -> Entry().apply {
+                                else -> CategoryEntry().apply {
                                     setTransaction(transaction)
                                 }
                             }
@@ -289,10 +289,10 @@ class EditTransactionViewModel : TransactionDetailEditor(), AutoCloseable {
 
                             // if the underlying detail is an entry, update it
                             val entry = when (val d = editor.detail) {
-                                is TransactionDetail.Entry -> d.entry.also {
+                                is TransactionDetail.Entry -> d.categoryEntry.also {
                                     mutableDetails.remove(d)
                                 }
-                                else -> Entry().apply {
+                                else -> CategoryEntry().apply {
                                     setTransaction(transaction)
                                 }
                             }
@@ -315,7 +315,7 @@ class EditTransactionViewModel : TransactionDetailEditor(), AutoCloseable {
                 mutableDetails.forEach {
                     when (it) {
                         is TransactionDetail.Transfer -> it.transfer.delete(tx)
-                        is TransactionDetail.Entry -> it.entry.delete(tx)
+                        is TransactionDetail.Entry -> it.categoryEntry.delete(tx)
                     }
                 }
             }

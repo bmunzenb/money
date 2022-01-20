@@ -1,15 +1,15 @@
-package com.munzenberger.money.core
+ package com.munzenberger.money.core
 
-import com.munzenberger.money.core.model.EntryModel
-import com.munzenberger.money.core.model.EntryTable
+import com.munzenberger.money.core.model.CategoryEntryModel
+import com.munzenberger.money.core.model.CategoryEntryTable
 import com.munzenberger.money.sql.QueryExecutor
 import com.munzenberger.money.sql.ResultSetMapper
 import com.munzenberger.money.sql.transaction
 import java.sql.ResultSet
 
-class Entry internal constructor(model: EntryModel) : Persistable<EntryModel>(model, EntryTable) {
+class CategoryEntry internal constructor(model: CategoryEntryModel) : Persistable<CategoryEntryModel>(model, CategoryEntryTable) {
 
-    constructor() : this(EntryModel(
+    constructor() : this(CategoryEntryModel(
             orderInTransaction = 0
     ))
 
@@ -42,22 +42,22 @@ class Entry internal constructor(model: EntryModel) : Persistable<EntryModel>(mo
     companion object {
 
         fun getAll(executor: QueryExecutor) =
-                getAll(executor, EntryTable, EntryResultSetMapper())
+                getAll(executor, CategoryEntryTable, CategoryEntryResultSetMapper())
 
         fun get(identity: Long, executor: QueryExecutor) =
-                get(identity, executor, EntryTable, EntryResultSetMapper())
+                get(identity, executor, CategoryEntryTable, CategoryEntryResultSetMapper())
     }
 }
 
-class EntryResultSetMapper : ResultSetMapper<Entry> {
+class CategoryEntryResultSetMapper : ResultSetMapper<CategoryEntry> {
 
-    override fun apply(resultSet: ResultSet): Entry {
+    override fun apply(resultSet: ResultSet): CategoryEntry {
 
-        val model = EntryModel().apply {
-            EntryTable.getValues(resultSet, this)
+        val model = CategoryEntryModel().apply {
+            CategoryEntryTable.getValues(resultSet, this)
         }
 
-        return Entry(model).apply {
+        return CategoryEntry(model).apply {
             category = model.category?.let { CategoryResultSetMapper().apply(resultSet) }
         }
     }

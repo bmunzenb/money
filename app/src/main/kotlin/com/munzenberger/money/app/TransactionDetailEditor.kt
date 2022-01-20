@@ -29,10 +29,10 @@ open class TransactionDetailEditor() {
 
             is TransactionDetail.Entry -> {
                 category = categories.filterIsInstance<TransactionCategory.Entry>().firstOrNull {
-                    it.category == detail.entry.category
+                    it.category == detail.categoryEntry.category
                 }
-                amount = detail.entry.amount?.forTransactionType(type)
-                memo = detail.entry.memo
+                amount = detail.categoryEntry.amount?.forTransactionType(type)
+                memo = detail.categoryEntry.memo
             }
         }
     }

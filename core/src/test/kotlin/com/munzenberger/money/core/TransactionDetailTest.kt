@@ -28,14 +28,14 @@ class TransactionDetailTest : MoneyDatabaseTestSupport() {
             save(database)
         }
 
-        val entry1 = Entry().apply {
+        val categoryEntry1 = CategoryEntry().apply {
             randomize()
             setTransaction(transaction)
             orderInTransaction = 2
             save(database)
         }
 
-        val entry2 = Entry().apply {
+        val categoryEntry2 = CategoryEntry().apply {
             randomize()
             setTransaction(transaction)
             orderInTransaction = 1
@@ -47,8 +47,8 @@ class TransactionDetailTest : MoneyDatabaseTestSupport() {
         assertEquals(4, details.size)
 
         details[0].let { assertTrue(it is TransactionDetail.Transfer && it.transfer.identity!! == transfer2.identity!!) }
-        details[1].let { assertTrue(it is TransactionDetail.Entry && it.entry.identity!! == entry2.identity!!) }
-        details[2].let { assertTrue(it is TransactionDetail.Entry && it.entry.identity!! == entry1.identity!!) }
+        details[1].let { assertTrue(it is TransactionDetail.Entry && it.categoryEntry.identity!! == categoryEntry2.identity!!) }
+        details[2].let { assertTrue(it is TransactionDetail.Entry && it.categoryEntry.identity!! == categoryEntry1.identity!!) }
         details[3].let { assertTrue(it is TransactionDetail.Transfer && it.transfer.identity!! == transfer1.identity!!) }
     }
 }

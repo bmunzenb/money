@@ -64,7 +64,7 @@ fun Category.randomize() = this.apply {
     type = CategoryType.values().random()
 }
 
-fun Entry.randomize() = this.apply {
+fun CategoryEntry.randomize() = this.apply {
     setTransaction(Transaction().randomize())
     category = Category().randomize()
     amount = random.nextMoney()

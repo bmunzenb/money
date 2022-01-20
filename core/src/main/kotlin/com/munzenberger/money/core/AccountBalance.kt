@@ -55,12 +55,12 @@ private class TransferBalanceCollector(accountId: Long) : AccountBalanceCollecto
     }
 }
 
-private class EntryBalanceCollector(accountId: Long) : AccountBalanceCollector {
+private class CategoryEntryBalanceCollector(accountId: Long) : AccountBalanceCollector {
 
     private val sql = """
-        SELECT SUM(ENTRY_AMOUNT) AS TOTAL
-        FROM ENTRIES
-        INNER JOIN TRANSACTIONS ON TRANSACTIONS.TRANSACTION_ID = ENTRIES.ENTRY_TRANSACTION_ID
+        SELECT SUM(CATEGORY_ENTRY_AMOUNT) AS TOTAL
+        FROM CATEGORY_ENTRIES
+        INNER JOIN TRANSACTIONS ON TRANSACTIONS.TRANSACTION_ID = CATEGORY_ENTRIES.CATEGORY_ENTRY_TRANSACTION_ID
         WHERE TRANSACTIONS.TRANSACTION_ACCOUNT_ID = ?
     """.trimIndent()
 
@@ -85,7 +85,7 @@ fun Account.getBalance(executor: QueryExecutor): Money {
     val collectors = listOf(
             TransactionBalanceCollector(accountId),
             TransferBalanceCollector(accountId),
-            EntryBalanceCollector(accountId)
+            CategoryEntryBalanceCollector(accountId)
     )
 
     val totals = collectors.map {

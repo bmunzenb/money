@@ -5,7 +5,7 @@ import com.munzenberger.money.sql.SettableQueryBuilder
 import com.munzenberger.money.sql.getLongOrNull
 import java.sql.ResultSet
 
-data class EntryModel(
+data class CategoryEntryModel(
         var transaction: Long? = null,
         var category: Long? = null,
         var amount: Long? = null,
@@ -13,18 +13,18 @@ data class EntryModel(
         var orderInTransaction: Int? = null
 ) : Model()
 
-object EntryTable : Table<EntryModel>() {
+object CategoryEntryTable : Table<CategoryEntryModel>() {
 
-    override val name = "ENTRIES"
-    override val identityColumn = "ENTRY_ID"
+    override val name = "CATEGORY_ENTRIES"
+    override val identityColumn = "CATEGORY_ENTRY_ID"
 
-    const val transactionColumn = "ENTRY_TRANSACTION_ID"
-    const val categoryColumn = "ENTRY_CATEGORY_ID"
-    const val amountColumn = "ENTRY_AMOUNT"
-    const val memoColumn = "ENTRY_MEMO"
-    const val orderInTransaction = "ENTRY_ORDER_IN_TRANSACTION"
+    const val transactionColumn = "CATEGORY_ENTRY_TRANSACTION_ID"
+    const val categoryColumn = "CATEGORY_ENTRY_CATEGORY_ID"
+    const val amountColumn = "CATEGORY_ENTRY_AMOUNT"
+    const val memoColumn = "CATEGORY_ENTRY_MEMO"
+    const val orderInTransaction = "CATEGORY_ENTRY_ORDER_IN_TRANSACTION"
 
-    override fun setValues(settable: SettableQueryBuilder<*>, model: EntryModel) {
+    override fun setValues(settable: SettableQueryBuilder<*>, model: CategoryEntryModel) {
         settable.set(transactionColumn, model.transaction)
         settable.set(categoryColumn, model.category)
         settable.set(amountColumn, model.amount)
@@ -32,7 +32,7 @@ object EntryTable : Table<EntryModel>() {
         settable.set(orderInTransaction, model.orderInTransaction)
     }
 
-    override fun getValues(resultSet: ResultSet, model: EntryModel) {
+    override fun getValues(resultSet: ResultSet, model: CategoryEntryModel) {
         model.identity = resultSet.getLong(identityColumn)
         model.transaction = resultSet.getLongOrNull(transactionColumn)
         model.category = resultSet.getLongOrNull(categoryColumn)

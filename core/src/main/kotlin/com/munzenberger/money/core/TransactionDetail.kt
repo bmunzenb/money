@@ -1,6 +1,6 @@
 package com.munzenberger.money.core
 
-import com.munzenberger.money.core.model.EntryTable
+import com.munzenberger.money.core.model.CategoryEntryTable
 import com.munzenberger.money.core.model.TransferTable
 import com.munzenberger.money.sql.QueryExecutor
 import com.munzenberger.money.sql.eq
@@ -16,9 +16,9 @@ sealed class TransactionDetail {
         override val amount = transfer.amount
     }
 
-    data class Entry(val entry: com.munzenberger.money.core.Entry) : TransactionDetail() {
-        override val orderInTransaction = entry.orderInTransaction
-        override val amount = entry.amount
+    data class Entry(val categoryEntry: com.munzenberger.money.core.CategoryEntry) : TransactionDetail() {
+        override val orderInTransaction = categoryEntry.orderInTransaction
+        override val amount = categoryEntry.amount
     }
 }
 
@@ -32,9 +32,9 @@ fun Transaction.getDetails(executor: QueryExecutor): List<TransactionDetail> {
 
     details += transfers.map { TransactionDetail.Transfer(it) }
 
-    val entries = EntryTable.select()
-            .where(EntryTable.transactionColumn.eq(identity))
-            .build().let { executor.getList(it, EntryResultSetMapper()) }
+    val entries = CategoryEntryTable.select()
+            .where(CategoryEntryTable.transactionColumn.eq(identity))
+            .build().let { executor.getList(it, CategoryEntryResultSetMapper()) }
 
     details += entries.map { TransactionDetail.Entry(it) }
 

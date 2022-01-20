@@ -116,7 +116,7 @@ class AccountEntryTest : MoneyDatabaseTestSupport() {
             save(database)
         }
 
-        val entry = Entry().apply {
+        val categoryEntry = CategoryEntry().apply {
             randomize()
             setTransaction(transaction)
             this.category = category
@@ -131,18 +131,18 @@ class AccountEntryTest : MoneyDatabaseTestSupport() {
                         date = transaction.date!!,
                         payeeId = payee.identity!!,
                         payeeName = payee.name!!,
-                        amount = entry.amount!!,
-                        balance = account.initialBalance!! + entry.amount!!,
+                        amount = categoryEntry.amount!!,
+                        balance = account.initialBalance!! + categoryEntry.amount!!,
                         memo = transaction.memo,
                         number = transaction.number,
                         status = transaction.status!!,
                         details = listOf(
                                 AccountEntry.Transaction.Detail.Entry(
-                                        entryId = entry.identity!!,
+                                        entryId = categoryEntry.identity!!,
                                         categoryId = category.identity!!,
                                         categoryName = category.name!!,
                                         parentCategoryName = parentCategory.name!!,
-                                        orderInTransaction = entry.orderInTransaction!!
+                                        orderInTransaction = categoryEntry.orderInTransaction!!
                                 )
                         )
                 )
