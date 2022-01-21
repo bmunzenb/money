@@ -15,7 +15,7 @@ class TransactionCategoryTest {
             every { name } returns "Category"
         }
 
-        val dc = TransactionCategory.Entry(category, null)
+        val dc = TransactionCategory.CategoryType(category, null)
 
         assertEquals("Category", dc.name)
     }
@@ -27,7 +27,7 @@ class TransactionCategoryTest {
             every { name } returns "Category"
         }
 
-        val dc = TransactionCategory.Entry(category, "Parent")
+        val dc = TransactionCategory.CategoryType(category, "Parent")
 
         assertEquals("Parent : Category", dc.name)
     }

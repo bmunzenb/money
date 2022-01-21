@@ -13,12 +13,12 @@ sealed class TransactionCategory {
 
     abstract val name: String
 
-    class Transfer(val account: Account) : TransactionCategory() {
+    class TransferType(val account: Account) : TransactionCategory() {
 
         override val name = "Transfer $CATEGORY_DELIMITER ${account.name}"
     }
 
-    class Entry(val category: Category, parentName: String?) : TransactionCategory() {
+    class CategoryType(val category: Category, parentName: String?) : TransactionCategory() {
 
         override val name = when (parentName) {
             null -> "${category.name}"

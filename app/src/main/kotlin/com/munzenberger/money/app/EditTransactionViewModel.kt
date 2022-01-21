@@ -161,11 +161,11 @@ class EditTransactionViewModel : TransactionEntryEditor(), AutoCloseable {
             override fun call(): Pair<List<TransactionCategory>, List<Entry>> {
 
                 val categories = Category.getAllWithParent(database)
-                        .map { TransactionCategory.Entry(it.category, it.parentName) }
+                        .map { TransactionCategory.CategoryType(it.category, it.parentName) }
                         .sortedBy { it.name }
 
                 val accounts = Account.getAll(database)
-                        .map { TransactionCategory.Transfer(it) }
+                        .map { TransactionCategory.TransferType(it) }
                         .sortedBy { it.name }
 
                 return (categories + accounts) to transaction.getEntries(database)
@@ -189,10 +189,10 @@ class EditTransactionViewModel : TransactionEntryEditor(), AutoCloseable {
         Executors.SINGLE.execute(task)
     }
 
-    private fun onCategoriesAndEntries(categories: List<TransactionCategory>, details: List<Entry>) {
+    private fun onCategoriesAndEntries(categories: List<TransactionCategory>, entries: List<Entry>) {
 
         // calculate the total transaction amount
-        val total = details.fold(Money.ZERO) { acc, detail ->
+        val total = entries.fold(Money.ZERO) { acc, detail ->
             when (val a = detail.amount) {
                 null -> acc
                 else -> acc + a
@@ -207,7 +207,7 @@ class EditTransactionViewModel : TransactionEntryEditor(), AutoCloseable {
         }
 
         // map to a set of editable transaction details
-        details.map { TransactionEntryEditor(it, categories, transactionType) }
+        entries.map { TransactionEntryEditor(it, categories, transactionType) }
                 .let { editors.setAll(it) }
 
         // if there are no editors, create one
@@ -234,22 +234,18 @@ class EditTransactionViewModel : TransactionEntryEditor(), AutoCloseable {
                     save(tx)
                 }
 
-                val mutableDetails = entries.toMutableList()
+                val entriesToDelete = entries.toMutableList()
 
                 editors.forEachIndexed { index, editor ->
 
                     when (val c = editor.category) {
 
-                        is TransactionCategory.Transfer -> {
+                        is TransactionCategory.TransferType -> {
 
-                            // if the underlying detail is a transfer, update it
+                            // if the underlying entry is a transfer, update it
                             val transfer = when (val e = editor.entry) {
-                                is TransferEntry -> e.also {
-                                    mutableDetails.remove(e)
-                                }
-                                else -> TransferEntry().apply {
-                                    setTransaction(transaction)
-                                }
+                                is TransferEntry -> e.also { entriesToDelete.remove(e) }
+                                else -> TransferEntry().apply { setTransaction(transaction) }
                             }
 
                             transfer.apply {
@@ -261,16 +257,12 @@ class EditTransactionViewModel : TransactionEntryEditor(), AutoCloseable {
                             }
                         }
 
-                        is TransactionCategory.Entry -> {
+                        is TransactionCategory.CategoryType -> {
 
-                            // if the underlying detail is a category entry, update it
+                            // if the underlying entry is a category, update it
                             val categoryEntry = when (val e = editor.entry) {
-                                is CategoryEntry -> e.also {
-                                    mutableDetails.remove(e)
-                                }
-                                else -> CategoryEntry().apply {
-                                    setTransaction(transaction)
-                                }
+                                is CategoryEntry -> e.also { entriesToDelete.remove(e) }
+                                else -> CategoryEntry().apply { setTransaction(transaction) }
                             }
 
                             categoryEntry.apply {
@@ -284,14 +276,10 @@ class EditTransactionViewModel : TransactionEntryEditor(), AutoCloseable {
 
                         is TransactionCategory.Pending -> {
 
-                            // if the underlying detail is a Category entry, update it
+                            // if the underlying entry is a category, update it
                             val categoryEntry = when (val e = editor.entry) {
-                                is CategoryEntry -> e.also {
-                                    mutableDetails.remove(e)
-                                }
-                                else -> CategoryEntry().apply {
-                                    setTransaction(transaction)
-                                }
+                                is CategoryEntry -> e.also { entriesToDelete.remove(e) }
+                                else -> CategoryEntry().apply { setTransaction(transaction) }
                             }
 
                             categoryEntry.apply {
@@ -309,7 +297,7 @@ class EditTransactionViewModel : TransactionEntryEditor(), AutoCloseable {
                 }
 
                 // delete any entries that weren't updated
-                mutableDetails.forEach { it.delete(tx) }
+                entriesToDelete.forEach { it.delete(tx) }
             }
         }
     }

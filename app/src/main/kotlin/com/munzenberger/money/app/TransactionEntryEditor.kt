@@ -22,7 +22,7 @@ open class TransactionEntryEditor() {
         when (entry) {
 
             is TransferEntry -> {
-                category = categories.filterIsInstance<TransactionCategory.Transfer>().firstOrNull {
+                category = categories.filterIsInstance<TransactionCategory.TransferType>().firstOrNull {
                     it.account == entry.account
                 }
                 amount = entry.amount?.forTransactionType(type)
@@ -30,7 +30,7 @@ open class TransactionEntryEditor() {
             }
 
             is CategoryEntry -> {
-                category = categories.filterIsInstance<TransactionCategory.Entry>().firstOrNull {
+                category = categories.filterIsInstance<TransactionCategory.CategoryType>().firstOrNull {
                     it.category == entry.category
                 }
                 amount = entry.amount?.forTransactionType(type)
