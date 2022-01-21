@@ -6,7 +6,7 @@ versions.gradle_versions = '0.41.0'
 versions.junit = '4.13.2'
 versions.h2 = '2.1.210'
 versions.sqlite = '3.36.0.3'
-versions.javafx = '17.0.1'
+versions.javafx = '17.0.2'
 versions.mockk = '1.12.2'
 
 ext.versions = versions
