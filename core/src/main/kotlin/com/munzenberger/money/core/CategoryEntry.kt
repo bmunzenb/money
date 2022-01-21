@@ -7,7 +7,7 @@ import com.munzenberger.money.sql.ResultSetMapper
 import com.munzenberger.money.sql.transaction
 import java.sql.ResultSet
 
-class CategoryEntry internal constructor(model: CategoryEntryModel) : AbstractPersistable<CategoryEntryModel>(model, CategoryEntryTable) {
+class CategoryEntry internal constructor(model: CategoryEntryModel) : AbstractPersistable<CategoryEntryModel>(model, CategoryEntryTable), Entry {
 
     constructor() : this(CategoryEntryModel(
             orderInTransaction = 0
@@ -15,21 +15,21 @@ class CategoryEntry internal constructor(model: CategoryEntryModel) : AbstractPe
 
     internal val transactionRef = PersistableIdentityReference(model.transaction)
 
-    fun setTransaction(transaction: Transaction) {
+    override fun setTransaction(transaction: Transaction) {
         transactionRef.set(transaction)
     }
 
     var category: Category? = null
 
-    var amount: Money?
+    override var amount: Money?
         get() = model.amount?.let { Money.valueOf(it) }
         set(value) { model.amount = value?.value }
 
-    var memo: String?
+    override var memo: String?
         get() = model.memo
         set(value) { model.memo = value }
 
-    var orderInTransaction: Int?
+    override var orderInTransaction: Int?
         get() = model.orderInTransaction
         set(value) { model.orderInTransaction = value }
 

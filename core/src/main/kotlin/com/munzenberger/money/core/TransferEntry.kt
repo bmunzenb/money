@@ -7,14 +7,14 @@ import com.munzenberger.money.sql.ResultSetMapper
 import com.munzenberger.money.sql.transaction
 import java.sql.ResultSet
 
-class TransferEntry internal constructor(model: TransferEntryModel) : AbstractPersistable<TransferEntryModel>(model, TransferEntryTable) {
+class TransferEntry internal constructor(model: TransferEntryModel) : AbstractPersistable<TransferEntryModel>(model, TransferEntryTable), Entry {
 
     constructor() : this(TransferEntryModel(
             status = TransactionStatus.UNRECONCILED,
             orderInTransaction = 0
     ))
 
-    var amount: Money?
+    override var amount: Money?
         get() = model.amount?.let { Money.valueOf(it) }
         set(value) { model.amount = value?.value }
 
@@ -22,7 +22,7 @@ class TransferEntry internal constructor(model: TransferEntryModel) : AbstractPe
         get() = model.number
         set(value) { model.number = value }
 
-    var memo: String?
+    override var memo: String?
         get() = model.memo
         set(value) { model.memo = value }
 
@@ -32,13 +32,13 @@ class TransferEntry internal constructor(model: TransferEntryModel) : AbstractPe
         get() = model.status
         set(value) { model.status = value }
 
-    var orderInTransaction: Int?
+    override var orderInTransaction: Int?
         get() = model.orderInTransaction
         set(value) { model.orderInTransaction = value }
 
     internal val transactionRef = PersistableIdentityReference(model.transaction)
 
-    fun setTransaction(transaction: Transaction) {
+    override fun setTransaction(transaction: Transaction) {
         this.transactionRef.set(transaction)
     }
 

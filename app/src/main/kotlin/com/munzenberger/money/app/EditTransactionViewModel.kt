@@ -14,13 +14,13 @@ import com.munzenberger.money.app.property.SimpleAsyncStatusProperty
 import com.munzenberger.money.core.Account
 import com.munzenberger.money.core.Category
 import com.munzenberger.money.core.CategoryEntry
+import com.munzenberger.money.core.Entry
 import com.munzenberger.money.core.Money
 import com.munzenberger.money.core.MoneyDatabase
 import com.munzenberger.money.core.Payee
 import com.munzenberger.money.core.Transaction
-import com.munzenberger.money.core.TransactionDetail
 import com.munzenberger.money.core.TransferEntry
-import com.munzenberger.money.core.getDetails
+import com.munzenberger.money.core.getEntries
 import com.munzenberger.money.core.isNegative
 import com.munzenberger.money.core.isPositive
 import com.munzenberger.money.sql.transaction
@@ -37,9 +37,8 @@ import javafx.collections.ListChangeListener
 import javafx.collections.ObservableList
 import javafx.concurrent.Task
 import java.time.LocalDate
-import java.util.Collections
 
-class EditTransactionViewModel : TransactionDetailEditor(), AutoCloseable {
+class EditTransactionViewModel : TransactionEntryEditor(), AutoCloseable {
 
     private val disposables = CompositeDisposable()
 
@@ -74,16 +73,16 @@ class EditTransactionViewModel : TransactionDetailEditor(), AutoCloseable {
 
     private lateinit var database: MoneyDatabase
     private lateinit var transaction: Transaction
-    private lateinit var details: List<TransactionDetail>
+    private lateinit var entries: List<Entry>
 
     private var transactionType: TransactionType?
         get() = selectedTypeProperty.value
         set(value) { selectedTypeProperty.value = value }
 
     // keeps track of the editor in the editors list that this form is bound to
-    private var boundEditor: TransactionDetailEditor? = null
+    private var boundEditor: TransactionEntryEditor? = null
 
-    private val editorsChangeListener = ListChangeListener<TransactionDetailEditor> { change ->
+    private val editorsChangeListener = ListChangeListener<TransactionEntryEditor> { change ->
         change.list.apply {
 
             boundEditor?.selectedCategoryProperty?.unbindBidirectional(selectedCategoryProperty)
@@ -108,7 +107,7 @@ class EditTransactionViewModel : TransactionDetailEditor(), AutoCloseable {
         }
     }
 
-    private val editors = FXCollections.observableArrayList<TransactionDetailEditor>().apply {
+    private val editors = FXCollections.observableArrayList<TransactionEntryEditor>().apply {
         addListener(editorsChangeListener)
     }
 
@@ -153,34 +152,32 @@ class EditTransactionViewModel : TransactionDetailEditor(), AutoCloseable {
 
         transactionStatus.value = transaction.status?.displayName
 
-        val task = object : Task<Pair<List<TransactionCategory>, List<TransactionDetail>>>() {
+        val task = object : Task<Pair<List<TransactionCategory>, List<Entry>>>() {
 
             override fun running() {
                 categories.set(AsyncObject.Executing())
             }
 
-            override fun call(): Pair<List<TransactionCategory>, List<TransactionDetail>> {
+            override fun call(): Pair<List<TransactionCategory>, List<Entry>> {
 
-                val categories = mutableListOf<TransactionCategory>()
-
-                categories += Category.getAllWithParent(database)
+                val categories = Category.getAllWithParent(database)
                         .map { TransactionCategory.Entry(it.category, it.parentName) }
                         .sortedBy { it.name }
 
-                categories += Account.getAll(database)
+                val accounts = Account.getAll(database)
                         .map { TransactionCategory.Transfer(it) }
                         .sortedBy { it.name }
 
-                return Collections.unmodifiableList(categories) to transaction.getDetails(database)
+                return (categories + accounts) to transaction.getEntries(database)
             }
 
             override fun succeeded() {
-                val (cats, dets) = value
+                val (cats, ents) = value
 
                 categories.set(AsyncObject.Complete(cats))
-                details = dets
+                entries = ents
 
-                onCategoriesAndDetails(cats, dets)
+                onCategoriesAndEntries(cats, ents)
             }
 
             override fun failed() {
@@ -192,7 +189,7 @@ class EditTransactionViewModel : TransactionDetailEditor(), AutoCloseable {
         Executors.SINGLE.execute(task)
     }
 
-    private fun onCategoriesAndDetails(categories: List<TransactionCategory>, details: List<TransactionDetail>) {
+    private fun onCategoriesAndEntries(categories: List<TransactionCategory>, details: List<Entry>) {
 
         // calculate the total transaction amount
         val total = details.fold(Money.ZERO) { acc, detail ->
@@ -210,12 +207,12 @@ class EditTransactionViewModel : TransactionDetailEditor(), AutoCloseable {
         }
 
         // map to a set of editable transaction details
-        details.map { TransactionDetailEditor(it, categories, transactionType) }
+        details.map { TransactionEntryEditor(it, categories, transactionType) }
                 .let { editors.setAll(it) }
 
         // if there are no editors, create one
         if (editors.isEmpty()) {
-            editors += TransactionDetailEditor()
+            editors += TransactionEntryEditor()
         }
 
         typeDisabled.value = false
@@ -237,7 +234,7 @@ class EditTransactionViewModel : TransactionDetailEditor(), AutoCloseable {
                     save(tx)
                 }
 
-                val mutableDetails = details.toMutableList()
+                val mutableDetails = entries.toMutableList()
 
                 editors.forEachIndexed { index, editor ->
 
@@ -246,9 +243,9 @@ class EditTransactionViewModel : TransactionDetailEditor(), AutoCloseable {
                         is TransactionCategory.Transfer -> {
 
                             // if the underlying detail is a transfer, update it
-                            val transfer = when (val d = editor.detail) {
-                                is TransactionDetail.Transfer -> d.transfer.also {
-                                    mutableDetails.remove(d)
+                            val transfer = when (val e = editor.entry) {
+                                is TransferEntry -> e.also {
+                                    mutableDetails.remove(e)
                                 }
                                 else -> TransferEntry().apply {
                                     setTransaction(transaction)
@@ -266,17 +263,17 @@ class EditTransactionViewModel : TransactionDetailEditor(), AutoCloseable {
 
                         is TransactionCategory.Entry -> {
 
-                            // if the underlying detail is an entry, update it
-                            val entry = when (val d = editor.detail) {
-                                is TransactionDetail.Entry -> d.categoryEntry.also {
-                                    mutableDetails.remove(d)
+                            // if the underlying detail is a category entry, update it
+                            val categoryEntry = when (val e = editor.entry) {
+                                is CategoryEntry -> e.also {
+                                    mutableDetails.remove(e)
                                 }
                                 else -> CategoryEntry().apply {
                                     setTransaction(transaction)
                                 }
                             }
 
-                            entry.apply {
+                            categoryEntry.apply {
                                 this.amount = editor.amount?.forTransactionType(transactionType)
                                 this.category = c.category
                                 this.memo = editor.memo
@@ -287,17 +284,17 @@ class EditTransactionViewModel : TransactionDetailEditor(), AutoCloseable {
 
                         is TransactionCategory.Pending -> {
 
-                            // if the underlying detail is an entry, update it
-                            val entry = when (val d = editor.detail) {
-                                is TransactionDetail.Entry -> d.categoryEntry.also {
-                                    mutableDetails.remove(d)
+                            // if the underlying detail is a Category entry, update it
+                            val categoryEntry = when (val e = editor.entry) {
+                                is CategoryEntry -> e.also {
+                                    mutableDetails.remove(e)
                                 }
                                 else -> CategoryEntry().apply {
                                     setTransaction(transaction)
                                 }
                             }
 
-                            entry.apply {
+                            categoryEntry.apply {
                                 this.amount = editor.amount?.forTransactionType(transactionType)
                                 this.category = c.getCategory(tx, editor.amount?.isNegative, transactionType)
                                 this.memo = editor.memo
@@ -311,18 +308,13 @@ class EditTransactionViewModel : TransactionDetailEditor(), AutoCloseable {
                     }
                 }
 
-                // delete any transfers or entries that weren't updated
-                mutableDetails.forEach {
-                    when (it) {
-                        is TransactionDetail.Transfer -> it.transfer.delete(tx)
-                        is TransactionDetail.Entry -> it.categoryEntry.delete(tx)
-                    }
-                }
+                // delete any entries that weren't updated
+                mutableDetails.forEach { it.delete(tx) }
             }
         }
     }
 
-    fun prepareSplit(block: (ObservableList<TransactionDetailEditor>, List<TransactionCategory>) -> Unit) {
+    fun prepareSplit(block: (ObservableList<TransactionEntryEditor>, List<TransactionCategory>) -> Unit) {
         if (splitDisabled.value == false) {
             when (val c = categories.get()) {
                 is AsyncObject.Complete -> block.invoke(editors, c.value)

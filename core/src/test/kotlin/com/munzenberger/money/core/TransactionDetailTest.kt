@@ -42,13 +42,13 @@ class TransactionDetailTest : MoneyDatabaseTestSupport() {
             save(database)
         }
 
-        val details = transaction.getDetails(database)
+        val entries = transaction.getEntries(database)
 
-        assertEquals(4, details.size)
+        assertEquals(4, entries.size)
 
-        details[0].let { assertTrue(it is TransactionDetail.Transfer && it.transfer.identity!! == transfer2.identity!!) }
-        details[1].let { assertTrue(it is TransactionDetail.Entry && it.categoryEntry.identity!! == categoryEntry2.identity!!) }
-        details[2].let { assertTrue(it is TransactionDetail.Entry && it.categoryEntry.identity!! == categoryEntry1.identity!!) }
-        details[3].let { assertTrue(it is TransactionDetail.Transfer && it.transfer.identity!! == transfer1.identity!!) }
+        entries[0].let { assertTrue(it is TransferEntry && it.identity!! == transfer2.identity!!) }
+        entries[1].let { assertTrue(it is CategoryEntry && it.identity!! == categoryEntry2.identity!!) }
+        entries[2].let { assertTrue(it is CategoryEntry && it.identity!! == categoryEntry1.identity!!) }
+        entries[3].let { assertTrue(it is TransferEntry && it.identity!! == transfer1.identity!!) }
     }
 }

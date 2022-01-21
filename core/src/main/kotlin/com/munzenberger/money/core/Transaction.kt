@@ -1,9 +1,12 @@
 package com.munzenberger.money.core
 
+import com.munzenberger.money.core.model.CategoryEntryTable
 import com.munzenberger.money.core.model.TransactionModel
 import com.munzenberger.money.core.model.TransactionTable
+import com.munzenberger.money.core.model.TransferEntryTable
 import com.munzenberger.money.sql.QueryExecutor
 import com.munzenberger.money.sql.ResultSetMapper
+import com.munzenberger.money.sql.eq
 import com.munzenberger.money.sql.transaction
 import java.sql.ResultSet
 import java.time.LocalDate
@@ -63,4 +66,17 @@ class TransactionResultSetMapper : ResultSetMapper<Transaction> {
             payee = model.payee?.let { PayeeResultSetMapper().apply(resultSet) }
         }
     }
+}
+
+fun Transaction.getEntries(executor: QueryExecutor): List<Entry> {
+
+    val transfers = TransferEntryTable.select()
+            .where(TransferEntryTable.transactionColumn.eq(identity))
+            .build().let { executor.getList(it, TransferEntryResultSetMapper()) }
+
+    val categories = CategoryEntryTable.select()
+            .where(CategoryEntryTable.transactionColumn.eq(identity))
+            .build().let { executor.getList(it, CategoryEntryResultSetMapper()) }
+
+    return (transfers + categories).sortedBy { it.orderInTransaction }
 }

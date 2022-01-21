@@ -26,10 +26,10 @@ class SplitTransactionController {
         val LAYOUT: URL = SplitTransactionController::class.java.getResource("SplitTransactionLayout.fxml")
     }
 
-    @FXML private lateinit var tableView: TableView<TransactionDetailEditor>
-    @FXML private lateinit var categoryColumn: TableColumn<TransactionDetailEditor, TransactionCategory>
-    @FXML private lateinit var memoColumn: TableColumn<TransactionDetailEditor, String>
-    @FXML private lateinit var amountColumn: TableColumn<TransactionDetailEditor, Money>
+    @FXML private lateinit var tableView: TableView<TransactionEntryEditor>
+    @FXML private lateinit var categoryColumn: TableColumn<TransactionEntryEditor, TransactionCategory>
+    @FXML private lateinit var memoColumn: TableColumn<TransactionEntryEditor, String>
+    @FXML private lateinit var amountColumn: TableColumn<TransactionEntryEditor, Money>
     @FXML private lateinit var addButton: Button
     @FXML private lateinit var deleteButton: Button
     @FXML private lateinit var totalLabel: Label
@@ -59,7 +59,7 @@ class SplitTransactionController {
                             toObject = { s -> TransactionCategory.Pending(s) }))
 
             cellFactory = Callback {
-                ComboBoxTableCell<TransactionDetailEditor, TransactionCategory>(converter, viewModel.categoriesProperty).apply {
+                ComboBoxTableCell<TransactionEntryEditor, TransactionCategory>(converter, viewModel.categoriesProperty).apply {
                     isComboBoxEditable = true
                 }
             }
@@ -94,7 +94,7 @@ class SplitTransactionController {
         }
     }
 
-    fun start(stage: Stage, transfers: ObservableList<TransactionDetailEditor>, categories: List<TransactionCategory>) {
+    fun start(stage: Stage, transfers: ObservableList<TransactionEntryEditor>, categories: List<TransactionCategory>) {
 
         this.stage = stage
 

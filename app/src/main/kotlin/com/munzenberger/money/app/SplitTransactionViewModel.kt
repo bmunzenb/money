@@ -14,18 +14,18 @@ import javafx.collections.ObservableList
 
 class SplitTransactionViewModel {
 
-    private val editors = FXCollections.observableArrayList<TransactionDetailEditor> { e -> arrayOf(e.selectedCategoryProperty, e.amountProperty) }
+    private val editors = FXCollections.observableArrayList<TransactionEntryEditor> { e -> arrayOf(e.selectedCategoryProperty, e.amountProperty) }
     private val categories = FXCollections.observableArrayList<TransactionCategory>()
 
     private val doneDisabled = SimpleBooleanProperty(true)
     private val total = SimpleObjectProperty<Money>()
 
-    val editorsProperty: ReadOnlyListProperty<TransactionDetailEditor> = SimpleListProperty(editors)
+    val editorsProperty: ReadOnlyListProperty<TransactionEntryEditor> = SimpleListProperty(editors)
     val categoriesProperty: ReadOnlyListProperty<TransactionCategory> = SimpleListProperty(categories)
     val doneDisabledProperty: ReadOnlyBooleanProperty = doneDisabled
     val totalProperty: ReadOnlyObjectProperty<Money> = total
 
-    private lateinit var originalEditors: ObservableList<TransactionDetailEditor>
+    private lateinit var originalEditors: ObservableList<TransactionEntryEditor>
 
     init {
         editors.addListener(ListChangeListener { change ->
@@ -36,7 +36,7 @@ class SplitTransactionViewModel {
         })
     }
 
-    fun start(editors: ObservableList<TransactionDetailEditor>, categories: List<TransactionCategory>) {
+    fun start(editors: ObservableList<TransactionEntryEditor>, categories: List<TransactionCategory>) {
 
         this.total.value = Money.ZERO
 
@@ -56,12 +56,12 @@ class SplitTransactionViewModel {
 
     fun add(): Int {
 
-        editors.add(TransactionDetailEditor())
+        editors.add(TransactionEntryEditor())
 
         return editors.size - 1
     }
 
-    fun delete(items: List<TransactionDetailEditor>) {
+    fun delete(items: List<TransactionEntryEditor>) {
 
         editors.removeAll(items)
     }

@@ -1,46 +1,48 @@
 package com.munzenberger.money.app
 
 import com.munzenberger.money.app.model.TransactionCategory
+import com.munzenberger.money.core.CategoryEntry
+import com.munzenberger.money.core.Entry
 import com.munzenberger.money.core.Money
-import com.munzenberger.money.core.TransactionDetail
+import com.munzenberger.money.core.TransferEntry
 import javafx.beans.property.SimpleBooleanProperty
 import javafx.beans.property.SimpleObjectProperty
 import javafx.beans.property.SimpleStringProperty
 
-open class TransactionDetailEditor() {
+open class TransactionEntryEditor() {
 
     constructor(
-            detail: TransactionDetail,
+            entry: Entry,
             categories: List<TransactionCategory>,
             type: TransactionType? = null
     ) : this() {
 
-        this._detail = detail
+        this._entry = entry
 
-        when (detail) {
+        when (entry) {
 
-            is TransactionDetail.Transfer -> {
+            is TransferEntry -> {
                 category = categories.filterIsInstance<TransactionCategory.Transfer>().firstOrNull {
-                    it.account == detail.transfer.account
+                    it.account == entry.account
                 }
-                amount = detail.transfer.amount?.forTransactionType(type)
-                memo = detail.transfer.memo
+                amount = entry.amount?.forTransactionType(type)
+                memo = entry.memo
             }
 
-            is TransactionDetail.Entry -> {
+            is CategoryEntry -> {
                 category = categories.filterIsInstance<TransactionCategory.Entry>().firstOrNull {
-                    it.category == detail.categoryEntry.category
+                    it.category == entry.category
                 }
-                amount = detail.categoryEntry.amount?.forTransactionType(type)
-                memo = detail.categoryEntry.memo
+                amount = entry.amount?.forTransactionType(type)
+                memo = entry.memo
             }
         }
     }
 
-    private var _detail: TransactionDetail? = null
+    private var _entry: Entry? = null
 
-    val detail: TransactionDetail?
-        get() = _detail
+    val entry: Entry?
+        get() = _entry
 
     val selectedCategoryProperty = SimpleObjectProperty<TransactionCategory>()
     val amountProperty = SimpleObjectProperty<Money>()
@@ -65,10 +67,10 @@ open class TransactionDetailEditor() {
     val isEditorValid: Boolean
         get() = editorValidProperty.value
 
-    fun copy() = TransactionDetailEditor().apply {
-        this._detail = this@TransactionDetailEditor.detail
-        this.category = this@TransactionDetailEditor.category
-        this.amount = this@TransactionDetailEditor.amount
-        this.memo = this@TransactionDetailEditor.memo
+    fun copy() = TransactionEntryEditor().apply {
+        this._entry = this@TransactionEntryEditor.entry
+        this.category = this@TransactionEntryEditor.category
+        this.amount = this@TransactionEntryEditor.amount
+        this.memo = this@TransactionEntryEditor.memo
     }
 }
