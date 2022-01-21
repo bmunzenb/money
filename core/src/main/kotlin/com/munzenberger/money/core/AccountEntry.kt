@@ -1,5 +1,6 @@
 package com.munzenberger.money.core
 
+import com.munzenberger.money.core.model.PayeeTable
 import com.munzenberger.money.core.model.TransactionTable
 import com.munzenberger.money.core.model.TransferEntryTable
 import com.munzenberger.money.sql.Query
@@ -280,16 +281,16 @@ private class TransactionResultSetHandler(accountId: Long, private val collector
 
     private val sql = """
         SELECT
-            TRANSACTION_ID,
-            TRANSACTION_DATE,
-            PAYEE_ID,
-            PAYEE_NAME,
-            TRANSACTION_MEMO,
-            TRANSACTION_NUMBER,
-            TRANSACTION_STATUS
-        FROM TRANSACTIONS
-        LEFT JOIN PAYEES ON PAYEES.PAYEE_ID = TRANSACTIONS.TRANSACTION_PAYEE_ID
-        WHERE TRANSACTION_ACCOUNT_ID = ?
+            ${TransactionTable.identityColumn},
+            ${TransactionTable.dateColumn},
+            ${PayeeTable.identityColumn},
+            ${PayeeTable.nameColumn},
+            ${TransactionTable.memoColumn},
+            ${TransactionTable.numberColumn},
+            ${TransactionTable.statusColumn}
+        FROM ${TransactionTable.name}
+        LEFT JOIN ${PayeeTable.name} ON ${PayeeTable.name}.${PayeeTable.identityColumn} = ${TransactionTable.name}.${TransactionTable.payeeColumn}
+        WHERE ${TransactionTable.accountColumn} = ?
     """.trimIndent()
 
     val query = Query(sql, listOf(accountId))
@@ -297,13 +298,13 @@ private class TransactionResultSetHandler(accountId: Long, private val collector
     override fun accept(rs: ResultSet) {
         while (rs.next()) {
             collector.collectTransaction(
-                    transactionId = rs.getLong("TRANSACTION_ID"),
-                    date = rs.getLocalDate("TRANSACTION_DATE"),
-                    payeeId = rs.getLongOrNull("PAYEE_ID"),
-                    payeeName = rs.getString("PAYEE_NAME"),
-                    memo = rs.getString("TRANSACTION_MEMO"),
-                    number = rs.getString("TRANSACTION_NUMBER"),
-                    status = rs.getString("TRANSACTION_STATUS")
+                    transactionId = rs.getLong(TransactionTable.identityColumn),
+                    date = rs.getLocalDate(TransactionTable.dateColumn),
+                    payeeId = rs.getLongOrNull(PayeeTable.identityColumn),
+                    payeeName = rs.getString(PayeeTable.nameColumn),
+                    memo = rs.getString(TransactionTable.memoColumn),
+                    number = rs.getString(TransactionTable.numberColumn),
+                    status = rs.getString(TransactionTable.statusColumn)
             )
         }
     }
@@ -311,6 +312,7 @@ private class TransactionResultSetHandler(accountId: Long, private val collector
 
 private class TransactionTransferEntryResultSetHandler(accountId: Long, private val collector: AccountEntryCollector) : ResultSetHandler {
 
+    // TODO replace hardcoded tables/columns with references to table objects
     private val sql = """
         SELECT
             TRANSACTION_ID,
@@ -343,6 +345,7 @@ private class TransactionTransferEntryResultSetHandler(accountId: Long, private 
 
 private class TransactionCategoryEntryResultSetHandler(accountId: Long, private val collector: AccountEntryCollector) : ResultSetHandler {
 
+    // TODO replace hardcoded tables/columns with references to table objects
     private val sql = """
         SELECT
             TRANSACTION_ID,
@@ -378,6 +381,7 @@ private class TransactionCategoryEntryResultSetHandler(accountId: Long, private 
 
 private class TransferEntryResultSetHandler(accountId: Long, private val collector: AccountEntryCollector) : ResultSetHandler {
 
+    // TODO replace hardcoded tables/columns with references to table objects
     private val sql = """
         SELECT
             TRANSFER_ENTRY_ID,

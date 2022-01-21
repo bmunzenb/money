@@ -15,6 +15,7 @@ private interface AccountBalanceCollector : ResultSetHandler {
 
 private class TransactionBalanceCollector(accountId: Long) : AccountBalanceCollector {
 
+    // TODO replace hardcoded tables/columns with references to table objects
     private val sql = """
         SELECT SUM(TRANSFER_ENTRY_AMOUNT) AS TOTAL
         FROM TRANSACTIONS
@@ -36,6 +37,7 @@ private class TransactionBalanceCollector(accountId: Long) : AccountBalanceColle
 
 private class TransferEntryBalanceCollector(accountId: Long) : AccountBalanceCollector {
 
+    // TODO replace hardcoded tables/columns with references to table objects
     private val sql = """
         SELECT -SUM(TRANSFER_ENTRY_AMOUNT) AS TOTAL
         FROM TRANSFER_ENTRIES
@@ -57,6 +59,7 @@ private class TransferEntryBalanceCollector(accountId: Long) : AccountBalanceCol
 
 private class CategoryEntryBalanceCollector(accountId: Long) : AccountBalanceCollector {
 
+    // TODO replace hardcoded tables/columns with references to table objects
     private val sql = """
         SELECT SUM(CATEGORY_ENTRY_AMOUNT) AS TOTAL
         FROM CATEGORY_ENTRIES
