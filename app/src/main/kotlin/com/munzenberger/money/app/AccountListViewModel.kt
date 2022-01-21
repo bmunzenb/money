@@ -1,6 +1,5 @@
 package com.munzenberger.money.app
 
-import com.munzenberger.money.app.concurrent.Schedulers
 import com.munzenberger.money.app.concurrent.setValueAsync
 import com.munzenberger.money.app.database.CompositeSubscription
 import com.munzenberger.money.app.database.ObservableMoneyDatabase
@@ -8,16 +7,13 @@ import com.munzenberger.money.app.model.FXAccount
 import com.munzenberger.money.app.property.AsyncObject
 import com.munzenberger.money.app.property.ReadOnlyAsyncObjectProperty
 import com.munzenberger.money.app.property.SimpleAsyncObjectProperty
-import com.munzenberger.money.app.property.bindProperty
 import com.munzenberger.money.app.property.map
 import com.munzenberger.money.core.Account
 import com.munzenberger.money.core.Money
-import io.reactivex.rxjava3.core.Single
-import io.reactivex.rxjava3.disposables.CompositeDisposable
+import javafx.beans.value.ChangeListener
 
 class AccountListViewModel : AutoCloseable {
 
-    private val disposables = CompositeDisposable()
     private val subscriptions = CompositeSubscription()
 
     private val accounts = SimpleAsyncObjectProperty<List<FXAccount>>()
@@ -28,28 +24,27 @@ class AccountListViewModel : AutoCloseable {
 
     init {
 
-        accountsProperty.addListener { _, _, newValue ->
-            when (newValue) {
+        accountsProperty.addListener { _, _, accts ->
+            when (accts) {
                 is AsyncObject.Complete -> {
 
-                    val observableBalances = newValue.value.map { it.singleBalance }
+                    val balanceProperties = accts.value.map { it.balanceProperty }
 
-                    val observableTotal = when (observableBalances.isEmpty()) {
-                        true -> Single.just(Money.ZERO)
-                        else -> Single.zip(observableBalances) {
-                            it.fold(Money.ZERO) { acc, b -> acc + b as Money }
+                    when (balanceProperties.isEmpty()) {
+                        true -> totalBalance.value = AsyncObject.Complete(Money.ZERO)
+                        else -> {
+                            val balancePropertyListener = ChangeListener<AsyncObject<Money>> { _, _, _ ->
+                                val initialValue: AsyncObject<Money> = AsyncObject.Complete(Money.ZERO)
+                                totalBalance.value = balanceProperties.fold(initialValue) { acc, b -> acc.plus(b.value) }
+                            }
+
+                            balanceProperties.forEach { it.addListener(balancePropertyListener) }
+
+                            accts.value.forEach { it.fetchBalance() }
                         }
                     }
-
-                    totalBalance.value = AsyncObject.Executing()
-
-                    observableTotal
-                            .subscribeOn(Schedulers.SINGLE)
-                            .bindProperty(totalBalance)
-                            .subscribe()
-                            .also { disposables.add(it) }
                 }
-                else -> totalBalance.value = newValue.map { Money.ZERO }
+                else -> totalBalance.value = accts.map { Money.ZERO }
             }
         }
     }
@@ -62,6 +57,26 @@ class AccountListViewModel : AutoCloseable {
 
     override fun close() {
         subscriptions.cancel()
-        disposables.clear()
     }
+}
+
+fun AsyncObject<Money>.plus(other: AsyncObject<Money>): AsyncObject<Money> {
+
+    if (this is AsyncObject.Complete && other is AsyncObject.Complete) {
+        return AsyncObject.Complete(this.value + other.value)
+    }
+
+    if (this is AsyncObject.Error) {
+        return AsyncObject.Error(this.error)
+    }
+
+    if (other is AsyncObject.Error) {
+        return AsyncObject.Error(other.error)
+    }
+
+    if (this is AsyncObject.Executing || other is AsyncObject.Executing) {
+        return AsyncObject.Executing()
+    }
+
+    return AsyncObject.Pending()
 }

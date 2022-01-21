@@ -24,7 +24,6 @@ import com.munzenberger.money.core.getEntries
 import com.munzenberger.money.core.isNegative
 import com.munzenberger.money.core.isPositive
 import com.munzenberger.money.sql.transaction
-import io.reactivex.rxjava3.disposables.CompositeDisposable
 import javafx.beans.property.ReadOnlyBooleanProperty
 import javafx.beans.property.ReadOnlyListProperty
 import javafx.beans.property.ReadOnlyStringProperty
@@ -39,8 +38,6 @@ import javafx.concurrent.Task
 import java.time.LocalDate
 
 class EditTransactionViewModel : TransactionEntryEditor(), AutoCloseable {
-
-    private val disposables = CompositeDisposable()
 
     private val accounts = SimpleAsyncObjectProperty<List<Account>>()
     private val payees = SimpleAsyncObjectProperty<List<Payee>>()
@@ -312,6 +309,6 @@ class EditTransactionViewModel : TransactionEntryEditor(), AutoCloseable {
     }
 
     override fun close() {
-        disposables.clear()
+        // no resources to dispose of
     }
 }

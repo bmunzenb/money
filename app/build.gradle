@@ -17,9 +17,6 @@ dependencies {
 
     implementation project(':core')
 
-    implementation "io.reactivex.rxjava3:rxjava:$versions.rxjava"
-    implementation "io.reactivex.rxjava3:rxkotlin:$versions.rxkotlin"
-
     implementation "com.h2database:h2:$versions.h2"
     implementation "org.xerial:sqlite-jdbc:$versions.sqlite"
 
