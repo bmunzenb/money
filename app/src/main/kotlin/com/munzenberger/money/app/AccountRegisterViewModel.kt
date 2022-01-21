@@ -2,6 +2,7 @@ package com.munzenberger.money.app
 
 import com.munzenberger.money.app.concurrent.Executors
 import com.munzenberger.money.app.concurrent.setValueAsync
+import com.munzenberger.money.app.database.CompositeSubscription
 import com.munzenberger.money.app.database.ObservableMoneyDatabase
 import com.munzenberger.money.app.model.FXRegisterEntry
 import com.munzenberger.money.app.model.FXRegisterEntryFilter
@@ -29,7 +30,6 @@ import com.munzenberger.money.sql.DeleteQueryBuilder
 import com.munzenberger.money.sql.QueryExecutor
 import com.munzenberger.money.sql.eq
 import com.munzenberger.money.sql.transaction
-import io.reactivex.rxjava3.disposables.CompositeDisposable
 import javafx.beans.binding.Bindings
 import javafx.beans.property.ReadOnlyBooleanProperty
 import javafx.beans.property.ReadOnlyListProperty
@@ -57,7 +57,7 @@ class AccountRegisterViewModel : AutoCloseable {
             val endingBalance: Money
     )
 
-    private val disposables = CompositeDisposable()
+    private val subscriptions = CompositeSubscription()
 
     private val account = SimpleAsyncObjectProperty<Account>()
     private val transactions = SimpleAsyncObjectProperty<List<FXRegisterEntry>>()
@@ -133,7 +133,7 @@ class AccountRegisterViewModel : AutoCloseable {
 
         this.database = database
 
-        database.onUpdate.subscribe {
+        database.subscribeOnUpdate {
             register.setValueAsync {
                 val account = Account.get(accountIdentity, database)
                         ?: throw PersistableNotFoundException(Account::class, accountIdentity)
@@ -152,7 +152,7 @@ class AccountRegisterViewModel : AutoCloseable {
                         endingBalance = endingBalance
                 )
             }
-        }.also { disposables.add(it) }
+        }.also { subscriptions.add(it) }
     }
 
     fun prepareEditEntry(entry: FXRegisterEntry, block: (Edit) -> Unit) {
@@ -247,7 +247,7 @@ class AccountRegisterViewModel : AutoCloseable {
     }
 
     override fun close() {
-        disposables.clear()
+        subscriptions.cancel()
     }
 }
 

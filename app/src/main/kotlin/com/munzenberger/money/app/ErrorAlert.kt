@@ -8,7 +8,7 @@ import javafx.scene.layout.GridPane
 import javafx.scene.layout.Priority
 import java.io.PrintWriter
 import java.io.StringWriter
-import java.util.*
+import java.util.Optional
 
 class ErrorAlert(error: Throwable) : Alert(AlertType.ERROR) {
 
@@ -48,7 +48,6 @@ class ErrorAlert(error: Throwable) : Alert(AlertType.ERROR) {
     companion object {
 
         fun showAndWait(error: Throwable): Optional<ButtonType> {
-            error.printStackTrace(System.err)
             return ErrorAlert(error).showAndWait()
         }
     }

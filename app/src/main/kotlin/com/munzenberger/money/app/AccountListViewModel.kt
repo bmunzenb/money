@@ -2,6 +2,7 @@ package com.munzenberger.money.app
 
 import com.munzenberger.money.app.concurrent.Schedulers
 import com.munzenberger.money.app.concurrent.setValueAsync
+import com.munzenberger.money.app.database.CompositeSubscription
 import com.munzenberger.money.app.database.ObservableMoneyDatabase
 import com.munzenberger.money.app.model.FXAccount
 import com.munzenberger.money.app.property.AsyncObject
@@ -17,6 +18,7 @@ import io.reactivex.rxjava3.disposables.CompositeDisposable
 class AccountListViewModel : AutoCloseable {
 
     private val disposables = CompositeDisposable()
+    private val subscriptions = CompositeSubscription()
 
     private val accounts = SimpleAsyncObjectProperty<List<FXAccount>>()
     private val totalBalance = SimpleAsyncObjectProperty<Money>()
@@ -53,12 +55,13 @@ class AccountListViewModel : AutoCloseable {
     }
 
     fun start(database: ObservableMoneyDatabase) {
-        database.onUpdate.subscribe {
+        database.subscribeOnUpdate {
             accounts.setValueAsync { Account.getAll(database).map { FXAccount(it, database) } }
-        }.also { disposables.add(it) }
+        }.also { subscriptions.add(it) }
     }
 
     override fun close() {
+        subscriptions.cancel()
         disposables.clear()
     }
 }

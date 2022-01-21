@@ -1,45 +1,48 @@
 package com.munzenberger.money.app.database
 
+import com.munzenberger.money.app.concurrent.Executors
 import com.munzenberger.money.core.MoneyDatabase
 import com.munzenberger.money.sql.Query
 import com.munzenberger.money.sql.ResultSetHandler
 import com.munzenberger.money.sql.TransactionQueryExecutor
-import io.reactivex.rxjava3.core.Observable
-import io.reactivex.rxjava3.core.Observer
-import io.reactivex.rxjava3.subjects.BehaviorSubject
+import java.util.concurrent.Executor
 
-class ObservableMoneyDatabase(private val database: MoneyDatabase) : MoneyDatabase by database {
+class ObservableMoneyDatabase(private val database: MoneyDatabase) : MoneyDatabase by database, ObservableDatabase {
 
-    private val updateSubject = BehaviorSubject.createDefault(Unit)
-
-    val onUpdate: Observable<Unit> = updateSubject
+    private val observableDatabase = ObservableDatabaseImpl()
 
     override fun executeUpdate(query: Query, handler: ResultSetHandler?): Int {
         return database.executeUpdate(query, handler).also {
-            updateSubject.onNext(Unit)
+            observableDatabase.fireOnUpdate()
         }
     }
 
     override fun execute(query: Query): Boolean {
         return database.execute(query).also {
             // result is false if the database was updated
-            if (!it) { updateSubject.onNext(Unit) }
+            if (!it) { observableDatabase.fireOnUpdate() }
         }
     }
 
     override fun createTransaction(): TransactionQueryExecutor =
-            ObservableTransactionQueryExecutor(database.createTransaction(), updateSubject)
+            ObservableTransactionQueryExecutor(database.createTransaction(), observableDatabase)
 
     override fun close() {
-        database.close().also {
-            updateSubject.onComplete()
-        }
+        database.close()
+    }
+
+    fun subscribeOnUpdate(block: Runnable): Subscription {
+        return subscribeOnUpdate(Executors.PLATFORM, block)
+    }
+
+    override fun subscribeOnUpdate(executor: Executor, block: Runnable): Subscription {
+        return observableDatabase.subscribeOnUpdate(executor, block)
     }
 }
 
 private class ObservableTransactionQueryExecutor(
         private val executor: TransactionQueryExecutor,
-        private val subject: Observer<Unit>? = null
+        private val observableDatabase: ObservableDatabaseImpl? = null
 ) : TransactionQueryExecutor by executor {
 
     override fun createTransaction(): TransactionQueryExecutor {
@@ -48,6 +51,6 @@ private class ObservableTransactionQueryExecutor(
 
     override fun commit() {
         executor.commit()
-        subject?.onNext(Unit)
+        observableDatabase?.fireOnUpdate()
     }
 }
