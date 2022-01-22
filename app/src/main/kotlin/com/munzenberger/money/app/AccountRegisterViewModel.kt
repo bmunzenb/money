@@ -200,6 +200,10 @@ class AccountRegisterViewModel : AutoCloseable {
                 deleteTransaction(database, transactionId)
             }
 
+            override fun succeeded() {
+                completionBlock.invoke(null)
+            }
+
             override fun failed() {
                 completionBlock.invoke(exception)
             }
@@ -218,6 +222,10 @@ class AccountRegisterViewModel : AutoCloseable {
                 deleteTransfer(database, transferId)
             }
 
+            override fun succeeded() {
+                completionBlock.invoke(null)
+            }
+
             override fun failed() {
                 completionBlock.invoke(exception)
             }
@@ -234,6 +242,10 @@ class AccountRegisterViewModel : AutoCloseable {
 
             override fun call() {
                 entry.updateStatus(status, database)
+            }
+
+            override fun succeeded() {
+                completionBlock.invoke(null)
             }
 
             override fun failed() {

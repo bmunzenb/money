@@ -18,9 +18,8 @@ class ObservableMoneyDatabase(private val database: MoneyDatabase) : MoneyDataba
     }
 
     override fun execute(query: Query): Boolean {
-        return database.execute(query).also {
-            // result is false if the database was updated
-            if (!it) { observableDatabase.fireOnUpdate() }
+        return database.execute(query).also { isResults ->
+            if (!isResults) { observableDatabase.fireOnUpdate() }
         }
     }
 
