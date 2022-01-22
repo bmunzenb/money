@@ -76,9 +76,7 @@ class AccountListController : AutoCloseable {
             comparator = AsyncObjectComparator()
         }
 
-        totalBalanceProgress.visibleProperty().bindAsyncStatus(viewModel.totalBalanceProperty,
-                AsyncObject.Status.PENDING,
-                AsyncObject.Status.EXECUTING)
+        totalBalanceProgress.visibleProperty().bindAsyncStatus(viewModel.totalBalanceProperty, AsyncObject.Status.EXECUTING)
 
         totalBalanceLabel.apply {
             visibleProperty().bindAsyncStatus(viewModel.totalBalanceProperty, AsyncObject.Status.COMPLETE)

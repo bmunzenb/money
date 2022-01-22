@@ -31,7 +31,7 @@ class AccountListViewModel : AutoCloseable {
                     val balanceProperties = accts.value.map { it.balanceProperty }
 
                     when (balanceProperties.isEmpty()) {
-                        true -> totalBalance.value = AsyncObject.Complete(Money.ZERO)
+                        true -> totalBalance.value = AsyncObject.Pending()
                         else -> {
                             val balancePropertyListener = ChangeListener<AsyncObject<Money>> { _, _, _ ->
                                 val initialValue: AsyncObject<Money> = AsyncObject.Complete(Money.ZERO)
@@ -44,7 +44,7 @@ class AccountListViewModel : AutoCloseable {
                         }
                     }
                 }
-                else -> totalBalance.value = accts.map { Money.ZERO }
+                else -> totalBalance.value = AsyncObject.Pending()
             }
         }
     }
