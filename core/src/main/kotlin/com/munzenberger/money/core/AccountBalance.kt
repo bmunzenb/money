@@ -1,5 +1,8 @@
 package com.munzenberger.money.core
 
+import com.munzenberger.money.core.model.CategoryEntryTable
+import com.munzenberger.money.core.model.TransactionTable
+import com.munzenberger.money.core.model.TransferEntryTable
 import com.munzenberger.money.sql.Query
 import com.munzenberger.money.sql.QueryExecutor
 import com.munzenberger.money.sql.ResultSetHandler
@@ -15,12 +18,11 @@ private interface AccountBalanceCollector : ResultSetHandler {
 
 private class TransactionBalanceCollector(accountId: Long) : AccountBalanceCollector {
 
-    // TODO replace hardcoded tables/columns with references to table objects
     private val sql = """
-        SELECT SUM(TRANSFER_ENTRY_AMOUNT) AS TOTAL
-        FROM TRANSACTIONS
-        INNER JOIN TRANSFER_ENTRIES ON TRANSFER_ENTRIES.TRANSFER_ENTRY_TRANSACTION_ID = TRANSACTIONS.TRANSACTION_ID
-        WHERE TRANSACTION_ACCOUNT_ID = ?
+        SELECT SUM(${TransferEntryTable.amountColumn}) AS TOTAL
+        FROM ${TransactionTable.name}
+        INNER JOIN ${TransferEntryTable.name} ON ${TransferEntryTable.name}.${TransferEntryTable.transactionColumn} = ${TransactionTable.name}.${TransactionTable.identityColumn}
+        WHERE ${TransactionTable.accountColumn} = ?
     """.trimIndent()
 
     override val query = Query(sql, listOf(accountId))
@@ -37,12 +39,11 @@ private class TransactionBalanceCollector(accountId: Long) : AccountBalanceColle
 
 private class TransferEntryBalanceCollector(accountId: Long) : AccountBalanceCollector {
 
-    // TODO replace hardcoded tables/columns with references to table objects
     private val sql = """
-        SELECT -SUM(TRANSFER_ENTRY_AMOUNT) AS TOTAL
-        FROM TRANSFER_ENTRIES
-        INNER JOIN TRANSACTIONS ON TRANSACTIONS.TRANSACTION_ID = TRANSFER_ENTRIES.TRANSFER_ENTRY_TRANSACTION_ID
-        WHERE TRANSFER_ENTRY_ACCOUNT_ID = ?
+        SELECT -SUM(${TransferEntryTable.amountColumn}) AS TOTAL
+        FROM ${TransferEntryTable.name}
+        INNER JOIN ${TransactionTable.name} ON ${TransactionTable.name}.${TransactionTable.identityColumn} = ${TransferEntryTable.name}.${TransferEntryTable.transactionColumn}
+        WHERE ${TransferEntryTable.accountColumn} = ?
     """.trimIndent()
 
     override val query = Query(sql, listOf(accountId))
@@ -59,12 +60,11 @@ private class TransferEntryBalanceCollector(accountId: Long) : AccountBalanceCol
 
 private class CategoryEntryBalanceCollector(accountId: Long) : AccountBalanceCollector {
 
-    // TODO replace hardcoded tables/columns with references to table objects
     private val sql = """
-        SELECT SUM(CATEGORY_ENTRY_AMOUNT) AS TOTAL
-        FROM CATEGORY_ENTRIES
-        INNER JOIN TRANSACTIONS ON TRANSACTIONS.TRANSACTION_ID = CATEGORY_ENTRIES.CATEGORY_ENTRY_TRANSACTION_ID
-        WHERE TRANSACTIONS.TRANSACTION_ACCOUNT_ID = ?
+        SELECT SUM(${CategoryEntryTable.amountColumn}) AS TOTAL
+        FROM ${CategoryEntryTable.name}
+        INNER JOIN ${TransactionTable.name} ON ${TransactionTable.name}.${TransactionTable.identityColumn} = ${CategoryEntryTable.name}.${CategoryEntryTable.transactionColumn}
+        WHERE ${TransactionTable.name}.${TransactionTable.accountColumn} = ?
     """.trimIndent()
 
     override val query = Query(sql, listOf(accountId))
