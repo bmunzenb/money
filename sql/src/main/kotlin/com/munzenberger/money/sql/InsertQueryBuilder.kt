@@ -2,6 +2,7 @@ package com.munzenberger.money.sql
 
 import java.lang.StringBuilder
 
+// TODO create a DSL for this builder
 class InsertQueryBuilder(table: String) : SettableQueryBuilder<InsertQueryBuilder>(table) {
 
     override fun instance() = this

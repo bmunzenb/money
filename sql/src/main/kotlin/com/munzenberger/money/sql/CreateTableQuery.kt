@@ -15,7 +15,9 @@ class TableDefinition(name: String) {
 
     private val builder = CreateTableQueryBuilder(name)
 
-    fun ifNotExists() = builder.ifNotExists()
+    fun ifNotExists() {
+        builder.ifNotExists()
+    }
 
     fun column(name: String, type: String, block: ColumnProperties.() -> Unit = {}) {
 

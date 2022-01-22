@@ -2,6 +2,7 @@ package com.munzenberger.money.sql
 
 import java.lang.StringBuilder
 
+// TODO create a DSL for this builder
 class UpdateQueryBuilder(table: String) : SettableQueryBuilder<UpdateQueryBuilder>(table) {
 
     private var where: Condition? = null
