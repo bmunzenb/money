@@ -1,5 +1,8 @@
 package com.munzenberger.money.core
 
+import com.munzenberger.money.core.model.AccountTable
+import com.munzenberger.money.core.model.CategoryEntryTable
+import com.munzenberger.money.core.model.CategoryTable
 import com.munzenberger.money.core.model.PayeeTable
 import com.munzenberger.money.core.model.TransactionTable
 import com.munzenberger.money.core.model.TransferEntryTable
@@ -312,19 +315,18 @@ private class TransactionResultSetHandler(accountId: Long, private val collector
 
 private class TransactionTransferEntryResultSetHandler(accountId: Long, private val collector: AccountEntryCollector) : ResultSetHandler {
 
-    // TODO replace hardcoded tables/columns with references to table objects
     private val sql = """
         SELECT
-            TRANSACTION_ID,
-            TRANSFER_ENTRY_AMOUNT,
-            TRANSFER_ENTRY_ID,
-            ACCOUNT_ID,
-            ACCOUNT_NAME,
-            TRANSFER_ENTRY_ORDER_IN_TRANSACTION
-        FROM TRANSACTIONS
-        INNER JOIN TRANSFER_ENTRIES ON TRANSFER_ENTRIES.TRANSFER_ENTRY_TRANSACTION_ID = TRANSACTIONS.TRANSACTION_ID
-        INNER JOIN ACCOUNTS ON ACCOUNTS.ACCOUNT_ID = TRANSFER_ENTRIES.TRANSFER_ENTRY_ACCOUNT_ID
-        WHERE TRANSACTION_ACCOUNT_ID = ?
+            ${TransactionTable.identityColumn},
+            ${TransferEntryTable.amountColumn},
+            ${TransferEntryTable.identityColumn},
+            ${AccountTable.identityColumn},
+            ${AccountTable.nameColumn},
+            ${TransferEntryTable.orderInTransaction}
+        FROM ${TransactionTable.name}
+        INNER JOIN ${TransferEntryTable.name} ON ${TransferEntryTable.name}.${TransferEntryTable.transactionColumn} = ${TransactionTable.name}.${TransactionTable.identityColumn}
+        INNER JOIN ${AccountTable.name} ON ${AccountTable.name}.${AccountTable.identityColumn} = ${TransferEntryTable.name}.${TransferEntryTable.accountColumn}
+        WHERE ${TransactionTable.accountColumn} = ?
     """.trimIndent()
 
     val query = Query(sql, listOf(accountId))
@@ -332,12 +334,12 @@ private class TransactionTransferEntryResultSetHandler(accountId: Long, private 
     override fun accept(rs: ResultSet) {
         while (rs.next()) {
             collector.collectTransactionTransfer(
-                    transactionId = rs.getLong("TRANSACTION_ID"),
-                    amount = rs.getLong("TRANSFER_ENTRY_AMOUNT"),
-                    transferId = rs.getLong("TRANSFER_ENTRY_ID"),
-                    transferAccountId = rs.getLong("ACCOUNT_ID"),
-                    transferAccountName = rs.getString("ACCOUNT_NAME"),
-                    transferOrderInTransaction = rs.getInt("TRANSFER_ENTRY_ORDER_IN_TRANSACTION")
+                    transactionId = rs.getLong(TransactionTable.identityColumn),
+                    amount = rs.getLong(TransferEntryTable.amountColumn),
+                    transferId = rs.getLong(TransferEntryTable.identityColumn),
+                    transferAccountId = rs.getLong(AccountTable.identityColumn),
+                    transferAccountName = rs.getString(AccountTable.nameColumn),
+                    transferOrderInTransaction = rs.getInt(TransferEntryTable.orderInTransaction)
             )
         }
     }
@@ -345,21 +347,20 @@ private class TransactionTransferEntryResultSetHandler(accountId: Long, private 
 
 private class TransactionCategoryEntryResultSetHandler(accountId: Long, private val collector: AccountEntryCollector) : ResultSetHandler {
 
-    // TODO replace hardcoded tables/columns with references to table objects
     private val sql = """
         SELECT
-            TRANSACTION_ID,
-            CATEGORY_ENTRY_ID,
-            CATEGORY_ENTRY_AMOUNT,
-            CATEGORIES.CATEGORY_ID AS CATEGORY_ID,
-            CATEGORIES.CATEGORY_NAME AS CATEGORY_NAME,
-            PARENT_CATEGORIES.CATEGORY_NAME AS PARENT_CATEGORY_NAME,
-            CATEGORY_ENTRY_ORDER_IN_TRANSACTION
-        FROM TRANSACTIONS
-        INNER JOIN CATEGORY_ENTRIES ON CATEGORY_ENTRIES.CATEGORY_ENTRY_TRANSACTION_ID = TRANSACTIONS.TRANSACTION_ID
-        INNER JOIN CATEGORIES ON CATEGORIES.CATEGORY_ID = CATEGORY_ENTRIES.CATEGORY_ENTRY_CATEGORY_ID
-        LEFT JOIN CATEGORIES AS PARENT_CATEGORIES ON CATEGORIES.CATEGORY_PARENT_ID = PARENT_CATEGORIES.CATEGORY_ID 
-        WHERE TRANSACTION_ACCOUNT_ID = ?
+            ${TransactionTable.identityColumn},
+            ${CategoryEntryTable.identityColumn},
+            ${CategoryEntryTable.amountColumn},
+            ${CategoryTable.name}.${CategoryTable.identityColumn} AS CATEGORY_ID,
+            ${CategoryTable.name}.${CategoryTable.nameColumn} AS CATEGORY_NAME,
+            PARENT_CATEGORIES.${CategoryTable.nameColumn} AS PARENT_CATEGORY_NAME,
+            ${CategoryEntryTable.orderInTransaction}
+        FROM ${TransactionTable.name}
+        INNER JOIN ${CategoryEntryTable.name} ON ${CategoryEntryTable.name}.${CategoryEntryTable.transactionColumn} = ${TransactionTable.name}.${TransactionTable.identityColumn}
+        INNER JOIN ${CategoryTable.name} ON ${CategoryTable.name}.${CategoryTable.identityColumn} = ${CategoryEntryTable.name}.${CategoryEntryTable.categoryColumn}
+        LEFT JOIN ${CategoryTable.name} AS PARENT_CATEGORIES ON ${CategoryTable.name}.${CategoryTable.parentColumn} = PARENT_CATEGORIES.${CategoryTable.identityColumn}
+        WHERE ${TransactionTable.accountColumn} = ?
     """.trimIndent()
 
     val query = Query(sql, listOf(accountId))
@@ -367,13 +368,13 @@ private class TransactionCategoryEntryResultSetHandler(accountId: Long, private 
     override fun accept(rs: ResultSet) {
         while (rs.next()) {
             collector.collectTransactionEntry(
-                    transactionId = rs.getLong("TRANSACTION_ID"),
-                    amount = rs.getLong("CATEGORY_ENTRY_AMOUNT"),
-                    entryId = rs.getLong("CATEGORY_ENTRY_ID"),
+                    transactionId = rs.getLong(TransactionTable.identityColumn),
+                    amount = rs.getLong(CategoryEntryTable.amountColumn),
+                    entryId = rs.getLong(CategoryEntryTable.identityColumn),
                     entryCategoryId = rs.getLong("CATEGORY_ID"),
                     entryCategoryName = rs.getString("CATEGORY_NAME"),
                     entryParentCategoryName = rs.getString("PARENT_CATEGORY_NAME"),
-                    entryOrderInTransaction = rs.getInt("CATEGORY_ENTRY_ORDER_IN_TRANSACTION")
+                    entryOrderInTransaction = rs.getInt(CategoryEntryTable.orderInTransaction)
             )
         }
     }
@@ -381,25 +382,24 @@ private class TransactionCategoryEntryResultSetHandler(accountId: Long, private 
 
 private class TransferEntryResultSetHandler(accountId: Long, private val collector: AccountEntryCollector) : ResultSetHandler {
 
-    // TODO replace hardcoded tables/columns with references to table objects
     private val sql = """
         SELECT
-            TRANSFER_ENTRY_ID,
-            TRANSACTION_ID,
-            TRANSACTION_DATE,
-            PAYEE_ID,
-            PAYEE_NAME,
-            TRANSFER_ENTRY_AMOUNT,
-            TRANSFER_ENTRY_MEMO,
-            TRANSFER_ENTRY_NUMBER,
-            TRANSFER_ENTRY_STATUS,
-            ACCOUNT_ID,
-            ACCOUNT_NAME
-        FROM TRANSFER_ENTRIES
-        INNER JOIN TRANSACTIONS ON TRANSACTIONS.TRANSACTION_ID = TRANSFER_ENTRIES.TRANSFER_ENTRY_TRANSACTION_ID
-        LEFT JOIN PAYEES ON PAYEES.PAYEE_ID = TRANSACTIONS.TRANSACTION_PAYEE_ID
-        INNER JOIN ACCOUNTS ON TRANSACTIONS.TRANSACTION_ACCOUNT_ID = ACCOUNTS.ACCOUNT_ID
-        WHERE TRANSFER_ENTRY_ACCOUNT_ID = ?
+            ${TransferEntryTable.identityColumn},
+            ${TransactionTable.identityColumn},
+            ${TransactionTable.dateColumn},
+            ${PayeeTable.identityColumn},
+            ${PayeeTable.nameColumn},
+            ${TransferEntryTable.amountColumn},
+            ${TransferEntryTable.memoColumn},
+            ${TransferEntryTable.numberColumn},
+            ${TransferEntryTable.statusColumn},
+            ${AccountTable.identityColumn},
+            ${AccountTable.nameColumn}
+        FROM ${TransferEntryTable.name}
+        INNER JOIN ${TransactionTable.name} ON ${TransactionTable.name}.${TransactionTable.identityColumn} = ${TransferEntryTable.name}.${TransferEntryTable.transactionColumn}
+        LEFT JOIN ${PayeeTable.name} ON ${PayeeTable.name}.${PayeeTable.identityColumn} = ${TransactionTable.name}.${TransactionTable.payeeColumn}
+        INNER JOIN ${AccountTable.name} ON ${TransactionTable.name}.${TransactionTable.accountColumn} = ${AccountTable.name}.${AccountTable.identityColumn}
+        WHERE ${TransferEntryTable.accountColumn} = ?
     """.trimIndent()
 
     val query = Query(sql, listOf(accountId))
@@ -407,17 +407,17 @@ private class TransferEntryResultSetHandler(accountId: Long, private val collect
     override fun accept(rs: ResultSet) {
         while (rs.next()) {
             collector.collectTransfer(
-                    transferId = rs.getLong("TRANSFER_ENTRY_ID"),
-                    transactionId = rs.getLong("TRANSACTION_ID"),
-                    date = rs.getLocalDate("TRANSACTION_DATE"),
-                    payeeId = rs.getLongOrNull("PAYEE_ID"),
-                    payeeName = rs.getString("PAYEE_NAME"),
-                    amount = rs.getLong("TRANSFER_ENTRY_AMOUNT"),
-                    memo = rs.getString("TRANSFER_ENTRY_MEMO"),
-                    number = rs.getString("TRANSFER_ENTRY_NUMBER"),
-                    status = rs.getString("TRANSFER_ENTRY_STATUS"),
-                    transactionAccountId = rs.getLong("ACCOUNT_ID"),
-                    transactionAccountName = rs.getString("ACCOUNT_NAME")
+                    transferId = rs.getLong(TransferEntryTable.identityColumn),
+                    transactionId = rs.getLong(TransactionTable.identityColumn),
+                    date = rs.getLocalDate(TransactionTable.dateColumn),
+                    payeeId = rs.getLongOrNull(PayeeTable.identityColumn),
+                    payeeName = rs.getString(PayeeTable.nameColumn),
+                    amount = rs.getLong(TransferEntryTable.amountColumn),
+                    memo = rs.getString(TransferEntryTable.memoColumn),
+                    number = rs.getString(TransferEntryTable.numberColumn),
+                    status = rs.getString(TransferEntryTable.statusColumn),
+                    transactionAccountId = rs.getLong(AccountTable.identityColumn),
+                    transactionAccountName = rs.getString(AccountTable.nameColumn)
             )
         }
     }
