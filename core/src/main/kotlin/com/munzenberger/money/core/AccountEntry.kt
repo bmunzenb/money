@@ -65,7 +65,7 @@ sealed class AccountEntry {
 
         override fun updateStatus(status: TransactionStatus, executor: QueryExecutor) {
 
-            val query = Query.update(TransactionTable.name)
+            val query = Query.update(TransactionTable.tableName)
                     .set(TransactionTable.statusColumn, status.name)
                     .where(TransactionTable.identityColumn.eq(transactionId))
                     .build()
@@ -91,7 +91,7 @@ sealed class AccountEntry {
 
         override fun updateStatus(status: TransactionStatus, executor: QueryExecutor) {
 
-            val query = Query.update(TransferEntryTable.name)
+            val query = Query.update(TransferEntryTable.tableName)
                     .set(TransferEntryTable.statusColumn, status.name)
                     .where(TransferEntryTable.identityColumn.eq(transferId))
                     .build()
@@ -291,8 +291,8 @@ private class TransactionResultSetHandler(accountId: Long, private val collector
             ${TransactionTable.memoColumn},
             ${TransactionTable.numberColumn},
             ${TransactionTable.statusColumn}
-        FROM ${TransactionTable.name}
-        LEFT JOIN ${PayeeTable.name} ON ${PayeeTable.name}.${PayeeTable.identityColumn} = ${TransactionTable.name}.${TransactionTable.payeeColumn}
+        FROM ${TransactionTable.tableName}
+        LEFT JOIN ${PayeeTable.tableName} ON ${PayeeTable.tableName}.${PayeeTable.identityColumn} = ${TransactionTable.tableName}.${TransactionTable.payeeColumn}
         WHERE ${TransactionTable.accountColumn} = ?
     """.trimIndent()
 
@@ -323,9 +323,9 @@ private class TransactionTransferEntryResultSetHandler(accountId: Long, private 
             ${AccountTable.identityColumn},
             ${AccountTable.nameColumn},
             ${TransferEntryTable.orderInTransaction}
-        FROM ${TransactionTable.name}
-        INNER JOIN ${TransferEntryTable.name} ON ${TransferEntryTable.name}.${TransferEntryTable.transactionColumn} = ${TransactionTable.name}.${TransactionTable.identityColumn}
-        INNER JOIN ${AccountTable.name} ON ${AccountTable.name}.${AccountTable.identityColumn} = ${TransferEntryTable.name}.${TransferEntryTable.accountColumn}
+        FROM ${TransactionTable.tableName}
+        INNER JOIN ${TransferEntryTable.tableName} ON ${TransferEntryTable.tableName}.${TransferEntryTable.transactionColumn} = ${TransactionTable.tableName}.${TransactionTable.identityColumn}
+        INNER JOIN ${AccountTable.tableName} ON ${AccountTable.tableName}.${AccountTable.identityColumn} = ${TransferEntryTable.tableName}.${TransferEntryTable.accountColumn}
         WHERE ${TransactionTable.accountColumn} = ?
     """.trimIndent()
 
@@ -352,14 +352,14 @@ private class TransactionCategoryEntryResultSetHandler(accountId: Long, private 
             ${TransactionTable.identityColumn},
             ${CategoryEntryTable.identityColumn},
             ${CategoryEntryTable.amountColumn},
-            ${CategoryTable.name}.${CategoryTable.identityColumn} AS CATEGORY_ID,
-            ${CategoryTable.name}.${CategoryTable.nameColumn} AS CATEGORY_NAME,
+            ${CategoryTable.tableName}.${CategoryTable.identityColumn} AS CATEGORY_ID,
+            ${CategoryTable.tableName}.${CategoryTable.nameColumn} AS CATEGORY_NAME,
             PARENT_CATEGORIES.${CategoryTable.nameColumn} AS PARENT_CATEGORY_NAME,
             ${CategoryEntryTable.orderInTransaction}
-        FROM ${TransactionTable.name}
-        INNER JOIN ${CategoryEntryTable.name} ON ${CategoryEntryTable.name}.${CategoryEntryTable.transactionColumn} = ${TransactionTable.name}.${TransactionTable.identityColumn}
-        INNER JOIN ${CategoryTable.name} ON ${CategoryTable.name}.${CategoryTable.identityColumn} = ${CategoryEntryTable.name}.${CategoryEntryTable.categoryColumn}
-        LEFT JOIN ${CategoryTable.name} AS PARENT_CATEGORIES ON ${CategoryTable.name}.${CategoryTable.parentColumn} = PARENT_CATEGORIES.${CategoryTable.identityColumn}
+        FROM ${TransactionTable.tableName}
+        INNER JOIN ${CategoryEntryTable.tableName} ON ${CategoryEntryTable.tableName}.${CategoryEntryTable.transactionColumn} = ${TransactionTable.tableName}.${TransactionTable.identityColumn}
+        INNER JOIN ${CategoryTable.tableName} ON ${CategoryTable.tableName}.${CategoryTable.identityColumn} = ${CategoryEntryTable.tableName}.${CategoryEntryTable.categoryColumn}
+        LEFT JOIN ${CategoryTable.tableName} AS PARENT_CATEGORIES ON ${CategoryTable.tableName}.${CategoryTable.parentColumn} = PARENT_CATEGORIES.${CategoryTable.identityColumn}
         WHERE ${TransactionTable.accountColumn} = ?
     """.trimIndent()
 
@@ -395,10 +395,10 @@ private class TransferEntryResultSetHandler(accountId: Long, private val collect
             ${TransferEntryTable.statusColumn},
             ${AccountTable.identityColumn},
             ${AccountTable.nameColumn}
-        FROM ${TransferEntryTable.name}
-        INNER JOIN ${TransactionTable.name} ON ${TransactionTable.name}.${TransactionTable.identityColumn} = ${TransferEntryTable.name}.${TransferEntryTable.transactionColumn}
-        LEFT JOIN ${PayeeTable.name} ON ${PayeeTable.name}.${PayeeTable.identityColumn} = ${TransactionTable.name}.${TransactionTable.payeeColumn}
-        INNER JOIN ${AccountTable.name} ON ${TransactionTable.name}.${TransactionTable.accountColumn} = ${AccountTable.name}.${AccountTable.identityColumn}
+        FROM ${TransferEntryTable.tableName}
+        INNER JOIN ${TransactionTable.tableName} ON ${TransactionTable.tableName}.${TransactionTable.identityColumn} = ${TransferEntryTable.tableName}.${TransferEntryTable.transactionColumn}
+        LEFT JOIN ${PayeeTable.tableName} ON ${PayeeTable.tableName}.${PayeeTable.identityColumn} = ${TransactionTable.tableName}.${TransactionTable.payeeColumn}
+        INNER JOIN ${AccountTable.tableName} ON ${TransactionTable.tableName}.${TransactionTable.accountColumn} = ${AccountTable.tableName}.${AccountTable.identityColumn}
         WHERE ${TransferEntryTable.accountColumn} = ?
     """.trimIndent()
 

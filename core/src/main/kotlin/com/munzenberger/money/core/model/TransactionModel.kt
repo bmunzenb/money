@@ -17,7 +17,7 @@ data class TransactionModel(
 
 object TransactionTable : Table<TransactionModel>() {
 
-    override val name = "TRANSACTIONS"
+    override val tableName = "TRANSACTIONS"
     override val identityColumn = "TRANSACTION_ID"
 
     const val accountColumn = "TRANSACTION_ACCOUNT_ID"

@@ -15,7 +15,7 @@ data class AccountModel(
 
 object AccountTable : Table<AccountModel>() {
 
-    override val name = "ACCOUNTS"
+    override val tableName = "ACCOUNTS"
     override val identityColumn = "ACCOUNT_ID"
 
     const val nameColumn = "ACCOUNT_NAME"

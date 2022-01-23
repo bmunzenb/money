@@ -273,17 +273,17 @@ private fun AccountEntry.negateBalance(): AccountEntry {
 private fun deleteTransaction(executor: QueryExecutor, transactionId: Long) {
     executor.transaction { tx ->
 
-        DeleteQueryBuilder(TransferEntryTable.name)
+        DeleteQueryBuilder(TransferEntryTable.tableName)
                 .where(TransferEntryTable.transactionColumn.eq(transactionId))
                 .build()
                 .let { tx.executeUpdate(it) }
 
-        DeleteQueryBuilder(CategoryEntryTable.name)
+        DeleteQueryBuilder(CategoryEntryTable.tableName)
                 .where(CategoryEntryTable.transactionColumn.eq(transactionId))
                 .build()
                 .let { tx.executeUpdate(it) }
 
-        DeleteQueryBuilder(TransactionTable.name)
+        DeleteQueryBuilder(TransactionTable.tableName)
                 .where(TransactionTable.identityColumn.eq(transactionId))
                 .build()
                 .let { tx.executeUpdate(it) }
@@ -292,7 +292,7 @@ private fun deleteTransaction(executor: QueryExecutor, transactionId: Long) {
 
 private fun deleteTransfer(executor: QueryExecutor, transferId: Long) {
 
-    DeleteQueryBuilder(TransferEntryTable.name)
+    DeleteQueryBuilder(TransferEntryTable.tableName)
             .where(TransferEntryTable.identityColumn.eq(transferId))
             .build()
             .let { executor.executeUpdate(it) }

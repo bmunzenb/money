@@ -18,7 +18,7 @@ data class TransferEntryModel(
 
 object TransferEntryTable : Table<TransferEntryModel>() {
 
-    override val name = "TRANSFER_ENTRIES"
+    override val tableName = "TRANSFER_ENTRIES"
     override val identityColumn = "TRANSFER_ENTRY_ID"
 
     const val transactionColumn = "TRANSFER_ENTRY_TRANSACTION_ID"

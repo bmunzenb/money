@@ -33,9 +33,9 @@ fun Category.Companion.getAllWithParent(database: MoneyDatabase): List<CategoryW
 
     // TODO replace hardcoded tables/columns with references to table objects
     val sql = """
-        SELECT CATEGORIES.*, PARENTS.CATEGORY_ID AS PARENT_ID, PARENTS.CATEGORY_NAME AS PARENT_NAME
-        FROM CATEGORIES
-        LEFT JOIN CATEGORIES AS PARENTS ON CATEGORIES.CATEGORY_PARENT_ID = PARENTS.CATEGORY_ID
+        SELECT ${CategoryTable.tableName}.*, PARENTS.${CategoryTable.identityColumn} AS PARENT_ID, PARENTS.${CategoryTable.nameColumn} AS PARENT_NAME
+        FROM ${CategoryTable.tableName}
+        LEFT JOIN ${CategoryTable.tableName} AS PARENTS ON ${CategoryTable.tableName}.${CategoryTable.parentColumn} = PARENTS.${CategoryTable.identityColumn}
     """.trimIndent()
 
     return database.getList(Query(sql), object : ResultSetMapper<CategoryWithParent> {

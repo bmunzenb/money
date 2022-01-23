@@ -15,7 +15,7 @@ data class CategoryEntryModel(
 
 object CategoryEntryTable : Table<CategoryEntryModel>() {
 
-    override val name = "CATEGORY_ENTRIES"
+    override val tableName = "CATEGORY_ENTRIES"
     override val identityColumn = "CATEGORY_ENTRY_ID"
 
     const val transactionColumn = "CATEGORY_ENTRY_TRANSACTION_ID"

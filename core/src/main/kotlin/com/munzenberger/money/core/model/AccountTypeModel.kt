@@ -18,7 +18,7 @@ data class AccountTypeModel(
 
 object AccountTypeTable : Table<AccountTypeModel>() {
 
-    override val name = "ACCOUNT_TYPES"
+    override val tableName = "ACCOUNT_TYPES"
     override val identityColumn = "ACCOUNT_TYPE_ID"
 
     const val groupColumn = "ACCOUNT_TYPE_GROUP"

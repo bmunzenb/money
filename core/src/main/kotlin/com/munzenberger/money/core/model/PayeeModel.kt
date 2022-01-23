@@ -7,7 +7,7 @@ data class PayeeModel(var name: String? = null) : Model()
 
 object PayeeTable : Table<PayeeModel>() {
 
-    override val name = "PAYEES"
+    override val tableName = "PAYEES"
     override val identityColumn = "PAYEE_ID"
 
     const val nameColumn = "PAYEE_NAME"

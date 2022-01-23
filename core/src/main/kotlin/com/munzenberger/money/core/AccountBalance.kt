@@ -20,8 +20,8 @@ private class TransactionBalanceCollector(accountId: Long) : AccountBalanceColle
 
     private val sql = """
         SELECT SUM(${TransferEntryTable.amountColumn}) AS TOTAL
-        FROM ${TransactionTable.name}
-        INNER JOIN ${TransferEntryTable.name} ON ${TransferEntryTable.name}.${TransferEntryTable.transactionColumn} = ${TransactionTable.name}.${TransactionTable.identityColumn}
+        FROM ${TransactionTable.tableName}
+        INNER JOIN ${TransferEntryTable.tableName} ON ${TransferEntryTable.tableName}.${TransferEntryTable.transactionColumn} = ${TransactionTable.tableName}.${TransactionTable.identityColumn}
         WHERE ${TransactionTable.accountColumn} = ?
     """.trimIndent()
 
@@ -41,8 +41,8 @@ private class TransferEntryBalanceCollector(accountId: Long) : AccountBalanceCol
 
     private val sql = """
         SELECT -SUM(${TransferEntryTable.amountColumn}) AS TOTAL
-        FROM ${TransferEntryTable.name}
-        INNER JOIN ${TransactionTable.name} ON ${TransactionTable.name}.${TransactionTable.identityColumn} = ${TransferEntryTable.name}.${TransferEntryTable.transactionColumn}
+        FROM ${TransferEntryTable.tableName}
+        INNER JOIN ${TransactionTable.tableName} ON ${TransactionTable.tableName}.${TransactionTable.identityColumn} = ${TransferEntryTable.tableName}.${TransferEntryTable.transactionColumn}
         WHERE ${TransferEntryTable.accountColumn} = ?
     """.trimIndent()
 
@@ -62,9 +62,9 @@ private class CategoryEntryBalanceCollector(accountId: Long) : AccountBalanceCol
 
     private val sql = """
         SELECT SUM(${CategoryEntryTable.amountColumn}) AS TOTAL
-        FROM ${CategoryEntryTable.name}
-        INNER JOIN ${TransactionTable.name} ON ${TransactionTable.name}.${TransactionTable.identityColumn} = ${CategoryEntryTable.name}.${CategoryEntryTable.transactionColumn}
-        WHERE ${TransactionTable.name}.${TransactionTable.accountColumn} = ?
+        FROM ${CategoryEntryTable.tableName}
+        INNER JOIN ${TransactionTable.tableName} ON ${TransactionTable.tableName}.${TransactionTable.identityColumn} = ${CategoryEntryTable.tableName}.${CategoryEntryTable.transactionColumn}
+        WHERE ${TransactionTable.tableName}.${TransactionTable.accountColumn} = ?
     """.trimIndent()
 
     override val query = Query(sql, listOf(accountId))

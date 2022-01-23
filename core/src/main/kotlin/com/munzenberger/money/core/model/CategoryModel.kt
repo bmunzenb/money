@@ -16,7 +16,7 @@ data class CategoryModel(
 
 object CategoryTable : Table<CategoryModel>() {
 
-    override val name = "CATEGORIES"
+    override val tableName = "CATEGORIES"
     override val identityColumn = "CATEGORY_ID"
 
     const val nameColumn = "CATEGORY_NAME"

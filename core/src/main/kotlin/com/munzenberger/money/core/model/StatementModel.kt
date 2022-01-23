@@ -12,7 +12,7 @@ data class StatementModel(
 
 object StatementTable: Table<StatementModel>() {
 
-    override val name = "STATEMENTS"
+    override val tableName = "STATEMENTS"
     override val identityColumn = "STATEMENT_ID"
 
     const val accountColumn = "STATEMENT_ACCOUNT_ID"
