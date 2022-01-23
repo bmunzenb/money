@@ -7,7 +7,7 @@ import com.munzenberger.money.app.model.FXAccount
 import com.munzenberger.money.app.property.AsyncObject
 import com.munzenberger.money.app.property.ReadOnlyAsyncObjectProperty
 import com.munzenberger.money.app.property.SimpleAsyncObjectProperty
-import com.munzenberger.money.app.property.map
+import com.munzenberger.money.app.property.combine
 import com.munzenberger.money.core.Account
 import com.munzenberger.money.core.Money
 import javafx.beans.value.ChangeListener
@@ -35,7 +35,7 @@ class AccountListViewModel : AutoCloseable {
                         else -> {
                             val balancePropertyListener = ChangeListener<AsyncObject<Money>> { _, _, _ ->
                                 val initialValue: AsyncObject<Money> = AsyncObject.Complete(Money.ZERO)
-                                totalBalance.value = balanceProperties.fold(initialValue) { acc, b -> acc.plus(b.value) }
+                                totalBalance.value = balanceProperties.fold(initialValue) { acc, b -> acc + b.value }
                             }
 
                             balanceProperties.forEach { it.addListener(balancePropertyListener) }
@@ -60,23 +60,5 @@ class AccountListViewModel : AutoCloseable {
     }
 }
 
-fun AsyncObject<Money>.plus(other: AsyncObject<Money>): AsyncObject<Money> {
-
-    if (this is AsyncObject.Complete && other is AsyncObject.Complete) {
-        return AsyncObject.Complete(this.value + other.value)
-    }
-
-    if (this is AsyncObject.Error) {
-        return AsyncObject.Error(this.error)
-    }
-
-    if (other is AsyncObject.Error) {
-        return AsyncObject.Error(other.error)
-    }
-
-    if (this is AsyncObject.Executing || other is AsyncObject.Executing) {
-        return AsyncObject.Executing()
-    }
-
-    return AsyncObject.Pending()
-}
+private operator fun AsyncObject<Money>.plus(other: AsyncObject<Money>): AsyncObject<Money> =
+        combine(other) { m1, m2 -> m1 + m2 }

@@ -24,7 +24,10 @@ class MoneyApplication : Application() {
             primaryStage.apply {
 
                 scene = Scene(root).apply {
-                    stylesheets.add(MoneyApplication::class.java.getResource("money.css").toExternalForm())
+
+                    val css = MoneyApplication::class.java.getResource("money.css").toExternalForm()
+
+                    stylesheets.add(css)
                 }
 
                 width = 800.0
