@@ -2,13 +2,15 @@ package com.munzenberger.money.app
 
 import com.munzenberger.money.app.control.DateTableCellFactory
 import com.munzenberger.money.app.control.MoneyTableCellFactory
-import com.munzenberger.money.app.control.RegisterEntryTableRow
+import com.munzenberger.money.app.control.AccountEntryTableRow
 import com.munzenberger.money.app.control.TableCellFactory
 import com.munzenberger.money.app.control.bindAsync
 import com.munzenberger.money.app.control.booleanToWaitCursor
 import com.munzenberger.money.app.database.ObservableMoneyDatabase
-import com.munzenberger.money.app.model.FXRegisterEntry
-import com.munzenberger.money.app.model.FXRegisterEntryFilter
+import com.munzenberger.money.app.model.FXAccountEntry
+import com.munzenberger.money.app.model.FXAccountEntryFilter
+import com.munzenberger.money.app.model.FXTransactionAccountEntry
+import com.munzenberger.money.app.model.FXTransferAccountEntry
 import com.munzenberger.money.app.model.moneyNegativePseudoClass
 import com.munzenberger.money.app.navigation.LayoutControllerNavigation
 import com.munzenberger.money.app.property.AsyncObject
@@ -51,17 +53,17 @@ class AccountRegisterController : AutoCloseable {
     @FXML lateinit var editAccountButton: Button
     @FXML lateinit var addTransactionButton: Button
     @FXML lateinit var balanceAccountButton: Button
-    @FXML lateinit var dateFilterChoiceBox: ChoiceBox<FXRegisterEntryFilter>
-    @FXML lateinit var statusFilterChoiceBox: ChoiceBox<FXRegisterEntryFilter>
-    @FXML lateinit var tableView: TableView<FXRegisterEntry>
-    @FXML lateinit var numberColumn: TableColumn<FXRegisterEntry, String>
-    @FXML lateinit var dateColumn: TableColumn<FXRegisterEntry, LocalDate>
-    @FXML lateinit var payeeColumn: TableColumn<FXRegisterEntry, String>
-    @FXML lateinit var categoryColumn: TableColumn<FXRegisterEntry, String>
-    @FXML lateinit var statusColumn: TableColumn<FXRegisterEntry, TransactionStatus>
-    @FXML lateinit var debitColumn: TableColumn<FXRegisterEntry, Money>
-    @FXML lateinit var creditColumn: TableColumn<FXRegisterEntry, Money>
-    @FXML lateinit var balanceColumn: TableColumn<FXRegisterEntry, Money>
+    @FXML lateinit var dateFilterChoiceBox: ChoiceBox<FXAccountEntryFilter>
+    @FXML lateinit var statusFilterChoiceBox: ChoiceBox<FXAccountEntryFilter>
+    @FXML lateinit var tableView: TableView<FXAccountEntry>
+    @FXML lateinit var numberColumn: TableColumn<FXAccountEntry, String>
+    @FXML lateinit var dateColumn: TableColumn<FXAccountEntry, LocalDate>
+    @FXML lateinit var payeeColumn: TableColumn<FXAccountEntry, String>
+    @FXML lateinit var categoryColumn: TableColumn<FXAccountEntry, String>
+    @FXML lateinit var statusColumn: TableColumn<FXAccountEntry, TransactionStatus>
+    @FXML lateinit var debitColumn: TableColumn<FXAccountEntry, Money>
+    @FXML lateinit var creditColumn: TableColumn<FXAccountEntry, Money>
+    @FXML lateinit var balanceColumn: TableColumn<FXAccountEntry, Money>
     @FXML lateinit var endingBalanceLabel: Label
     @FXML lateinit var endingBalanceProgressIndicator: ProgressIndicator
 
@@ -110,12 +112,12 @@ class AccountRegisterController : AutoCloseable {
         tableView.apply {
 
             rowFactory = Callback {
-                RegisterEntryTableRow { action ->
+                AccountEntryTableRow { action ->
                     when (action) {
-                        is RegisterEntryTableRow.Action.Add -> onAddTransaction()
-                        is RegisterEntryTableRow.Action.Edit -> editEntry(action.entry)
-                        is RegisterEntryTableRow.Action.Delete -> deleteEntry(action.entry)
-                        is RegisterEntryTableRow.Action.UpdateStatus -> updateEntryStatus(action.entry, action.status)
+                        is AccountEntryTableRow.Action.Add -> onAddTransaction()
+                        is AccountEntryTableRow.Action.Edit -> editEntry(action.entry)
+                        is AccountEntryTableRow.Action.Delete -> deleteEntry(action.entry)
+                        is AccountEntryTableRow.Action.UpdateStatus -> updateEntryStatus(action.entry, action.status)
                     }
                 }
             }
@@ -231,7 +233,7 @@ class AccountRegisterController : AutoCloseable {
         }
     }
 
-    private fun editEntry(entry: FXRegisterEntry) {
+    private fun editEntry(entry: FXAccountEntry) {
         viewModel.prepareEditEntry(entry) {
             when (it) {
                 is AccountRegisterViewModel.Edit.Transaction ->
@@ -246,11 +248,11 @@ class AccountRegisterController : AutoCloseable {
         }
     }
 
-    private fun deleteEntry(entry: FXRegisterEntry) {
+    private fun deleteEntry(entry: FXAccountEntry) {
 
-        val contentText = when (entry.type) {
-            is FXRegisterEntry.Type.Transaction -> "Are you sure you want to delete this transaction?"
-            is FXRegisterEntry.Type.Transfer -> "Are you sure you want to delete this transfer?"
+        val contentText = when (entry) {
+            is FXTransactionAccountEntry -> "Are you sure you want to delete this transaction?"
+            is FXTransferAccountEntry -> "Are you sure you want to delete this transfer?"
         }
 
         val result = Alert(Alert.AlertType.CONFIRMATION).let {
@@ -267,7 +269,7 @@ class AccountRegisterController : AutoCloseable {
         }
     }
 
-    private fun updateEntryStatus(entry: FXRegisterEntry, status: TransactionStatus) {
+    private fun updateEntryStatus(entry: FXAccountEntry, status: TransactionStatus) {
         viewModel.updateEntryStatus(entry, status) { error ->
             error?.let { ErrorAlert.showAndWait(it) }
         }

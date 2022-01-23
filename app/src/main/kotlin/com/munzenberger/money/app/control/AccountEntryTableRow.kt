@@ -1,6 +1,6 @@
 package com.munzenberger.money.app.control
 
-import com.munzenberger.money.app.model.FXRegisterEntry
+import com.munzenberger.money.app.model.FXAccountEntry
 import com.munzenberger.money.core.TransactionStatus
 import javafx.css.PseudoClass
 import javafx.scene.control.ContextMenu
@@ -11,15 +11,15 @@ import javafx.scene.control.TableRow
 import javafx.scene.input.MouseButton
 import java.time.LocalDate
 
-class RegisterEntryTableRow(
+class AccountEntryTableRow(
         private val actionHandler: (action: Action) -> Unit
-) : TableRow<FXRegisterEntry>() {
+) : TableRow<FXAccountEntry>() {
 
     sealed class Action {
         object Add : Action()
-        data class Edit(val entry: FXRegisterEntry) : Action()
-        data class Delete(val entry: FXRegisterEntry) : Action()
-        data class UpdateStatus(val status: TransactionStatus, val entry: FXRegisterEntry) : Action()
+        data class Edit(val entry: FXAccountEntry) : Action()
+        data class Delete(val entry: FXAccountEntry) : Action()
+        data class UpdateStatus(val status: TransactionStatus, val entry: FXAccountEntry) : Action()
     }
 
     companion object {
@@ -55,7 +55,7 @@ class RegisterEntryTableRow(
         }
     }
 
-    override fun updateItem(item: FXRegisterEntry?, empty: Boolean) {
+    override fun updateItem(item: FXAccountEntry?, empty: Boolean) {
         super.updateItem(item, empty)
 
         contextMenu = if (empty) null else transactionContextMenu

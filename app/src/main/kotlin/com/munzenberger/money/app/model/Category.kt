@@ -31,9 +31,11 @@ data class CategoryWithParent(
 
 fun Category.Companion.getAllWithParent(database: MoneyDatabase): List<CategoryWithParent> {
 
-    // TODO replace hardcoded tables/columns with references to table objects
     val sql = """
-        SELECT ${CategoryTable.tableName}.*, PARENTS.${CategoryTable.identityColumn} AS PARENT_ID, PARENTS.${CategoryTable.nameColumn} AS PARENT_NAME
+        SELECT
+            ${CategoryTable.tableName}.*, 
+            PARENTS.${CategoryTable.identityColumn} AS PARENT_ID, 
+            PARENTS.${CategoryTable.nameColumn} AS PARENT_NAME
         FROM ${CategoryTable.tableName}
         LEFT JOIN ${CategoryTable.tableName} AS PARENTS ON ${CategoryTable.tableName}.${CategoryTable.parentColumn} = PARENTS.${CategoryTable.identityColumn}
     """.trimIndent()

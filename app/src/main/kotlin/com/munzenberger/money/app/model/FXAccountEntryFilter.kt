@@ -3,10 +3,10 @@ package com.munzenberger.money.app.model
 import java.time.LocalDate
 import java.util.function.Predicate
 
-class FXRegisterEntryFilter(
+class FXAccountEntryFilter(
         val name: String,
-        predicate: Predicate<FXRegisterEntry>
-) : Predicate<FXRegisterEntry> by predicate {
+    predicate: Predicate<FXAccountEntry>
+) : Predicate<FXAccountEntry> by predicate {
     override fun toString() = name
 }
 

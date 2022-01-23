@@ -4,8 +4,10 @@ import com.munzenberger.money.app.concurrent.Executors
 import com.munzenberger.money.app.concurrent.setValueAsync
 import com.munzenberger.money.app.database.CompositeSubscription
 import com.munzenberger.money.app.database.ObservableMoneyDatabase
-import com.munzenberger.money.app.model.FXRegisterEntry
-import com.munzenberger.money.app.model.FXRegisterEntryFilter
+import com.munzenberger.money.app.model.FXAccountEntry
+import com.munzenberger.money.app.model.FXAccountEntryFilter
+import com.munzenberger.money.app.model.FXTransactionAccountEntry
+import com.munzenberger.money.app.model.FXTransferAccountEntry
 import com.munzenberger.money.app.model.inCurrentMonth
 import com.munzenberger.money.app.model.inCurrentYear
 import com.munzenberger.money.app.model.inLastMonths
@@ -23,13 +25,6 @@ import com.munzenberger.money.core.TransactionStatus
 import com.munzenberger.money.core.getAccountEntries
 import com.munzenberger.money.core.getBalance
 import com.munzenberger.money.core.model.AccountTypeGroup
-import com.munzenberger.money.core.model.CategoryEntryTable
-import com.munzenberger.money.core.model.TransactionTable
-import com.munzenberger.money.core.model.TransferEntryTable
-import com.munzenberger.money.sql.DeleteQueryBuilder
-import com.munzenberger.money.sql.QueryExecutor
-import com.munzenberger.money.sql.eq
-import com.munzenberger.money.sql.transaction
 import javafx.beans.binding.Bindings
 import javafx.beans.property.ReadOnlyBooleanProperty
 import javafx.beans.property.ReadOnlyListProperty
@@ -53,44 +48,44 @@ class AccountRegisterViewModel : AutoCloseable {
 
     private data class Register(
             val account: Account,
-            val transactions: List<FXRegisterEntry>,
+            val transactions: List<FXAccountEntry>,
             val endingBalance: Money
     )
 
     private val subscriptions = CompositeSubscription()
 
     private val account = SimpleAsyncObjectProperty<Account>()
-    private val transactions = SimpleAsyncObjectProperty<List<FXRegisterEntry>>()
+    private val transactions = SimpleAsyncObjectProperty<List<FXAccountEntry>>()
     private val endingBalance = SimpleAsyncObjectProperty<Money>()
     private val debitText = SimpleStringProperty()
     private val creditText = SimpleStringProperty()
-    private val activeFilters = SimpleObjectProperty<Predicate<FXRegisterEntry>>()
+    private val activeFilters = SimpleObjectProperty<Predicate<FXAccountEntry>>()
     private val isOperationInProgress = SimpleBooleanProperty(false)
     private val register = SimpleAsyncObjectProperty<Register>()
 
     val accountProperty: ReadOnlyAsyncObjectProperty<Account> = account
-    val transactionsProperty: ReadOnlyAsyncObjectProperty<List<FXRegisterEntry>> = transactions
+    val transactionsProperty: ReadOnlyAsyncObjectProperty<List<FXAccountEntry>> = transactions
     val endingBalanceProperty: ReadOnlyAsyncObjectProperty<Money> = endingBalance
     val debitTextProperty: ReadOnlyStringProperty = debitText
     val creditTextProperty: ReadOnlyStringProperty = creditText
-    val dateFiltersProperty: ReadOnlyListProperty<FXRegisterEntryFilter>
-    val statusFiltersProperty: ReadOnlyListProperty<FXRegisterEntryFilter>
-    val activeFiltersProperty: ReadOnlyObjectProperty<Predicate<FXRegisterEntry>> = activeFilters
+    val dateFiltersProperty: ReadOnlyListProperty<FXAccountEntryFilter>
+    val statusFiltersProperty: ReadOnlyListProperty<FXAccountEntryFilter>
+    val activeFiltersProperty: ReadOnlyObjectProperty<Predicate<FXAccountEntry>> = activeFilters
     val isOperationInProgressProperty: ReadOnlyBooleanProperty = isOperationInProgress
 
-    val selectedDateFilterProperty = SimpleObjectProperty<FXRegisterEntryFilter>()
-    val selectedStatusFilterProperty = SimpleObjectProperty<FXRegisterEntryFilter>()
+    val selectedDateFilterProperty = SimpleObjectProperty<FXAccountEntryFilter>()
+    val selectedStatusFilterProperty = SimpleObjectProperty<FXAccountEntryFilter>()
 
     lateinit var database: MoneyDatabase
 
     init {
 
         val dateFilters = FXCollections.observableArrayList(
-                FXRegisterEntryFilter("All Dates") { true },
-                FXRegisterEntryFilter("Current Month") { it.dateProperty.value.inCurrentMonth() },
-                FXRegisterEntryFilter("Current Year") { it.dateProperty.value.inCurrentYear() },
-                FXRegisterEntryFilter("Last 3 Months") { it.dateProperty.value.inLastMonths(3) },
-                FXRegisterEntryFilter("Last 12 Months") { it.dateProperty.value.inLastMonths(12) }
+                FXAccountEntryFilter("All Dates") { true },
+                FXAccountEntryFilter("Current Month") { it.dateProperty.value.inCurrentMonth() },
+                FXAccountEntryFilter("Current Year") { it.dateProperty.value.inCurrentYear() },
+                FXAccountEntryFilter("Last 3 Months") { it.dateProperty.value.inLastMonths(3) },
+                FXAccountEntryFilter("Last 12 Months") { it.dateProperty.value.inLastMonths(12) }
         )
 
         dateFiltersProperty = SimpleListProperty(dateFilters)
@@ -98,8 +93,8 @@ class AccountRegisterViewModel : AutoCloseable {
         selectedDateFilterProperty.value = dateFilters[0]
 
         val statusFilters = FXCollections.observableArrayList(
-                FXRegisterEntryFilter("All Transactions") { true },
-                FXRegisterEntryFilter("Unreconciled Transactions") { it.statusProperty.value != TransactionStatus.RECONCILED }
+                FXAccountEntryFilter("All Transactions") { true },
+                FXAccountEntryFilter("Unreconciled Transactions") { it.statusProperty.value != TransactionStatus.RECONCILED }
         )
 
         statusFiltersProperty = SimpleListProperty(statusFilters)
@@ -148,17 +143,17 @@ class AccountRegisterViewModel : AutoCloseable {
 
                 Register(
                         account = account,
-                        transactions = transactions.map { FXRegisterEntry(it) },
+                        transactions = transactions.map { FXAccountEntry.of(it) },
                         endingBalance = endingBalance
                 )
             }
         }.also { subscriptions.add(it) }
     }
 
-    fun prepareEditEntry(entry: FXRegisterEntry, block: (Edit) -> Unit) {
-        when (val t = entry.type) {
-            is FXRegisterEntry.Type.Transaction -> prepareEditTransaction(t.transactionId, block)
-            is FXRegisterEntry.Type.Transfer -> block.invoke(Edit.Transfer(t.transferId))
+    fun prepareEditEntry(entry: FXAccountEntry, block: (Edit) -> Unit) {
+        when (entry) {
+            is FXTransactionAccountEntry -> prepareEditTransaction(entry.transactionId, block)
+            is FXTransferAccountEntry -> block.invoke(Edit.Transfer(entry.transferId))
         }
     }
 
@@ -185,19 +180,12 @@ class AccountRegisterViewModel : AutoCloseable {
         Executors.SINGLE.execute(task)
     }
 
-    fun deleteEntry(entry: FXRegisterEntry, completionBlock: (Throwable?) -> Unit) {
-        when (val t = entry.type) {
-            is FXRegisterEntry.Type.Transaction -> deleteTransaction(t.transactionId, completionBlock)
-            is FXRegisterEntry.Type.Transfer -> deleteTransfer(t.transferId, completionBlock)
-        }
-    }
-
-    private fun deleteTransaction(transactionId: Long, completionBlock: (Throwable?) -> Unit) {
+    fun deleteEntry(entry: FXAccountEntry, completionBlock: (Throwable?) -> Unit) {
 
         val task = object : Task<Unit>() {
 
             override fun call() {
-                deleteTransaction(database, transactionId)
+                entry.delete(database)
             }
 
             override fun succeeded() {
@@ -214,29 +202,7 @@ class AccountRegisterViewModel : AutoCloseable {
         Executors.SINGLE.execute(task)
     }
 
-    private fun deleteTransfer(transferId: Long, completionBlock: (Throwable?) -> Unit) {
-
-        val task = object : Task<Unit>() {
-
-            override fun call() {
-                deleteTransfer(database, transferId)
-            }
-
-            override fun succeeded() {
-                completionBlock.invoke(null)
-            }
-
-            override fun failed() {
-                completionBlock.invoke(exception)
-            }
-        }
-
-        isOperationInProgress.bind(task.runningProperty())
-
-        Executors.SINGLE.execute(task)
-    }
-
-    fun updateEntryStatus(entry: FXRegisterEntry, status: TransactionStatus, completionBlock: (Throwable?) -> Unit) {
+    fun updateEntryStatus(entry: FXAccountEntry, status: TransactionStatus, completionBlock: (Throwable?) -> Unit) {
 
         val task = object : Task<Unit>() {
 
@@ -268,32 +234,4 @@ private fun AccountEntry.negateBalance(): AccountEntry {
         is AccountEntry.Transaction -> copy(balance = balance.negate())
         is AccountEntry.Transfer -> copy(balance = balance.negate())
     }
-}
-
-private fun deleteTransaction(executor: QueryExecutor, transactionId: Long) {
-    executor.transaction { tx ->
-
-        DeleteQueryBuilder(TransferEntryTable.tableName)
-                .where(TransferEntryTable.transactionColumn.eq(transactionId))
-                .build()
-                .let { tx.executeUpdate(it) }
-
-        DeleteQueryBuilder(CategoryEntryTable.tableName)
-                .where(CategoryEntryTable.transactionColumn.eq(transactionId))
-                .build()
-                .let { tx.executeUpdate(it) }
-
-        DeleteQueryBuilder(TransactionTable.tableName)
-                .where(TransactionTable.identityColumn.eq(transactionId))
-                .build()
-                .let { tx.executeUpdate(it) }
-    }
-}
-
-private fun deleteTransfer(executor: QueryExecutor, transferId: Long) {
-
-    DeleteQueryBuilder(TransferEntryTable.tableName)
-            .where(TransferEntryTable.identityColumn.eq(transferId))
-            .build()
-            .let { executor.executeUpdate(it) }
 }
