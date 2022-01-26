@@ -1,12 +1,13 @@
 package com.munzenberger.money.app
 
 import com.munzenberger.money.app.control.MoneyStringConverter
+import com.munzenberger.money.app.control.booleanToWaitCursor
 import com.munzenberger.money.app.database.ObservableMoneyDatabase
-import com.munzenberger.money.app.property.AsyncObject
-import com.munzenberger.money.app.property.bindAsyncStatus
 import com.munzenberger.money.core.Account
+import com.munzenberger.money.core.Statement
 import javafx.fxml.FXML
 import javafx.scene.Node
+import javafx.scene.control.Alert
 import javafx.scene.control.Button
 import javafx.scene.control.DatePicker
 import javafx.scene.control.TextField
@@ -14,10 +15,10 @@ import javafx.scene.control.TextFormatter
 import javafx.stage.Stage
 import java.net.URL
 
-class StartBalanceAccountController {
+class BalanceStatementController {
 
     companion object {
-        val LAYOUT: URL = StartBalanceAccountController::class.java.getResource("StartBalanceAccountLayout.fxml")
+        val LAYOUT: URL = BalanceStatementController::class.java.getResource("BalanceStatementLayout.fxml")
     }
 
     @FXML lateinit var container: Node
@@ -29,13 +30,12 @@ class StartBalanceAccountController {
     private lateinit var database: ObservableMoneyDatabase
     private lateinit var account: Account
 
-    private val viewModel = StartBalanceAccountViewModel()
+    private val viewModel = BalanceStatementViewModel()
 
     fun initialize() {
 
         statementClosingDatePicker.apply {
             valueProperty().bindBidirectional(viewModel.statementDateProperty)
-            disableProperty().bindAsyncStatus(viewModel.loadStatusProperty, AsyncObject.Status.ERROR)
         }
 
         statementBalanceTextField.apply {
@@ -43,24 +43,15 @@ class StartBalanceAccountController {
             textFormatter = TextFormatter(moneyConverter).apply {
                 valueProperty().bindBidirectional(viewModel.statementBalanceProperty)
             }
-            disableProperty().bindAsyncStatus(viewModel.loadStatusProperty, AsyncObject.Status.ERROR)
         }
 
         continueButton.disableProperty().bind(viewModel.isInvalidBinding)
 
-        container.disableProperty().bindAsyncStatus(viewModel.loadStatusProperty,
-            AsyncObject.Status.PENDING,
-                AsyncObject.Status.EXECUTING)
-
-        viewModel.loadStatusProperty.addListener { _, _, status ->
-            when (status) {
-                is AsyncObject.Error -> ErrorAlert.showAndWait(status.error)
-                else -> Unit
-            }
-        }
+        container.disableProperty().bind(viewModel.operationInProgressProperty)
     }
 
     fun start(stage: Stage, database: ObservableMoneyDatabase, account: Account) {
+
         this.stage = stage
         this.database = database
         this.account = account
@@ -69,7 +60,14 @@ class StartBalanceAccountController {
         stage.minHeight = stage.height
         stage.maxHeight = stage.height
 
-        viewModel.start(account, database)
+        viewModel.operationInProgressProperty.addListener { _, _, newValue ->
+            stage.scene.cursor = booleanToWaitCursor(newValue)
+        }
+
+        viewModel.start(account, database) {
+            ErrorAlert.showAndWait(it)
+            onCancelButton()
+        }
     }
 
     @FXML fun onCancelButton() {
@@ -77,8 +75,15 @@ class StartBalanceAccountController {
     }
 
     @FXML fun onContinueButton() {
-        viewModel.prepareStatement().let { statement ->
-            // TODO present the balance account controller
-        }
+        viewModel.saveStatement(
+                onSuccess = { showBalanceAccount(it) },
+                onError = { ErrorAlert.showAndWait(it) }
+        )
+    }
+
+    private fun showBalanceAccount(statement: Statement) {
+        // TODO show balance account dialog
+        Alert(Alert.AlertType.INFORMATION, "Show balance account!").showAndWait()
+        stage.close()
     }
 }
