@@ -8,7 +8,7 @@ import javafx.stage.FileChooser
 import javafx.stage.Window
 import java.io.File
 
-object OpenFileDatabase : DatabaseConnectorCallbacks {
+object OpenFileDatabaseCallbacks : DatabaseConnectorCallbacks {
 
     fun openFile(ownerWindow: Window): File? = FileChooser().let {
         it.title = "Open Money Database"

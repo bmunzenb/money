@@ -2,7 +2,7 @@ package com.munzenberger.money.app.database
 
 import com.munzenberger.money.app.ErrorAlert
 
-open class MemoryDatabase : DatabaseConnectorCallbacks {
+object MemoryDatabaseCallbacks : DatabaseConnectorCallbacks {
 
     override fun onCanceled() {
         // Do nothing

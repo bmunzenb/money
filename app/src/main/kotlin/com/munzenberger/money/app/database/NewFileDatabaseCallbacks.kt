@@ -7,7 +7,7 @@ import javafx.stage.FileChooser
 import javafx.stage.Window
 import java.io.File
 
-object NewFileDatabase : DatabaseConnectorCallbacks {
+object NewFileDatabaseCallbacks : DatabaseConnectorCallbacks {
 
     fun openFile(ownerWindow: Window): File? {
         val file: File? = FileChooser().let {

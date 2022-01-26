@@ -1,10 +1,10 @@
 package com.munzenberger.money.app
 
 import com.munzenberger.money.app.control.booleanToWaitCursor
-import com.munzenberger.money.app.database.MemoryDatabase
-import com.munzenberger.money.app.database.NewFileDatabase
+import com.munzenberger.money.app.database.MemoryDatabaseCallbacks
+import com.munzenberger.money.app.database.NewFileDatabaseCallbacks
 import com.munzenberger.money.app.database.ObservableMoneyDatabase
-import com.munzenberger.money.app.database.OpenFileDatabase
+import com.munzenberger.money.app.database.OpenFileDatabaseCallbacks
 import javafx.fxml.FXML
 import javafx.fxml.FXMLLoader
 import javafx.scene.Node
@@ -53,19 +53,19 @@ class ApplicationController : DatabaseConnectorDelegate, AutoCloseable {
     }
 
     @FXML override fun onCreateDatabase() {
-        NewFileDatabase.openFile(stage)?.let {
-            viewModel.openFileDatabase(it, NewFileDatabase)
+        NewFileDatabaseCallbacks.openFile(stage)?.let {
+            viewModel.openFileDatabase(it, NewFileDatabaseCallbacks)
         }
     }
 
     @FXML override fun onOpenDatabase() {
-        OpenFileDatabase.openFile(stage)?.let {
-            viewModel.openFileDatabase(it, OpenFileDatabase)
+        OpenFileDatabaseCallbacks.openFile(stage)?.let {
+            viewModel.openFileDatabase(it, OpenFileDatabaseCallbacks)
         }
     }
 
     @FXML override fun onMemoryDatabase() {
-        viewModel.startMemoryDatabase(MemoryDatabase())
+        viewModel.startMemoryDatabase(MemoryDatabaseCallbacks)
     }
 
     @FXML fun onExit() {
