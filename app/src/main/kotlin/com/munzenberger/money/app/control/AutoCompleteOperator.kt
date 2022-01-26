@@ -30,6 +30,11 @@ class AutoCompleteOperator<T>(items: ObservableList<T>, converter: StringConvert
 
         val newText = change.controlNewText
 
+        if (change.caretPosition < newText.length-1) {
+            // text change in middle, don't auto-complete
+            return change
+        }
+
         strings.forEach {
             when {
                 it == newText ->
@@ -38,12 +43,11 @@ class AutoCompleteOperator<T>(items: ObservableList<T>, converter: StringConvert
 
                 it.startsWith(newText) -> {
 
-                    val value = it.substring(newText.length-1)
-                    val newAnchor = it.length
-                    val newCaretPosition = change.caretPosition
+                    // auto-complete by updating the text changed
+                    change.text = it.substring(change.caretPosition-1)
 
-                    change.text = value
-                    change.selectRange(newAnchor, newCaretPosition)
+                    // auto select the completed text
+                    change.selectRange(it.length, change.caretPosition)
 
                     return change
                 }
