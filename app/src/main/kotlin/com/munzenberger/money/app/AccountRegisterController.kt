@@ -41,7 +41,7 @@ import java.time.LocalDate
 class AccountRegisterController : AutoCloseable {
 
     companion object {
-        private val LAYOUT: URL = AccountListController::class.java.getResource("AccountRegisterLayout.fxml")
+        private val LAYOUT: URL = AccountRegisterController::class.java.getResource("AccountRegisterLayout.fxml")!!
 
         fun navigation(stage: Stage, database: ObservableMoneyDatabase, accountIdentity: Long) = LayoutControllerNavigation(LAYOUT) {
             controller: AccountRegisterController -> controller.start(stage, database, accountIdentity)
@@ -295,7 +295,9 @@ class AccountRegisterController : AutoCloseable {
         DialogBuilder.build(BalanceStatementController.LAYOUT) { stage, controller: BalanceStatementController ->
             stage.title = "Balance ${account.name}"
             stage.show()
-            controller.start(stage, database, account)
+            controller.start(stage, database, account) { statement ->
+                // TODO show balance dialog
+            }
         }
     }
 

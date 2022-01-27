@@ -7,13 +7,13 @@ import com.munzenberger.money.core.Account
 import com.munzenberger.money.core.Statement
 import javafx.fxml.FXML
 import javafx.scene.Node
-import javafx.scene.control.Alert
 import javafx.scene.control.Button
 import javafx.scene.control.DatePicker
 import javafx.scene.control.TextField
 import javafx.scene.control.TextFormatter
 import javafx.stage.Stage
 import java.net.URL
+import java.util.function.Consumer
 
 class BalanceStatementController {
 
@@ -29,6 +29,7 @@ class BalanceStatementController {
     private lateinit var stage: Stage
     private lateinit var database: ObservableMoneyDatabase
     private lateinit var account: Account
+    private lateinit var callback: Consumer<Statement>
 
     private val viewModel = BalanceStatementViewModel()
 
@@ -50,11 +51,12 @@ class BalanceStatementController {
         container.disableProperty().bind(viewModel.operationInProgressProperty)
     }
 
-    fun start(stage: Stage, database: ObservableMoneyDatabase, account: Account) {
+    fun start(stage: Stage, database: ObservableMoneyDatabase, account: Account, callback: Consumer<Statement>) {
 
         this.stage = stage
         this.database = database
         this.account = account
+        this.callback = callback
 
         stage.minWidth = stage.width
         stage.minHeight = stage.height
@@ -76,14 +78,13 @@ class BalanceStatementController {
 
     @FXML fun onContinueButton() {
         viewModel.saveStatement(
-                onSuccess = { showBalanceAccount(it) },
+                onSuccess = { onStatementReady(it) },
                 onError = { ErrorAlert.showAndWait(it) }
         )
     }
 
-    private fun showBalanceAccount(statement: Statement) {
-        // TODO show balance account dialog
-        Alert(Alert.AlertType.INFORMATION, "Show balance account!").showAndWait()
+    private fun onStatementReady(statement: Statement) {
         stage.close()
+        callback.accept(statement)
     }
 }
