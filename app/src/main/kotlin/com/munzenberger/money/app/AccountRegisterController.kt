@@ -296,7 +296,11 @@ class AccountRegisterController : AutoCloseable {
             stage.title = "Balance ${account.name}"
             stage.show()
             controller.start(stage, database, account) { statement ->
-                // TODO show balance dialog
+                DialogBuilder.build(BalanceAccountController.LAYOUT) { stage, controller: BalanceAccountController ->
+                    stage.title = "Balance ${account.name}"
+                    stage.show()
+                    controller.start(stage)
+                }
             }
         }
     }

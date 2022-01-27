@@ -72,7 +72,7 @@ class BalanceStatementViewModel {
             }
 
             override fun succeeded() {
-                onSuccess(value)
+                onSuccess.invoke(value)
             }
 
             override fun failed() {
