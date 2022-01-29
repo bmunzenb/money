@@ -38,7 +38,7 @@ import javafx.collections.FXCollections
 import javafx.concurrent.Task
 import java.util.function.Predicate
 
-class AccountRegisterViewModel : AutoCloseable {
+class AccountRegisterViewModel : AccountEntriesViewModel, AutoCloseable {
 
     sealed class Edit {
         data class Transaction(val transaction: com.munzenberger.money.core.Transaction) : Edit()
@@ -64,10 +64,10 @@ class AccountRegisterViewModel : AutoCloseable {
     private val register = SimpleAsyncObjectProperty<Register>()
 
     val accountProperty: ReadOnlyAsyncObjectProperty<Account> = account
-    val transactionsProperty: ReadOnlyAsyncObjectProperty<List<FXAccountEntry>> = transactions
+    override val transactionsProperty: ReadOnlyAsyncObjectProperty<List<FXAccountEntry>> = transactions
     val endingBalanceProperty: ReadOnlyAsyncObjectProperty<Money> = endingBalance
-    val debitTextProperty: ReadOnlyStringProperty = debitText
-    val creditTextProperty: ReadOnlyStringProperty = creditText
+    override val debitTextProperty: ReadOnlyStringProperty = debitText
+    override val creditTextProperty: ReadOnlyStringProperty = creditText
     val dateFiltersProperty: ReadOnlyListProperty<FXAccountEntryFilter>
     val statusFiltersProperty: ReadOnlyListProperty<FXAccountEntryFilter>
     val activeFiltersProperty: ReadOnlyObjectProperty<Predicate<FXAccountEntry>> = activeFilters

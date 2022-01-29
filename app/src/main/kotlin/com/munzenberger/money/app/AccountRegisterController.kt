@@ -299,12 +299,7 @@ class AccountRegisterController : AutoCloseable {
                 DialogBuilder.build(BalanceAccountController.LAYOUT) { stage, controller: BalanceAccountController ->
                     stage.title = "Balance ${account.name}"
                     stage.show()
-                    controller.start(
-                            stage,
-                            viewModel.transactionsProperty,
-                            viewModel.debitTextProperty,
-                            viewModel.creditTextProperty
-                    )
+                    controller.start(stage, viewModel)
                 }
             }
         }

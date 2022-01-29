@@ -5,10 +5,8 @@ import com.munzenberger.money.app.control.MoneyTableCellFactory
 import com.munzenberger.money.app.control.bindAsync
 import com.munzenberger.money.app.model.FXAccountEntry
 import com.munzenberger.money.app.property.NumberStringComparator
-import com.munzenberger.money.app.property.ReadOnlyAsyncObjectProperty
 import com.munzenberger.money.core.Money
 import com.munzenberger.money.core.TransactionStatus
-import javafx.beans.property.ReadOnlyStringProperty
 import javafx.beans.property.SimpleObjectProperty
 import javafx.fxml.FXML
 import javafx.scene.control.Button
@@ -38,25 +36,10 @@ class BalanceAccountController  {
     @FXML lateinit var continueButton: Button
     @FXML lateinit var cancelButton: Button
 
-    private val viewModel = BalanceAccountViewModel()
-
+    private lateinit var viewModel: BalanceAccountViewModel
     private lateinit var stage: Stage
 
     fun initialize() {
-
-        transactionsTable.apply {
-
-            selectionModel.selectionMode = SelectionMode.SINGLE
-
-            // only show unreconciled transactions
-            val filter = Predicate<FXAccountEntry> { it.statusProperty.value != TransactionStatus.RECONCILED }
-
-            bindAsync(
-                    listProperty = viewModel.transactionsProperty,
-                    filterProperty = SimpleObjectProperty(filter),
-                    placeholder = Text("No transactions.")
-            )
-        }
 
         numberColumn.apply {
             cellValueFactory = Callback { it.value.numberProperty }
@@ -79,29 +62,41 @@ class BalanceAccountController  {
         debitColumn.apply {
             cellFactory = MoneyTableCellFactory(withCurrency = false, negativeStyle = false)
             cellValueFactory = Callback { it.value.debitProperty }
-            textProperty().bind(viewModel.debitTextProperty)
         }
 
         creditColumn.apply {
             cellFactory = MoneyTableCellFactory(withCurrency = false, negativeStyle = false)
             cellValueFactory = Callback { it.value.creditProperty }
-            textProperty().bind(viewModel.creditTextProperty)
         }
     }
 
-    fun start(
-            stage: Stage,
-            transactionsProperty: ReadOnlyAsyncObjectProperty<List<FXAccountEntry>>,
-            debitTextProperty: ReadOnlyStringProperty,
-            creditTextProperty: ReadOnlyStringProperty
-    ) {
+    fun start(stage: Stage, entriesViewModel: AccountEntriesViewModel) {
 
+        this.viewModel = BalanceAccountViewModel(entriesViewModel)
         this.stage = stage
 
         stage.minWidth = stage.width
         stage.minHeight = stage.height
 
-        viewModel.start(transactionsProperty, debitTextProperty, creditTextProperty)
+        transactionsTable.apply {
+
+            selectionModel.selectionMode = SelectionMode.SINGLE
+
+            // only show unreconciled transactions
+            val filter = Predicate<FXAccountEntry> { it.statusProperty.value != TransactionStatus.RECONCILED }
+
+            bindAsync(
+                    listProperty = viewModel.transactionsProperty,
+                    filterProperty = SimpleObjectProperty(filter),
+                    placeholder = Text("No transactions.")
+            )
+        }
+
+        debitColumn.textProperty().bind(viewModel.debitTextProperty)
+
+        creditColumn.textProperty().bind(viewModel.creditTextProperty)
+
+        viewModel.start()
     }
 
     @FXML fun onContinueButton() {
