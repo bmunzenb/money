@@ -1,5 +1,6 @@
 package com.munzenberger.money.app
 
+import com.munzenberger.money.app.control.CheckBoxTableViewCellFactory
 import com.munzenberger.money.app.control.DateTableCellFactory
 import com.munzenberger.money.app.control.MoneyTableCellFactory
 import com.munzenberger.money.app.control.bindAsync
@@ -56,6 +57,10 @@ class BalanceAccountController  {
         }
 
         statusColumn.apply {
+            cellFactory = CheckBoxTableViewCellFactory(
+                    isChecked = { it == TransactionStatus.CLEARED },
+                    onChanged = ::changeStatus
+            )
             cellValueFactory = Callback { it.value.statusProperty }
         }
 
@@ -105,5 +110,14 @@ class BalanceAccountController  {
 
     @FXML fun onCancelButton() {
         stage.close()
+    }
+
+    private fun changeStatus(entry: FXAccountEntry, isCleared: Boolean) {
+
+        val status = if (isCleared) TransactionStatus.CLEARED else TransactionStatus.UNRECONCILED
+
+        viewModel.updateEntryStatus(entry, status) { error ->
+            if (error != null) { ErrorAlert.showAndWait(error) }
+        }
     }
 }

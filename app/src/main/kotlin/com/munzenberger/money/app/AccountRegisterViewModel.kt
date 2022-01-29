@@ -202,7 +202,7 @@ class AccountRegisterViewModel : AccountEntriesViewModel, AutoCloseable {
         Executors.SINGLE.execute(task)
     }
 
-    fun updateEntryStatus(entry: FXAccountEntry, status: TransactionStatus, completionBlock: (Throwable?) -> Unit) {
+    override fun updateEntryStatus(entry: FXAccountEntry, status: TransactionStatus, completionBlock: (Throwable?) -> Unit) {
 
         val task = object : Task<Unit>() {
 
