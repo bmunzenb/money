@@ -39,9 +39,6 @@ class BalanceAccountController  {
     @FXML lateinit var statusColumn: TableColumn<FXAccountEntry, TransactionStatus>
     @FXML lateinit var debitColumn: TableColumn<FXAccountEntry, Money>
     @FXML lateinit var creditColumn: TableColumn<FXAccountEntry, Money>
-    @FXML lateinit var startingBalanceLabel: Label
-    @FXML lateinit var clearedBalanceLabel: Label
-    @FXML lateinit var endingBalanceLabel: Label
     @FXML lateinit var differenceLabel: Label
     @FXML lateinit var continueButton: Button
     @FXML lateinit var cancelButton: Button
@@ -113,22 +110,7 @@ class BalanceAccountController  {
         debitColumn.textProperty().bind(viewModel.debitTextProperty)
         creditColumn.textProperty().bind(viewModel.creditTextProperty)
 
-        startingBalanceLabel.textProperty().bind(viewModel.startingBalanceProperty.toBinding { it.toStringWithoutCurrency() })
-        endingBalanceLabel.textProperty().bind(viewModel.endingBalanceProperty.toBinding { it.toStringWithoutCurrency() })
-        clearedBalanceLabel.textProperty().bind(viewModel.clearedBalanceProperty.toBinding { it.toStringWithoutCurrency() })
         differenceLabel.textProperty().bind(viewModel.differenceProperty.toBinding { it.toStringWithoutCurrency() })
-
-        viewModel.startingBalanceProperty.addListener { _, _, newValue ->
-            startingBalanceLabel.pseudoClassStateChanged(moneyNegativePseudoClass, newValue.isNegative)
-        }
-
-        viewModel.endingBalanceProperty.addListener { _, _, newValue ->
-            endingBalanceLabel.pseudoClassStateChanged(moneyNegativePseudoClass, newValue.isNegative)
-        }
-
-        viewModel.clearedBalanceProperty.addListener { _, _, newValue ->
-            clearedBalanceLabel.pseudoClassStateChanged(moneyNegativePseudoClass, newValue.isNegative)
-        }
 
         viewModel.differenceProperty.addListener { _, _, newValue ->
             differenceLabel.pseudoClassStateChanged(moneyNegativePseudoClass, newValue.isNegative)
