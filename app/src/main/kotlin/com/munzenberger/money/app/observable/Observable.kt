@@ -1,10 +1,10 @@
-package com.munzenberger.money.app.database
+package com.munzenberger.money.app.observable
 
-import java.util.Collections
+import java.util.*
 import java.util.concurrent.Executor
 
-interface ObservableDatabase {
-    fun subscribeOnUpdate(executor: Executor, block: Runnable): Subscription
+interface Observable {
+    fun subscribe(executor: Executor, block: Runnable): Subscription
 }
 
 interface Subscription {
@@ -29,24 +29,24 @@ class CompositeSubscription : Subscription {
     }
 }
 
-class ObservableDatabaseImpl() : ObservableDatabase {
+class ObservableImpl : Observable {
 
-    private val onUpdateSubscribers = Collections.synchronizedList(mutableListOf<Pair<Executor, Runnable>>())
+    private val subscribers = Collections.synchronizedList(mutableListOf<Pair<Executor, Runnable>>())
 
-    override fun subscribeOnUpdate(executor: Executor, block: Runnable): Subscription {
+    override fun subscribe(executor: Executor, block: Runnable): Subscription {
         val pair = executor to block
-        onUpdateSubscribers.add(pair)
+        subscribers.add(pair)
         executor.execute(block)
         return object : Subscription {
             override fun cancel() {
-                onUpdateSubscribers.remove(pair)
+                subscribers.remove(pair)
             }
         }
     }
 
-    fun fireOnUpdate() {
-        synchronized(onUpdateSubscribers) {
-            onUpdateSubscribers.forEach {
+    fun onNext() {
+        synchronized(subscribers) {
+            subscribers.forEach {
                 val (executor, block) = it
                 executor.execute(block)
             }

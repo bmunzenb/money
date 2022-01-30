@@ -2,7 +2,6 @@ package com.munzenberger.money.app
 
 import com.munzenberger.money.app.concurrent.Executors
 import com.munzenberger.money.app.concurrent.setValueAsync
-import com.munzenberger.money.app.database.CompositeSubscription
 import com.munzenberger.money.app.database.ObservableMoneyDatabase
 import com.munzenberger.money.app.model.FXAccountEntry
 import com.munzenberger.money.app.model.FXAccountEntryFilter
@@ -11,6 +10,7 @@ import com.munzenberger.money.app.model.FXTransferAccountEntry
 import com.munzenberger.money.app.model.inCurrentMonth
 import com.munzenberger.money.app.model.inCurrentYear
 import com.munzenberger.money.app.model.inLastMonths
+import com.munzenberger.money.app.observable.CompositeSubscription
 import com.munzenberger.money.app.property.ReadOnlyAsyncObjectProperty
 import com.munzenberger.money.app.property.SimpleAsyncObjectProperty
 import com.munzenberger.money.app.property.bindAsyncValue
@@ -128,7 +128,7 @@ class AccountRegisterViewModel : AccountEntriesViewModel, AutoCloseable {
 
         this.database = database
 
-        database.subscribeOnUpdate {
+        database.subscribe {
             register.setValueAsync {
                 val account = Account.get(accountIdentity, database)
                         ?: throw PersistableNotFoundException(Account::class, accountIdentity)

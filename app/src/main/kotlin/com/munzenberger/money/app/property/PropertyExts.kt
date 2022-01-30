@@ -1,9 +1,7 @@
 package com.munzenberger.money.app.property
 
-import com.munzenberger.money.core.Money
 import javafx.beans.binding.Bindings
 import javafx.beans.binding.ObjectBinding
-import javafx.beans.binding.StringBinding
 import javafx.beans.property.ReadOnlyObjectProperty
 import javafx.beans.value.ChangeListener
 import javafx.collections.FXCollections
