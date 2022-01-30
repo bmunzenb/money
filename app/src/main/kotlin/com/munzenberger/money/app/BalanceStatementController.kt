@@ -23,7 +23,8 @@ class BalanceStatementController {
 
     @FXML lateinit var container: Node
     @FXML lateinit var statementClosingDatePicker: DatePicker
-    @FXML lateinit var statementBalanceTextField: TextField
+    @FXML lateinit var startingBalanceTextField: TextField
+    @FXML lateinit var endingBalanceTextField: TextField
     @FXML lateinit var continueButton: Button
 
     private lateinit var stage: Stage
@@ -39,10 +40,17 @@ class BalanceStatementController {
             valueProperty().bindBidirectional(viewModel.statementDateProperty)
         }
 
-        statementBalanceTextField.apply {
+        startingBalanceTextField.apply {
             val moneyConverter = MoneyStringConverter()
             textFormatter = TextFormatter(moneyConverter).apply {
-                valueProperty().bindBidirectional(viewModel.statementBalanceProperty)
+                valueProperty().bindBidirectional(viewModel.startingBalanceProperty)
+            }
+        }
+
+        endingBalanceTextField.apply {
+            val moneyConverter = MoneyStringConverter()
+            textFormatter = TextFormatter(moneyConverter).apply {
+                valueProperty().bindBidirectional(viewModel.endingBalanceProperty)
             }
         }
 

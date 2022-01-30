@@ -22,6 +22,10 @@ class Statement internal constructor(model: StatementModel) : AbstractPersistabl
         get() = model.closingDate?.let { LocalDate.ofEpochDay(it) }
         set(value) { model.closingDate = value?.toEpochDay() }
 
+    var startingBalance: Money?
+        get() = model.startingBalance?.let { Money.valueOf(it) }
+        set(value) { model.startingBalance = value?.value }
+
     var endingBalance: Money?
         get() = model.endingBalance?.let { Money.valueOf(it) }
         set(value) { model.endingBalance = value?.value }
@@ -32,7 +36,7 @@ class Statement internal constructor(model: StatementModel) : AbstractPersistabl
 
     override fun save(executor: QueryExecutor) = executor.transaction { tx ->
         model.account = accountRef.getIdentity(tx)
-        super.save(executor)
+        super.save(tx)
     }
 
     companion object {

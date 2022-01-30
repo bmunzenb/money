@@ -13,6 +13,10 @@ fun main(args: Array<String>) {
 
 class MoneyApplication : Application() {
 
+    companion object {
+        val CSS: String = MoneyApplication::class.java.getResource("money.css")!!.toExternalForm()
+    }
+
     private lateinit var controller: ApplicationController
 
     override fun start(primaryStage: Stage) {
@@ -24,10 +28,7 @@ class MoneyApplication : Application() {
             primaryStage.apply {
 
                 scene = Scene(root).apply {
-
-                    val css = MoneyApplication::class.java.getResource("money.css").toExternalForm()
-
-                    stylesheets.add(css)
+                    stylesheets.add(CSS)
                 }
 
                 width = 800.0

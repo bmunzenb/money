@@ -38,6 +38,7 @@ sealed class FXAccountEntry(private val accountEntry: AccountEntry) {
     val balanceProperty: ReadOnlyObjectProperty<Money> = SimpleObjectProperty(accountEntry.balance)
     val payeeProperty: ReadOnlyStringProperty = SimpleStringProperty(accountEntry.payeeName)
     val statusProperty: ReadOnlyObjectProperty<TransactionStatus> = status
+    val amountProperty: ReadOnlyObjectProperty<Money> = SimpleObjectProperty(accountEntry.amount)
 
     val debitProperty: ReadOnlyObjectProperty<Money>
     val creditProperty: ReadOnlyObjectProperty<Money>

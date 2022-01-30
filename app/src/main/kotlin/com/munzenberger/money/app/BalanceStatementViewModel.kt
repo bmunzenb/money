@@ -18,13 +18,15 @@ class BalanceStatementViewModel {
     private val operationInProgress = SimpleBooleanProperty(false)
 
     val statementDateProperty = SimpleObjectProperty<LocalDate>()
-    val statementBalanceProperty = SimpleObjectProperty<Money>()
+    val startingBalanceProperty = SimpleObjectProperty<Money>()
+    val endingBalanceProperty = SimpleObjectProperty<Money>()
 
     val operationInProgressProperty: ReadOnlyBooleanProperty = operationInProgress
 
     val isInvalidBinding: BooleanBinding =
             statementDateProperty.isNull
-            .or(statementBalanceProperty.isNull)
+                    .or(startingBalanceProperty.isNull)
+                    .or(endingBalanceProperty.isNull)
 
     private lateinit var database: MoneyDatabase
     private lateinit var statement: Statement
@@ -46,7 +48,8 @@ class BalanceStatementViewModel {
             override fun succeeded() {
                 statement = value
                 statementDateProperty.value = statement.closingDate
-                statementBalanceProperty.value = statement.endingBalance
+                startingBalanceProperty.value = statement.startingBalance
+                endingBalanceProperty.value = statement.endingBalance
             }
 
             override fun failed() {
@@ -66,7 +69,8 @@ class BalanceStatementViewModel {
             override fun call(): Statement {
                 return statement.apply {
                     closingDate = statementDateProperty.value
-                    endingBalance = statementBalanceProperty.value
+                    startingBalance = startingBalanceProperty.value
+                    endingBalance = endingBalanceProperty.value
                     save(database)
                 }
             }

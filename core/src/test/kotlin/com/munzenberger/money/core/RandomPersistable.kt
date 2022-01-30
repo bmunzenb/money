@@ -75,6 +75,7 @@ fun CategoryEntry.randomize() = this.apply {
 fun Statement.randomize() = this.apply {
     setAccount(Account().randomize())
     closingDate = LocalDate.now()
+    startingBalance = random.nextMoney()
     endingBalance = random.nextMoney()
     isReconciled = random.nextBoolean()
 }

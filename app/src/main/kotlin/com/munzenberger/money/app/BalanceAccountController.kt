@@ -5,12 +5,17 @@ import com.munzenberger.money.app.control.DateTableCellFactory
 import com.munzenberger.money.app.control.MoneyTableCellFactory
 import com.munzenberger.money.app.control.bindAsync
 import com.munzenberger.money.app.model.FXAccountEntry
+import com.munzenberger.money.app.model.moneyNegativePseudoClass
 import com.munzenberger.money.app.property.NumberStringComparator
+import com.munzenberger.money.app.property.toBinding
 import com.munzenberger.money.core.Money
+import com.munzenberger.money.core.Statement
 import com.munzenberger.money.core.TransactionStatus
+import com.munzenberger.money.core.isNegative
 import javafx.beans.property.SimpleObjectProperty
 import javafx.fxml.FXML
 import javafx.scene.control.Button
+import javafx.scene.control.Label
 import javafx.scene.control.SelectionMode
 import javafx.scene.control.TableColumn
 import javafx.scene.control.TableView
@@ -34,6 +39,10 @@ class BalanceAccountController  {
     @FXML lateinit var statusColumn: TableColumn<FXAccountEntry, TransactionStatus>
     @FXML lateinit var debitColumn: TableColumn<FXAccountEntry, Money>
     @FXML lateinit var creditColumn: TableColumn<FXAccountEntry, Money>
+    @FXML lateinit var startingBalanceLabel: Label
+    @FXML lateinit var clearedBalanceLabel: Label
+    @FXML lateinit var endingBalanceLabel: Label
+    @FXML lateinit var differenceLabel: Label
     @FXML lateinit var continueButton: Button
     @FXML lateinit var cancelButton: Button
 
@@ -75,13 +84,16 @@ class BalanceAccountController  {
         }
     }
 
-    fun start(stage: Stage, entriesViewModel: AccountEntriesViewModel) {
+    fun start(stage: Stage, statement: Statement, entriesViewModel: AccountEntriesViewModel) {
 
-        this.viewModel = BalanceAccountViewModel(entriesViewModel)
+        this.viewModel = BalanceAccountViewModel(statement, entriesViewModel)
         this.stage = stage
 
-        stage.minWidth = stage.width
-        stage.minHeight = stage.height
+        stage.apply {
+            scene.stylesheets.add(MoneyApplication.CSS)
+            minWidth = width
+            minHeight = height
+        }
 
         transactionsTable.apply {
 
@@ -98,10 +110,28 @@ class BalanceAccountController  {
         }
 
         debitColumn.textProperty().bind(viewModel.debitTextProperty)
-
         creditColumn.textProperty().bind(viewModel.creditTextProperty)
 
-        viewModel.start()
+        startingBalanceLabel.textProperty().bind(viewModel.startingBalanceProperty.toBinding { it.toStringWithoutCurrency() })
+        endingBalanceLabel.textProperty().bind(viewModel.endingBalanceProperty.toBinding { it.toStringWithoutCurrency() })
+        clearedBalanceLabel.textProperty().bind(viewModel.clearedBalanceProperty.toBinding { it.toStringWithoutCurrency() })
+        differenceLabel.textProperty().bind(viewModel.differenceProperty.toBinding { it.toStringWithoutCurrency() })
+
+        viewModel.startingBalanceProperty.addListener { _, _, newValue ->
+            startingBalanceLabel.pseudoClassStateChanged(moneyNegativePseudoClass, newValue.isNegative)
+        }
+
+        viewModel.endingBalanceProperty.addListener { _, _, newValue ->
+            endingBalanceLabel.pseudoClassStateChanged(moneyNegativePseudoClass, newValue.isNegative)
+        }
+
+        viewModel.clearedBalanceProperty.addListener { _, _, newValue ->
+            clearedBalanceLabel.pseudoClassStateChanged(moneyNegativePseudoClass, newValue.isNegative)
+        }
+
+        viewModel.differenceProperty.addListener { _, _, newValue ->
+            differenceLabel.pseudoClassStateChanged(moneyNegativePseudoClass, newValue.isNegative)
+        }
     }
 
     @FXML fun onContinueButton() {

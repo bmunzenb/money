@@ -119,6 +119,7 @@ class MoneyCoreVersion_1 : ApplicableVersion<MoneyDatabase> {
                         references("ACCOUNTS", "ACCOUNT_ID")
                     }
                     column("STATEMENT_CLOSING_DATE", "BIGINT NOT NULL")
+                    column("STATEMENT_STARTING_BALANCE", "BIGINT NOT NULL")
                     column("STATEMENT_ENDING_BALANCE", "BIGINT NOT NULL")
                     column("STATEMENT_IS_RECONCILED", dialect.booleanType("NOT NULL"))
             }

@@ -11,6 +11,7 @@
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.RowConstraints?>
 <?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
 
 <GridPane hgap="12.0" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" vgap="12.0" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.munzenberger.money.app.BalanceAccountController">
   <columnConstraints>
@@ -41,18 +42,51 @@
       </TableView>
       <VBox spacing="6.0">
          <children>
-            <Button maxWidth="1.7976931348623157E308" minWidth="-Infinity" mnemonicParsing="false" text="Add" />
-            <Button maxWidth="1.7976931348623157E308" minWidth="-Infinity" mnemonicParsing="false" text="Delete" />
+            <Button maxWidth="1.7976931348623157E308" minWidth="-Infinity" mnemonicParsing="false" text="New" />
+            <Button maxWidth="1.7976931348623157E308" minWidth="-Infinity" mnemonicParsing="false" text="Edit" />
+            <Button mnemonicParsing="false" text="Delete" />
          </children>
       </VBox>
-      <VBox maxWidth="1.7976931348623157E308" minWidth="-Infinity" spacing="2.0" GridPane.columnIndex="1" GridPane.rowIndex="1">
+      <GridPane hgap="12.0" vgap="4.0" GridPane.columnIndex="1" GridPane.rowIndex="1">
+        <columnConstraints>
+          <ColumnConstraints halignment="RIGHT" hgrow="ALWAYS" maxWidth="1.7976931348623157E308" />
+          <ColumnConstraints fillWidth="false" halignment="RIGHT" hgrow="NEVER" />
+        </columnConstraints>
+        <rowConstraints>
+            <RowConstraints fillHeight="false" vgrow="NEVER" />
+          <RowConstraints fillHeight="false" vgrow="NEVER" />
+          <RowConstraints fillHeight="false" vgrow="NEVER" />
+            <RowConstraints fillHeight="false" vgrow="NEVER" />
+          <RowConstraints fillHeight="false" vgrow="NEVER" />
+        </rowConstraints>
          <children>
-            <Label alignment="CENTER_RIGHT" maxWidth="1.7976931348623157E308" text="Label" textAlignment="RIGHT" />
-            <Label alignment="CENTER_RIGHT" maxWidth="1.7976931348623157E308" text="Label" textAlignment="RIGHT" />
-            <Separator prefWidth="200.0" />
-            <Label alignment="CENTER_RIGHT" maxWidth="1.7976931348623157E308" text="Label" textAlignment="RIGHT" />
+            <Label text="Starting balance:">
+                <font>
+                    <Font name="System Bold" size="12.0" />
+                </font>
+            </Label>
+            <Label fx:id="startingBalanceLabel" text="\$0.00" GridPane.columnIndex="1" />
+            <Label text="Ending balance:" GridPane.rowIndex="3">
+               <font>
+                  <Font name="System Bold" size="12.0" />
+               </font>
+            </Label>
+            <Label fx:id="endingBalanceLabel" text="\$0.00" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+            <Separator prefWidth="200.0" GridPane.columnSpan="2147483647" GridPane.rowIndex="2" />
+            <Label text="Cleared transactions:" GridPane.rowIndex="1">
+                <font>
+                    <Font name="System Bold" size="12.0" />
+                </font>
+            </Label>
+            <Label fx:id="clearedBalanceLabel" text="\$0.00" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+            <Label text="Difference from statement:" GridPane.rowIndex="4">
+                <font>
+                    <Font name="System Bold" size="12.0" />
+                </font>
+            </Label>
+            <Label fx:id="differenceLabel" text="\$0.00" GridPane.columnIndex="1" GridPane.rowIndex="4" />
          </children>
-      </VBox>
+      </GridPane>
       <ButtonBar prefHeight="40.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="2">
         <buttons>
           <Button fx:id="continueButton" defaultButton="true" mnemonicParsing="false" onAction="#onContinueButton" text="Next" />

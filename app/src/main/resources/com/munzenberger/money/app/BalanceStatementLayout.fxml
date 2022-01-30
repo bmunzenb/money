@@ -17,15 +17,18 @@
   </columnConstraints>
   <rowConstraints>
       <RowConstraints fillHeight="false" vgrow="NEVER" />
+      <RowConstraints fillHeight="false" minHeight="10.0" prefHeight="30.0" vgrow="NEVER" />
     <RowConstraints fillHeight="false" vgrow="NEVER" />
     <RowConstraints fillHeight="false" vgrow="NEVER" />
   </rowConstraints>
    <children>
-      <Label text="Statement closing date:" />
-      <DatePicker fx:id="statementClosingDatePicker" minHeight="-Infinity" minWidth="-Infinity" GridPane.columnIndex="1" />
-      <Label text="Statement ending balance:" GridPane.rowIndex="1" />
-      <TextField fx:id="statementBalanceTextField" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity" GridPane.columnIndex="1" GridPane.rowIndex="1" />
-      <ButtonBar maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" GridPane.columnSpan="2147483647" GridPane.halignment="RIGHT" GridPane.hgrow="ALWAYS" GridPane.rowIndex="2">
+      <Label text="Statement date:" />
+      <DatePicker fx:id="statementClosingDatePicker" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity" GridPane.columnIndex="1" />
+      <Label text="Starting balance:" GridPane.rowIndex="1" />
+      <TextField fx:id="startingBalanceTextField" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+      <Label text="Ending balance:" GridPane.rowIndex="2" />
+      <TextField fx:id="endingBalanceTextField" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+      <ButtonBar maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" GridPane.columnSpan="2147483647" GridPane.halignment="RIGHT" GridPane.hgrow="ALWAYS" GridPane.rowIndex="3">
         <buttons>
           <Button fx:id="continueButton" defaultButton="true" mnemonicParsing="false" onAction="#onContinueButton" text="Next" />
             <Button cancelButton="true" mnemonicParsing="false" onAction="#onCancelButton" text="Cancel" />
