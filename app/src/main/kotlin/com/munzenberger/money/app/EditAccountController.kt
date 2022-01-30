@@ -37,6 +37,7 @@ class EditAccountController {
     @FXML lateinit var saveButton: Button
     @FXML lateinit var cancelButton: Button
 
+    // TODO remove reference to stage in controller
     private lateinit var stage: Stage
 
     private val viewModel = EditAccountViewModel()

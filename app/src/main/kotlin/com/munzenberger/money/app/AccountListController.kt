@@ -40,6 +40,7 @@ class AccountListController : AutoCloseable {
     @FXML lateinit var totalBalanceProgress: ProgressIndicator
     @FXML lateinit var totalBalanceLabel: Label
 
+    // TODO remove reference to stage in controller
     private lateinit var stage: Stage
     private lateinit var database: ObservableMoneyDatabase
     private lateinit var navigator: Navigator

@@ -25,6 +25,7 @@ class ApplicationController : DatabaseConnectorDelegate, AutoCloseable {
     private val viewModel = ApplicationViewModel()
     private var activeController: AutoCloseable? = null
 
+    // TODO remove reference to stage in controller
     private lateinit var stage: Stage
 
     @FXML fun initialize() {

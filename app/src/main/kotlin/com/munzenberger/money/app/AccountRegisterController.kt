@@ -67,6 +67,7 @@ class AccountRegisterController : AutoCloseable {
     @FXML lateinit var endingBalanceLabel: Label
     @FXML lateinit var endingBalanceProgressIndicator: ProgressIndicator
 
+    // TODO remove reference to stage in controller
     private lateinit var stage: Stage
     private lateinit var database: ObservableMoneyDatabase
     private var accountIdentity: Long = -1

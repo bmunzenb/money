@@ -35,6 +35,7 @@ class SplitTransactionController {
     @FXML private lateinit var totalLabel: Label
     @FXML private lateinit var doneButton: Button
 
+    // TODO remove reference to stage in controller
     private lateinit var stage: Stage
 
     private val viewModel = SplitTransactionViewModel()

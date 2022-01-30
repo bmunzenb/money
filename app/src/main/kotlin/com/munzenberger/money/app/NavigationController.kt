@@ -48,6 +48,7 @@ class NavigationController : AutoCloseable {
         controller: QueryController -> controller.start(database)
     }
 
+    // TODO remove reference to stage
     private lateinit var stage: Stage
     private lateinit var database: ObservableMoneyDatabase
 

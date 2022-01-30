@@ -27,6 +27,7 @@ class BalanceStatementController {
     @FXML lateinit var endingBalanceTextField: TextField
     @FXML lateinit var continueButton: Button
 
+    // TODO remove reference to stage in controller
     private lateinit var stage: Stage
     private lateinit var database: ObservableMoneyDatabase
     private lateinit var account: Account

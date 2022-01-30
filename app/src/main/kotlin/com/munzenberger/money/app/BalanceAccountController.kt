@@ -47,6 +47,7 @@ class BalanceAccountController  {
     @FXML lateinit var cancelButton: Button
 
     private lateinit var viewModel: BalanceAccountViewModel
+    // TODO remove reference to stage in controller
     private lateinit var stage: Stage
 
     fun initialize() {
