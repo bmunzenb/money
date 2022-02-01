@@ -14,10 +14,11 @@ fun <T> ReadOnlyAsyncObjectProperty<List<T>>.toObservableList() : ObservableList
 
     // update the items in the list if the value of the property changes
     val callable = { obj: AsyncObject<List<T>> -> when (obj) {
-        is AsyncObject.Pending -> list.clear()
-        is AsyncObject.Executing -> list.clear()
+        //is AsyncObject.Pending -> list.clear()
+        //is AsyncObject.Executing -> list.clear()
         is AsyncObject.Complete -> list.setAll(obj.value)
         is AsyncObject.Error -> list.clear()
+        else -> Unit // do nothing
     }}
 
     callable.invoke(value)

@@ -7,7 +7,6 @@ import com.munzenberger.money.app.property.bindAsync
 import com.munzenberger.money.app.property.toObservableList
 import javafx.beans.property.ReadOnlyObjectProperty
 import javafx.beans.property.SimpleObjectProperty
-import javafx.collections.FXCollections
 import javafx.collections.transformation.FilteredList
 import javafx.collections.transformation.SortedList
 import javafx.scene.Node

@@ -1,7 +1,8 @@
 package com.munzenberger.money.app.control
 
+import com.munzenberger.money.app.ErrorAlert
 import com.munzenberger.money.app.property.AsyncObject
-import javafx.scene.control.Label
+import javafx.scene.control.Hyperlink
 import javafx.scene.control.ProgressIndicator
 import javafx.scene.control.TableCell
 import javafx.scene.control.TableColumn
@@ -48,8 +49,9 @@ open class AsyncTableCell<S, T>(
 
     open fun onError(error: Throwable) {
         text = null
-        graphic = Label(error.message).apply {
+        graphic = Hyperlink(error.message).apply {
             textFill = Color.RED
+            setOnAction { ErrorAlert(error).showAndWait() }
         }
     }
 }

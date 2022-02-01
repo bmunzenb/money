@@ -80,6 +80,7 @@ class EditTransferController {
             converter = ListLookupStringConverter(items, payeeConverter)
 
             valueProperty().bindBidirectional(viewModel.selectedPayeeProperty)
+
             disableProperty().bind(viewModel.disabledProperty)
         }
 
