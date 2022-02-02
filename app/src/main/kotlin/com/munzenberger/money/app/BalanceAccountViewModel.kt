@@ -5,6 +5,7 @@ import com.munzenberger.money.app.property.AsyncObject
 import com.munzenberger.money.core.Money
 import com.munzenberger.money.core.Statement
 import com.munzenberger.money.core.TransactionStatus
+import javafx.beans.binding.BooleanBinding
 import javafx.beans.property.ReadOnlyObjectProperty
 import javafx.beans.property.SimpleObjectProperty
 import javafx.beans.value.ChangeListener
@@ -16,9 +17,15 @@ class BalanceAccountViewModel(
         entriesViewModel: AccountEntriesViewModel
 ) : AccountEntriesViewModel by entriesViewModel {
 
+    private val clearedBalance = SimpleObjectProperty(Money.ZERO)
     private val difference = SimpleObjectProperty(Money.ZERO)
 
+    val statementBalanceProperty: ReadOnlyObjectProperty<Money> = SimpleObjectProperty(statement.endingBalance!!)
+    val clearedBalanceProperty: ReadOnlyObjectProperty<Money> = clearedBalance
     val differenceProperty: ReadOnlyObjectProperty<Money> = difference
+
+    val continueDisabledBinding: BooleanBinding =
+            difference.isNull.or(difference.isNotEqualTo(Money.ZERO))
 
     private val transactionsConsumer = Consumer<AsyncObject<List<FXAccountEntry>>> { async ->
         if (async is AsyncObject.Complete) {
@@ -28,9 +35,8 @@ class BalanceAccountViewModel(
                     .filter { it.statusProperty.value == TransactionStatus.CLEARED }
                     .fold(Money.ZERO) { acc, t -> acc + t.amountProperty.value }
 
-            val total = statement.startingBalance!! + cleared
-
-            difference.value = statement.endingBalance!! - total
+            clearedBalance.value = statement.startingBalance!! + cleared
+            difference.value = clearedBalance.value - statement.endingBalance!!
         }
     }
 

@@ -37,8 +37,9 @@ class BalanceAccountController  {
     @FXML lateinit var dateColumn: TableColumn<FXAccountEntry, LocalDate>
     @FXML lateinit var payeeColumn: TableColumn<FXAccountEntry, String>
     @FXML lateinit var statusColumn: TableColumn<FXAccountEntry, TransactionStatus>
-    @FXML lateinit var debitColumn: TableColumn<FXAccountEntry, Money>
-    @FXML lateinit var creditColumn: TableColumn<FXAccountEntry, Money>
+    @FXML lateinit var amountColumn: TableColumn<FXAccountEntry, Money>
+    @FXML lateinit var statementBalanceLabel: Label
+    @FXML lateinit var clearedBalanceLabel: Label
     @FXML lateinit var differenceLabel: Label
     @FXML lateinit var continueButton: Button
     @FXML lateinit var cancelButton: Button
@@ -71,14 +72,9 @@ class BalanceAccountController  {
             cellValueFactory = Callback { it.value.statusProperty }
         }
 
-        debitColumn.apply {
-            cellFactory = MoneyTableCellFactory(withCurrency = false, negativeStyle = false)
-            cellValueFactory = Callback { it.value.debitProperty }
-        }
-
-        creditColumn.apply {
-            cellFactory = MoneyTableCellFactory(withCurrency = false, negativeStyle = false)
-            cellValueFactory = Callback { it.value.creditProperty }
+        amountColumn.apply {
+            cellFactory = MoneyTableCellFactory(withCurrency = false, negativeStyle = true)
+            cellValueFactory = Callback { it.value.amountProperty }
         }
     }
 
@@ -107,14 +103,22 @@ class BalanceAccountController  {
             )
         }
 
-        debitColumn.textProperty().bind(viewModel.debitTextProperty)
-        creditColumn.textProperty().bind(viewModel.creditTextProperty)
+        statementBalanceLabel.textProperty().bind(viewModel.statementBalanceProperty.toBinding {
+            statementBalanceLabel.pseudoClassStateChanged(moneyNegativePseudoClass, it.isNegative)
+            it.toStringWithoutCurrency()
+        })
 
-        differenceLabel.textProperty().bind(viewModel.differenceProperty.toBinding { it.toStringWithoutCurrency() })
+        clearedBalanceLabel.textProperty().bind(viewModel.clearedBalanceProperty.toBinding {
+            clearedBalanceLabel.pseudoClassStateChanged(moneyNegativePseudoClass, it.isNegative)
+            it.toStringWithoutCurrency()
+        })
 
-        viewModel.differenceProperty.addListener { _, _, newValue ->
-            differenceLabel.pseudoClassStateChanged(moneyNegativePseudoClass, newValue.isNegative)
-        }
+        differenceLabel.textProperty().bind(viewModel.differenceProperty.toBinding {
+            differenceLabel.pseudoClassStateChanged(moneyNegativePseudoClass, it.isNegative)
+            it.toStringWithoutCurrency()
+        })
+
+        continueButton.disableProperty().bind(viewModel.continueDisabledBinding)
     }
 
     @FXML fun onContinueButton() {
