@@ -30,7 +30,9 @@
           <TableColumn fx:id="dateColumn" editable="false" maxWidth="1000.0" minWidth="-Infinity" prefWidth="75.0" style="-fx-alignment: CENTER;" text="Date" />
             <TableColumn fx:id="payeeColumn" editable="false" maxWidth="2000.0" minWidth="-Infinity" prefWidth="150.0" text="Payee" />
             <TableColumn fx:id="statusColumn" editable="false" maxWidth="300.0" minWidth="-Infinity" prefWidth="30.0" style="-fx-alignment: CENTER;" text="C" />
-            <TableColumn fx:id="amountColumn" editable="false" maxWidth="1000.0" minWidth="-Infinity" prefWidth="75.0" style="-fx-alignment: CENTER-RIGHT;" text="Amount" />
+            <TableColumn fx:id="debitColumn" editable="false" maxWidth="1000.0" minWidth="-Infinity" prefWidth="75.0" style="-fx-alignment: CENTER-RIGHT;" text="Debit" />
+            <TableColumn fx:id="creditColumn" editable="false" maxWidth="1000.0" minWidth="-Infinity" prefWidth="75.0" style="-fx-alignment: CENTER-RIGHT;" text="Credit" />
+            <TableColumn fx:id="balanceColumn" editable="false" maxWidth="1000.0" minWidth="-Infinity" prefWidth="75.0" style="-fx-alignment: CENTER-RIGHT;" text="Balance" />
         </columns>
          <columnResizePolicy>
             <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
