@@ -81,6 +81,7 @@ class AccountListController : AutoCloseable {
 
         totalBalanceLabel.apply {
             visibleProperty().bindAsyncStatus(viewModel.totalBalanceProperty, AsyncObject.Status.COMPLETE)
+            // TODO split label and value into separate nodes
             textProperty().bindAsyncValue(viewModel.totalBalanceProperty) { "Total Account Balance: $it" }
         }
 

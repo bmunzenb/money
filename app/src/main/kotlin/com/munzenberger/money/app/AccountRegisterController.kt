@@ -186,6 +186,7 @@ class AccountRegisterController : AutoCloseable {
 
         endingBalanceLabel.apply {
             visibleProperty().bindAsyncStatus(viewModel.endingBalanceProperty, AsyncObject.Status.COMPLETE)
+            // TODO split label and value into separate nodes and dynamically set label based on account type
             textProperty().bindAsyncValue(viewModel.endingBalanceProperty) { "Ending Balance: $it" }
         }
 
