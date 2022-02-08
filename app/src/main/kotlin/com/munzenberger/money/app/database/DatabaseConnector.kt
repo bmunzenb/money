@@ -21,6 +21,7 @@ interface DatabaseConnectorCallbacks {
     fun onConnectError(error: Throwable)
 }
 
+// TODO refactor to single-threaded functions and move tasks to view models
 abstract class DatabaseConnector {
 
     abstract fun connect(callbacks: DatabaseConnectorCallbacks)
