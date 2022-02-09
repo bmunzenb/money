@@ -1,13 +1,14 @@
 package com.munzenberger.money.version
 
-sealed class VersionStatus
+sealed class VersionStatus {
 
-object UnsupportedVersion : VersionStatus()
+    object UnsupportedVersion : VersionStatus()
 
-object CurrentVersion : VersionStatus()
+    object CurrentVersion : VersionStatus()
 
-abstract class PendingUpgrades(val isFirstUse: Boolean) : VersionStatus() {
-    abstract fun apply()
+    abstract class PendingUpgrades(val isFirstUse: Boolean) : VersionStatus() {
+        abstract fun apply()
+    }
 }
 
 abstract class VersionManager<T> {
@@ -31,18 +32,18 @@ abstract class VersionManager<T> {
 
             // their IDs must match exactly
             if (iter1.next().versionId != iter2.next().versionId) {
-                return UnsupportedVersion
+                return VersionStatus.UnsupportedVersion
             }
         }
 
         // and there can't be any additional versions not in the master list
         if (iter1.hasNext()) {
-            return UnsupportedVersion
+            return VersionStatus.UnsupportedVersion
         }
 
         // check for pending upgrades
         if (iter2.hasNext()) {
-            return object : PendingUpgrades(applied.isEmpty()) {
+            return object : VersionStatus.PendingUpgrades(applied.isEmpty()) {
                 override fun apply() = iter2.forEachRemaining {
                     it.apply(obj)
                     onVersionApplied(obj, it)
@@ -50,6 +51,6 @@ abstract class VersionManager<T> {
             }
         }
 
-        return CurrentVersion
+        return VersionStatus.CurrentVersion
     }
 }

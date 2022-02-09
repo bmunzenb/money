@@ -35,7 +35,7 @@ class VersionManagerTest {
 
         val vm = TestableVersionManager(applicable = emptyList(), applied = emptyList())
 
-        assertEquals(CurrentVersion, vm.getVersionStatus(Unit))
+        assertEquals(VersionStatus.CurrentVersion, vm.getVersionStatus(Unit))
     }
 
     @Test
@@ -45,7 +45,7 @@ class VersionManagerTest {
 
         val vm = TestableVersionManager(applicable = versions, applied = versions)
 
-        assertEquals(CurrentVersion, vm.getVersionStatus(Unit))
+        assertEquals(VersionStatus.CurrentVersion, vm.getVersionStatus(Unit))
     }
 
     @Test
@@ -55,7 +55,7 @@ class VersionManagerTest {
 
         val vm = TestableVersionManager(applicable = emptyList(), applied = applied)
 
-        assertEquals(UnsupportedVersion, vm.getVersionStatus(Unit))
+        assertEquals(VersionStatus.UnsupportedVersion, vm.getVersionStatus(Unit))
     }
 
     @Test
@@ -66,7 +66,7 @@ class VersionManagerTest {
 
         val vm = TestableVersionManager(applicable = applicable, applied = applied)
 
-        assertEquals(UnsupportedVersion, vm.getVersionStatus(Unit))
+        assertEquals(VersionStatus.UnsupportedVersion, vm.getVersionStatus(Unit))
     }
 
     @Test
@@ -78,7 +78,7 @@ class VersionManagerTest {
 
         val status = vm.getVersionStatus(Unit)
 
-        assertTrue(status is PendingUpgrades && status.isFirstUse)
+        assertTrue(status is VersionStatus.PendingUpgrades && status.isFirstUse)
     }
 
     @Test
@@ -91,7 +91,7 @@ class VersionManagerTest {
 
         val status = vm.getVersionStatus(Unit)
 
-        assertTrue(status is PendingUpgrades && !status.isFirstUse)
+        assertTrue(status is VersionStatus.PendingUpgrades && !status.isFirstUse)
     }
 
     @Test
@@ -110,7 +110,7 @@ class VersionManagerTest {
 
         when (val status = spy.getVersionStatus(obj)) {
 
-            is PendingUpgrades -> {
+            is VersionStatus.PendingUpgrades -> {
                 status.apply()
                 verify {
                     spy["onVersionApplied"](obj, version1)

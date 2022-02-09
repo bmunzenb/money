@@ -5,7 +5,6 @@ import com.munzenberger.money.app.database.DatabaseConnectorCallbacks
 import com.munzenberger.money.app.database.FileDatabaseConnector
 import com.munzenberger.money.app.database.MemoryDatabaseConnector
 import com.munzenberger.money.app.database.ObservableMoneyDatabase
-import javafx.application.Platform
 import javafx.beans.property.ReadOnlyBooleanProperty
 import javafx.beans.property.ReadOnlyObjectProperty
 import javafx.beans.property.ReadOnlyStringProperty
@@ -38,51 +37,26 @@ class ApplicationViewModel : AutoCloseable {
     }
 
     fun openFileDatabase(file: File, callbacks: DatabaseConnectorCallbacks) {
-        connectToDatabase(callbacks, FileDatabaseConnector(file))
+        connectToDatabase(FileDatabaseConnector(file), callbacks)
     }
 
     fun startMemoryDatabase(callbacks: DatabaseConnectorCallbacks) {
-        connectToDatabase(callbacks, MemoryDatabaseConnector())
+        connectToDatabase(MemoryDatabaseConnector(), callbacks)
     }
 
-    private fun connectToDatabase(callbacks: DatabaseConnectorCallbacks, connector: DatabaseConnector) {
+    private fun connectToDatabase(connector: DatabaseConnector, callbacks: DatabaseConnectorCallbacks, ) {
 
-        isConnectionInProgress.value = true
+        isConnectionInProgress.bind(connector.isConnectionInProgressProperty)
 
-        val callbacksWrapper = object : DatabaseConnectorCallbacks {
-
-            override fun onCanceled() {
-                callbacks.onCanceled()
-                isConnectionInProgress.value = false
-            }
-
+        val callbacksWrapper = object : DatabaseConnectorCallbacks by callbacks {
             override fun onConnected(database: ObservableMoneyDatabase, isFirstUse: Boolean) {
                 callbacks.onConnected(database, isFirstUse)
-                isConnectionInProgress.value = false
                 connectedDatabase.value?.close()
                 connectedDatabase.value = database
-            }
-
-            override fun onConnectError(error: Throwable) {
-                callbacks.onConnectError(error)
-                isConnectionInProgress.value = false
-            }
-
-            override fun onUnsupportedVersion() {
-                callbacks.onUnsupportedVersion()
-                isConnectionInProgress.value = false
-            }
-
-            override fun onPendingUpgrades(): Boolean {
-                return callbacks.onPendingUpgrades()
             }
         }
 
         connector.connect(callbacksWrapper)
-    }
-
-    fun exit() {
-        Platform.exit()
     }
 
     override fun close() {

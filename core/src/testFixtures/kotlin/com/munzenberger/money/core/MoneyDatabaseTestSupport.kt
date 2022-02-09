@@ -1,7 +1,7 @@
 package com.munzenberger.money.core
 
 import com.munzenberger.money.core.version.MoneyCoreVersionManager
-import com.munzenberger.money.version.PendingUpgrades
+import com.munzenberger.money.version.VersionStatus
 import org.junit.After
 import org.junit.Before
 import java.sql.DriverManager
@@ -32,7 +32,7 @@ open class MoneyDatabaseTestSupport {
         database = ConnectionMoneyDatabase(configuration.url, configuration.dialect, connection)
 
         when (val status = MoneyCoreVersionManager().getVersionStatus(database)) {
-            is PendingUpgrades -> status.apply()
+            is VersionStatus.PendingUpgrades -> status.apply()
             else -> Unit // do nothing
         }
     }

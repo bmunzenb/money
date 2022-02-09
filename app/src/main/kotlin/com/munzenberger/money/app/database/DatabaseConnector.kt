@@ -6,10 +6,9 @@ import com.munzenberger.money.core.DatabaseDialect
 import com.munzenberger.money.core.SQLiteDatabaseDialect
 import com.munzenberger.money.core.version.MoneyCoreVersionManager
 import com.munzenberger.money.sql.Query
-import com.munzenberger.money.version.CurrentVersion
-import com.munzenberger.money.version.PendingUpgrades
-import com.munzenberger.money.version.UnsupportedVersion
 import com.munzenberger.money.version.VersionStatus
+import javafx.beans.property.ReadOnlyBooleanProperty
+import javafx.beans.property.SimpleBooleanProperty
 import javafx.concurrent.Task
 import java.sql.DriverManager
 
@@ -21,8 +20,11 @@ interface DatabaseConnectorCallbacks {
     fun onConnectError(error: Throwable)
 }
 
-// TODO refactor to single-threaded functions and move tasks to view models
 abstract class DatabaseConnector {
+
+    private val isConnectionInProgress = SimpleBooleanProperty(false)
+
+    val isConnectionInProgressProperty: ReadOnlyBooleanProperty = isConnectionInProgress
 
     abstract fun connect(callbacks: DatabaseConnectorCallbacks)
 
@@ -59,6 +61,8 @@ abstract class DatabaseConnector {
             }
         }
 
+        isConnectionInProgress.bind(task.runningProperty())
+
         Executors.SINGLE.execute(task)
     }
 
@@ -80,6 +84,8 @@ abstract class DatabaseConnector {
             }
         }
 
+        isConnectionInProgress.bind(task.runningProperty())
+
         Executors.SINGLE.execute(task)
     }
 
@@ -87,15 +93,15 @@ abstract class DatabaseConnector {
 
         when (status) {
 
-            is CurrentVersion ->
+            is VersionStatus.CurrentVersion ->
                 callbacks.onConnected(database, false)
 
-            is UnsupportedVersion -> {
+            is VersionStatus.UnsupportedVersion -> {
                 database.close()
                 callbacks.onUnsupportedVersion()
             }
 
-            is PendingUpgrades ->
+            is VersionStatus.PendingUpgrades ->
                 when (callbacks.onPendingUpgrades()) {
                     true -> applyPendingUpgrades(database, status, callbacks)
                     else -> {
@@ -106,7 +112,7 @@ abstract class DatabaseConnector {
         }
     }
 
-    private fun applyPendingUpgrades(database: ObservableMoneyDatabase, upgrades: PendingUpgrades, callbacks: DatabaseConnectorCallbacks) {
+    private fun applyPendingUpgrades(database: ObservableMoneyDatabase, upgrades: VersionStatus.PendingUpgrades, callbacks: DatabaseConnectorCallbacks) {
 
         val task = object : Task<Unit>() {
 
@@ -123,6 +129,8 @@ abstract class DatabaseConnector {
                 callbacks.onConnectError(exception)
             }
         }
+
+        isConnectionInProgress.bind(task.runningProperty())
 
         Executors.SINGLE.execute(task)
     }

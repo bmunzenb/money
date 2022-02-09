@@ -1,22 +1,27 @@
 package com.munzenberger.money.app
 
 import com.munzenberger.money.app.control.booleanToWaitCursor
+import com.munzenberger.money.app.database.FileDatabaseConnector
 import com.munzenberger.money.app.database.MemoryDatabaseCallbacks
 import com.munzenberger.money.app.database.NewFileDatabaseCallbacks
 import com.munzenberger.money.app.database.ObservableMoneyDatabase
 import com.munzenberger.money.app.database.OpenFileDatabaseCallbacks
+import javafx.application.Platform
 import javafx.fxml.FXML
 import javafx.fxml.FXMLLoader
 import javafx.scene.Node
+import javafx.scene.control.Alert
 import javafx.scene.control.MenuBar
 import javafx.scene.layout.AnchorPane
+import javafx.stage.FileChooser
 import javafx.stage.Stage
+import java.io.File
 import java.net.URL
 
 class ApplicationController : DatabaseConnectorDelegate, AutoCloseable {
 
     companion object {
-        val LAYOUT: URL = ApplicationController::class.java.getResource("ApplicationLayout.fxml")
+        val LAYOUT: URL = ApplicationController::class.java.getResource("ApplicationLayout.fxml")!!
     }
 
     @FXML lateinit var menuBar: MenuBar
@@ -54,13 +59,13 @@ class ApplicationController : DatabaseConnectorDelegate, AutoCloseable {
     }
 
     @FXML override fun onCreateDatabase() {
-        NewFileDatabaseCallbacks.openFile(stage)?.let {
+        createDatabaseFile()?.let {
             viewModel.openFileDatabase(it, NewFileDatabaseCallbacks)
         }
     }
 
     @FXML override fun onOpenDatabase() {
-        OpenFileDatabaseCallbacks.openFile(stage)?.let {
+        openDatabaseFile()?.let {
             viewModel.openFileDatabase(it, OpenFileDatabaseCallbacks)
         }
     }
@@ -70,7 +75,7 @@ class ApplicationController : DatabaseConnectorDelegate, AutoCloseable {
     }
 
     @FXML fun onExit() {
-        viewModel.exit()
+        Platform.exit()
     }
 
     override fun close() {
@@ -108,5 +113,43 @@ class ApplicationController : DatabaseConnectorDelegate, AutoCloseable {
         AnchorPane.setLeftAnchor(content, 0.0)
         AnchorPane.setRightAnchor(content, 0.0)
         AnchorPane.setBottomAnchor(content, 0.0)
+    }
+
+    private fun createDatabaseFile(): File? {
+        val file: File? = FileChooser().let {
+            it.title = "New Money Database"
+            it.initialDirectory = File(System.getProperty("user.home"))
+            it.initialFileName = "Money${FileDatabaseConnector.SUFFIX}"
+            it.extensionFilters.addAll(
+                    FileChooser.ExtensionFilter("Money Database Files", "*${FileDatabaseConnector.SUFFIX}"),
+                    FileChooser.ExtensionFilter("All Files", "*"))
+            it.showSaveDialog(stage)
+        }
+
+        file?.run {
+            if (exists()) {
+                if (!delete()) {
+
+                    Alert(Alert.AlertType.ERROR).apply {
+                        title = "Error"
+                        contentText = "Could not delete existing file."
+                        showAndWait()
+                    }
+
+                    return null
+                }
+            }
+        }
+
+        return file
+    }
+
+    private fun openDatabaseFile(): File? = FileChooser().let {
+        it.title = "Open Money Database"
+        it.initialDirectory = File(System.getProperty("user.home"))
+        it.extensionFilters.addAll(
+                FileChooser.ExtensionFilter("Money Database Files", "*${FileDatabaseConnector.SUFFIX}"),
+                FileChooser.ExtensionFilter("All Files", "*"))
+        it.showOpenDialog(stage)
     }
 }
