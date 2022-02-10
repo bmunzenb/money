@@ -43,12 +43,7 @@ abstract class DatabaseConnector {
                 val connection = DriverManager.getConnection(connectionUrl, user, password)
 
                 return ObservableMoneyDatabase(ConnectionMoneyDatabase(name, dialect, connection)).also {
-                    when (dialect) {
-                        SQLiteDatabaseDialect ->
-                            // SQLite requires explicitly enabling foreign key constraints
-                            // https://www.sqlite.org/foreignkeys.html#fk_enable
-                            it.execute(Query("PRAGMA foreign_keys = ON"))
-                    }
+                    dialect.initialize(it)
                 }
             }
 

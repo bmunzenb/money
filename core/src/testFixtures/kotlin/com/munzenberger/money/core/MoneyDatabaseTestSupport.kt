@@ -29,7 +29,9 @@ open class MoneyDatabaseTestSupport {
 
         val connection = DriverManager.getConnection(configuration.url)
 
-        database = ConnectionMoneyDatabase(configuration.url, configuration.dialect, connection)
+        database = ConnectionMoneyDatabase(configuration.url, configuration.dialect, connection).also {
+            configuration.dialect.initialize(it)
+        }
 
         when (val status = MoneyCoreVersionManager().getVersionStatus(database)) {
             is VersionStatus.PendingUpgrades -> status.apply()
