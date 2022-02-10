@@ -1,16 +1,5 @@
 package com.munzenberger.money.version
 
-sealed class VersionStatus {
-
-    object UnsupportedVersion : VersionStatus()
-
-    object CurrentVersion : VersionStatus()
-
-    abstract class PendingUpgrades(val isFirstUse: Boolean) : VersionStatus() {
-        abstract fun apply()
-    }
-}
-
 abstract class VersionManager<T> {
 
     protected abstract fun getApplicableVersions(): List<ApplicableVersion<T>>
