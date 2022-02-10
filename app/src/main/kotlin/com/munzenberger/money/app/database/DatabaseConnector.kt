@@ -3,9 +3,7 @@ package com.munzenberger.money.app.database
 import com.munzenberger.money.app.concurrent.Executors
 import com.munzenberger.money.core.ConnectionMoneyDatabase
 import com.munzenberger.money.core.DatabaseDialect
-import com.munzenberger.money.core.SQLiteDatabaseDialect
-import com.munzenberger.money.core.version.MoneyCoreVersionManager
-import com.munzenberger.money.sql.Query
+import com.munzenberger.money.core.version.MoneyDatabaseVersionManager
 import com.munzenberger.money.version.VersionStatus
 import javafx.beans.property.ReadOnlyBooleanProperty
 import javafx.beans.property.SimpleBooleanProperty
@@ -66,7 +64,7 @@ abstract class DatabaseConnector {
         val task = object : Task<VersionStatus>() {
 
             override fun call(): VersionStatus {
-                return MoneyCoreVersionManager().getVersionStatus(database)
+                return MoneyDatabaseVersionManager().getVersionStatus(database)
             }
 
             override fun succeeded() {

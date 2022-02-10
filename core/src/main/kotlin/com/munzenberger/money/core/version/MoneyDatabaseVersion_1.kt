@@ -4,10 +4,9 @@ import com.munzenberger.money.core.MoneyDatabase
 import com.munzenberger.money.sql.Query
 import com.munzenberger.money.sql.createIndex
 import com.munzenberger.money.sql.createTable
-import com.munzenberger.money.sql.createTableQuery
 import com.munzenberger.money.version.ApplicableVersion
 
-class MoneyCoreVersion_1 : ApplicableVersion<MoneyDatabase> {
+class MoneyDatabaseVersion_1 : ApplicableVersion<MoneyDatabase> {
 
     override val versionId = 1L
 

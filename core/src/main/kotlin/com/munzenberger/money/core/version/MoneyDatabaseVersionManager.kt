@@ -4,7 +4,13 @@ import com.munzenberger.money.core.MoneyDatabase
 import com.munzenberger.money.version.Version
 import com.munzenberger.money.version.VersionManager
 
-abstract class MoneyVersionManager(private val queryBuilder: VersionQueryBuilder) : VersionManager<MoneyDatabase>() {
+class MoneyDatabaseVersionManager : VersionManager<MoneyDatabase>() {
+
+    private val queryBuilder: VersionQueryBuilder = VersionQueryBuilder("CORE_VERSIONS")
+
+    override fun getApplicableVersions() = listOf(
+            MoneyDatabaseVersion_1()
+    )
 
     override fun getAppliedVersions(obj: MoneyDatabase): List<Version> {
 

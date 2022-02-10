@@ -1,6 +1,6 @@
 package com.munzenberger.money.core
 
-import com.munzenberger.money.core.version.MoneyCoreVersionManager
+import com.munzenberger.money.core.version.MoneyDatabaseVersionManager
 import com.munzenberger.money.version.VersionStatus
 import org.junit.After
 import org.junit.Before
@@ -33,7 +33,7 @@ open class MoneyDatabaseTestSupport {
             configuration.dialect.initialize(it)
         }
 
-        when (val status = MoneyCoreVersionManager().getVersionStatus(database)) {
+        when (val status = MoneyDatabaseVersionManager().getVersionStatus(database)) {
             is VersionStatus.PendingUpgrades -> status.apply()
             else -> Unit // do nothing
         }
