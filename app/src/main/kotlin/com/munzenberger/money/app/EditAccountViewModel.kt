@@ -1,11 +1,9 @@
 package com.munzenberger.money.app
 
-import com.munzenberger.money.app.concurrent.executeAsync
+import com.munzenberger.money.app.concurrent.Executors
 import com.munzenberger.money.app.concurrent.setValueAsync
 import com.munzenberger.money.app.property.ReadOnlyAsyncObjectProperty
-import com.munzenberger.money.app.property.ReadOnlyAsyncStatusProperty
 import com.munzenberger.money.app.property.SimpleAsyncObjectProperty
-import com.munzenberger.money.app.property.SimpleAsyncStatusProperty
 import com.munzenberger.money.core.Account
 import com.munzenberger.money.core.AccountType
 import com.munzenberger.money.core.Bank
@@ -15,6 +13,7 @@ import javafx.beans.property.ReadOnlyBooleanProperty
 import javafx.beans.property.SimpleBooleanProperty
 import javafx.beans.property.SimpleObjectProperty
 import javafx.beans.property.SimpleStringProperty
+import javafx.concurrent.Task
 
 class EditAccountViewModel {
 
@@ -24,7 +23,7 @@ class EditAccountViewModel {
     private val accountTypes = SimpleAsyncObjectProperty<List<AccountType>>()
     private val banks = SimpleAsyncObjectProperty<List<Bank>>()
     private val notValid = SimpleBooleanProperty()
-    private val saveStatus = SimpleAsyncStatusProperty()
+    private val isOperationInProgress = SimpleBooleanProperty(false)
 
     val accountNameProperty = SimpleStringProperty()
     val accountTypesProperty: ReadOnlyAsyncObjectProperty<List<AccountType>> = accountTypes
@@ -33,8 +32,8 @@ class EditAccountViewModel {
     val banksProperty: ReadOnlyAsyncObjectProperty<List<Bank>> = banks
     val selectedBankProperty = SimpleObjectProperty<Bank?>()
     val initialBalanceProperty = SimpleObjectProperty<Money?>()
+    val isOperationInProgressProperty: ReadOnlyBooleanProperty = isOperationInProgress
     val notValidProperty: ReadOnlyBooleanProperty = notValid
-    val saveStatusProperty: ReadOnlyAsyncStatusProperty = saveStatus
 
     fun start(database: MoneyDatabase, account: Account) {
 
@@ -58,16 +57,34 @@ class EditAccountViewModel {
         notValid.bind(accountNameProperty.isEmpty.or(selectedAccountTypeProperty.isNull))
     }
 
-    fun save() {
+    fun save(block: (Throwable?) -> Unit) {
 
-        account.apply {
-            name = accountNameProperty.value
-            accountType = selectedAccountTypeProperty.value
-            number = accountNumberProperty.value
-            bank = selectedBankProperty.value
-            initialBalance = initialBalanceProperty.value
+        val task = object : Task<Unit>() {
+
+            override fun call() {
+                account.apply {
+
+                    name = accountNameProperty.value
+                    accountType = selectedAccountTypeProperty.value
+                    number = accountNumberProperty.value
+                    bank = selectedBankProperty.value
+                    initialBalance = initialBalanceProperty.value
+
+                    save(database)
+                }
+            }
+
+            override fun succeeded() {
+                block.invoke(null)
+            }
+
+            override fun failed() {
+                block.invoke(exception)
+            }
         }
 
-        saveStatus.executeAsync { account.save(database) }
+        isOperationInProgress.bind(task.runningProperty())
+
+        Executors.SINGLE.execute(task)
     }
 }

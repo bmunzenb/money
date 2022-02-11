@@ -1,13 +1,10 @@
 package com.munzenberger.money.app
 
 import com.munzenberger.money.app.concurrent.Executors
-import com.munzenberger.money.app.concurrent.executeAsync
 import com.munzenberger.money.app.concurrent.setValueAsync
 import com.munzenberger.money.app.model.displayName
 import com.munzenberger.money.app.property.ReadOnlyAsyncObjectProperty
-import com.munzenberger.money.app.property.ReadOnlyAsyncStatusProperty
 import com.munzenberger.money.app.property.SimpleAsyncObjectProperty
-import com.munzenberger.money.app.property.SimpleAsyncStatusProperty
 import com.munzenberger.money.core.Money
 import com.munzenberger.money.core.MoneyDatabase
 import com.munzenberger.money.core.Payee
@@ -20,6 +17,7 @@ import com.munzenberger.money.core.model.TransferEntryTable
 import com.munzenberger.money.sql.ResultSetMapper
 import com.munzenberger.money.sql.transaction
 import javafx.beans.property.BooleanProperty
+import javafx.beans.property.ReadOnlyBooleanProperty
 import javafx.beans.property.ReadOnlyListProperty
 import javafx.beans.property.ReadOnlyStringProperty
 import javafx.beans.property.SimpleBooleanProperty
@@ -40,10 +38,10 @@ class EditTransferViewModel {
 
     private val types = SimpleListProperty<TransactionType>()
     private val payees = SimpleAsyncObjectProperty<List<Payee>>()
-    private val saveStatus = SimpleAsyncStatusProperty()
     private val transactionStatus = SimpleStringProperty()
     private val notValid = SimpleBooleanProperty()
     private val disabled = SimpleBooleanProperty(true)
+    private val isOperationInProgress = SimpleBooleanProperty(false)
 
     val typesProperty: ReadOnlyListProperty<TransactionType> = types
     val selectedTypeProperty = SimpleObjectProperty<TransactionType>()
@@ -53,10 +51,10 @@ class EditTransferViewModel {
     val selectedPayeeProperty = SimpleObjectProperty<Payee?>()
     val amountProperty = SimpleObjectProperty<Money>()
     val memoProperty = SimpleStringProperty()
-    val saveStatusProperty: ReadOnlyAsyncStatusProperty = saveStatus
     val transactionStatusProperty: ReadOnlyStringProperty = transactionStatus
     val notValidProperty: BooleanProperty = notValid
     val disabledProperty: BooleanProperty = disabled
+    val isOperationInProgressProperty: ReadOnlyBooleanProperty = isOperationInProgress
 
     private lateinit var database: MoneyDatabase
     private lateinit var transferEntry: TransferEntry
@@ -149,25 +147,40 @@ class EditTransferViewModel {
         disabled.value = false
     }
 
-    fun save() {
+    fun save(block: (Throwable?) -> Unit) {
 
-        saveStatus.executeAsync {
+        val task = object : Task<Unit>() {
 
-            database.transaction { tx ->
+            override fun call() {
 
-                transaction.apply {
-                    this.date = dateProperty.value
-                    this.payee = selectedPayeeProperty.value
-                    save(tx)
-                }
+                database.transaction { tx ->
 
-                transferEntry.apply {
-                    this.number = numberProperty.value
-                    this.amount = amountProperty.value.forTransferType(selectedTypeProperty.value)
-                    this.memo = memoProperty.value
-                    save(tx)
+                    transaction.apply {
+                        this.date = dateProperty.value
+                        this.payee = selectedPayeeProperty.value
+                        save(tx)
+                    }
+
+                    transferEntry.apply {
+                        this.number = numberProperty.value
+                        this.amount = amountProperty.value.forTransferType(selectedTypeProperty.value)
+                        this.memo = memoProperty.value
+                        save(tx)
+                    }
                 }
             }
+
+            override fun succeeded() {
+                block.invoke(null)
+            }
+
+            override fun failed() {
+                block.invoke(exception)
+            }
         }
+
+        isOperationInProgress.bind(task.runningProperty())
+
+        Executors.SINGLE.execute(task)
     }
 }

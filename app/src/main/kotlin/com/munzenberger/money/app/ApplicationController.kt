@@ -1,16 +1,15 @@
 package com.munzenberger.money.app
 
 import com.munzenberger.money.app.control.booleanToWaitCursor
+import com.munzenberger.money.app.database.DatabaseConnectorCallbacks
 import com.munzenberger.money.app.database.FileDatabaseConnector
-import com.munzenberger.money.app.database.MemoryDatabaseCallbacks
-import com.munzenberger.money.app.database.NewFileDatabaseCallbacks
 import com.munzenberger.money.app.database.ObservableMoneyDatabase
-import com.munzenberger.money.app.database.OpenFileDatabaseCallbacks
 import javafx.application.Platform
 import javafx.fxml.FXML
 import javafx.fxml.FXMLLoader
 import javafx.scene.Node
 import javafx.scene.control.Alert
+import javafx.scene.control.ButtonType
 import javafx.scene.control.MenuBar
 import javafx.scene.layout.AnchorPane
 import javafx.stage.FileChooser
@@ -18,7 +17,7 @@ import javafx.stage.Stage
 import java.io.File
 import java.net.URL
 
-class ApplicationController : DatabaseConnectorDelegate, AutoCloseable {
+class ApplicationController : DatabaseConnectorDelegate, DatabaseConnectorCallbacks, AutoCloseable {
 
     companion object {
         val LAYOUT: URL = ApplicationController::class.java.getResource("ApplicationLayout.fxml")!!
@@ -60,18 +59,18 @@ class ApplicationController : DatabaseConnectorDelegate, AutoCloseable {
 
     @FXML override fun onCreateDatabase() {
         createDatabaseFile()?.let {
-            viewModel.openFileDatabase(it, NewFileDatabaseCallbacks)
+            viewModel.openFileDatabase(it, this)
         }
     }
 
     @FXML override fun onOpenDatabase() {
         openDatabaseFile()?.let {
-            viewModel.openFileDatabase(it, OpenFileDatabaseCallbacks)
+            viewModel.openFileDatabase(it, this)
         }
     }
 
     @FXML override fun onMemoryDatabase() {
-        viewModel.startMemoryDatabase(MemoryDatabaseCallbacks)
+        viewModel.startMemoryDatabase(this)
     }
 
     @FXML fun onExit() {
@@ -151,5 +150,45 @@ class ApplicationController : DatabaseConnectorDelegate, AutoCloseable {
                 FileChooser.ExtensionFilter("Money Database Files", "*${FileDatabaseConnector.SUFFIX}"),
                 FileChooser.ExtensionFilter("All Files", "*"))
         it.showOpenDialog(stage)
+    }
+
+    override fun onCanceled() {
+        // Do nothing
+    }
+
+    override fun onConnected(database: ObservableMoneyDatabase, isFirstUse: Boolean) {
+        // Do nothing
+    }
+
+    override fun onUnsupportedVersion() {
+
+        Alert(Alert.AlertType.ERROR).apply {
+            title = "Error"
+            headerText = "Could not open database file."
+            contentText = "The database file is unsupported by this version of Money. This is likely due to having used the database file with a newer version of Money. Please update your version of Money and try again."
+            showAndWait()
+        }
+    }
+
+    override fun onPendingUpgrades(isFirstUse: Boolean): Boolean {
+
+        return when (isFirstUse) {
+
+            // always apply updates if this is the first time connecting to the database
+            true -> true
+
+            else -> Alert(Alert.AlertType.CONFIRMATION).run {
+                title = "Confirm Upgrade"
+                headerText = "Database upgrade required."
+                contentText = "The database file requires an upgrade to work with this version of Money. This operation cannot be undone. It is recommended you make a backup of your existing file before upgrading it. Would you like to proceed with the upgrade?"
+                val result = showAndWait()
+
+                result.isPresent && result.get() == ButtonType.OK
+            }
+        }
+    }
+
+    override fun onConnectError(error: Throwable) {
+        ErrorAlert(error).showAndWait()
     }
 }

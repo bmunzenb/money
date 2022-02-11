@@ -2,7 +2,6 @@ package com.munzenberger.money.app.concurrent
 
 import com.munzenberger.money.app.property.AsyncObject
 import com.munzenberger.money.app.property.AsyncObjectProperty
-import com.munzenberger.money.app.property.AsyncStatusProperty
 import javafx.concurrent.Task
 import java.util.concurrent.Executor
 
@@ -28,8 +27,4 @@ fun <T> AsyncObjectProperty<T>.setValueAsync(executor: Executor = Executors.SING
     }
 
     executor.execute(task)
-}
-
-fun AsyncStatusProperty.executeAsync(executor: Executor = Executors.SINGLE, block: () -> Unit) {
-    setValueAsync(executor, block)
 }

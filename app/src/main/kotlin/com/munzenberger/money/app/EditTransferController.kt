@@ -5,8 +5,6 @@ import com.munzenberger.money.app.control.ListLookupStringConverter
 import com.munzenberger.money.app.control.MoneyStringConverter
 import com.munzenberger.money.app.control.TextListCellFactory
 import com.munzenberger.money.app.control.autoCompleteTextFormatter
-import com.munzenberger.money.app.property.AsyncObject
-import com.munzenberger.money.app.property.bindAsyncStatus
 import com.munzenberger.money.app.property.toObservableList
 import com.munzenberger.money.core.MoneyDatabase
 import com.munzenberger.money.core.Payee
@@ -24,7 +22,7 @@ import java.net.URL
 class EditTransferController {
 
     companion object {
-        val LAYOUT: URL = EditTransferController::class.java.getResource("EditTransferLayout.fxml")
+        val LAYOUT: URL = EditTransferController::class.java.getResource("EditTransferLayout.fxml")!!
     }
 
     @FXML lateinit var container: Node
@@ -104,15 +102,7 @@ class EditTransferController {
 
         saveButton.disableProperty().bind(viewModel.notValidProperty)
 
-        container.disableProperty().bindAsyncStatus(viewModel.saveStatusProperty, AsyncObject.Status.EXECUTING)
-
-        viewModel.saveStatusProperty.addListener { _, _, status ->
-            when (status) {
-                is AsyncObject.Complete -> onCancelButton()
-                is AsyncObject.Error -> ErrorAlert.showAndWait(status.error)
-                else -> {}
-            }
-        }
+        container.disableProperty().bind(viewModel.isOperationInProgressProperty)
     }
 
     fun start(stage: Stage, database: MoneyDatabase, transferId: Long) {
@@ -130,10 +120,19 @@ class EditTransferController {
     }
 
     @FXML fun onSaveButton() {
-        viewModel.save()
+        viewModel.save {
+            when (it) {
+                null -> close()
+                else -> ErrorAlert.showAndWait(it)
+            }
+        }
     }
 
     @FXML fun onCancelButton() {
+        close()
+    }
+
+    private fun close() {
         stage.close()
     }
 }

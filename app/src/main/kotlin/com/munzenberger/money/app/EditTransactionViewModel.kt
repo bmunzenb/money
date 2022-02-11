@@ -1,16 +1,13 @@
 package com.munzenberger.money.app
 
 import com.munzenberger.money.app.concurrent.Executors
-import com.munzenberger.money.app.concurrent.executeAsync
 import com.munzenberger.money.app.concurrent.setValueAsync
 import com.munzenberger.money.app.model.TransactionCategory
 import com.munzenberger.money.app.model.displayName
 import com.munzenberger.money.app.model.getAllWithParent
 import com.munzenberger.money.app.property.AsyncObject
 import com.munzenberger.money.app.property.ReadOnlyAsyncObjectProperty
-import com.munzenberger.money.app.property.ReadOnlyAsyncStatusProperty
 import com.munzenberger.money.app.property.SimpleAsyncObjectProperty
-import com.munzenberger.money.app.property.SimpleAsyncStatusProperty
 import com.munzenberger.money.core.Account
 import com.munzenberger.money.core.Category
 import com.munzenberger.money.core.CategoryEntry
@@ -47,9 +44,9 @@ class EditTransactionViewModel : TransactionEntryEditor(), AutoCloseable {
     private val categoryDisabled = SimpleBooleanProperty(true)
     private val splitDisabled = SimpleBooleanProperty(true)
     private val amountDisabled = SimpleBooleanProperty(true)
-    private val saveStatus = SimpleAsyncStatusProperty()
     private val notValid = SimpleBooleanProperty()
     private val transactionStatus = SimpleStringProperty()
+    private val isOperationInProgress = SimpleBooleanProperty(false)
 
     val accountsProperty: ReadOnlyAsyncObjectProperty<List<Account>> = accounts
     val selectedAccountProperty = SimpleObjectProperty<Account?>()
@@ -64,9 +61,9 @@ class EditTransactionViewModel : TransactionEntryEditor(), AutoCloseable {
     val categoryDisabledProperty: ReadOnlyBooleanProperty = categoryDisabled
     val splitDisabledProperty: ReadOnlyBooleanProperty = splitDisabled
     val amountDisabledProperty: ReadOnlyBooleanProperty = amountDisabled
-    val saveStatusProperty: ReadOnlyAsyncStatusProperty = saveStatus
     val notValidProperty: ReadOnlyBooleanProperty = notValid
     val transactionStatusProperty: ReadOnlyStringProperty = transactionStatus
+    val isOperationInProgressProperty: ReadOnlyBooleanProperty = isOperationInProgress
 
     private lateinit var database: MoneyDatabase
     private lateinit var transaction: Transaction
@@ -216,87 +213,102 @@ class EditTransactionViewModel : TransactionEntryEditor(), AutoCloseable {
         splitDisabled.value = false
     }
 
-    fun save() {
+    fun save(block: (Throwable?) -> Unit) {
 
-        saveStatus.executeAsync {
+        val task = object : Task<Unit>() {
 
-            database.transaction { tx ->
+            override fun call() {
 
-                transaction.apply {
-                    account = selectedAccountProperty.value
-                    date = dateProperty.value
-                    payee = selectedPayeeProperty.value
-                    number = numberProperty.value
-                    memo = memoProperty.value
-                    save(tx)
-                }
+                database.transaction { tx ->
 
-                val entriesToDelete = entries.toMutableList()
-
-                editors.forEachIndexed { index, editor ->
-
-                    when (val c = editor.category) {
-
-                        is TransactionCategory.TransferType -> {
-
-                            // if the underlying entry is a transfer, update it
-                            val transfer = when (val e = editor.entry) {
-                                is TransferEntry -> e.also { entriesToDelete.remove(e) }
-                                else -> TransferEntry().apply { setTransaction(transaction) }
-                            }
-
-                            transfer.apply {
-                                this.amount = editor.amount?.forTransactionType(transactionType)
-                                this.account = c.account
-                                this.memo = editor.memo
-                                this.orderInTransaction = index
-                                save(tx)
-                            }
-                        }
-
-                        is TransactionCategory.CategoryType -> {
-
-                            // if the underlying entry is a category, update it
-                            val categoryEntry = when (val e = editor.entry) {
-                                is CategoryEntry -> e.also { entriesToDelete.remove(e) }
-                                else -> CategoryEntry().apply { setTransaction(transaction) }
-                            }
-
-                            categoryEntry.apply {
-                                this.amount = editor.amount?.forTransactionType(transactionType)
-                                this.category = c.category
-                                this.memo = editor.memo
-                                this.orderInTransaction = index
-                                save(tx)
-                            }
-                        }
-
-                        is TransactionCategory.Pending -> {
-
-                            // if the underlying entry is a category, update it
-                            val categoryEntry = when (val e = editor.entry) {
-                                is CategoryEntry -> e.also { entriesToDelete.remove(e) }
-                                else -> CategoryEntry().apply { setTransaction(transaction) }
-                            }
-
-                            categoryEntry.apply {
-                                this.amount = editor.amount?.forTransactionType(transactionType)
-                                this.category = c.getCategory(tx, editor.amount?.isNegative, transactionType)
-                                this.memo = editor.memo
-                                this.orderInTransaction = index
-                                save(tx)
-                            }
-                        }
-
-                        else ->
-                            throw IllegalStateException("Invalid TransactionCategory type: ${c?.javaClass?.simpleName}")
+                    transaction.apply {
+                        account = selectedAccountProperty.value
+                        date = dateProperty.value
+                        payee = selectedPayeeProperty.value
+                        number = numberProperty.value
+                        memo = memoProperty.value
+                        save(tx)
                     }
-                }
 
-                // delete any entries that weren't updated
-                entriesToDelete.forEach { it.delete(tx) }
+                    val entriesToDelete = entries.toMutableList()
+
+                    editors.forEachIndexed { index, editor ->
+
+                        when (val c = editor.category) {
+
+                            is TransactionCategory.TransferType -> {
+
+                                // if the underlying entry is a transfer, update it
+                                val transfer = when (val e = editor.entry) {
+                                    is TransferEntry -> e.also { entriesToDelete.remove(e) }
+                                    else -> TransferEntry().apply { setTransaction(transaction) }
+                                }
+
+                                transfer.apply {
+                                    this.amount = editor.amount?.forTransactionType(transactionType)
+                                    this.account = c.account
+                                    this.memo = editor.memo
+                                    this.orderInTransaction = index
+                                    save(tx)
+                                }
+                            }
+
+                            is TransactionCategory.CategoryType -> {
+
+                                // if the underlying entry is a category, update it
+                                val categoryEntry = when (val e = editor.entry) {
+                                    is CategoryEntry -> e.also { entriesToDelete.remove(e) }
+                                    else -> CategoryEntry().apply { setTransaction(transaction) }
+                                }
+
+                                categoryEntry.apply {
+                                    this.amount = editor.amount?.forTransactionType(transactionType)
+                                    this.category = c.category
+                                    this.memo = editor.memo
+                                    this.orderInTransaction = index
+                                    save(tx)
+                                }
+                            }
+
+                            is TransactionCategory.Pending -> {
+
+                                // if the underlying entry is a category, update it
+                                val categoryEntry = when (val e = editor.entry) {
+                                    is CategoryEntry -> e.also { entriesToDelete.remove(e) }
+                                    else -> CategoryEntry().apply { setTransaction(transaction) }
+                                }
+
+                                categoryEntry.apply {
+                                    this.amount = editor.amount?.forTransactionType(transactionType)
+                                    this.category = c.getCategory(tx, editor.amount?.isNegative, transactionType)
+                                    this.memo = editor.memo
+                                    this.orderInTransaction = index
+                                    save(tx)
+                                }
+                            }
+
+                            else ->
+                                throw IllegalStateException("Invalid TransactionCategory type: ${c?.javaClass?.simpleName}")
+                        }
+                    }
+
+                    // delete any entries that weren't updated
+                    entriesToDelete.forEach { it.delete(tx) }
+                }
+            }
+
+            override fun succeeded() {
+                block.invoke(null)
+            }
+
+            override fun failed() {
+                block.invoke(exception)
             }
         }
+
+        isOperationInProgress.bind(task.runningProperty())
+
+        Executors.SINGLE.execute(task)
     }
 
     fun prepareSplit(block: (ObservableList<TransactionEntryEditor>, List<TransactionCategory>) -> Unit) {

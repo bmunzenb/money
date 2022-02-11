@@ -13,7 +13,7 @@ import java.sql.DriverManager
 interface DatabaseConnectorCallbacks {
     fun onCanceled()
     fun onUnsupportedVersion()
-    fun onPendingUpgrades(): Boolean
+    fun onPendingUpgrades(isFirstUse: Boolean): Boolean
     fun onConnected(database: ObservableMoneyDatabase, isFirstUse: Boolean)
     fun onConnectError(error: Throwable)
 }
@@ -95,7 +95,7 @@ abstract class DatabaseConnector {
             }
 
             is VersionStatus.PendingUpgrades ->
-                when (callbacks.onPendingUpgrades()) {
+                when (callbacks.onPendingUpgrades(status.isFirstUse)) {
                     true -> applyPendingUpgrades(database, status, callbacks)
                     else -> {
                         database.close()

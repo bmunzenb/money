@@ -25,7 +25,7 @@ import java.net.URL
 class EditAccountController {
 
     companion object {
-        val LAYOUT: URL = AccountListController::class.java.getResource("EditAccountLayout.fxml")
+        val LAYOUT: URL = AccountListController::class.java.getResource("EditAccountLayout.fxml")!!
     }
 
     @FXML lateinit var container: Node
@@ -94,15 +94,7 @@ class EditAccountController {
 
         saveButton.disableProperty().bind(viewModel.notValidProperty)
 
-        container.disableProperty().bindAsyncStatus(viewModel.saveStatusProperty, AsyncObject.Status.EXECUTING)
-
-        viewModel.saveStatusProperty.addListener { _, _, status ->
-            when (status) {
-                is AsyncObject.Complete -> stage.close()
-                is AsyncObject.Error -> ErrorAlert.showAndWait(status.error)
-                else -> {}
-            }
-        }
+        container.disableProperty().bind(viewModel.isOperationInProgressProperty)
     }
 
     fun start(stage: Stage, database: MoneyDatabase, account: Account) {
@@ -117,10 +109,19 @@ class EditAccountController {
     }
 
     @FXML fun onSaveButton() {
-        viewModel.save()
+        viewModel.save {
+            when (it) {
+                null -> close()
+                else -> ErrorAlert.showAndWait(it)
+            }
+        }
     }
 
     @FXML fun onCancelButton() {
+        close()
+    }
+
+    private fun close() {
         stage.close()
     }
 }
