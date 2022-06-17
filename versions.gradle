@@ -1,12 +1,12 @@
 def versions = [:]
 
-versions.jvm = '17'
-versions.kotlin = '1.6.10'
+versions.jvm = '18'
+versions.kotlin = '1.7.0'
 versions.gradle_versions = '0.42.0'
 versions.junit = '4.13.2'
-versions.h2 = '2.1.210'
+versions.h2 = '2.1.214'
 versions.sqlite = '3.36.0.3'
-versions.javafx = '17.0.2'
-versions.mockk = '1.12.2'
+versions.javafx = '18.0.1'
+versions.mockk = '1.12.4'
 
 ext.versions = versions
