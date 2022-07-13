@@ -6,7 +6,6 @@ import com.munzenberger.money.core.model.TransferEntryTable
 import com.munzenberger.money.sql.Query
 import com.munzenberger.money.sql.QueryExecutor
 import com.munzenberger.money.sql.ResultSetHandler
-import java.lang.IllegalStateException
 import java.sql.ResultSet
 
 private interface AccountBalanceCollector : ResultSetHandler {
@@ -81,7 +80,7 @@ private class CategoryEntryBalanceCollector(accountId: Long) : AccountBalanceCol
 
 fun Account.getBalance(executor: QueryExecutor): Money {
 
-    val accountId = identity ?: throw IllegalStateException("Can't get balance for an unsaved account.")
+    val accountId = identity ?: error("Can't get balance for an unsaved account.")
 
     val initialBalance: Long = initialBalance?.value ?: 0
 

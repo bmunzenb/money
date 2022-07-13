@@ -5,7 +5,6 @@ import com.munzenberger.money.core.model.Table
 import com.munzenberger.money.sql.QueryExecutor
 import com.munzenberger.money.sql.ResultSetMapper
 import com.munzenberger.money.sql.TransactionQueryExecutor
-import java.lang.IllegalStateException
 
 interface Persistable {
 
@@ -52,7 +51,7 @@ abstract class AbstractPersistable<M : Model>(
         val query = table.update(model).build()
 
         when (executor.executeUpdate(query)) {
-            0 -> throw IllegalStateException("No rows updated for persistable.")
+            0 -> error("No rows updated for persistable.")
         }
     }
 
@@ -63,7 +62,7 @@ abstract class AbstractPersistable<M : Model>(
             val query = table.delete(model).build()
 
             when (executor.executeUpdate(query)) {
-                0 -> throw IllegalStateException("No rows deleted for persistable.")
+                0 -> error("No rows deleted for persistable.")
             }
 
             val i = model.identity

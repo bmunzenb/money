@@ -12,7 +12,6 @@ import com.munzenberger.money.sql.ResultSetHandler
 import com.munzenberger.money.sql.eq
 import com.munzenberger.money.sql.getLocalDate
 import com.munzenberger.money.sql.getLongOrNull
-import java.lang.IllegalStateException
 import java.sql.ResultSet
 import java.time.LocalDate
 
@@ -194,7 +193,7 @@ private class AccountEntryCollector {
             entryParentCategoryName: String?,
             entryOrderInTransaction: Int
     ) {
-        val t = transactions[transactionId] ?: throw IllegalStateException("No transaction with id: $transactionId")
+        val t = transactions[transactionId] ?: error("No transaction with id: $transactionId")
 
         t.amount += amount
 
@@ -425,7 +424,7 @@ private class TransferEntryResultSetHandler(accountId: Long, private val collect
 
 fun Account.getAccountEntries(executor: QueryExecutor): List<AccountEntry> {
 
-    val accountId = identity ?: throw IllegalStateException("Can't get entries for an unsaved account.")
+    val accountId = identity ?: error("Can't get entries for an unsaved account.")
 
     val collector = AccountEntryCollector()
 
