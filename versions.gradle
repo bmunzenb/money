@@ -1,6 +1,6 @@
 def versions = [:]
 
-versions.jvm = '18'
+versions.jvmTarget = '18'
 versions.kotlin = '1.7.22'
 versions.gradle_versions = '0.44.0'
 versions.junit = '4.13.2'

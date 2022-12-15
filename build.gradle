@@ -1,3 +1,5 @@
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+
 apply plugin: "com.github.ben-manes.versions"
 
 buildscript {
@@ -23,15 +25,9 @@ allprojects {
 subprojects {
     apply plugin: 'kotlin'
 
-    compileKotlin {
+    tasks.withType(KotlinCompile).configureEach {
         kotlinOptions {
-            jvmTarget = "$versions.jvm"
-        }
-    }
-
-    compileTestKotlin {
-        kotlinOptions {
-            jvmTarget = "$versions.jvm"
+            jvmTarget = "$versions.jvmTarget"
         }
     }
 
