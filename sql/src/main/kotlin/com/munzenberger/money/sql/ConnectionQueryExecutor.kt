@@ -1,7 +1,6 @@
 package com.munzenberger.money.sql
 
 import java.sql.Connection
-import java.util.concurrent.atomic.AtomicInteger
 import java.util.logging.Level
 import java.util.logging.Logger
 
@@ -16,72 +15,74 @@ class ConnectionQueryExecutor(private val connection: Connection) : QueryExecuto
     override fun executeUpdate(query: Query, handler: ResultSetHandler?) =
         SQLExecutor.executeUpdate(connection, query.sql, query.parameters, handler)
 
-    private val transactionManager by lazy {
-        ManagedTransactionQueryExecutor(connection, this)
-    }
-
-    override fun createTransaction() = transactionManager.createTransaction()
+    override fun createTransaction(): TransactionQueryExecutor =
+        ConnectionTransactionQueryExecutor(connection, this)
 }
 
-private class ManagedTransactionQueryExecutor(
-        private val connection: Connection,
-        executor: QueryExecutor
+private class ConnectionTransactionQueryExecutor(
+    val connection: Connection,
+    val executor: QueryExecutor
 ) : TransactionQueryExecutor, QueryExecutor by executor {
 
-    private val logger = Logger.getLogger(ManagedTransactionQueryExecutor::class.java.name)
+    private val logger = Logger.getLogger(ConnectionTransactionQueryExecutor::class.java.name)
     private val level = Level.FINE
 
     private val rollbackListeners = mutableListOf<Runnable>()
     private var autoCommit = connection.autoCommit
-    private var semaphore = AtomicInteger(0)
 
-    @Synchronized
-    override fun createTransaction(): TransactionQueryExecutor {
-
-        when (val n = semaphore.getAndIncrement()) {
-            0 -> {
-                logger.log(level, "Start transaction")
-                autoCommit = connection.autoCommit
-                connection.autoCommit = false
-            }
-            else -> logger.log(level, "Start nested transaction: $n")
-        }
-
-        return this
+    init {
+        logger.log(level, "Start transaction")
+        autoCommit = connection.autoCommit
+        connection.autoCommit = false
     }
 
-    @Synchronized
+    override fun createTransaction() =
+        NestedTransactionQueryExecutor(0, this)
+
     override fun commit() {
-
-        when (val n = semaphore.decrementAndGet()) {
-            0 -> {
-                logger.log(level, "Commit transaction")
-                connection.commit()
-                connection.autoCommit = autoCommit
-                rollbackListeners.clear()
-            }
-            else -> logger.log(level, "Delayed commit for nested transaction: $n")
-        }
+        logger.log(level, "Commit transaction")
+        connection.commit()
+        connection.autoCommit = autoCommit
     }
 
-    @Synchronized
     override fun rollback() {
-
-        when (val n = semaphore.decrementAndGet()) {
-            0 -> {
-                logger.log(level, "Rollback transaction")
-                connection.rollback()
-                connection.autoCommit = autoCommit
-                rollbackListeners.forEach { it.run() }
-                rollbackListeners.clear()
-            }
-            else -> logger.log(level, "Delayed rollback for nested transaction: $n")
-        }
+        logger.log(level, "Rollback transaction")
+        connection.rollback()
+        connection.autoCommit = autoCommit
+        rollbackListeners.forEach { it.run() }
+        rollbackListeners.clear()
     }
 
-    @Synchronized
     override fun addRollbackListener(listener: Runnable) {
         // treat the listeners as a LIFO queue
         rollbackListeners.add(0, listener)
+    }
+}
+
+private class NestedTransactionQueryExecutor(
+    val nest: Int,
+    val tx: TransactionQueryExecutor
+) : TransactionQueryExecutor, QueryExecutor by tx {
+
+    private val logger = Logger.getLogger(NestedTransactionQueryExecutor::class.java.name)
+    private val level = Level.FINE
+
+    init {
+        logger.log(level, "Start nested transaction: $nest")
+    }
+
+    override fun createTransaction() =
+        NestedTransactionQueryExecutor(nest + 1, tx)
+
+    override fun commit() {
+        logger.log(level, "Delayed commit for nested transaction: $nest")
+    }
+
+    override fun rollback() {
+        logger.log(level, "Delayed rollback for nested transaction: $nest")
+    }
+
+    override fun addRollbackListener(listener: Runnable) {
+        tx.addRollbackListener(listener)
     }
 }
