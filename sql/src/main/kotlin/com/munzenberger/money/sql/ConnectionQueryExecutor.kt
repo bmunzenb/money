@@ -20,8 +20,8 @@ class ConnectionQueryExecutor(private val connection: Connection) : QueryExecuto
 }
 
 private class ConnectionTransactionQueryExecutor(
-    val connection: Connection,
-    val executor: QueryExecutor
+    private val connection: Connection,
+    private val executor: QueryExecutor
 ) : TransactionQueryExecutor, QueryExecutor by executor {
 
     private val logger = Logger.getLogger(ConnectionTransactionQueryExecutor::class.java.name)
@@ -60,8 +60,8 @@ private class ConnectionTransactionQueryExecutor(
 }
 
 private class NestedTransactionQueryExecutor(
-    val nest: Int,
-    val tx: TransactionQueryExecutor
+    private val nest: Int,
+    private val tx: TransactionQueryExecutor
 ) : TransactionQueryExecutor, QueryExecutor by tx {
 
     private val logger = Logger.getLogger(NestedTransactionQueryExecutor::class.java.name)
