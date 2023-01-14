@@ -1,6 +1,6 @@
 plugins {
     id 'application'
-    id 'org.openjfx.javafxplugin' version '0.0.13'
+    id 'org.openjfx.javafxplugin' version "$javafx_plugin_version"
 }
 
 application {
@@ -9,7 +9,7 @@ application {
 }
 
 javafx {
-    version = versions.javafx
+    version = javafx_version
     modules = [ 'javafx.controls', 'javafx.fxml' ]
 }
 
@@ -17,9 +17,9 @@ dependencies {
 
     implementation project(':core')
 
-    implementation "com.h2database:h2:$versions.h2"
-    implementation "org.xerial:sqlite-jdbc:$versions.sqlite"
+    implementation "com.h2database:h2:$h2_version"
+    implementation "org.xerial:sqlite-jdbc:$sqlite_version"
 
-    testImplementation "io.mockk:mockk:$versions.mockk"
+    testImplementation "io.mockk:mockk:$mockk_version"
     testImplementation testFixtures(project(':core'))
 }

@@ -1,19 +1,28 @@
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
-
-apply plugin: "com.github.ben-manes.versions"
-
 buildscript {
-    apply from: 'versions.gradle'
-    
+
+    ext {
+        versions_plugin_version = '0.44.0'
+        kotlin_version = '1.8.0'
+        h2_version = '2.1.214'
+        sqlite_version = '3.40.0.0'
+        javafx_plugin_version = '0.0.13'
+        javafx_version = '18.0.1'
+        junit_version = '4.13.2'
+        mockk_version = '1.13.3'
+    }
+
     repositories {
         mavenCentral()
         gradlePluginPortal()
     }
 
     dependencies {
-        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$versions.kotlin"
-        classpath "com.github.ben-manes:gradle-versions-plugin:$versions.gradle_versions"
     }
+}
+
+plugins {
+    id "com.github.ben-manes.versions" version "$versions_plugin_version"
+    id "org.jetbrains.kotlin.jvm" version "$kotlin_version"
 }
 
 allprojects {
@@ -23,19 +32,19 @@ allprojects {
 }
 
 subprojects {
-    apply plugin: 'kotlin'
-
-    tasks.withType(KotlinCompile).configureEach {
-        kotlinOptions {
-            jvmTarget = "$versions.jvmTarget"
-        }
-    }
+    apply plugin: 'org.jetbrains.kotlin.jvm'
 
     version = 'SNAPSHOT'
     archivesBaseName = "${rootProject.name}-${project.name}"
 
+    kotlin {
+        jvmToolchain {
+            languageVersion = JavaLanguageVersion.of(18)
+        }
+    }
+
     dependencies {
-        testImplementation "junit:junit:$versions.junit"
+        testImplementation "junit:junit:$junit_version"
     }
 }
 
