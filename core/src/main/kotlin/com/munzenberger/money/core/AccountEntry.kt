@@ -172,7 +172,7 @@ private class AccountEntryCollector {
             transferAccountName: String,
             transferOrderInTransaction: Int
     ) {
-        val t = transactions[transactionId] ?: throw IllegalStateException("No transaction with id: $transactionId")
+        val t = transactions[transactionId] ?: error("No transaction with id: $transactionId")
 
         t.amount += amount
 
