@@ -1,5 +1,4 @@
 buildscript {
-
     ext {
         versions_plugin_version = '0.44.0'
         kotlin_version = '1.8.0'
@@ -8,15 +7,12 @@ buildscript {
         javafx_plugin_version = '0.0.13'
         javafx_version = '18.0.1'
         junit_version = '4.13.2'
-        mockk_version = '1.13.3'
+        mockk_version = '1.13.4'
     }
 
     repositories {
         mavenCentral()
         gradlePluginPortal()
-    }
-
-    dependencies {
     }
 }
 
