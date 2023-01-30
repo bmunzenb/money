@@ -46,10 +46,7 @@ class ObservableImpl : Observable {
 
     fun onNext() {
         synchronized(subscribers) {
-            subscribers.forEach {
-                val (executor, block) = it
-                executor.execute(block)
-            }
+            subscribers.forEach { (executor, block) -> executor.execute(block) }
         }
     }
 }

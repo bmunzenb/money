@@ -288,7 +288,7 @@ class EditTransactionViewModel : TransactionEntryEditor(), AutoCloseable {
                             }
 
                             else ->
-                                throw IllegalStateException("Invalid TransactionCategory type: ${c?.javaClass?.simpleName}")
+                                error("Invalid TransactionCategory type: ${c?.javaClass?.simpleName}")
                         }
                     }
 
