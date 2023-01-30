@@ -37,7 +37,7 @@ private class ConnectionTransactionQueryExecutor(
     }
 
     override fun createTransaction() =
-        NestedTransactionQueryExecutor(0, this)
+        NestedTransactionQueryExecutor(1, this)
 
     override fun commit() {
         logger.log(level, "Commit transaction")
