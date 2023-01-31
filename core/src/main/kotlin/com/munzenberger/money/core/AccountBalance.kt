@@ -6,6 +6,7 @@ import com.munzenberger.money.core.model.TransferEntryTable
 import com.munzenberger.money.sql.Query
 import com.munzenberger.money.sql.QueryExecutor
 import com.munzenberger.money.sql.ResultSetHandler
+import com.munzenberger.money.sql.eq
 import java.sql.ResultSet
 
 private interface AccountBalanceCollector : ResultSetHandler {
@@ -41,7 +42,6 @@ private class TransferEntryBalanceCollector(accountId: Long) : AccountBalanceCol
     private val sql = """
         SELECT -SUM(${TransferEntryTable.amountColumn}) AS TOTAL
         FROM ${TransferEntryTable.tableName}
-        INNER JOIN ${TransactionTable.tableName} ON ${TransactionTable.tableName}.${TransactionTable.identityColumn} = ${TransferEntryTable.tableName}.${TransferEntryTable.transactionColumn}
         WHERE ${TransferEntryTable.accountColumn} = ?
     """.trimIndent()
 

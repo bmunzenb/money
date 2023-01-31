@@ -53,7 +53,7 @@ sealed class AccountEntry {
                     override val orderInTransaction: Int
             ) : Detail()
 
-            data class Entry(
+            data class Category(
                     val entryId: Long,
                     val categoryId: Long,
                     val categoryName: String,
@@ -197,7 +197,7 @@ private class AccountEntryCollector {
 
         t.amount += amount
 
-        t.details += AccountEntry.Transaction.Detail.Entry(
+        t.details += AccountEntry.Transaction.Detail.Category(
                 entryId = entryId,
                 categoryId = entryCategoryId,
                 categoryName = entryCategoryName,
@@ -428,18 +428,22 @@ fun Account.getAccountEntries(executor: QueryExecutor): List<AccountEntry> {
 
     val collector = AccountEntryCollector()
 
+    // 1: Get all direct transactions associated with this account
     TransactionResultSetHandler(accountId, collector).apply {
         executor.executeQuery(query, this)
     }
 
+    // 2: Get all transfer entries associated with transactions for this account
     TransactionTransferEntryResultSetHandler(accountId, collector).apply {
         executor.executeQuery(query, this)
     }
 
+    // 3: Get all category entries associated with transactions for this account
     TransactionCategoryEntryResultSetHandler(accountId, collector).apply {
         executor.executeQuery(query, this)
     }
 
+    // 4: Get all transfer entries associated with this account
     TransferEntryResultSetHandler(accountId, collector).apply {
         executor.executeQuery(query, this)
     }

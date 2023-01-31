@@ -137,7 +137,7 @@ class AccountEntryTest : MoneyDatabaseTestSupport() {
                         number = transaction.number,
                         status = transaction.status!!,
                         details = listOf(
-                                AccountEntry.Transaction.Detail.Entry(
+                                AccountEntry.Transaction.Detail.Category(
                                         entryId = categoryEntry.identity!!,
                                         categoryId = category.identity!!,
                                         categoryName = category.name!!,

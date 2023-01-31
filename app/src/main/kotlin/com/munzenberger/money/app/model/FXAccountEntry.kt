@@ -121,9 +121,11 @@ class FXTransferAccountEntry(private val transferEntry: AccountEntry.Transfer) :
 
 private val AccountEntry.Transaction.Detail.name: String
     get() = when (this) {
+
         is AccountEntry.Transaction.Detail.Transfer ->
             "Transfer $CATEGORY_DELIMITER $accountName"
-        is AccountEntry.Transaction.Detail.Entry ->
+
+        is AccountEntry.Transaction.Detail.Category ->
             when (val p = parentCategoryName) {
                 null -> categoryName
                 else -> "$p $CATEGORY_DELIMITER $categoryName"
