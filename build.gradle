@@ -30,7 +30,7 @@ allprojects {
 subprojects {
     apply plugin: 'org.jetbrains.kotlin.jvm'
 
-    version = 'SNAPSHOT'
+    version = '0.1-SNAPSHOT'
     archivesBaseName = "${rootProject.name}-${project.name}"
 
     kotlin {

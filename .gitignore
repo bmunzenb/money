@@ -5,5 +5,7 @@
 build
 out/
 
+# Ignore IDE and workstation specific files and directories
 .idea/
+.DS_Store
 
