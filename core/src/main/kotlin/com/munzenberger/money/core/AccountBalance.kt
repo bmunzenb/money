@@ -6,7 +6,6 @@ import com.munzenberger.money.core.model.TransferEntryTable
 import com.munzenberger.money.sql.Query
 import com.munzenberger.money.sql.QueryExecutor
 import com.munzenberger.money.sql.ResultSetHandler
-import com.munzenberger.money.sql.eq
 import java.sql.ResultSet
 
 private interface AccountBalanceCollector : ResultSetHandler {
@@ -16,7 +15,7 @@ private interface AccountBalanceCollector : ResultSetHandler {
     val result: Long
 }
 
-private class TransactionBalanceCollector(accountId: Long) : AccountBalanceCollector {
+private class TransactionTransferEntryBalanceCollector(accountId: Long) : AccountBalanceCollector {
 
     private val sql = """
         SELECT SUM(${TransferEntryTable.amountColumn}) AS TOTAL
@@ -57,7 +56,7 @@ private class TransferEntryBalanceCollector(accountId: Long) : AccountBalanceCol
     }
 }
 
-private class CategoryEntryBalanceCollector(accountId: Long) : AccountBalanceCollector {
+private class TransactionCategoryEntryBalanceCollector(accountId: Long) : AccountBalanceCollector {
 
     private val sql = """
         SELECT SUM(${CategoryEntryTable.amountColumn}) AS TOTAL
@@ -85,9 +84,9 @@ fun Account.getBalance(executor: QueryExecutor): Money {
     val initialBalance: Long = initialBalance?.value ?: 0
 
     val collectors = listOf(
-            TransactionBalanceCollector(accountId),
+            TransactionTransferEntryBalanceCollector(accountId),
             TransferEntryBalanceCollector(accountId),
-            CategoryEntryBalanceCollector(accountId)
+            TransactionCategoryEntryBalanceCollector(accountId)
     )
 
     val totals = collectors.map {

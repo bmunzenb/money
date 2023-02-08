@@ -164,7 +164,7 @@ private class AccountEntryCollector {
         }
     }
 
-    fun collectTransactionTransfer(
+    fun collectTransactionTransferEntry(
             transactionId: Long,
             amount: Long,
             transferId: Long,
@@ -184,7 +184,7 @@ private class AccountEntryCollector {
         )
     }
 
-    fun collectTransactionEntry(
+    fun collectTransactionCategoryEntry(
             transactionId: Long,
             amount: Long,
             entryId: Long,
@@ -332,7 +332,7 @@ private class TransactionTransferEntryResultSetHandler(accountId: Long, private 
 
     override fun accept(rs: ResultSet) {
         while (rs.next()) {
-            collector.collectTransactionTransfer(
+            collector.collectTransactionTransferEntry(
                     transactionId = rs.getLong(TransactionTable.identityColumn),
                     amount = rs.getLong(TransferEntryTable.amountColumn),
                     transferId = rs.getLong(TransferEntryTable.identityColumn),
@@ -366,7 +366,7 @@ private class TransactionCategoryEntryResultSetHandler(accountId: Long, private 
 
     override fun accept(rs: ResultSet) {
         while (rs.next()) {
-            collector.collectTransactionEntry(
+            collector.collectTransactionCategoryEntry(
                     transactionId = rs.getLong(TransactionTable.identityColumn),
                     amount = rs.getLong(CategoryEntryTable.amountColumn),
                     entryId = rs.getLong(CategoryEntryTable.identityColumn),
