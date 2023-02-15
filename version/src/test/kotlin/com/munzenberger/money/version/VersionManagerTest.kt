@@ -118,7 +118,7 @@ class VersionManagerTest {
                 }
             }
 
-            else -> fail("status should have been PendingUpdgrades")
+            else -> fail("status should have been PendingUpgrades")
         }
     }
 }
