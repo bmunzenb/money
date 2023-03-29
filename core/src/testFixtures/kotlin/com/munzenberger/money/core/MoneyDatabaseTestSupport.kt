@@ -3,6 +3,7 @@ package com.munzenberger.money.core
 import com.munzenberger.money.core.version.MoneyDatabaseVersionManager
 import com.munzenberger.money.version.VersionStatus
 import org.junit.After
+import org.junit.Assert.fail
 import org.junit.Before
 import java.sql.DriverManager
 
@@ -35,6 +36,7 @@ open class MoneyDatabaseTestSupport {
 
         when (val status = MoneyDatabaseVersionManager().getVersionStatus(database)) {
             is VersionStatus.PendingUpgrades -> status.apply()
+            is VersionStatus.UnsupportedVersion -> fail("Unsupported database version")
             else -> Unit // do nothing
         }
     }
