@@ -1,8 +1,8 @@
 buildscript {
     ext {
-        versions_plugin_version = '0.46.0'
-        kotlin_version = '1.8.21'
-        h2_version = '2.1.214'
+        versions_plugin_version = '0.47.0'
+        kotlin_version = '1.9.0'
+        h2_version = '2.2.220'
         sqlite_version = '3.42.0.0'
         javafx_plugin_version = '0.0.14'
         javafx_version = '18.0.1'
