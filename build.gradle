@@ -7,7 +7,7 @@ buildscript {
         javafx_plugin_version = '0.0.14'
         javafx_version = '18.0.1'
         junit_version = '4.13.2'
-        mockk_version = '1.13.5'
+        mockk_version = '1.13.7'
     }
 
     repositories {
