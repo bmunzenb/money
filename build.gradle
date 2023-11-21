@@ -3,7 +3,7 @@ buildscript {
         versions_plugin_version = '0.50.0'
         kotlin_version = '1.9.20'
         h2_version = '2.2.224'
-        sqlite_version = '3.42.0.0'
+        sqlite_version = '3.44.0.0'
         javafx_plugin_version = '0.1.0'
         javafx_version = '18.0.1'
         junit_version = '4.13.2'

@@ -6,7 +6,7 @@ interface QueryExecutor {
 
     fun executeQuery(query: Query, handler: ResultSetHandler? = null)
 
-    fun executeUpdate(query: Query, handler: ResultSetHandler? = null): Int
+    fun executeUpdate(query: Query): Int
 
     fun createTransaction(): TransactionQueryExecutor
 

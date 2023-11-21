@@ -1,9 +1,10 @@
 package com.munzenberger.money.core
 
 import com.munzenberger.money.sql.ResultSetHandler
+import com.munzenberger.money.sql.ResultSetMapper
 import java.sql.ResultSet
 
-class IdentityResultSetHandler : ResultSetHandler {
+class IdentityResultSetHandler : ResultSetHandler, ResultSetMapper<Long> {
 
     private var mutableIdentity: Long? = null
 
@@ -11,9 +12,12 @@ class IdentityResultSetHandler : ResultSetHandler {
         get() = mutableIdentity
 
     override fun accept(resultSet: ResultSet) {
-
         if (resultSet.next()) {
-            mutableIdentity = resultSet.getLong(1)
+            mutableIdentity = apply(resultSet)
         }
+    }
+
+    override fun apply(resultSet: ResultSet): Long {
+        return resultSet.getLong(1)
     }
 }

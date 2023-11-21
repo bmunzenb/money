@@ -12,8 +12,8 @@ class ConnectionQueryExecutor(private val connection: Connection) : QueryExecuto
     override fun executeQuery(query: Query, handler: ResultSetHandler?) =
         SQLExecutor.executeQuery(connection, query.sql, query.parameters, handler)
 
-    override fun executeUpdate(query: Query, handler: ResultSetHandler?) =
-        SQLExecutor.executeUpdate(connection, query.sql, query.parameters, handler)
+    override fun executeUpdate(query: Query) =
+        SQLExecutor.executeUpdate(connection, query.sql, query.parameters)
 
     override fun createTransaction(): TransactionQueryExecutor =
         ConnectionTransactionQueryExecutor(connection, this)

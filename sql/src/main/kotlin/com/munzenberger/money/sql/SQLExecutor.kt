@@ -30,15 +30,12 @@ object SQLExecutor {
         }
     }
 
-    fun executeUpdate(connection: Connection, sql: String, parameters: List<Any?> = emptyList(), handler: ResultSetHandler? = null): Int {
+    fun executeUpdate(connection: Connection, sql: String, parameters: List<Any?> = emptyList()): Int {
         logger.log(level, toString(sql, parameters))
 
-        return connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS).use {
+        return connection.prepareStatement(sql).use {
             it.setParameters(parameters)
             val updated = it.executeUpdate()
-            handler?.run {
-                accept(it.generatedKeys)
-            }
             updated
         }
     }

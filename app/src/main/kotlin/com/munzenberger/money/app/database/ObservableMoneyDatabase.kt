@@ -14,8 +14,8 @@ class ObservableMoneyDatabase(private val database: MoneyDatabase) : MoneyDataba
 
     private val observable = ObservableImpl()
 
-    override fun executeUpdate(query: Query, handler: ResultSetHandler?): Int {
-        return database.executeUpdate(query, handler).also {
+    override fun executeUpdate(query: Query): Int {
+        return database.executeUpdate(query).also {
             observable.onNext()
         }
     }
