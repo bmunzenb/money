@@ -6,7 +6,6 @@ import com.munzenberger.money.app.observable.ObservableImpl
 import com.munzenberger.money.app.observable.Subscription
 import com.munzenberger.money.core.MoneyDatabase
 import com.munzenberger.money.sql.Query
-import com.munzenberger.money.sql.ResultSetHandler
 import com.munzenberger.money.sql.TransactionQueryExecutor
 import java.util.concurrent.Executor
 
@@ -16,13 +15,13 @@ class ObservableMoneyDatabase(private val database: MoneyDatabase) : MoneyDataba
 
     override fun executeUpdate(query: Query): Int {
         return database.executeUpdate(query).also {
-            observable.onNext()
+            observable.onChanged()
         }
     }
 
     override fun execute(query: Query): Boolean {
         return database.execute(query).also { isResults ->
-            if (!isResults) { observable.onNext() }
+            if (!isResults) { observable.onChanged() }
         }
     }
 
@@ -53,6 +52,6 @@ private class ObservableTransactionQueryExecutor(
 
     override fun commit() {
         executor.commit()
-        observable?.onNext()
+        observable?.onChanged()
     }
 }

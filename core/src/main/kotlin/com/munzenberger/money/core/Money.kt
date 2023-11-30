@@ -12,8 +12,7 @@ class Money private constructor(val currency: Currency, val value: Long): Compar
 
     companion object {
 
-        val ZERO: Money
-            get() = zero()
+        val ZERO: Money by lazy { zero() }
 
         private val defaultCurrency = Currency.getInstance("USD")
 

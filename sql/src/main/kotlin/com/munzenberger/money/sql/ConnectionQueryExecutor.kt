@@ -86,7 +86,7 @@ private class ConnectionTransactionQueryExecutor(
 
     private fun assertNotClosed() {
         if (isClosed) {
-            throw IllegalStateException("Transaction is closed.")
+            error("Transaction is closed.")
         }
     }
 }

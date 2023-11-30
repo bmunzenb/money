@@ -4,6 +4,7 @@ import com.munzenberger.money.core.model.Model
 import com.munzenberger.money.core.model.Table
 import com.munzenberger.money.sql.QueryExecutor
 import com.munzenberger.money.sql.ResultSetMapper
+import com.munzenberger.money.sql.SelectQueryBuilder
 import com.munzenberger.money.sql.TransactionQueryExecutor
 import com.munzenberger.money.sql.transaction
 
@@ -41,13 +42,13 @@ abstract class AbstractPersistable<M : Model>(
             // TODO this may not be a safe way to get the identity of the inserted row
             // consider exposing the database dialect here and using it for a database-specific implementation
             val identityHandler = IdentityResultSetHandler()
-            val getIdentity = table.select().cols("MAX(${table.identityColumn})").build()
+            val getIdentity = SelectQueryBuilder(table.tableName)
+                .cols("MAX(${table.identityColumn})")
+                .build()
 
             model.identity = tx.getFirst(getIdentity, identityHandler)
-        }
 
-        if (executor is TransactionQueryExecutor) {
-            executor.addRollbackListener {
+            tx.addRollbackListener {
                 model.identity = null
             }
         }

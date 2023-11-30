@@ -44,7 +44,7 @@ class ObservableImpl : Observable {
         }
     }
 
-    fun onNext() {
+    fun onChanged() {
         synchronized(subscribers) {
             subscribers.forEach { (executor, block) -> executor.execute(block) }
         }
