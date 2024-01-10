@@ -15,7 +15,7 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
-<GridPane hgap="6.0" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="0.0" minWidth="0.0" vgap="6.0" xmlns="http://javafx.com/javafx/15.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.munzenberger.money.app.AccountRegisterController">
+<GridPane hgap="6.0" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="0.0" minWidth="0.0" vgap="6.0" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.munzenberger.money.app.AccountRegisterController">
   <columnConstraints>
     <ColumnConstraints fillWidth="false" hgrow="NEVER" minWidth="-Infinity" />
     <ColumnConstraints hgrow="ALWAYS" maxWidth="1.7976931348623157E308" minWidth="0.0" />
@@ -73,9 +73,8 @@
             <TableColumn fx:id="payeeColumn" editable="false" maxWidth="2000.0" minWidth="-Infinity" prefWidth="150.0" text="Payee" />
             <TableColumn fx:id="categoryColumn" editable="false" maxWidth="2000.0" minWidth="-Infinity" prefWidth="150.0" text="Category" />
             <TableColumn fx:id="statusColumn" editable="false" maxWidth="250.0" minWidth="-Infinity" prefWidth="25.0" sortable="false" style="-fx-alignment: CENTER;" text="C" />
-            <TableColumn fx:id="debitColumn" editable="false" maxWidth="1000.0" minWidth="-Infinity" prefWidth="75.0" style="-fx-alignment: CENTER-RIGHT;" text="Debit" />
-            <TableColumn fx:id="creditColumn" editable="false" maxWidth="1000.0" minWidth="-Infinity" prefWidth="75.0" style="-fx-alignment: CENTER-RIGHT;" text="Credit" />
-            <TableColumn fx:id="balanceColumn" editable="false" maxWidth="1000.0" minWidth="-Infinity" prefWidth="75.0" style="-fx-alignment: CENTER-RIGHT;" text="Balance" />
+            <TableColumn fx:id="amountColumn" editable="false" maxWidth="1000.0" minWidth="-Infinity" prefWidth="100.0" style="-fx-alignment: CENTER-RIGHT;" text="Amount" />
+            <TableColumn fx:id="balanceColumn" editable="false" maxWidth="1000.0" minWidth="-Infinity" prefWidth="100.0" style="-fx-alignment: CENTER-RIGHT;" text="Balance" />
          </columns>
       </TableView>
       <StackPane maxWidth="1.7976931348623157E308" GridPane.columnIndex="1" GridPane.rowIndex="3">

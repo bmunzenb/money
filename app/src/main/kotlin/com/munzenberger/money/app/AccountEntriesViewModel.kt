@@ -8,8 +8,7 @@ import javafx.beans.property.ReadOnlyStringProperty
 interface AccountEntriesViewModel {
 
     val transactionsProperty: ReadOnlyAsyncObjectProperty<List<FXAccountEntry>>
-    val debitTextProperty: ReadOnlyStringProperty
-    val creditTextProperty: ReadOnlyStringProperty
+    val amountTextProperty: ReadOnlyStringProperty
 
     fun updateEntryStatus(entry: FXAccountEntry, status: TransactionStatus, completionBlock: (Throwable?) -> Unit)
 }

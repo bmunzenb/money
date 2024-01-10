@@ -26,7 +26,6 @@ import javafx.util.Callback
 import java.net.URL
 import java.time.LocalDate
 import java.util.function.Predicate
-import javax.naming.Binding
 
 class BalanceAccountController  {
 
@@ -39,8 +38,7 @@ class BalanceAccountController  {
     @FXML lateinit var dateColumn: TableColumn<FXAccountEntry, LocalDate>
     @FXML lateinit var payeeColumn: TableColumn<FXAccountEntry, String>
     @FXML lateinit var statusColumn: TableColumn<FXAccountEntry, TransactionStatus>
-    @FXML lateinit var debitColumn: TableColumn<FXAccountEntry, Money>
-    @FXML lateinit var creditColumn: TableColumn<FXAccountEntry, Money>
+    @FXML lateinit var amountColumn: TableColumn<FXAccountEntry, Money>
     @FXML lateinit var balanceColumn: TableColumn<FXAccountEntry, Money>
     @FXML lateinit var statementBalanceLabel: Label
     @FXML lateinit var clearedBalanceLabel: Label
@@ -80,18 +78,13 @@ class BalanceAccountController  {
             cellValueFactory = Callback { it.value.statusProperty }
         }
 
-        debitColumn.apply {
-            cellFactory = MoneyTableCellFactory(withCurrency = false, negativeStyle = false)
-            cellValueFactory = Callback { it.value.debitProperty }
-        }
-
-        creditColumn.apply {
-            cellFactory = MoneyTableCellFactory(withCurrency = false, negativeStyle = false)
-            cellValueFactory = Callback { it.value.creditProperty }
+        amountColumn.apply {
+            cellFactory = MoneyTableCellFactory(withCurrency = false)
+            cellValueFactory = Callback { it.value.amountProperty }
         }
 
         balanceColumn.apply {
-            cellFactory = MoneyTableCellFactory(withCurrency = false, negativeStyle = false)
+            cellFactory = MoneyTableCellFactory(withCurrency = false)
             cellValueFactory = Callback { it.value.balanceProperty }
         }
     }
@@ -121,8 +114,7 @@ class BalanceAccountController  {
             )
         }
 
-        debitColumn.textProperty().bind(viewModel.debitTextProperty)
-        creditColumn.textProperty().bind(viewModel.creditTextProperty)
+        amountColumn.textProperty().bind(viewModel.amountTextProperty)
 
         statementBalanceLabel.textProperty().bind(viewModel.statementBalanceProperty.toBinding {
             statementBalanceLabel.pseudoClassStateChanged(moneyNegativePseudoClass, it.isNegative)

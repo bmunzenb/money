@@ -3,7 +3,6 @@ package com.munzenberger.money.app.model
 import com.munzenberger.money.core.AccountEntry
 import com.munzenberger.money.core.Money
 import com.munzenberger.money.core.TransactionStatus
-import com.munzenberger.money.core.isNegative
 import com.munzenberger.money.core.model.CategoryEntryTable
 import com.munzenberger.money.core.model.TransactionTable
 import com.munzenberger.money.core.model.TransferEntryTable
@@ -40,23 +39,7 @@ sealed class FXAccountEntry(private val accountEntry: AccountEntry) {
     val statusProperty: ReadOnlyObjectProperty<TransactionStatus> = status
     val amountProperty: ReadOnlyObjectProperty<Money> = SimpleObjectProperty(accountEntry.amount)
 
-    val debitProperty: ReadOnlyObjectProperty<Money>
-    val creditProperty: ReadOnlyObjectProperty<Money>
-
     abstract val categoryProperty: ReadOnlyStringProperty
-
-    init {
-        when {
-            accountEntry.amount.isNegative -> {
-                debitProperty = SimpleObjectProperty(accountEntry.amount.negate())
-                creditProperty = SimpleObjectProperty()
-            }
-            else -> {
-                debitProperty = SimpleObjectProperty()
-                creditProperty = SimpleObjectProperty(accountEntry.amount)
-            }
-        }
-    }
 
     fun updateStatus(status: TransactionStatus, executor: QueryExecutor) {
         accountEntry.updateStatus(status, executor)

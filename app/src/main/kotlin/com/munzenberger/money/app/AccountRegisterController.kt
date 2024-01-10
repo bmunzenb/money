@@ -61,8 +61,7 @@ class AccountRegisterController : AutoCloseable {
     @FXML lateinit var payeeColumn: TableColumn<FXAccountEntry, String>
     @FXML lateinit var categoryColumn: TableColumn<FXAccountEntry, String>
     @FXML lateinit var statusColumn: TableColumn<FXAccountEntry, TransactionStatus>
-    @FXML lateinit var debitColumn: TableColumn<FXAccountEntry, Money>
-    @FXML lateinit var creditColumn: TableColumn<FXAccountEntry, Money>
+    @FXML lateinit var amountColumn: TableColumn<FXAccountEntry, Money>
     @FXML lateinit var balanceColumn: TableColumn<FXAccountEntry, Money>
     @FXML lateinit var endingBalanceLabel: Label
     @FXML lateinit var endingBalanceProgressIndicator: ProgressIndicator
@@ -163,16 +162,10 @@ class AccountRegisterController : AutoCloseable {
             cellValueFactory = Callback { it.value.statusProperty }
         }
 
-        debitColumn.apply {
-            cellFactory = MoneyTableCellFactory(withCurrency = false, negativeStyle = false)
-            cellValueFactory = Callback { it.value.debitProperty }
-            textProperty().bind(viewModel.debitTextProperty)
-        }
-
-        creditColumn.apply {
-            cellFactory = MoneyTableCellFactory(withCurrency = false, negativeStyle = false)
-            cellValueFactory = Callback { it.value.creditProperty }
-            textProperty().bind(viewModel.creditTextProperty)
+        amountColumn.apply {
+            cellFactory = MoneyTableCellFactory(withCurrency = false)
+            cellValueFactory = Callback { it.value.amountProperty }
+            textProperty().bind(viewModel.amountTextProperty)
         }
 
         balanceColumn.apply {

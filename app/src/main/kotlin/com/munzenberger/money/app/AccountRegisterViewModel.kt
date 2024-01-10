@@ -57,8 +57,7 @@ class AccountRegisterViewModel : AccountEntriesViewModel, AutoCloseable {
     private val account = SimpleAsyncObjectProperty<Account>()
     private val transactions = SimpleAsyncObjectProperty<List<FXAccountEntry>>()
     private val endingBalance = SimpleAsyncObjectProperty<Money>()
-    private val debitText = SimpleStringProperty()
-    private val creditText = SimpleStringProperty()
+    private val amountText = SimpleStringProperty()
     private val activeFilters = SimpleObjectProperty<Predicate<FXAccountEntry>>()
     private val isOperationInProgress = SimpleBooleanProperty(false)
     private val register = SimpleAsyncObjectProperty<Register>()
@@ -66,8 +65,7 @@ class AccountRegisterViewModel : AccountEntriesViewModel, AutoCloseable {
     val accountProperty: ReadOnlyAsyncObjectProperty<Account> = account
     override val transactionsProperty: ReadOnlyAsyncObjectProperty<List<FXAccountEntry>> = transactions
     val endingBalanceProperty: ReadOnlyAsyncObjectProperty<Money> = endingBalance
-    override val debitTextProperty: ReadOnlyStringProperty = debitText
-    override val creditTextProperty: ReadOnlyStringProperty = creditText
+    override val amountTextProperty: ReadOnlyStringProperty = amountText
     val dateFiltersProperty: ReadOnlyListProperty<FXAccountEntryFilter>
     val statusFiltersProperty: ReadOnlyListProperty<FXAccountEntryFilter>
     val activeFiltersProperty: ReadOnlyObjectProperty<Predicate<FXAccountEntry>> = activeFilters
@@ -109,12 +107,10 @@ class AccountRegisterViewModel : AccountEntriesViewModel, AutoCloseable {
 
         activeFilters.bind(filtersBinding)
 
-        debitText.bindAsyncValue(accountProperty) { account ->
-            TransactionType.Debit(account.accountType).name
-        }
-
-        creditText.bindAsyncValue(accountProperty) { account ->
-            TransactionType.Credit(account.accountType).name
+        amountText.bindAsyncValue(accountProperty) { account ->
+            val debitName = TransactionType.Debit(account.accountType).name
+            val creditName = TransactionType.Credit(account.accountType).name
+            "$creditName / $debitName"
         }
 
         register.addListener { _, _, newValue ->
