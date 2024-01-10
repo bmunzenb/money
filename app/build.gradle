@@ -4,7 +4,7 @@ plugins {
 }
 
 application {
-    mainClass.set('com.munzenberger.money.app.MoneyApplicationKt')
+    mainClass = 'com.munzenberger.money.app.MoneyApplicationKt'
     applicationName = 'Money'
 }
 
