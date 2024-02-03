@@ -279,6 +279,10 @@ private class AccountEntryCollector {
     }
 }
 
+/**
+ * Collects all transactions associated with the specified account.  Each transaction is the parent to one or more
+ * transfers targeting another account, or a credit/debit for a category.
+ */
 private class TransactionResultSetHandler(accountId: Long, private val collector: AccountEntryCollector) : ResultSetHandler {
 
     private val sql = """
@@ -312,6 +316,9 @@ private class TransactionResultSetHandler(accountId: Long, private val collector
     }
 }
 
+/**
+ * Collects all transfers where the parent transaction is associated with the specified account.
+ */
 private class TransactionTransferEntryResultSetHandler(accountId: Long, private val collector: AccountEntryCollector) : ResultSetHandler {
 
     private val sql = """
@@ -344,6 +351,9 @@ private class TransactionTransferEntryResultSetHandler(accountId: Long, private 
     }
 }
 
+/**
+ * Collects all category entries where the parent transaction is associated with the specified account.
+ */
 private class TransactionCategoryEntryResultSetHandler(accountId: Long, private val collector: AccountEntryCollector) : ResultSetHandler {
 
     private val sql = """
@@ -379,6 +389,9 @@ private class TransactionCategoryEntryResultSetHandler(accountId: Long, private 
     }
 }
 
+/**
+ * Collects all transfers that target the specified account.
+ */
 private class TransferEntryResultSetHandler(accountId: Long, private val collector: AccountEntryCollector) : ResultSetHandler {
 
     private val sql = """
