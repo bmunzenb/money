@@ -1,14 +1,13 @@
 package com.munzenberger.money.app.database
 
 import com.munzenberger.money.app.concurrent.Executors
-import com.munzenberger.money.core.ConnectionMoneyDatabase
 import com.munzenberger.money.core.DatabaseDialect
+import com.munzenberger.money.core.MoneyDatabase
 import com.munzenberger.money.core.version.MoneyDatabaseVersionManager
 import com.munzenberger.money.version.VersionStatus
 import javafx.beans.property.ReadOnlyBooleanProperty
 import javafx.beans.property.SimpleBooleanProperty
 import javafx.concurrent.Task
-import java.sql.DriverManager
 
 interface DatabaseConnectorCallbacks {
     fun onCanceled()
@@ -38,11 +37,8 @@ abstract class DatabaseConnector {
         val task = object : Task<ObservableMoneyDatabase>() {
 
             override fun call(): ObservableMoneyDatabase {
-                val connection = DriverManager.getConnection(connectionUrl, user, password)
-
-                return ObservableMoneyDatabase(ConnectionMoneyDatabase(name, dialect, connection)).also {
-                    dialect.initialize(it)
-                }
+                val database = MoneyDatabase.connect(name, dialect, connectionUrl, user, password)
+                return ObservableMoneyDatabase(database)
             }
 
             override fun succeeded() {

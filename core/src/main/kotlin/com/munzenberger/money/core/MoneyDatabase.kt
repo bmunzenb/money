@@ -1,6 +1,8 @@
 package com.munzenberger.money.core
 
 import com.munzenberger.money.sql.QueryExecutor
+import java.sql.DriverManager
+import java.util.logging.Logger
 
 interface MoneyDatabase : QueryExecutor {
 
@@ -9,10 +11,23 @@ interface MoneyDatabase : QueryExecutor {
     val dialect: DatabaseDialect
 
     fun close()
-}
 
-abstract class AbstractMoneyDatabase(
-        override val name: String,
-        override val dialect: DatabaseDialect,
-        executor: QueryExecutor
-) : MoneyDatabase, QueryExecutor by executor
+    companion object {
+
+        private val logger = Logger.getLogger(MoneyDatabase::class.simpleName)
+
+        fun connect(
+            name: String,
+            dialect: DatabaseDialect,
+            url: String,
+            user: String? = null,
+            password: String? = null
+        ): MoneyDatabase {
+            val connection = DriverManager.getConnection(url, user, password)
+            return ConnectionMoneyDatabase(name, dialect, connection).apply {
+                dialect.initialize(this)
+                logger.info("Connected to money database: $name")
+            }
+        }
+    }
+}

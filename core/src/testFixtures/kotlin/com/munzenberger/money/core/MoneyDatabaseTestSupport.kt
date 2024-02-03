@@ -5,7 +5,6 @@ import com.munzenberger.money.version.VersionStatus
 import org.junit.After
 import org.junit.Assert.fail
 import org.junit.Before
-import java.sql.DriverManager
 
 private data class DatabaseConfiguration(
         val url: String,
@@ -28,11 +27,7 @@ open class MoneyDatabaseTestSupport {
 
         val configuration = SQLiteDatabaseConfiguration
 
-        val connection = DriverManager.getConnection(configuration.url)
-
-        database = ConnectionMoneyDatabase(configuration.url, configuration.dialect, connection).also {
-            configuration.dialect.initialize(it)
-        }
+        database = MoneyDatabase.connect(configuration.url, configuration.dialect, configuration.url)
 
         when (val status = MoneyDatabaseVersionManager().getVersionStatus(database)) {
             is VersionStatus.PendingUpgrades -> status.apply()
