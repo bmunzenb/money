@@ -14,7 +14,7 @@ interface MoneyDatabase : QueryExecutor {
 
     companion object {
 
-        private val logger = Logger.getLogger(MoneyDatabase::class.simpleName)
+        private val logger = Logger.getLogger(MoneyDatabase::class.java.name)
 
         fun connect(
             name: String,

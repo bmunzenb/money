@@ -13,7 +13,7 @@ internal class ConnectionMoneyDatabase(
     private val connection: Connection
 ) : MoneyDatabase, QueryExecutor by ConnectionQueryExecutor(connection) {
 
-    private val logger = Logger.getLogger(MoneyDatabase::class.java.simpleName)
+    private val logger = Logger.getLogger(MoneyDatabase::class.java.name)
 
     override fun close() {
         try {

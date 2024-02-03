@@ -1,6 +1,5 @@
 package com.munzenberger.money.sql
 
-import java.lang.IllegalStateException
 import java.sql.Connection
 import java.util.logging.Level
 import java.util.logging.Logger
@@ -23,7 +22,7 @@ class ConnectionQueryExecutor(private val connection: Connection) : QueryExecuto
 private class ConnectionTransactionQueryExecutor(
     private val connection: Connection,
     private val executor: QueryExecutor
-) : TransactionQueryExecutor, QueryExecutor {
+) : TransactionQueryExecutor {
 
     private val logger = Logger.getLogger(ConnectionTransactionQueryExecutor::class.java.name)
     private val level = Level.FINE
