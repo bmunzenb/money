@@ -45,7 +45,7 @@ class BalanceAccountController  {
     // TODO remove reference to stage in controller
     private lateinit var stage: Stage
 
-    private lateinit var onReconciled: () -> Unit
+    private lateinit var onReconciled: Runnable
 
     fun initialize() {
 
@@ -91,12 +91,12 @@ class BalanceAccountController  {
         database: MoneyDatabase,
         statement: Statement,
         entriesViewModel: AccountEntriesViewModel,
-        onRenconciled: () -> Unit
+        onReconciled: Runnable
     ) {
 
         this.viewModel = BalanceAccountViewModel(database, statement, entriesViewModel)
         this.stage = stage
-        this.onReconciled = onRenconciled
+        this.onReconciled = onReconciled
 
         stage.apply {
             scene.stylesheets.add(MoneyApplication.CSS)
@@ -145,7 +145,7 @@ class BalanceAccountController  {
             when (it) {
                 null -> {
                     stage.close()
-                    onReconciled.invoke()
+                    onReconciled.run()
                 }
                 else -> ErrorAlert.showAndWait(it)
             }
