@@ -13,15 +13,8 @@ import com.munzenberger.money.app.model.FXTransactionAccountEntry
 import com.munzenberger.money.app.model.FXTransferAccountEntry
 import com.munzenberger.money.app.model.moneyNegativePseudoClass
 import com.munzenberger.money.app.navigation.LayoutControllerNavigation
-import com.munzenberger.money.app.property.AsyncObject
-import com.munzenberger.money.app.property.NumberStringComparator
-import com.munzenberger.money.app.property.bindAsyncStatus
-import com.munzenberger.money.app.property.bindAsyncValue
-import com.munzenberger.money.core.Account
-import com.munzenberger.money.core.Money
-import com.munzenberger.money.core.Transaction
-import com.munzenberger.money.core.TransactionStatus
-import com.munzenberger.money.core.isNegative
+import com.munzenberger.money.app.property.*
+import com.munzenberger.money.core.*
 import javafx.fxml.FXML
 import javafx.scene.control.Alert
 import javafx.scene.control.Button
@@ -37,6 +30,8 @@ import javafx.stage.Stage
 import javafx.util.Callback
 import java.net.URL
 import java.time.LocalDate
+import java.time.format.DateTimeFormatter
+import java.time.format.FormatStyle
 
 class AccountRegisterController : AutoCloseable {
 
@@ -207,7 +202,7 @@ class AccountRegisterController : AutoCloseable {
     }
 
     @FXML fun onEditAccount() {
-        viewModel.getAccount {
+        viewModel.accountProperty.value.withValue {
             DialogBuilder.build(EditAccountController.LAYOUT) { stage, controller: EditAccountController ->
                 stage.title = editAccountButton.text
                 stage.show()
@@ -217,13 +212,13 @@ class AccountRegisterController : AutoCloseable {
     }
 
     @FXML fun onAddTransaction() {
-        viewModel.getAccount {
+        viewModel.accountProperty.value.withValue {
             startEditTransaction(addTransactionButton.text, Transaction().apply { account = it })
         }
     }
 
     @FXML fun onBalanceAccount() {
-        viewModel.getAccount {
+        viewModel.accountProperty.value.withValue {
             startBalanceAccount(it)
         }
     }
@@ -294,20 +289,29 @@ class AccountRegisterController : AutoCloseable {
                 DialogBuilder.build(BalanceAccountController.LAYOUT) { stage, controller: BalanceAccountController ->
                     stage.title = "Balance ${account.name}"
                     stage.show()
-                    controller.start(stage, statement, viewModel)
+                    controller.start(stage, database, statement, viewModel) {
+                        onStatementReconciled(account, statement)
+                    }
                 }
             }
         }
     }
 
+    private fun onStatementReconciled(account: Account, statement: Statement) {
+
+        val formattedDate = DateTimeFormatter
+            .ofLocalizedDate(FormatStyle.SHORT)
+            .format(statement.closingDate)
+
+        Alert(Alert.AlertType.INFORMATION).apply {
+            title = "Balance ${account.name}"
+            headerText = "Balanced!"
+            contentText = "You have balanced your '${account.name}' account through $formattedDate."
+            showAndWait()
+        }
+    }
+
     override fun close() {
         viewModel.close()
-    }
-}
-
-private fun AccountRegisterViewModel.getAccount(block: (Account) -> Unit) = accountProperty.value.let {
-    when (it) {
-        is AsyncObject.Complete -> block.invoke(it.value)
-        else -> Unit
     }
 }

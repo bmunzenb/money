@@ -8,18 +8,12 @@ import com.munzenberger.money.app.model.FXAccountEntry
 import com.munzenberger.money.app.model.moneyNegativePseudoClass
 import com.munzenberger.money.app.property.NumberStringComparator
 import com.munzenberger.money.app.property.toBinding
-import com.munzenberger.money.core.Money
-import com.munzenberger.money.core.Statement
-import com.munzenberger.money.core.TransactionStatus
-import com.munzenberger.money.core.isNegative
+import com.munzenberger.money.core.*
 import javafx.beans.binding.Bindings
 import javafx.beans.property.SimpleObjectProperty
 import javafx.fxml.FXML
-import javafx.scene.control.Button
-import javafx.scene.control.Label
-import javafx.scene.control.SelectionMode
-import javafx.scene.control.TableColumn
-import javafx.scene.control.TableView
+import javafx.scene.control.*
+import javafx.scene.layout.GridPane
 import javafx.scene.text.Text
 import javafx.stage.Stage
 import javafx.util.Callback
@@ -33,6 +27,7 @@ class BalanceAccountController  {
         val LAYOUT: URL = BalanceAccountController::class.java.getResource("BalanceAccountLayout.fxml")!!
     }
 
+    @FXML lateinit var container: GridPane
     @FXML lateinit var transactionsTable: TableView<FXAccountEntry>
     @FXML lateinit var numberColumn: TableColumn<FXAccountEntry, String>
     @FXML lateinit var dateColumn: TableColumn<FXAccountEntry, LocalDate>
@@ -49,6 +44,8 @@ class BalanceAccountController  {
     private lateinit var viewModel: BalanceAccountViewModel
     // TODO remove reference to stage in controller
     private lateinit var stage: Stage
+
+    private lateinit var onReconciled: () -> Unit
 
     fun initialize() {
 
@@ -89,10 +86,17 @@ class BalanceAccountController  {
         }
     }
 
-    fun start(stage: Stage, statement: Statement, entriesViewModel: AccountEntriesViewModel) {
+    fun start(
+        stage: Stage,
+        database: MoneyDatabase,
+        statement: Statement,
+        entriesViewModel: AccountEntriesViewModel,
+        onRenconciled: () -> Unit
+    ) {
 
-        this.viewModel = BalanceAccountViewModel(statement, entriesViewModel)
+        this.viewModel = BalanceAccountViewModel(database, statement, entriesViewModel)
         this.stage = stage
+        this.onReconciled = onRenconciled
 
         stage.apply {
             scene.stylesheets.add(MoneyApplication.CSS)
@@ -132,10 +136,20 @@ class BalanceAccountController  {
         })
 
         continueButton.disableProperty().bind(viewModel.continueDisabledBinding)
+
+        container.disableProperty().bind(viewModel.isOperationInProgressProperty)
     }
 
     @FXML fun onContinueButton() {
-
+        viewModel.reconcile {
+            when (it) {
+                null -> {
+                    stage.close()
+                    onReconciled.invoke()
+                }
+                else -> ErrorAlert.showAndWait(it)
+            }
+        }
     }
 
     @FXML fun onCancelButton() {

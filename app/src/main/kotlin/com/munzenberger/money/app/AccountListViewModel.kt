@@ -7,7 +7,7 @@ import com.munzenberger.money.app.observable.CompositeSubscription
 import com.munzenberger.money.app.property.AsyncObject
 import com.munzenberger.money.app.property.ReadOnlyAsyncObjectProperty
 import com.munzenberger.money.app.property.SimpleAsyncObjectProperty
-import com.munzenberger.money.app.property.combine
+import com.munzenberger.money.app.property.combineWith
 import com.munzenberger.money.core.Account
 import com.munzenberger.money.core.Money
 import javafx.beans.value.ChangeListener
@@ -61,4 +61,4 @@ class AccountListViewModel : AutoCloseable {
 }
 
 private operator fun AsyncObject<Money>.plus(other: AsyncObject<Money>): AsyncObject<Money> =
-        combine(other) { m1, m2 -> m1 + m2 }
+        combineWith(other) { m1, m2 -> m1 + m2 }

@@ -1,7 +1,5 @@
 package com.munzenberger.money.app.property
 
-import com.munzenberger.money.core.Money
-
 sealed class AsyncObject<T>(val status: Status) : Comparable<AsyncObject<T>> {
 
     enum class Status {
@@ -36,7 +34,7 @@ fun <T, R> AsyncObject<T>.map(block: (T) -> R): AsyncObject<R> =
         is AsyncObject.Error -> AsyncObject.Error(error)
     }
 
-fun <T> AsyncObject<T>.combine(other: AsyncObject<T>, combiner: (value1: T, value2: T) -> T): AsyncObject<T> {
+fun <T> AsyncObject<T>.combineWith(other: AsyncObject<T>, combiner: (value1: T, value2: T) -> T): AsyncObject<T> {
 
     if (this is AsyncObject.Complete && other is AsyncObject.Complete) {
         return AsyncObject.Complete(combiner.invoke(this.value, other.value))
@@ -55,4 +53,11 @@ fun <T> AsyncObject<T>.combine(other: AsyncObject<T>, combiner: (value1: T, valu
     }
 
     return AsyncObject.Pending()
+}
+
+fun <T, R> AsyncObject<T>.withValue(block: (T) -> R): R? {
+    return when (this) {
+        is AsyncObject.Complete -> block.invoke(value)
+        else -> null
+    }
 }
