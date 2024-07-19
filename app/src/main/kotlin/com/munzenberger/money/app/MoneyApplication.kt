@@ -6,6 +6,9 @@ import javafx.fxml.FXMLLoader
 import javafx.scene.Parent
 import javafx.scene.Scene
 import javafx.stage.Stage
+import java.util.concurrent.TimeUnit
+import java.util.logging.Level
+import java.util.logging.Logger
 
 fun main(args: Array<String>) {
     Application.launch(MoneyApplication::class.java, *args)
@@ -16,6 +19,8 @@ class MoneyApplication : Application() {
     companion object {
         val CSS: String = MoneyApplication::class.java.getResource("money.css")!!.toExternalForm()
     }
+
+    private val logger = Logger.getLogger(MoneyApplication::class.java.name)
 
     private lateinit var controller: ApplicationController
 
@@ -45,6 +50,8 @@ class MoneyApplication : Application() {
 
     override fun stop() {
         controller.close()
-        Executors.shutdown()
+        if (!Executors.shutdownAndAwaitTermination(5, TimeUnit.SECONDS)) {
+            logger.log(Level.WARNING, "Timeout while waiting for executors to shutdown.")
+        }
     }
 }

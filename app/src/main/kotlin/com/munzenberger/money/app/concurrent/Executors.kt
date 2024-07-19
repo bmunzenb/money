@@ -4,6 +4,7 @@ import javafx.application.Platform
 import java.util.concurrent.Executor
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
+import java.util.concurrent.TimeUnit
 
 object Executors {
 
@@ -12,7 +13,8 @@ object Executors {
 
     val PLATFORM: Executor = Executor { command -> Platform.runLater(command) }
 
-    fun shutdown() {
+    fun shutdownAndAwaitTermination(timeout: Long, unit: TimeUnit): Boolean {
         singleService.shutdown()
+        return singleService.awaitTermination(timeout, unit)
     }
 }
