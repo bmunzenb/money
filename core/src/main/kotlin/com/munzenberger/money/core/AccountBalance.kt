@@ -32,7 +32,9 @@ private class TransactionTransferEntryBalanceCollector(accountId: Long) : Accoun
     private var total: Long = 0
 
     override fun accept(rs: ResultSet) {
-        total = rs.getLong("TOTAL")
+        if (rs.next()) {
+            total = rs.getLong("TOTAL")
+        }
     }
 }
 
@@ -52,7 +54,9 @@ private class TransferEntryBalanceCollector(accountId: Long) : AccountBalanceCol
     private var total: Long = 0
 
     override fun accept(rs: ResultSet) {
-        total = rs.getLong("TOTAL")
+        if (rs.next()) {
+            total = rs.getLong("TOTAL")
+        }
     }
 }
 
@@ -73,7 +77,9 @@ private class TransactionCategoryEntryBalanceCollector(accountId: Long) : Accoun
     private var total: Long = 0
 
     override fun accept(rs: ResultSet) {
-        total = rs.getLong("TOTAL")
+        if (rs.next()) {
+            total = rs.getLong("TOTAL")
+        }
     }
 }
 

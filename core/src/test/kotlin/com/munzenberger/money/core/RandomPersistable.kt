@@ -13,19 +13,19 @@ fun Random.nextString(length: Int = 50): String {
     val alphabet = "AaBbCcDdEeFfGgHhIiJjKkLlMmNnOoPpQqRrSsTtUuVvWwXxYyZz "
 
     return (0..length)
-            .map { alphabet[random.nextInt(alphabet.length)] }
+            .map { alphabet[nextInt(alphabet.length)] }
             .joinTo(StringBuilder(), "").toString()
 }
 
-fun Random.nextMoney() = Money.valueOf(random.nextLong())
+fun Random.nextMoney() = Money.valueOf(nextLong())
 
 fun Bank.randomize() = this.apply {
     name = random.nextString()
 }
 
 fun AccountType.randomize() = this.apply {
-    variant = AccountTypeVariant.values().let { it[random.nextInt(it.size)] }
-    group = AccountTypeGroup.values().let { it[random.nextInt(it.size)] }
+    variant = AccountTypeVariant.entries.toTypedArray().let { it[random.nextInt(it.size)] }
+    group = AccountTypeGroup.entries.toTypedArray().let { it[random.nextInt(it.size)] }
 }
 
 fun Account.randomize() = this.apply {
@@ -46,7 +46,7 @@ fun Transaction.randomize() = this.apply {
     date = LocalDate.now()
     number = random.nextString()
     memo = random.nextString()
-    status = TransactionStatus.values().random()
+    status = TransactionStatus.entries.toTypedArray().random()
 }
 
 fun TransferEntry.randomize() = this.apply {
@@ -55,13 +55,13 @@ fun TransferEntry.randomize() = this.apply {
     amount = random.nextMoney()
     number = random.nextString()
     memo = random.nextString()
-    status = TransactionStatus.values().random()
+    status = TransactionStatus.entries.toTypedArray().random()
     orderInTransaction = random.nextInt()
 }
 
 fun Category.randomize() = this.apply {
     name = random.nextString()
-    type = CategoryType.values().random()
+    type = CategoryType.entries.toTypedArray().random()
 }
 
 fun CategoryEntry.randomize() = this.apply {
