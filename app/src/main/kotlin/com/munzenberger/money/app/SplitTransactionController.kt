@@ -23,7 +23,7 @@ import java.net.URL
 class SplitTransactionController {
 
     companion object {
-        val LAYOUT: URL = SplitTransactionController::class.java.getResource("SplitTransactionLayout.fxml")
+        val LAYOUT: URL = SplitTransactionController::class.java.getResource("SplitTransactionLayout.fxml")!!
     }
 
     @FXML private lateinit var tableView: TableView<TransactionEntryEditor>
@@ -32,6 +32,8 @@ class SplitTransactionController {
     @FXML private lateinit var amountColumn: TableColumn<TransactionEntryEditor, Money>
     @FXML private lateinit var addButton: Button
     @FXML private lateinit var deleteButton: Button
+    @FXML private lateinit var moveUpButton: Button
+    @FXML private lateinit var moveDownButton: Button
     @FXML private lateinit var totalLabel: Label
     @FXML private lateinit var doneButton: Button
 
@@ -79,10 +81,32 @@ class SplitTransactionController {
         }
 
         deleteButton.disableProperty().bind(
-                Bindings.createBooleanBinding(
-                        { tableView.selectionModel.selectedItems.isEmpty() },
-                        tableView.selectionModel.selectedItems
-                )
+            Bindings.createBooleanBinding(
+                { tableView.selectionModel.selectedItems.isEmpty() },
+                tableView.selectionModel.selectedItems
+            )
+        )
+
+        moveUpButton.disableProperty().bind(
+            Bindings.createBooleanBinding(
+                {
+                    tableView.selectionModel.selectedItems.firstOrNull()?.let {
+                        tableView.items.indexOf(it) == 0
+                    } ?: true
+                },
+                tableView.selectionModel.selectedItems
+            )
+        )
+
+        moveDownButton.disableProperty().bind(
+            Bindings.createBooleanBinding(
+                {
+                    tableView.selectionModel.selectedItems.firstOrNull()?.let {
+                        tableView.items.indexOf(it) == tableView.items.size-1
+                    } ?: true
+                },
+                tableView.selectionModel.selectedItems
+            )
         )
 
         doneButton.disableProperty().bind(viewModel.doneDisabledProperty)
@@ -112,6 +136,16 @@ class SplitTransactionController {
 
     @FXML fun onDeleteButton() {
         viewModel.delete(tableView.selectionModel.selectedItems)
+    }
+
+    @FXML fun onMoveUpButton() {
+        val row = viewModel.moveUp(tableView.selectionModel.selectedItems)
+        tableView.selectionModel.select(row)
+    }
+
+    @FXML fun onMoveDownButton() {
+        val row = viewModel.moveDown(tableView.selectionModel.selectedItems)
+        tableView.selectionModel.select(row)
     }
 
     @FXML fun onDoneButton() {

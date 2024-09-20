@@ -66,6 +66,36 @@ class SplitTransactionViewModel {
         editors.removeAll(items)
     }
 
+    fun moveUp(items: List<TransactionEntryEditor>): Int {
+        // assuming only one item can be selected at a time, move the first
+        items.firstOrNull()?.let {
+            val index = editors.indexOf(it)
+            if (index > 0) {
+                editors.removeAt(index)
+                val newIndex = index-1
+                editors.add(newIndex, it)
+                return newIndex
+            }
+            return index
+        }
+        return -1
+    }
+
+    fun moveDown(items: List<TransactionEntryEditor>): Int {
+        // assuming only one item can be selected at a time, move the first
+        items.firstOrNull()?.let {
+            val index = editors.indexOf(it)
+            if (index < editors.size-1) {
+                editors.removeAt(index)
+                val newIndex = index+1
+                editors.add(newIndex, it)
+                return newIndex
+            }
+            return index
+        }
+        return -1
+    }
+
     fun done() {
 
         originalEditors.setAll(editors)
