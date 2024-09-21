@@ -110,7 +110,7 @@ class AccountRegisterViewModel : AccountEntriesViewModel, AutoCloseable {
         amountText.bindAsyncValue(accountProperty) { account ->
             val debitName = TransactionType.Debit(account.accountType).name
             val creditName = TransactionType.Credit(account.accountType).name
-            "$creditName / $debitName"
+            "$debitName / $creditName"
         }
 
         register.addListener { _, _, newValue ->
@@ -133,7 +133,7 @@ class AccountRegisterViewModel : AccountEntriesViewModel, AutoCloseable {
                 var endingBalance = account.getBalance(database)
 
                 if (account.accountType?.group == AccountTypeGroup.LIABILITIES) {
-                    transactions = transactions.map { it.negateBalance() }
+                    transactions = transactions.map { it.negate() }
                     endingBalance = endingBalance.negate()
                 }
 
@@ -225,9 +225,9 @@ class AccountRegisterViewModel : AccountEntriesViewModel, AutoCloseable {
     }
 }
 
-private fun AccountEntry.negateBalance(): AccountEntry {
+private fun AccountEntry.negate(): AccountEntry {
     return when (this) {
-        is AccountEntry.Transaction -> copy(balance = balance.negate())
-        is AccountEntry.Transfer -> copy(balance = balance.negate())
+        is AccountEntry.Transaction -> copy(balance = balance.negate(), amount = amount.negate())
+        is AccountEntry.Transfer -> copy(balance = balance.negate(), amount = amount.negate())
     }
 }
