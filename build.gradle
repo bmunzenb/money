@@ -1,13 +1,13 @@
 buildscript {
     ext {
         versions_plugin_version = '0.51.0'
-        kotlin_version = '2.0.20'
+        kotlin_version = '2.0.21'
         h2_version = '2.3.232'
-        sqlite_version = '3.46.1.0'
+        sqlite_version = '3.47.0.0'
         javafx_plugin_version = '0.1.0'
         javafx_version = '22.0.2'
         junit_version = '4.13.2'
-        mockk_version = '1.13.12'
+        mockk_version = '1.13.13'
     }
 
     repositories {
