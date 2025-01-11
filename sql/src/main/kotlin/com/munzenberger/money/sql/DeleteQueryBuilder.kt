@@ -2,7 +2,13 @@ package com.munzenberger.money.sql
 
 import java.lang.StringBuilder
 
-// TODO create a DSL for this builder
+fun deleteQuery(from: String, block: DeleteQueryBuilder.() -> Unit): Query {
+    val deleteQueryBuilder = DeleteQueryBuilder(table = from)
+    deleteQueryBuilder.block()
+    return deleteQueryBuilder.build()
+}
+
+@DeleteQueryMarker
 class DeleteQueryBuilder(private val table: String) {
 
     private var where: Condition? = null
@@ -24,3 +30,6 @@ class DeleteQueryBuilder(private val table: String) {
         return Query(sb.toString(), params)
     }
 }
+
+@DslMarker
+annotation class DeleteQueryMarker

@@ -1,10 +1,13 @@
 package com.munzenberger.money.sql
 
+import java.sql.ResultSet
+import java.util.function.Consumer
+
 interface QueryExecutor {
 
     fun execute(query: Query): Boolean
 
-    fun executeQuery(query: Query, handler: ResultSetHandler? = null)
+    fun executeQuery(query: Query, consumer: ResultSetConsumer)
 
     fun executeUpdate(query: Query): Int
 

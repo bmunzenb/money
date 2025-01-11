@@ -5,11 +5,11 @@ import com.munzenberger.money.app.property.ReadOnlyAsyncObjectProperty
 import com.munzenberger.money.app.property.SimpleAsyncObjectProperty
 import com.munzenberger.money.core.MoneyDatabase
 import com.munzenberger.money.sql.Query
-import com.munzenberger.money.sql.ResultSetHandler
 import javafx.beans.property.SimpleStringProperty
 import javafx.collections.FXCollections
 import javafx.collections.ObservableList
 import java.sql.ResultSet
+import java.util.function.Consumer
 
 class QueryViewModel {
 
@@ -46,25 +46,23 @@ class QueryViewModel {
 
         val result = QueryResult()
 
-        database.executeQuery(Query(input), object : ResultSetHandler {
-            override fun accept(resultSet: ResultSet) {
+        database.executeQuery(Query(input)) { resultSet ->
 
-                val md = resultSet.metaData
-                val colCount = md.columnCount
+            val md = resultSet.metaData
+            val colCount = md.columnCount
 
-                for (i in 1..colCount) {
-                    result.columns.add(md.getColumnLabel(i))
-                }
-
-                while (resultSet.next()) {
-                    val row = mutableListOf<Any?>()
-                    for (i in 1..colCount) {
-                        row.add(resultSet.getObject(i))
-                    }
-                    result.data.add(row)
-                }
+            for (i in 1..colCount) {
+                result.columns.add(md.getColumnLabel(i))
             }
-        })
+
+            while (resultSet.next()) {
+                val row = mutableListOf<Any?>()
+                for (i in 1..colCount) {
+                    row.add(resultSet.getObject(i))
+                }
+                result.data.add(row)
+            }
+        }
 
         return result.apply {
             message = "${result.data.size} row(s) returned."

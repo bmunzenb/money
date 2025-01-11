@@ -5,10 +5,11 @@ import com.munzenberger.money.core.model.TransactionTable
 import com.munzenberger.money.core.model.TransferEntryTable
 import com.munzenberger.money.sql.Query
 import com.munzenberger.money.sql.QueryExecutor
-import com.munzenberger.money.sql.ResultSetHandler
+import com.munzenberger.money.sql.ResultSetConsumer
 import java.sql.ResultSet
+import java.util.function.Consumer
 
-private interface AccountBalanceCollector : ResultSetHandler {
+private interface AccountBalanceCollector : ResultSetConsumer {
 
     val query: Query
 

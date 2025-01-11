@@ -4,7 +4,6 @@ import com.munzenberger.money.core.model.Model
 import com.munzenberger.money.core.model.Table
 import com.munzenberger.money.sql.QueryExecutor
 import com.munzenberger.money.sql.ResultSetMapper
-import com.munzenberger.money.sql.SelectQueryBuilder
 import com.munzenberger.money.sql.TransactionQueryExecutor
 import com.munzenberger.money.sql.transaction
 
@@ -36,15 +35,15 @@ abstract class AbstractPersistable<M : Model>(
 
         executor.transaction { tx ->
 
-            val query = table.insert(model).build()
+            val query = table.insert(model)
             tx.executeUpdate(query)
 
             // TODO this may not be a safe way to get the identity of the inserted row
             // consider exposing the database dialect here and using it for a database-specific implementation
             val identityHandler = IdentityResultSetHandler()
-            val getIdentity = SelectQueryBuilder(table.tableName)
-                .cols("MAX(${table.identityColumn})")
-                .build()
+            val getIdentity = table.select {
+                cols("MAX(${table.identityColumn})")
+            }
 
             model.identity = tx.getFirst(getIdentity, identityHandler)
 
@@ -56,7 +55,7 @@ abstract class AbstractPersistable<M : Model>(
 
     private fun update(executor: QueryExecutor) {
 
-        val query = table.update(model).build()
+        val query = table.update(model)
 
         when (executor.executeUpdate(query)) {
             0 -> error("No rows updated for persistable.")
@@ -67,7 +66,7 @@ abstract class AbstractPersistable<M : Model>(
 
         if (model.identity != null) {
 
-            val query = table.delete(model).build()
+            val query = table.delete(model)
 
             when (executor.executeUpdate(query)) {
                 0 -> error("No rows deleted for persistable.")
@@ -109,14 +108,16 @@ abstract class AbstractPersistable<M : Model>(
                 executor: QueryExecutor,
                 table: Table<M>,
                 mapper: ResultSetMapper<P>
-        ) = table.select().orderBy(table.identityColumn).build().let { executor.getList(it, mapper) }
+        ) = table.select {
+            orderBy(table.identityColumn)
+        }.let { executor.getList(it, mapper) }
 
         internal fun <M : Model, P : AbstractPersistable<M>> get(
                 identity: Long,
                 executor: QueryExecutor,
                 table: Table<M>,
                 mapper: ResultSetMapper<P>
-        ) = table.select(identity).build().let { executor.getFirst(it, mapper) }
+        ) = table.select(identity).let { executor.getFirst(it, mapper) }
     }
 }
 

@@ -4,13 +4,11 @@ import java.sql.ResultSet
 import java.util.function.Consumer
 import java.util.function.Function
 
-@FunctionalInterface
-interface ResultSetHandler : Consumer<ResultSet>
+typealias ResultSetConsumer = Consumer<ResultSet>
 
-@FunctionalInterface
-interface ResultSetMapper<T> : Function<ResultSet, T>
+fun interface ResultSetMapper<T> : Function<ResultSet, T>
 
-open class ListResultSetHandler<T>(private val mapper: ResultSetMapper<T>) : ResultSetHandler {
+open class ListResultSetHandler<T>(private val mapper: ResultSetMapper<T>) : ResultSetConsumer {
 
     private val mutableResults = mutableListOf<T>()
 
@@ -25,7 +23,7 @@ open class ListResultSetHandler<T>(private val mapper: ResultSetMapper<T>) : Res
     }
 }
 
-open class FirstResultSetHandler<T>(private val mapper: ResultSetMapper<T>) : ResultSetHandler {
+open class FirstResultSetHandler<T>(private val mapper: ResultSetMapper<T>) : ResultSetConsumer {
 
     private var mutableResult: T? = null
 

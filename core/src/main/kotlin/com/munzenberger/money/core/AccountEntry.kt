@@ -8,10 +8,11 @@ import com.munzenberger.money.core.model.TransactionTable
 import com.munzenberger.money.core.model.TransferEntryTable
 import com.munzenberger.money.sql.Query
 import com.munzenberger.money.sql.QueryExecutor
-import com.munzenberger.money.sql.ResultSetHandler
+import com.munzenberger.money.sql.ResultSetConsumer
 import com.munzenberger.money.sql.eq
 import com.munzenberger.money.sql.getLocalDate
 import com.munzenberger.money.sql.getLongOrNull
+import com.munzenberger.money.sql.updateQuery
 import java.sql.ResultSet
 import java.time.LocalDate
 
@@ -64,10 +65,10 @@ sealed class AccountEntry {
 
         override fun updateStatus(status: TransactionStatus, executor: QueryExecutor) {
 
-            val query = Query.update(TransactionTable.tableName)
-                    .set(TransactionTable.statusColumn, status.name)
-                    .where(TransactionTable.identityColumn.eq(transactionId))
-                    .build()
+            val query = updateQuery(TransactionTable.tableName) {
+                set(TransactionTable.statusColumn, status.name)
+                where(TransactionTable.identityColumn.eq(transactionId))
+            }
 
             executor.executeUpdate(query)
         }
@@ -90,10 +91,10 @@ sealed class AccountEntry {
 
         override fun updateStatus(status: TransactionStatus, executor: QueryExecutor) {
 
-            val query = Query.update(TransferEntryTable.tableName)
-                    .set(TransferEntryTable.statusColumn, status.name)
-                    .where(TransferEntryTable.identityColumn.eq(transferId))
-                    .build()
+            val query = updateQuery(TransferEntryTable.tableName) {
+                set(TransferEntryTable.statusColumn, status.name)
+                where(TransferEntryTable.identityColumn.eq(transferId))
+            }
 
             executor.executeUpdate(query)
         }
@@ -283,7 +284,7 @@ private class AccountEntryCollector {
  * Collects all transactions associated with the specified account.  Each transaction is the parent to one or more
  * transfers targeting another account, or a credit/debit for a category.
  */
-private class TransactionResultSetHandler(accountId: Long, private val collector: AccountEntryCollector) : ResultSetHandler {
+private class TransactionResultSetHandler(accountId: Long, private val collector: AccountEntryCollector) : ResultSetConsumer {
 
     private val sql = """
         SELECT
@@ -319,7 +320,7 @@ private class TransactionResultSetHandler(accountId: Long, private val collector
 /**
  * Collects all transfers where the parent transaction is associated with the specified account.
  */
-private class TransactionTransferEntryResultSetHandler(accountId: Long, private val collector: AccountEntryCollector) : ResultSetHandler {
+private class TransactionTransferEntryResultSetHandler(accountId: Long, private val collector: AccountEntryCollector) : ResultSetConsumer {
 
     private val sql = """
         SELECT
@@ -354,7 +355,7 @@ private class TransactionTransferEntryResultSetHandler(accountId: Long, private 
 /**
  * Collects all category entries where the parent transaction is associated with the specified account.
  */
-private class TransactionCategoryEntryResultSetHandler(accountId: Long, private val collector: AccountEntryCollector) : ResultSetHandler {
+private class TransactionCategoryEntryResultSetHandler(accountId: Long, private val collector: AccountEntryCollector) : ResultSetConsumer {
 
     private val sql = """
         SELECT
@@ -392,7 +393,7 @@ private class TransactionCategoryEntryResultSetHandler(accountId: Long, private 
 /**
  * Collects all transfers that target the specified account.
  */
-private class TransferEntryResultSetHandler(accountId: Long, private val collector: AccountEntryCollector) : ResultSetHandler {
+private class TransferEntryResultSetHandler(accountId: Long, private val collector: AccountEntryCollector) : ResultSetConsumer {
 
     private val sql = """
         SELECT

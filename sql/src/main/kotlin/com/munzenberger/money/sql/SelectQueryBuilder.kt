@@ -2,7 +2,13 @@ package com.munzenberger.money.sql
 
 import java.lang.StringBuilder
 
-// TODO create a DSL for this builder
+fun selectQuery(from: String, block: SelectQueryBuilder.() -> Unit): Query {
+    val selectQueryBuilder = SelectQueryBuilder(table = from)
+    selectQueryBuilder.block()
+    return selectQueryBuilder.build()
+}
+
+@SelectQueryMarker
 class SelectQueryBuilder(private val table: String) {
 
     private val columns = mutableListOf<String>()
@@ -81,3 +87,6 @@ class SelectQueryBuilder(private val table: String) {
         return Query(sb.toString(), params)
     }
 }
+
+@DslMarker
+annotation class SelectQueryMarker

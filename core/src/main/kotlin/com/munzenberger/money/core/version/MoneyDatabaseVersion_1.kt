@@ -1,9 +1,9 @@
 package com.munzenberger.money.core.version
 
 import com.munzenberger.money.core.MoneyDatabase
-import com.munzenberger.money.sql.Query
 import com.munzenberger.money.sql.createIndex
 import com.munzenberger.money.sql.createTable
+import com.munzenberger.money.sql.insertQuery
 import com.munzenberger.money.version.ApplicableVersion
 
 class MoneyDatabaseVersion_1 : ApplicableVersion<MoneyDatabase> {
@@ -133,9 +133,9 @@ class MoneyDatabaseVersion_1 : ApplicableVersion<MoneyDatabase> {
     }
 
     private fun MoneyDatabase.insertAccountType(group: String, variant: String) {
-        executeUpdate(Query.insertInto("ACCOUNT_TYPES")
-                .set("ACCOUNT_TYPE_GROUP", group)
-                .set("ACCOUNT_TYPE_VARIANT", variant)
-                .build())
+        executeUpdate(insertQuery("ACCOUNT_TYPES") {
+            set("ACCOUNT_TYPE_GROUP", group)
+            set("ACCOUNT_TYPE_VARIANT", variant)
+        })
     }
 }

@@ -102,9 +102,7 @@ class EditTransferViewModel {
             }
         }
 
-        val transfer = TransferEntryTable
-                .select(transferId)
-                .build()
+        val transfer = TransferEntryTable.select(transferId)
                 .let { database.getFirst(it, transferMapper) }
                 ?: throw PersistableNotFoundException(TransferEntry::class, transferId)
 

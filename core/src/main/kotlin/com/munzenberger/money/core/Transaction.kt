@@ -70,13 +70,13 @@ class TransactionResultSetMapper : ResultSetMapper<Transaction> {
 
 fun Transaction.getEntries(executor: QueryExecutor): List<Entry> {
 
-    val transfers = TransferEntryTable.select()
-            .where(TransferEntryTable.transactionColumn.eq(identity))
-            .build().let { executor.getList(it, TransferEntryResultSetMapper()) }
+    val transfers = TransferEntryTable.select {
+        where(TransferEntryTable.transactionColumn.eq(identity))
+    }.let { executor.getList(it, TransferEntryResultSetMapper()) }
 
-    val categories = CategoryEntryTable.select()
-            .where(CategoryEntryTable.transactionColumn.eq(identity))
-            .build().let { executor.getList(it, CategoryEntryResultSetMapper()) }
+    val categories = CategoryEntryTable.select {
+        where(CategoryEntryTable.transactionColumn.eq(identity))
+    }.let { executor.getList(it, CategoryEntryResultSetMapper()) }
 
     return (transfers + categories).sortedBy { it.orderInTransaction }
 }

@@ -2,7 +2,13 @@ package com.munzenberger.money.sql
 
 import java.lang.StringBuilder
 
-// TODO create a DSL for this builder
+fun insertQuery(into: String, block: InsertQueryBuilder.() -> Unit): Query {
+    val insertQueryBuilder = InsertQueryBuilder(table = into)
+    insertQueryBuilder.block()
+    return insertQueryBuilder.build()
+}
+
+@InsertQueryMarker
 class InsertQueryBuilder(table: String) : SettableQueryBuilder<InsertQueryBuilder>(table) {
 
     override fun instance() = this
@@ -24,3 +30,6 @@ class InsertQueryBuilder(table: String) : SettableQueryBuilder<InsertQueryBuilde
         return Query(sb.toString(), params)
     }
 }
+
+@DslMarker
+annotation class InsertQueryMarker

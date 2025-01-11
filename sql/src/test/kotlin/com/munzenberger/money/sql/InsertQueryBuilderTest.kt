@@ -8,10 +8,10 @@ class InsertQueryBuilderTest {
     @Test
     fun `insert values`() {
 
-        val query = Query.insertInto("TABLE")
-                .set("FOO", 1)
-                .set("BAR", "FizzBuzz")
-                .build()
+        val query = insertQuery("TABLE") {
+            set("FOO", 1)
+            set("BAR", "FizzBuzz")
+        }
 
         assertEquals("INSERT INTO TABLE (FOO, BAR) VALUES (?, ?)", query.sql)
         assertEquals(listOf(1, "FizzBuzz"), query.parameters)

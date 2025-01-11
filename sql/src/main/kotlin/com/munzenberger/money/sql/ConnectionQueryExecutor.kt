@@ -1,22 +1,52 @@
 package com.munzenberger.money.sql
 
 import java.sql.Connection
+import java.sql.PreparedStatement
+import java.sql.ResultSet
+import java.util.function.Consumer
 import java.util.logging.Level
 import java.util.logging.Logger
 
 class ConnectionQueryExecutor(private val connection: Connection) : QueryExecutor {
 
-    override fun execute(query: Query) =
-        SQLExecutor.execute(connection, query.sql, query.parameters)
+    private val logger = Logger.getLogger(ConnectionQueryExecutor::class.java.name)
 
-    override fun executeQuery(query: Query, handler: ResultSetHandler?) =
-        SQLExecutor.executeQuery(connection, query.sql, query.parameters, handler)
+    override fun execute(query: Query): Boolean {
+        logger.log(Level.FINE, query.toString())
 
-    override fun executeUpdate(query: Query) =
-        SQLExecutor.executeUpdate(connection, query.sql, query.parameters)
+        return connection.prepareStatement(query.sql).use {
+            it.setParameters(query.parameters)
+            it.execute()
+        }
+    }
+
+    override fun executeQuery(query: Query, consumer: ResultSetConsumer) {
+        logger.log(Level.FINE, query.toString())
+
+        connection.prepareStatement(query.sql).use {
+            it.setParameters(query.parameters)
+            val resultSet = it.executeQuery()
+            consumer.accept(resultSet)
+        }
+    }
+
+    override fun executeUpdate(query: Query): Int {
+        logger.log(Level.FINE, query.toString())
+
+        return connection.prepareStatement(query.sql).use {
+            it.setParameters(query.parameters)
+            it.executeUpdate()
+        }
+    }
 
     override fun createTransaction(): TransactionQueryExecutor =
         ConnectionTransactionQueryExecutor(connection, this)
+
+    private fun PreparedStatement.setParameters(parameters: List<Any?>) {
+        parameters.withIndex().forEach {
+            setObject(it.index + 1, it.value)
+        }
+    }
 }
 
 private class ConnectionTransactionQueryExecutor(
@@ -41,9 +71,9 @@ private class ConnectionTransactionQueryExecutor(
         return executor.execute(query)
     }
 
-    override fun executeQuery(query: Query, handler: ResultSetHandler?) {
+    override fun executeQuery(query: Query, consumer: ResultSetConsumer) {
         assertNotClosed()
-        executor.executeQuery(query, handler)
+        executor.executeQuery(query, consumer)
     }
 
     override fun executeUpdate(query: Query): Int {

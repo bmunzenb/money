@@ -63,8 +63,6 @@ fun Category.Companion.find(
         parentId: Long? = null
 ): List<Category> {
 
-    val query = CategoryTable.select()
-
     var condition = name?.let {
         CategoryTable.nameColumn.eq(name)
     }
@@ -82,9 +80,11 @@ fun Category.Companion.find(
         condition = CategoryTable.parentColumn.eq(it) and condition
     }
 
-    condition?.let {
-        query.where(it)
+    val query = CategoryTable.select {
+        condition?.let {
+            where(it)
+        }
     }
 
-    return executor.getList(query.build(), CategoryResultSetMapper())
+    return executor.getList(query, CategoryResultSetMapper())
 }

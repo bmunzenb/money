@@ -8,6 +8,7 @@ import com.munzenberger.money.core.model.TransactionTable
 import com.munzenberger.money.core.model.TransferEntryTable
 import com.munzenberger.money.sql.DeleteQueryBuilder
 import com.munzenberger.money.sql.QueryExecutor
+import com.munzenberger.money.sql.deleteQuery
 import com.munzenberger.money.sql.eq
 import com.munzenberger.money.sql.transaction
 import javafx.beans.property.ReadOnlyObjectProperty
@@ -67,20 +68,17 @@ class FXTransactionAccountEntry(private val transactionEntry: AccountEntry.Trans
 
         executor.transaction { tx ->
 
-            DeleteQueryBuilder(TransferEntryTable.tableName)
-                    .where(TransferEntryTable.transactionColumn.eq(transactionId))
-                    .build()
-                    .let { tx.executeUpdate(it) }
+            deleteQuery(TransferEntryTable.tableName) {
+                where(TransferEntryTable.transactionColumn.eq(transactionId))
+            }.let { tx.executeUpdate(it) }
 
-            DeleteQueryBuilder(CategoryEntryTable.tableName)
-                    .where(CategoryEntryTable.transactionColumn.eq(transactionId))
-                    .build()
-                    .let { tx.executeUpdate(it) }
+            deleteQuery(CategoryEntryTable.tableName) {
+                where(CategoryEntryTable.transactionColumn.eq(transactionId))
+            }.let { tx.executeUpdate(it) }
 
-            DeleteQueryBuilder(TransactionTable.tableName)
-                    .where(TransactionTable.identityColumn.eq(transactionId))
-                    .build()
-                    .let { tx.executeUpdate(it) }
+            deleteQuery(TransactionTable.tableName) {
+                where(TransactionTable.identityColumn.eq(transactionId))
+            }.let { tx.executeUpdate(it) }
         }
     }
 }
@@ -95,10 +93,9 @@ class FXTransferAccountEntry(private val transferEntry: AccountEntry.Transfer) :
 
     override fun delete(executor: QueryExecutor) {
 
-        DeleteQueryBuilder(TransferEntryTable.tableName)
-                .where(TransferEntryTable.identityColumn.eq(transferId))
-                .build()
-                .let { executor.executeUpdate(it) }
+        deleteQuery(TransferEntryTable.tableName) {
+            where(TransferEntryTable.identityColumn.eq(transferId))
+        }.let { executor.executeUpdate(it) }
     }
 }
 

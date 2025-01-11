@@ -2,6 +2,8 @@ package com.munzenberger.money.core.version
 
 import com.munzenberger.money.sql.Query
 import com.munzenberger.money.sql.createTableQuery
+import com.munzenberger.money.sql.insertQuery
+import com.munzenberger.money.sql.selectQuery
 import com.munzenberger.money.version.Version
 
 class VersionQueryBuilder(val tableName: String) {
@@ -15,13 +17,13 @@ class VersionQueryBuilder(val tableName: String) {
         column(timestampColumnName, "BIGINT NOT NULL")
     }
 
-    fun select() = Query.selectFrom(tableName)
-            .cols(versionIdColumnName)
-            .orderBy(timestampColumnName)
-            .build()
+    fun select() = selectQuery(tableName) {
+        cols(versionIdColumnName)
+        orderBy(timestampColumnName)
+    }
 
-    fun insert(version: Version) = Query.insertInto(tableName)
-            .set(versionIdColumnName, version.versionId)
-            .set(timestampColumnName, System.currentTimeMillis())
-            .build()
+    fun insert(version: Version) = insertQuery(tableName) {
+        set(versionIdColumnName, version.versionId)
+        set(timestampColumnName, System.currentTimeMillis())
+    }
 }

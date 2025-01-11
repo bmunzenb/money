@@ -2,7 +2,13 @@ package com.munzenberger.money.sql
 
 import java.lang.StringBuilder
 
-// TODO create a DSL for this builder
+fun updateQuery(table: String, block: UpdateQueryBuilder.() -> Unit): Query {
+    val updateQueryBuilder = UpdateQueryBuilder(table)
+    updateQueryBuilder.block()
+    return updateQueryBuilder.build()
+}
+
+@UpdateQueryMarker
 class UpdateQueryBuilder(table: String) : SettableQueryBuilder<UpdateQueryBuilder>(table) {
 
     private var where: Condition? = null
@@ -31,3 +37,6 @@ class UpdateQueryBuilder(table: String) : SettableQueryBuilder<UpdateQueryBuilde
         return Query(sb.toString(), params)
     }
 }
+
+@DslMarker
+annotation class UpdateQueryMarker

@@ -8,10 +8,10 @@ import com.munzenberger.money.sql.eq
 
 fun Statement.Companion.getUnreconciled(accountId: Long, executor: QueryExecutor): Statement? {
 
-    val query = StatementTable.select()
-            .where(StatementTable.accountColumn.eq(accountId) and StatementTable.isReconciledColumn.eq(false))
-            .orderBy(StatementTable.closingDateColumn)
-            .build()
+    val query = StatementTable.select {
+        where(StatementTable.accountColumn.eq(accountId) and StatementTable.isReconciledColumn.eq(false))
+        orderBy(StatementTable.closingDateColumn)
+    }
 
     return executor.getFirst(query, StatementResultSetMapper())
 }
