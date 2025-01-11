@@ -12,6 +12,7 @@ import com.munzenberger.money.core.Account
 import com.munzenberger.money.core.Category
 import com.munzenberger.money.core.CategoryEntry
 import com.munzenberger.money.core.Entry
+import com.munzenberger.money.core.EntryIdentity
 import com.munzenberger.money.core.Money
 import com.munzenberger.money.core.MoneyDatabase
 import com.munzenberger.money.core.Payee
@@ -67,7 +68,7 @@ class EditTransactionViewModel : TransactionEntryEditor(), AutoCloseable {
 
     private lateinit var database: MoneyDatabase
     private lateinit var transaction: Transaction
-    private lateinit var entries: List<Entry>
+    private lateinit var entries: List<Entry<out EntryIdentity>>
 
     private var transactionType: TransactionType?
         get() = selectedTypeProperty.value
@@ -146,13 +147,13 @@ class EditTransactionViewModel : TransactionEntryEditor(), AutoCloseable {
 
         transactionStatus.value = transaction.status?.displayName
 
-        val task = object : Task<Pair<List<TransactionCategory>, List<Entry>>>() {
+        val task = object : Task<Pair<List<TransactionCategory>, List<Entry<out EntryIdentity>>>>() {
 
             override fun running() {
                 categories.set(AsyncObject.Executing())
             }
 
-            override fun call(): Pair<List<TransactionCategory>, List<Entry>> {
+            override fun call(): Pair<List<TransactionCategory>, List<Entry<out EntryIdentity>>> {
 
                 val categories = Category.getAllWithParent(database)
                         .map { TransactionCategory.CategoryType(it.category, it.parentName) }
@@ -183,7 +184,7 @@ class EditTransactionViewModel : TransactionEntryEditor(), AutoCloseable {
         Executors.SINGLE.execute(task)
     }
 
-    private fun onCategoriesAndEntries(categories: List<TransactionCategory>, entries: List<Entry>) {
+    private fun onCategoriesAndEntries(categories: List<TransactionCategory>, entries: List<Entry<out EntryIdentity>>) {
 
         // calculate the total transaction amount
         val total = entries.fold(Money.ZERO) { acc, detail ->

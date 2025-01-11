@@ -1,6 +1,7 @@
 package com.munzenberger.money.app.model
 
 import com.munzenberger.money.core.Category
+import com.munzenberger.money.core.CategoryIdentity
 import com.munzenberger.money.core.CategoryResultSetMapper
 import com.munzenberger.money.core.MoneyDatabase
 import com.munzenberger.money.core.model.CategoryTable
@@ -19,7 +20,7 @@ data class CategoryWithParent(
         val parentId: Long?,
         val parentName: String?
 ) {
-    val identity: Long
+    val identity: CategoryIdentity
         get() = category.identity!!
 
     val name: String?
@@ -60,7 +61,7 @@ fun Category.Companion.find(
         executor: QueryExecutor,
         name: String? = null,
         isParent: Boolean? = null,
-        parentId: Long? = null
+        parentId: CategoryIdentity? = null
 ): List<Category> {
 
     var condition = name?.let {
@@ -77,7 +78,7 @@ fun Category.Companion.find(
     }
 
     parentId?.let {
-        condition = CategoryTable.parentColumn.eq(it) and condition
+        condition = CategoryTable.parentColumn.eq(it.value) and condition
     }
 
     val query = CategoryTable.select {

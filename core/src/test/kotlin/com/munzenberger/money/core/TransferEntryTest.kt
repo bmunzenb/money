@@ -2,11 +2,11 @@ package com.munzenberger.money.core
 
 import org.junit.Assert.assertEquals
 
-class TransferEntryTest : PersistableTest<TransferEntry>() {
+class TransferEntryTest : MoneyEntityTest<TransferEntryIdentity, TransferEntry>() {
 
     override fun createPersistable() = TransferEntry().randomize()
 
-    override fun getPersistable(identity: Long) = TransferEntry.get(identity, database)
+    override fun getPersistable(identity: TransferEntryIdentity) = TransferEntry.get(identity, database)
 
     override fun getAllPersistables() = TransferEntry.getAll(database)
 
@@ -23,4 +23,6 @@ class TransferEntryTest : PersistableTest<TransferEntry>() {
         assertEquals(p1.status, p2.status)
         assertEquals(p1.orderInTransaction, p2.orderInTransaction)
     }
+
+    override fun createInvalidIdentity() = TransferEntryIdentity(42L)
 }

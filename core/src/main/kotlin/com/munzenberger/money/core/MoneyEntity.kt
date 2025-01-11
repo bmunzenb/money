@@ -7,27 +7,24 @@ import com.munzenberger.money.sql.ResultSetMapper
 import com.munzenberger.money.sql.TransactionQueryExecutor
 import com.munzenberger.money.sql.transaction
 
-interface Persistable {
+interface MoneyEntity<I : Identity> {
 
-    val identity: Long?
+    val identity: I?
 
     fun save(executor: QueryExecutor)
 
     fun delete(executor: QueryExecutor)
 }
 
-abstract class AbstractPersistable<M : Model>(
+abstract class AbstractMoneyEntity<I : Identity, M : Model>(
         protected val model: M,
         private val table: Table<M>
-) : Persistable {
-
-    override val identity: Long?
-        get() = model.identity
+) : MoneyEntity<I> {
 
     override fun save(executor: QueryExecutor) {
-        when (model.identity) {
+        when (val identity = model.identity) {
             null -> insert(executor)
-            else -> update(executor)
+            else -> update(identity, executor)
         }
     }
 
@@ -53,32 +50,30 @@ abstract class AbstractPersistable<M : Model>(
         }
     }
 
-    private fun update(executor: QueryExecutor) {
+    private fun update(identity: Long, executor: QueryExecutor) {
 
-        val query = table.update(model)
+        val query = table.update(identity, model)
 
         when (executor.executeUpdate(query)) {
-            0 -> error("No rows updated for persistable.")
+            0 -> error("No rows updated for entity.")
         }
     }
 
     override fun delete(executor: QueryExecutor) {
 
-        if (model.identity != null) {
+        model.identity?.let { identity ->
 
-            val query = table.delete(model)
+            val query = table.delete(identity)
 
             when (executor.executeUpdate(query)) {
-                0 -> error("No rows deleted for persistable.")
+                0 -> error("No rows deleted for entity.")
             }
-
-            val i = model.identity
 
             model.identity = null
 
             if (executor is TransactionQueryExecutor) {
                 executor.addRollbackListener {
-                    model.identity = i
+                    model.identity = identity
                 }
             }
         }
@@ -88,7 +83,7 @@ abstract class AbstractPersistable<M : Model>(
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
 
-        other as AbstractPersistable<*>
+        other as AbstractMoneyEntity<*, *>
 
         if (model != other.model) return false
         if (table != other.table) return false
@@ -104,7 +99,7 @@ abstract class AbstractPersistable<M : Model>(
 
     companion object {
 
-        internal fun <M : Model, P : AbstractPersistable<M>> getAll(
+        internal fun <I : Identity, M : Model, P : AbstractMoneyEntity<I, M>> getAll(
                 executor: QueryExecutor,
                 table: Table<M>,
                 mapper: ResultSetMapper<P>
@@ -112,16 +107,16 @@ abstract class AbstractPersistable<M : Model>(
             orderBy(table.identityColumn)
         }.let { executor.getList(it, mapper) }
 
-        internal fun <M : Model, P : AbstractPersistable<M>> get(
-                identity: Long,
+        internal fun <I : Identity, M : Model, P : AbstractMoneyEntity<I, M>> get(
+                identity: I,
                 executor: QueryExecutor,
                 table: Table<M>,
                 mapper: ResultSetMapper<P>
-        ) = table.select(identity).let { executor.getFirst(it, mapper) }
+        ) = table.select(identity.value).let { executor.getFirst(it, mapper) }
     }
 }
 
-fun Persistable?.getIdentity(executor: QueryExecutor) =
+fun <I : Identity> MoneyEntity<I>?.getIdentity(executor: QueryExecutor) =
         when {
             this == null ->
                 null

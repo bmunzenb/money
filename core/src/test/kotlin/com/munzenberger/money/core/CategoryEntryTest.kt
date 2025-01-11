@@ -2,12 +2,12 @@ package com.munzenberger.money.core
 
 import org.junit.Assert.assertEquals
 
-class CategoryEntryTest : PersistableTest<CategoryEntry>() {
+class CategoryEntryTest : MoneyEntityTest<CategoryEntryIdentity, CategoryEntry>() {
 
     override fun createPersistable() =
             CategoryEntry().randomize()
 
-    override fun getPersistable(identity: Long) =
+    override fun getPersistable(identity: CategoryEntryIdentity) =
             CategoryEntry.get(identity, database)
 
     override fun getAllPersistables() =
@@ -24,4 +24,6 @@ class CategoryEntryTest : PersistableTest<CategoryEntry>() {
         assertEquals(p1.memo, p2.memo)
         assertEquals(p1.orderInTransaction, p2.orderInTransaction)
     }
+
+    override fun createInvalidIdentity() = CategoryEntryIdentity(42L)
 }

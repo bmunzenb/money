@@ -38,7 +38,7 @@ class AccountRegisterController : AutoCloseable {
     companion object {
         private val LAYOUT: URL = AccountRegisterController::class.java.getResource("AccountRegisterLayout.fxml")!!
 
-        fun navigation(stage: Stage, database: ObservableMoneyDatabase, accountIdentity: Long) = LayoutControllerNavigation(LAYOUT) {
+        fun navigation(stage: Stage, database: ObservableMoneyDatabase, accountIdentity: AccountIdentity) = LayoutControllerNavigation(LAYOUT) {
             controller: AccountRegisterController -> controller.start(stage, database, accountIdentity)
         }
     }
@@ -64,7 +64,7 @@ class AccountRegisterController : AutoCloseable {
     // TODO remove reference to stage in controller
     private lateinit var stage: Stage
     private lateinit var database: ObservableMoneyDatabase
-    private var accountIdentity: Long = -1
+    private var accountIdentity: AccountIdentity? = null
 
     private val viewModel = AccountRegisterViewModel()
 
@@ -184,7 +184,7 @@ class AccountRegisterController : AutoCloseable {
         }
     }
 
-    fun start(stage: Stage, database: ObservableMoneyDatabase, accountIdentity: Long) {
+    fun start(stage: Stage, database: ObservableMoneyDatabase, accountIdentity: AccountIdentity) {
         this.stage = stage
         this.database = database
         this.accountIdentity = accountIdentity
@@ -273,7 +273,7 @@ class AccountRegisterController : AutoCloseable {
         }
     }
 
-    private fun startEditTransfer(transferId: Long) {
+    private fun startEditTransfer(transferId: TransferEntryIdentity) {
         DialogBuilder.build(EditTransferController.LAYOUT) { stage, controller: EditTransferController ->
             stage.title = "Edit Transfer"
             stage.show()

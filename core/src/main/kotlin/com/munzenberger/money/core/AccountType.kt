@@ -8,9 +8,14 @@ import com.munzenberger.money.sql.QueryExecutor
 import com.munzenberger.money.sql.ResultSetMapper
 import java.sql.ResultSet
 
-class AccountType internal constructor(model: AccountTypeModel) : AbstractPersistable<AccountTypeModel>(model, AccountTypeTable) {
+data class AccountTypeIdentity(override val value: Long) : Identity
+
+class AccountType internal constructor(model: AccountTypeModel) : AbstractMoneyEntity<AccountTypeIdentity, AccountTypeModel>(model, AccountTypeTable) {
 
     constructor() : this(AccountTypeModel())
+
+    override val identity: AccountTypeIdentity?
+        get() = model.identity?.let { AccountTypeIdentity(it) }
 
     var group: AccountTypeGroup?
         get() = model.group
@@ -25,7 +30,7 @@ class AccountType internal constructor(model: AccountTypeModel) : AbstractPersis
         fun getAll(executor: QueryExecutor) =
                 getAll(executor, AccountTypeTable, AccountTypeResultSetMapper())
 
-        fun get(identity: Long, executor: QueryExecutor) =
+        fun get(identity: AccountTypeIdentity, executor: QueryExecutor) =
                 get(identity, executor, AccountTypeTable, AccountTypeResultSetMapper())
     }
 }

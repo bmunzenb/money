@@ -31,13 +31,13 @@ abstract class Table<M : Model> {
         setValues(this, model)
     }
 
-    fun update(model: M) = updateQuery(tableName) {
+    fun update(identity: Long, model: M) = updateQuery(tableName) {
         setValues(this, model)
-        where(identityColumn.eq(model.identity!!))
+        where(identityColumn.eq(identity))
     }
 
-    fun delete(model: M) = deleteQuery(tableName) {
-        where(identityColumn.eq(model.identity!!))
+    fun delete(identity: Long) = deleteQuery(tableName) {
+        where(identityColumn.eq(identity))
     }
 
     protected fun SelectQueryBuilder.leftJoin(leftColumn: String, right: Table<*>) =

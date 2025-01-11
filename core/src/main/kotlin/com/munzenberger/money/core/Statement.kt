@@ -8,11 +8,16 @@ import com.munzenberger.money.sql.transaction
 import java.sql.ResultSet
 import java.time.LocalDate
 
-class Statement internal constructor(model: StatementModel) : AbstractPersistable<StatementModel>(model, StatementTable) {
+data class StatementIdentity(override val value: Long) : Identity
+
+class Statement internal constructor(model: StatementModel) : AbstractMoneyEntity<StatementIdentity, StatementModel>(model, StatementTable) {
 
     constructor() : this(StatementModel())
 
-    private val accountRef = PersistableIdentityReference(model.account)
+    private val accountRef = PersistableIdentityReference(model.account?.let { AccountIdentity(it) })
+
+    override val identity: StatementIdentity?
+        get() = model.identity?.let { StatementIdentity(it) }
 
     fun setAccount(account: Account) {
         accountRef.set(account)
@@ -35,7 +40,7 @@ class Statement internal constructor(model: StatementModel) : AbstractPersistabl
         set(value) { model.isReconciled = value }
 
     override fun save(executor: QueryExecutor) = executor.transaction { tx ->
-        model.account = accountRef.getIdentity(tx)
+        model.account = accountRef.getIdentity(tx)?.value
         super.save(tx)
     }
 
@@ -44,7 +49,7 @@ class Statement internal constructor(model: StatementModel) : AbstractPersistabl
         fun getAll(executor: QueryExecutor) =
                 getAll(executor, StatementTable, StatementResultSetMapper())
 
-        fun get(identity: Long, executor: QueryExecutor) =
+        fun get(identity: StatementIdentity, executor: QueryExecutor) =
                 get(identity, executor, StatementTable, StatementResultSetMapper())
     }
 }

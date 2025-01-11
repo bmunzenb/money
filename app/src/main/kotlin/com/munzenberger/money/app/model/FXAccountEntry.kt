@@ -2,11 +2,12 @@ package com.munzenberger.money.app.model
 
 import com.munzenberger.money.core.AccountEntry
 import com.munzenberger.money.core.Money
+import com.munzenberger.money.core.TransactionIdentity
 import com.munzenberger.money.core.TransactionStatus
+import com.munzenberger.money.core.TransferEntryIdentity
 import com.munzenberger.money.core.model.CategoryEntryTable
 import com.munzenberger.money.core.model.TransactionTable
 import com.munzenberger.money.core.model.TransferEntryTable
-import com.munzenberger.money.sql.DeleteQueryBuilder
 import com.munzenberger.money.sql.QueryExecutor
 import com.munzenberger.money.sql.deleteQuery
 import com.munzenberger.money.sql.eq
@@ -28,7 +29,7 @@ sealed class FXAccountEntry(private val accountEntry: AccountEntry) {
         }
     }
 
-    val transactionId: Long
+    val transactionId: TransactionIdentity
         get() = accountEntry.transactionId
 
     protected val status = SimpleObjectProperty(accountEntry.status)
@@ -69,15 +70,15 @@ class FXTransactionAccountEntry(private val transactionEntry: AccountEntry.Trans
         executor.transaction { tx ->
 
             deleteQuery(TransferEntryTable.tableName) {
-                where(TransferEntryTable.transactionColumn.eq(transactionId))
+                where(TransferEntryTable.transactionColumn.eq(transactionId.value))
             }.let { tx.executeUpdate(it) }
 
             deleteQuery(CategoryEntryTable.tableName) {
-                where(CategoryEntryTable.transactionColumn.eq(transactionId))
+                where(CategoryEntryTable.transactionColumn.eq(transactionId.value))
             }.let { tx.executeUpdate(it) }
 
             deleteQuery(TransactionTable.tableName) {
-                where(TransactionTable.identityColumn.eq(transactionId))
+                where(TransactionTable.identityColumn.eq(transactionId.value))
             }.let { tx.executeUpdate(it) }
         }
     }
@@ -85,7 +86,7 @@ class FXTransactionAccountEntry(private val transactionEntry: AccountEntry.Trans
 
 class FXTransferAccountEntry(private val transferEntry: AccountEntry.Transfer) : FXAccountEntry(transferEntry) {
 
-    val transferId: Long
+    val transferId: TransferEntryIdentity
         get() = transferEntry.transferId
 
     override val categoryProperty: ReadOnlyStringProperty =
@@ -94,7 +95,7 @@ class FXTransferAccountEntry(private val transferEntry: AccountEntry.Transfer) :
     override fun delete(executor: QueryExecutor) {
 
         deleteQuery(TransferEntryTable.tableName) {
-            where(TransferEntryTable.identityColumn.eq(transferId))
+            where(TransferEntryTable.identityColumn.eq(transferId.value))
         }.let { executor.executeUpdate(it) }
     }
 }

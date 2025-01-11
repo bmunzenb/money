@@ -7,9 +7,14 @@ import com.munzenberger.money.sql.ResultSetMapper
 import com.munzenberger.money.sql.transaction
 import java.sql.ResultSet
 
-class Account internal constructor(model: AccountModel) : AbstractPersistable<AccountModel>(model, AccountTable) {
+data class AccountIdentity(override val value: Long) : Identity
+
+class Account internal constructor(model: AccountModel) : AbstractMoneyEntity<AccountIdentity, AccountModel>(model, AccountTable) {
 
     constructor() : this(AccountModel())
+
+    override val identity: AccountIdentity?
+        get() = model.identity?.let { AccountIdentity(it) }
 
     var name: String?
         get() = model.name
@@ -28,8 +33,8 @@ class Account internal constructor(model: AccountModel) : AbstractPersistable<Ac
         set(value) { model.initialBalance = value?.value }
 
     override fun save(executor: QueryExecutor) = executor.transaction { tx ->
-        model.accountType = accountType.getIdentity(tx)
-        model.bank = bank.getIdentity(tx)
+        model.accountType = accountType.getIdentity(tx)?.value
+        model.bank = bank.getIdentity(tx)?.value
         super.save(tx)
     }
 
@@ -38,7 +43,7 @@ class Account internal constructor(model: AccountModel) : AbstractPersistable<Ac
         fun getAll(executor: QueryExecutor) =
                 getAll(executor, AccountTable, AccountResultSetMapper())
 
-        fun get(identity: Long, executor: QueryExecutor) =
+        fun get(identity: AccountIdentity, executor: QueryExecutor) =
                 get(identity, executor, AccountTable, AccountResultSetMapper())
     }
 }

@@ -1,6 +1,8 @@
 package com.munzenberger.money.core
 
-interface Entry : Persistable {
+interface EntryIdentity : Identity
+
+interface Entry<I : EntryIdentity> : MoneyEntity<I> {
 
     var amount: Money?
 

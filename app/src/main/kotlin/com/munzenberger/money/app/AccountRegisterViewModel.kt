@@ -17,11 +17,14 @@ import com.munzenberger.money.app.property.bindAsyncValue
 import com.munzenberger.money.app.property.map
 import com.munzenberger.money.core.Account
 import com.munzenberger.money.core.AccountEntry
+import com.munzenberger.money.core.AccountIdentity
 import com.munzenberger.money.core.Money
 import com.munzenberger.money.core.MoneyDatabase
 import com.munzenberger.money.core.PersistableNotFoundException
 import com.munzenberger.money.core.Transaction
+import com.munzenberger.money.core.TransactionIdentity
 import com.munzenberger.money.core.TransactionStatus
+import com.munzenberger.money.core.TransferEntryIdentity
 import com.munzenberger.money.core.getAccountEntries
 import com.munzenberger.money.core.getBalance
 import com.munzenberger.money.core.model.AccountTypeGroup
@@ -42,7 +45,7 @@ class AccountRegisterViewModel : AccountEntriesViewModel, AutoCloseable {
 
     sealed class Edit {
         data class Transaction(val transaction: com.munzenberger.money.core.Transaction) : Edit()
-        data class Transfer(val transferId: Long) : Edit()
+        data class Transfer(val transferId: TransferEntryIdentity) : Edit()
         data class Error(val error: Throwable) : Edit()
     }
 
@@ -120,7 +123,7 @@ class AccountRegisterViewModel : AccountEntriesViewModel, AutoCloseable {
         }
     }
 
-    fun start(database: ObservableMoneyDatabase, accountIdentity: Long) {
+    fun start(database: ObservableMoneyDatabase, accountIdentity: AccountIdentity) {
 
         this.database = database
 
@@ -153,7 +156,7 @@ class AccountRegisterViewModel : AccountEntriesViewModel, AutoCloseable {
         }
     }
 
-    private fun prepareEditTransaction(transactionId: Long, block: (Edit) -> Unit) {
+    private fun prepareEditTransaction(transactionId: TransactionIdentity, block: (Edit) -> Unit) {
 
         val task = object : Task<Transaction>() {
 

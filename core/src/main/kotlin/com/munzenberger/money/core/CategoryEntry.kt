@@ -7,13 +7,18 @@ import com.munzenberger.money.sql.ResultSetMapper
 import com.munzenberger.money.sql.transaction
 import java.sql.ResultSet
 
-class CategoryEntry internal constructor(model: CategoryEntryModel) : AbstractPersistable<CategoryEntryModel>(model, CategoryEntryTable), Entry {
+data class CategoryEntryIdentity(override val value: Long) : EntryIdentity
+
+class CategoryEntry internal constructor(model: CategoryEntryModel) : AbstractMoneyEntity<CategoryEntryIdentity, CategoryEntryModel>(model, CategoryEntryTable), Entry<CategoryEntryIdentity> {
 
     constructor() : this(CategoryEntryModel(
             orderInTransaction = 0
     ))
 
-    internal val transactionRef = PersistableIdentityReference(model.transaction)
+    override val identity: CategoryEntryIdentity?
+        get() = model.identity?.let { CategoryEntryIdentity(it) }
+
+    internal val transactionRef = PersistableIdentityReference(model.transaction?.let { TransactionIdentity(it) })
 
     override fun setTransaction(transaction: Transaction) {
         transactionRef.set(transaction)
@@ -34,8 +39,8 @@ class CategoryEntry internal constructor(model: CategoryEntryModel) : AbstractPe
         set(value) { model.orderInTransaction = value }
 
     override fun save(executor: QueryExecutor) = executor.transaction { tx ->
-        model.transaction = transactionRef.getIdentity(tx)
-        model.category = category.getIdentity(tx)
+        model.transaction = transactionRef.getIdentity(tx)?.value
+        model.category = category.getIdentity(tx)?.value
         super.save(tx)
     }
 
@@ -44,7 +49,7 @@ class CategoryEntry internal constructor(model: CategoryEntryModel) : AbstractPe
         fun getAll(executor: QueryExecutor) =
                 getAll(executor, CategoryEntryTable, CategoryEntryResultSetMapper())
 
-        fun get(identity: Long, executor: QueryExecutor) =
+        fun get(identity: CategoryEntryIdentity, executor: QueryExecutor) =
                 get(identity, executor, CategoryEntryTable, CategoryEntryResultSetMapper())
     }
 }

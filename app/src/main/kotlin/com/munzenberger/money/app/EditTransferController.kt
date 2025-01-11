@@ -8,6 +8,7 @@ import com.munzenberger.money.app.control.autoCompleteTextFormatter
 import com.munzenberger.money.app.property.toObservableList
 import com.munzenberger.money.core.MoneyDatabase
 import com.munzenberger.money.core.Payee
+import com.munzenberger.money.core.TransferEntryIdentity
 import javafx.fxml.FXML
 import javafx.scene.Node
 import javafx.scene.control.Button
@@ -105,7 +106,7 @@ class EditTransferController {
         container.disableProperty().bind(viewModel.isOperationInProgressProperty)
     }
 
-    fun start(stage: Stage, database: MoneyDatabase, transferId: Long) {
+    fun start(stage: Stage, database: MoneyDatabase, transferId: TransferEntryIdentity) {
 
         this.stage = stage
 

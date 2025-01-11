@@ -6,9 +6,14 @@ import com.munzenberger.money.sql.QueryExecutor
 import com.munzenberger.money.sql.ResultSetMapper
 import java.sql.ResultSet
 
-class Payee internal constructor(model: PayeeModel) : AbstractPersistable<PayeeModel>(model, PayeeTable) {
+data class PayeeIdentity(override val value: Long) : Identity
+
+class Payee internal constructor(model: PayeeModel) : AbstractMoneyEntity<PayeeIdentity, PayeeModel>(model, PayeeTable) {
 
     constructor() : this(PayeeModel())
+
+    override val identity: PayeeIdentity?
+        get() = model.identity?.let { PayeeIdentity(it) }
 
     var name: String?
         get() = model.name
@@ -19,7 +24,7 @@ class Payee internal constructor(model: PayeeModel) : AbstractPersistable<PayeeM
         fun getAll(executor: QueryExecutor) =
                 getAll(executor, PayeeTable, PayeeResultSetMapper())
 
-        fun get(identity: Long, executor: QueryExecutor) =
+        fun get(identity: PayeeIdentity, executor: QueryExecutor) =
                 get(identity, executor, PayeeTable, PayeeResultSetMapper())
     }
 }

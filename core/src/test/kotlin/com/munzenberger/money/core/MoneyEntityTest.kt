@@ -8,11 +8,11 @@ import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
-abstract class PersistableTest<P : Persistable> : MoneyDatabaseTestSupport() {
+abstract class MoneyEntityTest<I : Identity, P : MoneyEntity<I>> : MoneyDatabaseTestSupport() {
 
     abstract fun createPersistable(): P
 
-    abstract fun getPersistable(identity: Long): P?
+    abstract fun getPersistable(identity: I): P?
 
     abstract fun getAllPersistables(): List<P>
 
@@ -20,10 +20,12 @@ abstract class PersistableTest<P : Persistable> : MoneyDatabaseTestSupport() {
 
     abstract fun assertPersistablePropertiesAreEquals(p1: P, p2: P)
 
+    abstract fun createInvalidIdentity(): I
+
     @Test
     fun `retrieve invalid identity returns null`() {
 
-        assertNull(getPersistable(42L))
+        assertNull(getPersistable(createInvalidIdentity()))
     }
 
     @Test

@@ -18,9 +18,9 @@ import java.time.LocalDate
 
 sealed class AccountEntry {
 
-    abstract val transactionId: Long
+    abstract val transactionId: TransactionIdentity
     abstract val date: LocalDate
-    abstract val payeeId: Long?
+    abstract val payeeId: PayeeIdentity?
     abstract val payeeName: String?
     abstract val amount: Money
     abstract val balance: Money
@@ -31,9 +31,9 @@ sealed class AccountEntry {
     abstract fun updateStatus(status: TransactionStatus, executor: QueryExecutor)
 
     data class Transaction(
-            override val transactionId: Long,
+            override val transactionId: TransactionIdentity,
             override val date: LocalDate,
-            override val payeeId: Long?,
+            override val payeeId: PayeeIdentity?,
             override val payeeName: String?,
             override val amount: Money,
             override val balance: Money,
@@ -48,15 +48,15 @@ sealed class AccountEntry {
             abstract val orderInTransaction: Int
 
             data class Transfer(
-                    val transferId: Long,
-                    val accountId: Long,
+                    val transferId: TransferEntryIdentity,
+                    val accountId: AccountIdentity,
                     val accountName: String,
                     override val orderInTransaction: Int
             ) : Detail()
 
             data class Category(
-                    val entryId: Long,
-                    val categoryId: Long,
+                    val entryId: CategoryEntryIdentity,
+                    val categoryId: CategoryIdentity,
                     val categoryName: String,
                     val parentCategoryName: String?,
                     override val orderInTransaction: Int
@@ -67,7 +67,7 @@ sealed class AccountEntry {
 
             val query = updateQuery(TransactionTable.tableName) {
                 set(TransactionTable.statusColumn, status.name)
-                where(TransactionTable.identityColumn.eq(transactionId))
+                where(TransactionTable.identityColumn.eq(transactionId.value))
             }
 
             executor.executeUpdate(query)
@@ -75,17 +75,17 @@ sealed class AccountEntry {
     }
 
     data class Transfer(
-            val transferId: Long,
-            override val transactionId: Long,
+            val transferId: TransferEntryIdentity,
+            override val transactionId: TransactionIdentity,
             override val date: LocalDate,
-            override val payeeId: Long?,
+            override val payeeId: PayeeIdentity?,
             override val payeeName: String?,
             override val amount: Money,
             override val balance: Money,
             override val memo: String?,
             override val number: String?,
             override val status: TransactionStatus,
-            val transactionAccountId: Long,
+            val transactionAccountId: AccountIdentity,
             val transactionAccountName: String
     ) : AccountEntry() {
 
@@ -93,7 +93,7 @@ sealed class AccountEntry {
 
             val query = updateQuery(TransferEntryTable.tableName) {
                 set(TransferEntryTable.statusColumn, status.name)
-                where(TransferEntryTable.identityColumn.eq(transferId))
+                where(TransferEntryTable.identityColumn.eq(transferId.value))
             }
 
             executor.executeUpdate(query)
@@ -178,8 +178,8 @@ private class AccountEntryCollector {
         t.amount += amount
 
         t.details += AccountEntry.Transaction.Detail.Transfer(
-                transferId = transferId,
-                accountId = transferAccountId,
+                transferId = TransferEntryIdentity(transferId),
+                accountId = AccountIdentity(transferAccountId),
                 accountName = transferAccountName,
                 orderInTransaction = transferOrderInTransaction
         )
@@ -199,8 +199,8 @@ private class AccountEntryCollector {
         t.amount += amount
 
         t.details += AccountEntry.Transaction.Detail.Category(
-                entryId = entryId,
-                categoryId = entryCategoryId,
+                entryId = CategoryEntryIdentity(entryId),
+                categoryId = CategoryIdentity(entryCategoryId),
                 categoryName = entryCategoryName,
                 parentCategoryName = entryParentCategoryName,
                 orderInTransaction = entryOrderInTransaction
@@ -249,9 +249,9 @@ private class AccountEntryCollector {
 
             when (c) {
                 is Collector.Transaction -> AccountEntry.Transaction(
-                        transactionId = c.transactionId,
+                        transactionId = TransactionIdentity(c.transactionId),
                         date = c.date,
-                        payeeId = c.payeeId,
+                        payeeId = c.payeeId?.let { PayeeIdentity(it) },
                         payeeName = c.payeeName,
                         amount = Money.valueOf(c.totalAmount),
                         balance = Money.valueOf(balance),
@@ -262,17 +262,17 @@ private class AccountEntryCollector {
                 )
 
                 is Collector.Transfer -> AccountEntry.Transfer(
-                        transferId = c.transferId,
-                        transactionId = c.transactionId,
+                        transferId = TransferEntryIdentity(c.transferId),
+                        transactionId = TransactionIdentity(c.transactionId),
                         date = c.date,
-                        payeeId = c.payeeId,
+                        payeeId = c.payeeId?.let { PayeeIdentity(it) },
                         payeeName = c.payeeName,
                         amount = Money.valueOf(c.totalAmount),
                         balance = Money.valueOf(balance),
                         memo = c.memo,
                         number = c.number,
                         status = TransactionStatus.valueOf(c.status),
-                        transactionAccountId = c.transactionAccountId,
+                        transactionAccountId = AccountIdentity(c.transactionAccountId),
                         transactionAccountName = c.transactionAccountName
                 )
             }
@@ -284,7 +284,7 @@ private class AccountEntryCollector {
  * Collects all transactions associated with the specified account.  Each transaction is the parent to one or more
  * transfers targeting another account, or a credit/debit for a category.
  */
-private class TransactionResultSetHandler(accountId: Long, private val collector: AccountEntryCollector) : ResultSetConsumer {
+private class TransactionResultSetHandler(accountId: AccountIdentity, private val collector: AccountEntryCollector) : ResultSetConsumer {
 
     private val sql = """
         SELECT
@@ -300,7 +300,7 @@ private class TransactionResultSetHandler(accountId: Long, private val collector
         WHERE ${TransactionTable.accountColumn} = ?
     """.trimIndent()
 
-    val query = Query(sql, listOf(accountId))
+    val query = Query(sql, listOf(accountId.value))
 
     override fun accept(rs: ResultSet) {
         while (rs.next()) {
@@ -320,7 +320,7 @@ private class TransactionResultSetHandler(accountId: Long, private val collector
 /**
  * Collects all transfers where the parent transaction is associated with the specified account.
  */
-private class TransactionTransferEntryResultSetHandler(accountId: Long, private val collector: AccountEntryCollector) : ResultSetConsumer {
+private class TransactionTransferEntryResultSetHandler(accountId: AccountIdentity, private val collector: AccountEntryCollector) : ResultSetConsumer {
 
     private val sql = """
         SELECT
@@ -336,7 +336,7 @@ private class TransactionTransferEntryResultSetHandler(accountId: Long, private 
         WHERE ${TransactionTable.accountColumn} = ?
     """.trimIndent()
 
-    val query = Query(sql, listOf(accountId))
+    val query = Query(sql, listOf(accountId.value))
 
     override fun accept(rs: ResultSet) {
         while (rs.next()) {
@@ -355,7 +355,7 @@ private class TransactionTransferEntryResultSetHandler(accountId: Long, private 
 /**
  * Collects all category entries where the parent transaction is associated with the specified account.
  */
-private class TransactionCategoryEntryResultSetHandler(accountId: Long, private val collector: AccountEntryCollector) : ResultSetConsumer {
+private class TransactionCategoryEntryResultSetHandler(accountId: AccountIdentity, private val collector: AccountEntryCollector) : ResultSetConsumer {
 
     private val sql = """
         SELECT
@@ -373,7 +373,7 @@ private class TransactionCategoryEntryResultSetHandler(accountId: Long, private 
         WHERE ${TransactionTable.accountColumn} = ?
     """.trimIndent()
 
-    val query = Query(sql, listOf(accountId))
+    val query = Query(sql, listOf(accountId.value))
 
     override fun accept(rs: ResultSet) {
         while (rs.next()) {
@@ -393,7 +393,7 @@ private class TransactionCategoryEntryResultSetHandler(accountId: Long, private 
 /**
  * Collects all transfers that target the specified account.
  */
-private class TransferEntryResultSetHandler(accountId: Long, private val collector: AccountEntryCollector) : ResultSetConsumer {
+private class TransferEntryResultSetHandler(accountId: AccountIdentity, private val collector: AccountEntryCollector) : ResultSetConsumer {
 
     private val sql = """
         SELECT
@@ -415,7 +415,7 @@ private class TransferEntryResultSetHandler(accountId: Long, private val collect
         WHERE ${TransferEntryTable.accountColumn} = ?
     """.trimIndent()
 
-    val query = Query(sql, listOf(accountId))
+    val query = Query(sql, listOf(accountId.value))
 
     override fun accept(rs: ResultSet) {
         while (rs.next()) {

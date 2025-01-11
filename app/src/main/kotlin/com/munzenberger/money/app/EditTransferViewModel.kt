@@ -10,7 +10,9 @@ import com.munzenberger.money.core.MoneyDatabase
 import com.munzenberger.money.core.Payee
 import com.munzenberger.money.core.PersistableNotFoundException
 import com.munzenberger.money.core.Transaction
+import com.munzenberger.money.core.TransactionIdentity
 import com.munzenberger.money.core.TransferEntry
+import com.munzenberger.money.core.TransferEntryIdentity
 import com.munzenberger.money.core.TransferEntryResultSetMapper
 import com.munzenberger.money.core.isNegative
 import com.munzenberger.money.core.model.TransferEntryTable
@@ -67,7 +69,7 @@ class EditTransferViewModel {
                 .or(amountProperty.isNull))
     }
 
-    fun start(database: MoneyDatabase, transferId: Long, onError: (Throwable) -> Unit) {
+    fun start(database: MoneyDatabase, transferId: TransferEntryIdentity, onError: (Throwable) -> Unit) {
 
         this.database = database
 
@@ -91,18 +93,18 @@ class EditTransferViewModel {
         Executors.SINGLE.execute(task)
     }
 
-    private fun getTransferResult(database: MoneyDatabase, transferId: Long): TransferResult {
+    private fun getTransferResult(database: MoneyDatabase, transferId: TransferEntryIdentity): TransferResult {
 
-        var transactionId: Long? = null
+        var transactionId: TransactionIdentity? = null
 
         val transferMapper = object : ResultSetMapper<TransferEntry> {
             override fun apply(rs: ResultSet): TransferEntry {
-                transactionId = rs.getLong(TransferEntryTable.transactionColumn)
+                transactionId = TransactionIdentity(rs.getLong(TransferEntryTable.transactionColumn))
                 return TransferEntryResultSetMapper().apply(rs)
             }
         }
 
-        val transfer = TransferEntryTable.select(transferId)
+        val transfer = TransferEntryTable.select(transferId.value)
                 .let { database.getFirst(it, transferMapper) }
                 ?: throw PersistableNotFoundException(TransferEntry::class, transferId)
 

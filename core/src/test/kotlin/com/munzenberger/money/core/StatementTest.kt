@@ -2,11 +2,11 @@ package com.munzenberger.money.core
 
 import org.junit.Assert.assertEquals
 
-class StatementTest : PersistableTest<Statement>() {
+class StatementTest : MoneyEntityTest<StatementIdentity, Statement>() {
 
     override fun createPersistable() = Statement().randomize()
 
-    override fun getPersistable(identity: Long) = Statement.get(identity, database)
+    override fun getPersistable(identity: StatementIdentity) = Statement.get(identity, database)
 
     override fun getAllPersistables() = Statement.getAll(database)
 
@@ -20,4 +20,6 @@ class StatementTest : PersistableTest<Statement>() {
         assertEquals(p1.endingBalance, p2.endingBalance)
         assertEquals(p1.isReconciled, p2.isReconciled)
     }
+
+    override fun createInvalidIdentity() = StatementIdentity(42L)
 }

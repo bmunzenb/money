@@ -51,7 +51,13 @@ data class Condition(val clause: String, val parameters: List<Any?> = emptyList(
             }
 }
 
-fun String.eq(value: Any?) = Condition.eq(this, value)
+fun String.eq(value: Int?) = Condition.eq(this, value)
+
+fun String.eq(value: Long?) = Condition.eq(this, value)
+
+fun String.eq(value: String?) = Condition.eq(this, value)
+
+fun String.eq(value: Boolean?) = Condition.eq(this, value)
 
 fun String.greaterThan(value: Any) = Condition.greaterThan(this, value)
 

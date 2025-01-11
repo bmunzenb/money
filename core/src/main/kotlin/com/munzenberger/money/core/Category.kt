@@ -8,15 +8,20 @@ import com.munzenberger.money.sql.ResultSetMapper
 import com.munzenberger.money.sql.transaction
 import java.sql.ResultSet
 
-class Category internal constructor(model: CategoryModel) : AbstractPersistable<CategoryModel>(model, CategoryTable) {
+data class CategoryIdentity(override val value: Long) : Identity
+
+class Category internal constructor(model: CategoryModel) : AbstractMoneyEntity<CategoryIdentity, CategoryModel>(model, CategoryTable) {
 
     constructor() : this(CategoryModel())
+
+    override val identity: CategoryIdentity?
+        get() = model.identity?.let { CategoryIdentity(it) }
 
     var name: String?
         get() = model.name
         set(value) { model.name = value }
 
-    internal val parentRef = PersistableIdentityReference(model.parent)
+    internal val parentRef = PersistableIdentityReference(model.parent?.let { CategoryIdentity(it) })
 
     fun setParent(category: Category?) {
         parentRef.set(category)
@@ -27,7 +32,7 @@ class Category internal constructor(model: CategoryModel) : AbstractPersistable<
         set(value) { model.type = value }
 
     override fun save(executor: QueryExecutor) = executor.transaction { tx ->
-        model.parent = parentRef.getIdentity(tx)
+        model.parent = parentRef.getIdentity(tx)?.value
         super.save(tx)
     }
 
@@ -36,7 +41,7 @@ class Category internal constructor(model: CategoryModel) : AbstractPersistable<
         fun getAll(executor: QueryExecutor) =
                 getAll(executor, CategoryTable, CategoryResultSetMapper())
 
-        fun get(identity: Long, executor: QueryExecutor) =
+        fun get(identity: CategoryIdentity, executor: QueryExecutor) =
                 get(identity, executor, CategoryTable, CategoryResultSetMapper())
     }
 }

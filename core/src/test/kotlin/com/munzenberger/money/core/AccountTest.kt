@@ -5,13 +5,15 @@ import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
 import org.junit.Test
 
-class AccountTest : PersistableTest<Account>() {
+class AccountTest : MoneyEntityTest<AccountIdentity, Account>() {
 
     override fun createPersistable() = Account().randomize()
 
-    override fun getPersistable(identity: Long) = Account.get(identity, database)
+    override fun getPersistable(identity: AccountIdentity) = Account.get(identity, database)
 
     override fun getAllPersistables() = Account.getAll(database)
+
+    override fun createInvalidIdentity() = AccountIdentity(42L)
 
     override fun updatePersistable(persistable: Account) {
         persistable.randomize()

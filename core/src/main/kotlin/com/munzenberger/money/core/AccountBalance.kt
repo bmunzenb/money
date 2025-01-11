@@ -7,7 +7,6 @@ import com.munzenberger.money.sql.Query
 import com.munzenberger.money.sql.QueryExecutor
 import com.munzenberger.money.sql.ResultSetConsumer
 import java.sql.ResultSet
-import java.util.function.Consumer
 
 private interface AccountBalanceCollector : ResultSetConsumer {
 
@@ -16,7 +15,7 @@ private interface AccountBalanceCollector : ResultSetConsumer {
     val result: Long
 }
 
-private class TransactionTransferEntryBalanceCollector(accountId: Long) : AccountBalanceCollector {
+private class TransactionTransferEntryBalanceCollector(accountId: AccountIdentity) : AccountBalanceCollector {
 
     private val sql = """
         SELECT SUM(${TransferEntryTable.amountColumn}) AS TOTAL
@@ -25,7 +24,7 @@ private class TransactionTransferEntryBalanceCollector(accountId: Long) : Accoun
         WHERE ${TransactionTable.accountColumn} = ?
     """.trimIndent()
 
-    override val query = Query(sql, listOf(accountId))
+    override val query = Query(sql, listOf(accountId.value))
 
     override val result: Long
         get() = total
@@ -39,7 +38,7 @@ private class TransactionTransferEntryBalanceCollector(accountId: Long) : Accoun
     }
 }
 
-private class TransferEntryBalanceCollector(accountId: Long) : AccountBalanceCollector {
+private class TransferEntryBalanceCollector(accountId: AccountIdentity) : AccountBalanceCollector {
 
     private val sql = """
         SELECT -SUM(${TransferEntryTable.amountColumn}) AS TOTAL
@@ -47,7 +46,7 @@ private class TransferEntryBalanceCollector(accountId: Long) : AccountBalanceCol
         WHERE ${TransferEntryTable.accountColumn} = ?
     """.trimIndent()
 
-    override val query = Query(sql, listOf(accountId))
+    override val query = Query(sql, listOf(accountId.value))
 
     override val result: Long
         get() = total
@@ -61,7 +60,7 @@ private class TransferEntryBalanceCollector(accountId: Long) : AccountBalanceCol
     }
 }
 
-private class TransactionCategoryEntryBalanceCollector(accountId: Long) : AccountBalanceCollector {
+private class TransactionCategoryEntryBalanceCollector(accountId: AccountIdentity) : AccountBalanceCollector {
 
     private val sql = """
         SELECT SUM(${CategoryEntryTable.amountColumn}) AS TOTAL
@@ -70,7 +69,7 @@ private class TransactionCategoryEntryBalanceCollector(accountId: Long) : Accoun
         WHERE ${TransactionTable.tableName}.${TransactionTable.accountColumn} = ?
     """.trimIndent()
 
-    override val query = Query(sql, listOf(accountId))
+    override val query = Query(sql, listOf(accountId.value))
 
     override val result: Long
         get() = total

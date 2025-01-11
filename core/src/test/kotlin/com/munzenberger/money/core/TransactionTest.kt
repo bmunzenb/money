@@ -2,11 +2,11 @@ package com.munzenberger.money.core
 
 import org.junit.Assert.assertEquals
 
-class TransactionTest : PersistableTest<Transaction>() {
+class TransactionTest : MoneyEntityTest<TransactionIdentity, Transaction>() {
 
     override fun createPersistable() = Transaction().randomize()
 
-    override fun getPersistable(identity: Long) = Transaction.get(identity, database)
+    override fun getPersistable(identity: TransactionIdentity) = Transaction.get(identity, database)
 
     override fun getAllPersistables() = Transaction.getAll(database)
 
@@ -22,4 +22,6 @@ class TransactionTest : PersistableTest<Transaction>() {
         assertEquals(p1.number, p2.number)
         assertEquals(p1.status, p2.status)
     }
+
+    override fun createInvalidIdentity() = TransactionIdentity(42L)
 }

@@ -3,12 +3,12 @@ package com.munzenberger.money.core
 import org.junit.Assert.assertEquals
 import org.junit.Test
 
-class CategoryTest : PersistableTest<Category>() {
+class CategoryTest : MoneyEntityTest<CategoryIdentity, Category>() {
 
     override fun createPersistable() =
             Category().randomize()
 
-    override fun getPersistable(identity: Long) =
+    override fun getPersistable(identity: CategoryIdentity) =
             Category.get(identity, database)
 
     override fun getAllPersistables() =
@@ -22,6 +22,8 @@ class CategoryTest : PersistableTest<Category>() {
         assertEquals(p1.name, p2.name)
         assertEquals(p1.type, p2.type)
     }
+
+    override fun createInvalidIdentity() = CategoryIdentity(42L)
 
     @Test
     fun `can set a parent category`() {

@@ -3,6 +3,7 @@ package com.munzenberger.money.app
 import com.munzenberger.money.app.model.TransactionCategory
 import com.munzenberger.money.core.CategoryEntry
 import com.munzenberger.money.core.Entry
+import com.munzenberger.money.core.EntryIdentity
 import com.munzenberger.money.core.Money
 import com.munzenberger.money.core.TransferEntry
 import javafx.beans.property.SimpleBooleanProperty
@@ -12,7 +13,7 @@ import javafx.beans.property.SimpleStringProperty
 open class TransactionEntryEditor() {
 
     constructor(
-            entry: Entry,
+            entry: Entry<out EntryIdentity>,
             categories: List<TransactionCategory>,
             type: TransactionType? = null
     ) : this() {
@@ -39,9 +40,9 @@ open class TransactionEntryEditor() {
         }
     }
 
-    private var _entry: Entry? = null
+    private var _entry: Entry<out EntryIdentity>? = null
 
-    val entry: Entry?
+    val entry: Entry<out EntryIdentity>?
         get() = _entry
 
     val selectedCategoryProperty = SimpleObjectProperty<TransactionCategory>()

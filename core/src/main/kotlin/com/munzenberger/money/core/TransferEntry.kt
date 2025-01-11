@@ -7,12 +7,17 @@ import com.munzenberger.money.sql.ResultSetMapper
 import com.munzenberger.money.sql.transaction
 import java.sql.ResultSet
 
-class TransferEntry internal constructor(model: TransferEntryModel) : AbstractPersistable<TransferEntryModel>(model, TransferEntryTable), Entry {
+data class TransferEntryIdentity(override val value: Long) : EntryIdentity
+
+class TransferEntry internal constructor(model: TransferEntryModel) : AbstractMoneyEntity<TransferEntryIdentity, TransferEntryModel>(model, TransferEntryTable), Entry<TransferEntryIdentity> {
 
     constructor() : this(TransferEntryModel(
             status = TransactionStatus.UNRECONCILED,
             orderInTransaction = 0
     ))
+
+    override val identity: TransferEntryIdentity?
+        get() = model.identity?.let { TransferEntryIdentity(it) }
 
     override var amount: Money?
         get() = model.amount?.let { Money.valueOf(it) }
@@ -36,15 +41,15 @@ class TransferEntry internal constructor(model: TransferEntryModel) : AbstractPe
         get() = model.orderInTransaction
         set(value) { model.orderInTransaction = value }
 
-    internal val transactionRef = PersistableIdentityReference(model.transaction)
+    internal val transactionRef = PersistableIdentityReference(model.transaction?.let { TransactionIdentity(it) })
 
     override fun setTransaction(transaction: Transaction) {
         this.transactionRef.set(transaction)
     }
 
     override fun save(executor: QueryExecutor) = executor.transaction { tx ->
-        model.transaction = transactionRef.getIdentity(tx)
-        model.account = account.getIdentity(tx)
+        model.transaction = transactionRef.getIdentity(tx)?.value
+        model.account = account.getIdentity(tx)?.value
         super.save(tx)
     }
 
@@ -53,7 +58,7 @@ class TransferEntry internal constructor(model: TransferEntryModel) : AbstractPe
         fun getAll(executor: QueryExecutor) =
                 getAll(executor, TransferEntryTable, TransferEntryResultSetMapper())
 
-        fun get(identity: Long, executor: QueryExecutor) =
+        fun get(identity: TransferEntryIdentity, executor: QueryExecutor) =
                 get(identity, executor, TransferEntryTable, TransferEntryResultSetMapper())
     }
 }

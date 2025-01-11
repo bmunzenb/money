@@ -6,9 +6,14 @@ import com.munzenberger.money.sql.QueryExecutor
 import com.munzenberger.money.sql.ResultSetMapper
 import java.sql.ResultSet
 
-class Bank internal constructor(model: BankModel) : AbstractPersistable<BankModel>(model, BankTable) {
+data class BankIdentity(override val value: Long) : Identity
+
+class Bank internal constructor(model: BankModel) : AbstractMoneyEntity<BankIdentity, BankModel>(model, BankTable) {
 
     constructor() : this(BankModel())
+
+    override val identity: BankIdentity?
+        get() = model.identity?.let { BankIdentity(it) }
 
     var name: String?
         get() = model.name
@@ -19,7 +24,7 @@ class Bank internal constructor(model: BankModel) : AbstractPersistable<BankMode
         fun getAll(executor: QueryExecutor) =
                 getAll(executor, BankTable, BankResultSetMapper())
 
-        fun get(identity: Long, executor: QueryExecutor) =
+        fun get(identity: BankIdentity, executor: QueryExecutor) =
                 get(identity, executor, BankTable, BankResultSetMapper())
     }
 }

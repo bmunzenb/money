@@ -11,11 +11,16 @@ import com.munzenberger.money.sql.transaction
 import java.sql.ResultSet
 import java.time.LocalDate
 
-class Transaction internal constructor(model: TransactionModel) : AbstractPersistable<TransactionModel>(model, TransactionTable) {
+data class TransactionIdentity(override val value: Long) : Identity
+
+class Transaction internal constructor(model: TransactionModel) : AbstractMoneyEntity<TransactionIdentity, TransactionModel>(model, TransactionTable) {
 
     constructor() : this(TransactionModel(
             status = TransactionStatus.UNRECONCILED
     ))
+
+    override val identity: TransactionIdentity?
+        get() = model.identity?.let { TransactionIdentity(it) }
 
     var date: LocalDate?
         get() = model.date?.let { LocalDate.ofEpochDay(it) }
@@ -38,8 +43,8 @@ class Transaction internal constructor(model: TransactionModel) : AbstractPersis
         set(value) { model.status = value }
 
     override fun save(executor: QueryExecutor) = executor.transaction { tx ->
-        model.account = account.getIdentity(tx)
-        model.payee = payee.getIdentity(tx)
+        model.account = account.getIdentity(tx)?.value
+        model.payee = payee.getIdentity(tx)?.value
         super.save(tx)
     }
 
@@ -48,7 +53,7 @@ class Transaction internal constructor(model: TransactionModel) : AbstractPersis
         fun getAll(executor: QueryExecutor) =
                 getAll(executor, TransactionTable, TransactionResultSetMapper())
 
-        fun get(identity: Long, executor: QueryExecutor) =
+        fun get(identity: TransactionIdentity, executor: QueryExecutor) =
                 get(identity, executor, TransactionTable, TransactionResultSetMapper())
     }
 }
@@ -68,14 +73,14 @@ class TransactionResultSetMapper : ResultSetMapper<Transaction> {
     }
 }
 
-fun Transaction.getEntries(executor: QueryExecutor): List<Entry> {
+fun Transaction.getEntries(executor: QueryExecutor): List<Entry<out EntryIdentity>> {
 
     val transfers = TransferEntryTable.select {
-        where(TransferEntryTable.transactionColumn.eq(identity))
+        where(TransferEntryTable.transactionColumn.eq(identity?.value))
     }.let { executor.getList(it, TransferEntryResultSetMapper()) }
 
     val categories = CategoryEntryTable.select {
-        where(CategoryEntryTable.transactionColumn.eq(identity))
+        where(CategoryEntryTable.transactionColumn.eq(identity?.value))
     }.let { executor.getList(it, CategoryEntryResultSetMapper()) }
 
     return (transfers + categories).sortedBy { it.orderInTransaction }
