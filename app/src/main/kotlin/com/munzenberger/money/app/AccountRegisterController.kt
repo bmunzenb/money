@@ -64,7 +64,6 @@ class AccountRegisterController : AutoCloseable {
     // TODO remove reference to stage in controller
     private lateinit var stage: Stage
     private lateinit var database: ObservableMoneyDatabase
-    private var accountIdentity: AccountIdentity? = null
 
     private val viewModel = AccountRegisterViewModel()
 
@@ -187,7 +186,6 @@ class AccountRegisterController : AutoCloseable {
     fun start(stage: Stage, database: ObservableMoneyDatabase, accountIdentity: AccountIdentity) {
         this.stage = stage
         this.database = database
-        this.accountIdentity = accountIdentity
 
         // TODO: save as preferences by account and restore here
         //dateFilterChoiceBox.selectionModel.select(0)
