@@ -10,13 +10,9 @@ import com.munzenberger.money.core.Money
 import com.munzenberger.money.core.MoneyDatabase
 import com.munzenberger.money.core.Payee
 import com.munzenberger.money.core.Transaction
-import com.munzenberger.money.core.TransactionIdentity
 import com.munzenberger.money.core.TransferEntry
 import com.munzenberger.money.core.TransferEntryIdentity
-import com.munzenberger.money.core.TransferEntryResultSetMapper
 import com.munzenberger.money.core.isNegative
-import com.munzenberger.money.core.model.TransferEntryTable
-import com.munzenberger.money.sql.ResultSetMapper
 import com.munzenberger.money.sql.transaction
 import javafx.beans.property.BooleanProperty
 import javafx.beans.property.ReadOnlyBooleanProperty
@@ -28,7 +24,6 @@ import javafx.beans.property.SimpleObjectProperty
 import javafx.beans.property.SimpleStringProperty
 import javafx.collections.FXCollections
 import javafx.concurrent.Task
-import java.sql.ResultSet
 import java.time.LocalDate
 
 class EditTransferViewModel {
@@ -101,24 +96,13 @@ class EditTransferViewModel {
         database: MoneyDatabase,
         transferId: TransferEntryIdentity,
     ): TransferResult {
-        var transactionId: TransactionIdentity? = null
-
-        val transferMapper =
-            object : ResultSetMapper<TransferEntry> {
-                override fun apply(rs: ResultSet): TransferEntry {
-                    transactionId = TransactionIdentity(rs.getLong(TransferEntryTable.TRANSFER_ENTRY_TRANSACTION_ID))
-                    return TransferEntryResultSetMapper.apply(rs)
-                }
-            }
-
         val transfer =
-            TransferEntryTable.select(transferId.value)
-                .let { database.getFirst(it, transferMapper) }
+            TransferEntry.get(transferId, database)
                 ?: throw EntityNotFoundException(TransferEntry::class, transferId)
 
         val transaction =
-            Transaction.get(transactionId!!, database)
-                ?: throw EntityNotFoundException(Transaction::class, transactionId!!)
+            Transaction.get(transfer.transactionId!!, database)
+                ?: throw EntityNotFoundException(Transaction::class, transfer.transactionId!!)
 
         return TransferResult(transfer = transfer, transaction = transaction)
     }

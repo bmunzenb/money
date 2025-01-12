@@ -9,5 +9,7 @@ interface Entry<I : EntryIdentity> : MoneyEntity<I> {
 
     var orderInTransaction: Int?
 
+    val transactionId: TransactionIdentity?
+
     fun setTransaction(transaction: Transaction)
 }

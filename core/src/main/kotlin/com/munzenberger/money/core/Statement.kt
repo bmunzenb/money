@@ -52,7 +52,7 @@ class Statement internal constructor(model: StatementModel) : AbstractMoneyEntit
 
     override fun save(executor: QueryExecutor) =
         executor.transaction { tx ->
-            model.account = accountRef.getIdentity(tx)?.value
+            model.account = accountRef.getAutoSavedIdentity(tx)?.value
             super.save(tx)
         }
 
@@ -60,12 +60,12 @@ class Statement internal constructor(model: StatementModel) : AbstractMoneyEntit
         fun find(
             executor: QueryExecutor,
             block: OrderableQueryBuilder<*>.() -> Unit = {},
-        ) = find(executor, StatementTable, StatementResultSetMapper, block)
+        ) = MoneyEntity.find(executor, StatementTable, StatementResultSetMapper, block)
 
         fun get(
             identity: StatementIdentity,
             executor: QueryExecutor,
-        ) = get(identity, executor, StatementTable, StatementResultSetMapper)
+        ) = MoneyEntity.get(identity, executor, StatementTable, StatementResultSetMapper)
     }
 }
 

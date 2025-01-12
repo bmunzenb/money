@@ -2,7 +2,7 @@ package com.munzenberger.money.core
 
 import com.munzenberger.money.sql.QueryExecutor
 
-internal class IdentityReference<I : Identity>(private var identity: I?) {
+internal class IdentityReference<I : Identity>(private var _identity: I?) {
     private var value: MoneyEntity<I>? = null
     private var dirty = false
 
@@ -11,11 +11,18 @@ internal class IdentityReference<I : Identity>(private var identity: I?) {
         this.dirty = true
     }
 
-    fun getIdentity(executor: QueryExecutor): I? {
+    val identity: I?
+        get() =
+            when (dirty) {
+                true -> value?.identity
+                else -> _identity
+            }
+
+    fun getAutoSavedIdentity(executor: QueryExecutor): I? {
         if (dirty) {
-            identity = value.getIdentity(executor)
+            _identity = value?.getAutoSavedIdentity(executor)
             dirty = false
         }
-        return identity
+        return _identity
     }
 }

@@ -15,6 +15,40 @@ interface MoneyEntity<I : Identity> {
     fun save(executor: QueryExecutor)
 
     fun delete(executor: QueryExecutor)
+
+    companion object {
+        fun <I : Identity, M : Model, P : AbstractMoneyEntity<I, M>> get(
+            identity: I,
+            executor: QueryExecutor,
+            table: Table<M>,
+            mapper: ResultSetMapper<P>,
+        ): P? {
+            val query = table.select(identity.value)
+            return executor.getFirst(query, mapper)
+        }
+
+        fun <I : Identity, M : Model, P : AbstractMoneyEntity<I, M>> find(
+            executor: QueryExecutor,
+            table: Table<M>,
+            mapper: ResultSetMapper<P>,
+            block: OrderableQueryBuilder<*>.() -> Unit = {
+            },
+        ): List<P> {
+            val query = table.select(block)
+            return executor.getList(query, mapper)
+        }
+
+        fun <I : Identity, M : Model, P : AbstractMoneyEntity<I, M>> findFirst(
+            executor: QueryExecutor,
+            table: Table<M>,
+            mapper: ResultSetMapper<P>,
+            block: OrderableQueryBuilder<*>.() -> Unit = {
+            },
+        ): P? {
+            val query = table.select(block)
+            return executor.getFirst(query, mapper)
+        }
+    }
 }
 
 abstract class AbstractMoneyEntity<I : Identity, M : Model>(
@@ -98,36 +132,11 @@ abstract class AbstractMoneyEntity<I : Identity, M : Model>(
         result = 31 * result + table.hashCode()
         return result
     }
-
-    companion object {
-        fun <I : Identity, M : Model, P : AbstractMoneyEntity<I, M>> get(
-            identity: I,
-            executor: QueryExecutor,
-            table: Table<M>,
-            mapper: ResultSetMapper<P>,
-        ): P? {
-            val query = table.select(identity.value)
-            return executor.getFirst(query, mapper)
-        }
-
-        fun <I : Identity, M : Model, P : AbstractMoneyEntity<I, M>> find(
-            executor: QueryExecutor,
-            table: Table<M>,
-            mapper: ResultSetMapper<P>,
-            block: OrderableQueryBuilder<*>.() -> Unit = {
-            },
-        ): List<P> {
-            val query = table.select(block)
-            return executor.getList(query, mapper)
-        }
-    }
 }
 
-fun <I : Identity> MoneyEntity<I>?.getIdentity(executor: QueryExecutor) =
+// TODO reconsider auto-saving entities
+internal fun <I : Identity> MoneyEntity<I>.getAutoSavedIdentity(executor: QueryExecutor) =
     when {
-        this == null ->
-            null
-
         identity == null -> {
             save(executor)
             identity

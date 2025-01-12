@@ -37,7 +37,7 @@ class Category internal constructor(model: CategoryModel) : AbstractMoneyEntity<
 
     override fun save(executor: QueryExecutor) =
         executor.transaction { tx ->
-            model.parent = parentRef.getIdentity(tx)?.value
+            model.parent = parentRef.getAutoSavedIdentity(tx)?.value
             super.save(tx)
         }
 
@@ -45,12 +45,12 @@ class Category internal constructor(model: CategoryModel) : AbstractMoneyEntity<
         fun find(
             executor: QueryExecutor,
             block: OrderableQueryBuilder<*>.() -> Unit = {},
-        ) = find(executor, CategoryTable, CategoryResultSetMapper, block)
+        ) = MoneyEntity.find(executor, CategoryTable, CategoryResultSetMapper, block)
 
         fun get(
             identity: CategoryIdentity,
             executor: QueryExecutor,
-        ) = get(identity, executor, CategoryTable, CategoryResultSetMapper)
+        ) = MoneyEntity.get(identity, executor, CategoryTable, CategoryResultSetMapper)
     }
 }
 

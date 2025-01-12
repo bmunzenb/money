@@ -17,7 +17,7 @@ class TransferEntryTest : MoneyEntityTest<TransferEntryIdentity, TransferEntry>(
         p1: TransferEntry,
         p2: TransferEntry,
     ) {
-        assertEquals(p1.transactionRef.getIdentity(database)!!, p2.transactionRef.getIdentity(database)!!)
+        assertEquals(p1.transactionRef.getAutoSavedIdentity(database)!!, p2.transactionRef.getAutoSavedIdentity(database)!!)
         assertEquals(p1.account?.identity, p2.account?.identity)
         assertEquals(p1.amount, p2.amount)
         assertEquals(p1.number, p2.number)

@@ -64,10 +64,13 @@ class TransferEntry internal constructor(model: TransferEntryModel) :
             this.transactionRef.set(transaction)
         }
 
+        override val transactionId: TransactionIdentity?
+            get() = transactionRef.identity
+
         override fun save(executor: QueryExecutor) =
             executor.transaction { tx ->
-                model.transaction = transactionRef.getIdentity(tx)?.value
-                model.account = account.getIdentity(tx)?.value
+                model.transaction = transactionRef.getAutoSavedIdentity(tx)?.value
+                model.account = account?.getAutoSavedIdentity(tx)?.value
                 super.save(tx)
             }
 
@@ -75,12 +78,12 @@ class TransferEntry internal constructor(model: TransferEntryModel) :
             fun find(
                 executor: QueryExecutor,
                 block: OrderableQueryBuilder<*>.() -> Unit = {},
-            ) = find(executor, TransferEntryTable, TransferEntryResultSetMapper, block)
+            ) = MoneyEntity.find(executor, TransferEntryTable, TransferEntryResultSetMapper, block)
 
             fun get(
                 identity: TransferEntryIdentity,
                 executor: QueryExecutor,
-            ) = get(identity, executor, TransferEntryTable, TransferEntryResultSetMapper)
+            ) = MoneyEntity.get(identity, executor, TransferEntryTable, TransferEntryResultSetMapper)
         }
     }
 

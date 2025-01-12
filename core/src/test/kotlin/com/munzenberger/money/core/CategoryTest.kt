@@ -41,6 +41,6 @@ class CategoryTest : MoneyEntityTest<CategoryIdentity, Category>() {
 
         val c1 = Category.get(category.identity!!, database)
 
-        assertEquals(c1!!.parentRef.getIdentity(database), parent.identity)
+        assertEquals(c1!!.parentRef.getAutoSavedIdentity(database), parent.identity)
     }
 }

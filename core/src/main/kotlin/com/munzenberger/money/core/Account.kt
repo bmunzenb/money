@@ -40,8 +40,8 @@ class Account internal constructor(model: AccountModel) : AbstractMoneyEntity<Ac
 
     override fun save(executor: QueryExecutor) =
         executor.transaction { tx ->
-            model.accountType = accountType.getIdentity(tx)?.value
-            model.bank = bank.getIdentity(tx)?.value
+            model.accountType = accountType?.getAutoSavedIdentity(tx)?.value
+            model.bank = bank?.getAutoSavedIdentity(tx)?.value
             super.save(tx)
         }
 
@@ -49,12 +49,12 @@ class Account internal constructor(model: AccountModel) : AbstractMoneyEntity<Ac
         fun find(
             executor: QueryExecutor,
             block: OrderableQueryBuilder<*>.() -> Unit = {},
-        ) = find(executor, AccountTable, AccountResultSetMapper, block)
+        ) = MoneyEntity.find(executor, AccountTable, AccountResultSetMapper, block)
 
         fun get(
             identity: AccountIdentity,
             executor: QueryExecutor,
-        ) = get(identity, executor, AccountTable, AccountResultSetMapper)
+        ) = MoneyEntity.get(identity, executor, AccountTable, AccountResultSetMapper)
     }
 }
 

@@ -36,12 +36,12 @@ class AccountType internal constructor(model: AccountTypeModel) : AbstractMoneyE
         fun find(
             executor: QueryExecutor,
             block: OrderableQueryBuilder<*>.() -> Unit = {},
-        ) = find(executor, AccountTypeTable, AccountTypeResultSetMapper, block)
+        ) = MoneyEntity.find(executor, AccountTypeTable, AccountTypeResultSetMapper, block)
 
         fun get(
             identity: AccountTypeIdentity,
             executor: QueryExecutor,
-        ) = get(identity, executor, AccountTypeTable, AccountTypeResultSetMapper)
+        ) = MoneyEntity.get(identity, executor, AccountTypeTable, AccountTypeResultSetMapper)
     }
 }
 

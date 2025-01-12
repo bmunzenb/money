@@ -57,8 +57,8 @@ class Transaction internal constructor(model: TransactionModel) : AbstractMoneyE
 
     override fun save(executor: QueryExecutor) =
         executor.transaction { tx ->
-            model.account = account.getIdentity(tx)?.value
-            model.payee = payee.getIdentity(tx)?.value
+            model.account = account?.getAutoSavedIdentity(tx)?.value
+            model.payee = payee?.getAutoSavedIdentity(tx)?.value
             super.save(tx)
         }
 
@@ -66,12 +66,12 @@ class Transaction internal constructor(model: TransactionModel) : AbstractMoneyE
         fun find(
             executor: QueryExecutor,
             block: OrderableQueryBuilder<*>.() -> Unit = {},
-        ) = find(executor, TransactionTable, TransactionResultSetMapper, block)
+        ) = MoneyEntity.find(executor, TransactionTable, TransactionResultSetMapper, block)
 
         fun get(
             identity: TransactionIdentity,
             executor: QueryExecutor,
-        ) = get(identity, executor, TransactionTable, TransactionResultSetMapper)
+        ) = MoneyEntity.get(identity, executor, TransactionTable, TransactionResultSetMapper)
     }
 }
 

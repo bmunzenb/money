@@ -17,36 +17,36 @@ abstract class Table<M : Model> {
 
     abstract val identityColumn: String
 
-    abstract fun setValues(
+    protected abstract fun setValues(
         settable: SettableQueryBuilder<*>,
         model: M,
     )
 
-    abstract fun getValues(
+    internal abstract fun getValues(
         resultSet: ResultSet,
         model: M,
     )
 
-    open fun applyJoins(select: SelectQueryBuilder) {}
+    protected open fun applyJoins(select: SelectQueryBuilder) {}
 
-    fun select(block: OrderableQueryBuilder<*>.() -> Unit = {}) =
+    internal fun select(block: OrderableQueryBuilder<*>.() -> Unit = {}) =
         selectQuery(tableName) {
             applyJoins(this)
             this.block()
         }
 
-    fun select(identity: Long) =
+    internal fun select(identity: Long) =
         selectQuery(tableName) {
             applyJoins(this)
             where(identityColumn.eq(identity))
         }
 
-    fun insert(model: M) =
+    internal fun insert(model: M) =
         insertQuery(tableName) {
             setValues(this, model)
         }
 
-    fun update(
+    internal fun update(
         identity: Long,
         model: M,
     ) = updateQuery(tableName) {
@@ -54,7 +54,7 @@ abstract class Table<M : Model> {
         where(identityColumn.eq(identity))
     }
 
-    fun delete(identity: Long) =
+    internal fun delete(identity: Long) =
         deleteQuery(tableName) {
             where(identityColumn.eq(identity))
         }

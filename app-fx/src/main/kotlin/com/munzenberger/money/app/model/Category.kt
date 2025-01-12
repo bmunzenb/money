@@ -76,12 +76,7 @@ fun Category.Companion.find(
         condition = CategoryTable.CATEGORY_PARENT_ID.eq(it.value) and condition
     }
 
-    val query =
-        CategoryTable.select {
-            condition?.let {
-                where(it)
-            }
-        }
-
-    return executor.getList(query, CategoryResultSetMapper)
+    return find(executor) {
+        condition?.let { where(it) }
+    }
 }

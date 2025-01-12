@@ -31,6 +31,9 @@ class CategoryEntry internal constructor(model: CategoryEntryModel) :
             transactionRef.set(transaction)
         }
 
+        override val transactionId: TransactionIdentity?
+            get() = transactionRef.identity
+
         var category: Category? = null
 
         override var amount: Money?
@@ -53,8 +56,8 @@ class CategoryEntry internal constructor(model: CategoryEntryModel) :
 
         override fun save(executor: QueryExecutor) =
             executor.transaction { tx ->
-                model.transaction = transactionRef.getIdentity(tx)?.value
-                model.category = category.getIdentity(tx)?.value
+                model.transaction = transactionRef.getAutoSavedIdentity(tx)?.value
+                model.category = category?.getAutoSavedIdentity(tx)?.value
                 super.save(tx)
             }
 
@@ -62,12 +65,12 @@ class CategoryEntry internal constructor(model: CategoryEntryModel) :
             fun find(
                 executor: QueryExecutor,
                 block: OrderableQueryBuilder<*>.() -> Unit = {},
-            ) = find(executor, CategoryEntryTable, CategoryEntryResultSetMapper, block)
+            ) = MoneyEntity.find(executor, CategoryEntryTable, CategoryEntryResultSetMapper, block)
 
             fun get(
                 identity: CategoryEntryIdentity,
                 executor: QueryExecutor,
-            ) = get(identity, executor, CategoryEntryTable, CategoryEntryResultSetMapper)
+            ) = MoneyEntity.get(identity, executor, CategoryEntryTable, CategoryEntryResultSetMapper)
         }
     }
 

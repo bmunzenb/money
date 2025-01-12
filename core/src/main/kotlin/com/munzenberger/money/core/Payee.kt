@@ -25,12 +25,12 @@ class Payee internal constructor(model: PayeeModel) : AbstractMoneyEntity<PayeeI
         fun find(
             executor: QueryExecutor,
             block: OrderableQueryBuilder<*>.() -> Unit = {},
-        ) = find(executor, PayeeTable, PayeeResultSetMapper, block)
+        ) = MoneyEntity.find(executor, PayeeTable, PayeeResultSetMapper, block)
 
         fun get(
             identity: PayeeIdentity,
             executor: QueryExecutor,
-        ) = get(identity, executor, PayeeTable, PayeeResultSetMapper)
+        ) = MoneyEntity.get(identity, executor, PayeeTable, PayeeResultSetMapper)
     }
 }
 
