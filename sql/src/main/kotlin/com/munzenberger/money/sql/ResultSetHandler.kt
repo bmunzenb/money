@@ -4,6 +4,7 @@ import java.sql.ResultSet
 import java.util.function.Consumer
 import java.util.function.Function
 
+// TODO rename any implementations that still use the word `handler`
 typealias ResultSetConsumer = Consumer<ResultSet>
 
 fun interface ResultSetMapper<T> : Function<ResultSet, T>

@@ -17,6 +17,7 @@ interface MoneyEntity<I : Identity> {
 
 abstract class AbstractMoneyEntity<I : Identity, M : Model>(
     protected val model: M,
+    // TODO refactor so that all query logic from table is in this class
     private val table: Table<M>,
 ) : MoneyEntity<I> {
     override fun save(executor: QueryExecutor) {
