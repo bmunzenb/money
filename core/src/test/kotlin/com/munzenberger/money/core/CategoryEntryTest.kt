@@ -17,7 +17,7 @@ class CategoryEntryTest : MoneyEntityTest<CategoryEntryIdentity, CategoryEntry>(
         p1: CategoryEntry,
         p2: CategoryEntry,
     ) {
-        assertEquals(p1.transactionRef.getAutoSavedIdentity(database)!!, p2.transactionRef.getAutoSavedIdentity(database)!!)
+        assertEquals(p1.transactionId!!, p2.transactionId!!)
         assertEquals(p1.category!!.identity!!, p2.category!!.identity!!)
         assertEquals(p1.amount, p2.amount)
         assertEquals(p1.memo, p2.memo)
