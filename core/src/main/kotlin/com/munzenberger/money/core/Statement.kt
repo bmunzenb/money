@@ -17,7 +17,7 @@ class Statement internal constructor(model: StatementModel) : AbstractMoneyEntit
 ) {
     constructor() : this(StatementModel())
 
-    private val accountRef = PersistableIdentityReference(model.account?.let { AccountIdentity(it) })
+    private val accountRef = IdentityReference(model.account?.let { AccountIdentity(it) })
 
     override val identity: StatementIdentity?
         get() = model.identity?.let { StatementIdentity(it) }

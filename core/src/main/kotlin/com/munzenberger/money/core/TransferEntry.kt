@@ -58,7 +58,7 @@ class TransferEntry internal constructor(model: TransferEntryModel) :
                 model.orderInTransaction = value
             }
 
-        internal val transactionRef = PersistableIdentityReference(model.transaction?.let { TransactionIdentity(it) })
+        internal val transactionRef = IdentityReference(model.transaction?.let { TransactionIdentity(it) })
 
         override fun setTransaction(transaction: Transaction) {
             this.transactionRef.set(transaction)

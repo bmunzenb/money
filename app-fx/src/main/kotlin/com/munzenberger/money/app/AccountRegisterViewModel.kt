@@ -18,9 +18,9 @@ import com.munzenberger.money.app.property.map
 import com.munzenberger.money.core.Account
 import com.munzenberger.money.core.AccountEntry
 import com.munzenberger.money.core.AccountIdentity
+import com.munzenberger.money.core.EntityNotFoundException
 import com.munzenberger.money.core.Money
 import com.munzenberger.money.core.MoneyDatabase
-import com.munzenberger.money.core.PersistableNotFoundException
 import com.munzenberger.money.core.Transaction
 import com.munzenberger.money.core.TransactionIdentity
 import com.munzenberger.money.core.TransactionStatus
@@ -137,7 +137,7 @@ class AccountRegisterViewModel : AccountEntriesViewModel, AutoCloseable {
             register.setValueAsync {
                 val account =
                     Account.get(accountIdentity, database)
-                        ?: throw PersistableNotFoundException(Account::class, accountIdentity)
+                        ?: throw EntityNotFoundException(Account::class, accountIdentity)
 
                 var transactions = account.getAccountEntries(database)
                 var endingBalance = account.getBalance(database)
@@ -174,7 +174,7 @@ class AccountRegisterViewModel : AccountEntriesViewModel, AutoCloseable {
             object : Task<Transaction>() {
                 override fun call(): Transaction {
                     return Transaction.get(transactionId, database)
-                        ?: throw PersistableNotFoundException(Transaction::class, transactionId)
+                        ?: throw EntityNotFoundException(Transaction::class, transactionId)
                 }
 
                 override fun succeeded() {

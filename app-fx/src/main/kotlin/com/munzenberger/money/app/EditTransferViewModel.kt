@@ -5,10 +5,10 @@ import com.munzenberger.money.app.concurrent.setValueAsync
 import com.munzenberger.money.app.model.displayName
 import com.munzenberger.money.app.property.ReadOnlyAsyncObjectProperty
 import com.munzenberger.money.app.property.SimpleAsyncObjectProperty
+import com.munzenberger.money.core.EntityNotFoundException
 import com.munzenberger.money.core.Money
 import com.munzenberger.money.core.MoneyDatabase
 import com.munzenberger.money.core.Payee
-import com.munzenberger.money.core.PersistableNotFoundException
 import com.munzenberger.money.core.Transaction
 import com.munzenberger.money.core.TransactionIdentity
 import com.munzenberger.money.core.TransferEntry
@@ -114,11 +114,11 @@ class EditTransferViewModel {
         val transfer =
             TransferEntryTable.select(transferId.value)
                 .let { database.getFirst(it, transferMapper) }
-                ?: throw PersistableNotFoundException(TransferEntry::class, transferId)
+                ?: throw EntityNotFoundException(TransferEntry::class, transferId)
 
         val transaction =
             Transaction.get(transactionId!!, database)
-                ?: throw PersistableNotFoundException(Transaction::class, transactionId!!)
+                ?: throw EntityNotFoundException(Transaction::class, transactionId!!)
 
         return TransferResult(transfer = transfer, transaction = transaction)
     }

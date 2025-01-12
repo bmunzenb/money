@@ -25,7 +25,7 @@ class CategoryEntry internal constructor(model: CategoryEntryModel) :
         override val identity: CategoryEntryIdentity?
             get() = model.identity?.let { CategoryEntryIdentity(it) }
 
-        internal val transactionRef = PersistableIdentityReference(model.transaction?.let { TransactionIdentity(it) })
+        internal val transactionRef = IdentityReference(model.transaction?.let { TransactionIdentity(it) })
 
         override fun setTransaction(transaction: Transaction) {
             transactionRef.set(transaction)

@@ -23,7 +23,7 @@ class Category internal constructor(model: CategoryModel) : AbstractMoneyEntity<
             model.name = value
         }
 
-    internal val parentRef = PersistableIdentityReference(model.parent?.let { CategoryIdentity(it) })
+    internal val parentRef = IdentityReference(model.parent?.let { CategoryIdentity(it) })
 
     fun setParent(category: Category?) {
         parentRef.set(category)
