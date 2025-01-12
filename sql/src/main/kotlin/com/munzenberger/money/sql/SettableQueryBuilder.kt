@@ -13,7 +13,6 @@ abstract class SettableQueryBuilder<T>(private val table: String) {
 
     fun build() = build(table, parameters)
 
-    // TODO: can this be removed now that the DSL should be used?
     protected abstract fun instance(): T
 
     protected abstract fun build(

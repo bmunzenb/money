@@ -16,7 +16,7 @@ interface QueryExecutor {
         query: Query,
         mapper: ResultSetMapper<T>,
     ): List<T> {
-        return ListResultSetHandler(mapper).let {
+        return ListResultSetConsumer(mapper).let {
             executeQuery(query, it)
             it.results
         }
@@ -26,7 +26,7 @@ interface QueryExecutor {
         query: Query,
         mapper: ResultSetMapper<T>,
     ): T? {
-        return FirstResultSetHandler(mapper).let {
+        return FirstResultSetConsumer(mapper).let {
             executeQuery(query, it)
             it.result
         }

@@ -4,7 +4,7 @@ import com.munzenberger.money.sql.ResultSetConsumer
 import com.munzenberger.money.sql.ResultSetMapper
 import java.sql.ResultSet
 
-class IdentityResultSetHandler : ResultSetConsumer, ResultSetMapper<Long> {
+internal class IdentityResultSetConsumer : ResultSetConsumer, ResultSetMapper<Long> {
     private var mutableIdentity: Long? = null
 
     val identity: Long?

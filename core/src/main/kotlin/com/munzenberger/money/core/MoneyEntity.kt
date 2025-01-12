@@ -35,7 +35,7 @@ abstract class AbstractMoneyEntity<I : Identity, M : Model>(
 
             // TODO this may not be a safe way to get the identity of the inserted row
             // consider exposing the database dialect here and using it for a database-specific implementation
-            val identityHandler = IdentityResultSetHandler()
+            val identityHandler = IdentityResultSetConsumer()
             val getIdentity =
                 table.select {
                     cols("MAX(${table.identityColumn})")

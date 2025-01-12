@@ -292,7 +292,7 @@ private class AccountEntryCollector {
  * Collects all transactions associated with the specified account.  Each transaction is the parent to one or more
  * transfers targeting another account, or a credit/debit for a category.
  */
-private class TransactionResultSetHandler(accountId: AccountIdentity, private val collector: AccountEntryCollector) : ResultSetConsumer {
+private class TransactionResultSetConsumer(accountId: AccountIdentity, private val collector: AccountEntryCollector) : ResultSetConsumer {
     private val sql =
         """
         SELECT
@@ -328,7 +328,7 @@ private class TransactionResultSetHandler(accountId: AccountIdentity, private va
 /**
  * Collects all transfers where the parent transaction is associated with the specified account.
  */
-private class TransactionTransferEntryResultSetHandler(
+private class TransactionTransferEntryResultSetConsumer(
     accountId: AccountIdentity,
     private val collector: AccountEntryCollector,
 ) : ResultSetConsumer {
@@ -366,7 +366,7 @@ private class TransactionTransferEntryResultSetHandler(
 /**
  * Collects all category entries where the parent transaction is associated with the specified account.
  */
-private class TransactionCategoryEntryResultSetHandler(
+private class TransactionCategoryEntryResultSetConsumer(
     accountId: AccountIdentity,
     private val collector: AccountEntryCollector,
 ) : ResultSetConsumer {
@@ -407,7 +407,7 @@ private class TransactionCategoryEntryResultSetHandler(
 /**
  * Collects all transfers that target the specified account.
  */
-private class TransferEntryResultSetHandler(accountId: AccountIdentity, private val collector: AccountEntryCollector) : ResultSetConsumer {
+private class TransferEntryResultSetConsumer(accountId: AccountIdentity, private val collector: AccountEntryCollector) : ResultSetConsumer {
     private val sql =
         """
         SELECT
@@ -456,22 +456,22 @@ fun Account.getAccountEntries(executor: QueryExecutor): List<AccountEntry> {
     val collector = AccountEntryCollector()
 
     // 1: Get all direct transactions associated with this account
-    TransactionResultSetHandler(accountId, collector).apply {
+    TransactionResultSetConsumer(accountId, collector).apply {
         executor.executeQuery(query, this)
     }
 
     // 2: Get all transfer entries associated with transactions for this account
-    TransactionTransferEntryResultSetHandler(accountId, collector).apply {
+    TransactionTransferEntryResultSetConsumer(accountId, collector).apply {
         executor.executeQuery(query, this)
     }
 
     // 3: Get all category entries associated with transactions for this account
-    TransactionCategoryEntryResultSetHandler(accountId, collector).apply {
+    TransactionCategoryEntryResultSetConsumer(accountId, collector).apply {
         executor.executeQuery(query, this)
     }
 
     // 4: Get all transfer entries associated with this account
-    TransferEntryResultSetHandler(accountId, collector).apply {
+    TransferEntryResultSetConsumer(accountId, collector).apply {
         executor.executeQuery(query, this)
     }
 
