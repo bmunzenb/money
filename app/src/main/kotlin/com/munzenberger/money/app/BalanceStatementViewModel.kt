@@ -14,7 +14,6 @@ import javafx.concurrent.Task
 import java.time.LocalDate
 
 class BalanceStatementViewModel {
-
     private val operationInProgress = SimpleBooleanProperty(false)
 
     val statementDateProperty = SimpleObjectProperty<LocalDate>()
@@ -24,65 +23,70 @@ class BalanceStatementViewModel {
     val operationInProgressProperty: ReadOnlyBooleanProperty = operationInProgress
 
     val isInvalidBinding: BooleanBinding =
-            statementDateProperty.isNull
-                    .or(startingBalanceProperty.isNull)
-                    .or(endingBalanceProperty.isNull)
+        statementDateProperty.isNull
+            .or(startingBalanceProperty.isNull)
+            .or(endingBalanceProperty.isNull)
 
     private lateinit var database: MoneyDatabase
     private lateinit var statement: Statement
 
-    fun start(account: Account, database: MoneyDatabase, onError: (Throwable) -> Unit) {
-
+    fun start(
+        account: Account,
+        database: MoneyDatabase,
+        onError: (Throwable) -> Unit,
+    ) {
         this.database = database
 
-        val task = object : Task<Statement>() {
+        val task =
+            object : Task<Statement>() {
+                override fun call(): Statement {
+                    // get the last unreconciled statement, or create a new one
+                    return Statement.getUnreconciled(account.identity!!, database) ?: Statement().apply {
+                        setAccount(account)
+                        isReconciled = false
+                    }
+                }
 
-            override fun call(): Statement {
-                // get the last unreconciled statement, or create a new one
-                return Statement.getUnreconciled(account.identity!!, database) ?: Statement().apply {
-                    setAccount(account)
-                    isReconciled = false
+                override fun succeeded() {
+                    statement = value
+                    statementDateProperty.value = statement.closingDate
+                    startingBalanceProperty.value = statement.startingBalance
+                    endingBalanceProperty.value = statement.endingBalance
+                }
+
+                override fun failed() {
+                    onError.invoke(exception)
                 }
             }
-
-            override fun succeeded() {
-                statement = value
-                statementDateProperty.value = statement.closingDate
-                startingBalanceProperty.value = statement.startingBalance
-                endingBalanceProperty.value = statement.endingBalance
-            }
-
-            override fun failed() {
-                onError.invoke(exception)
-            }
-        }
 
         operationInProgress.bind(task.runningProperty())
 
         Executors.SINGLE.execute(task)
     }
 
-    fun saveStatement(onSuccess: (Statement) -> Unit, onError: (Throwable) -> Unit) {
+    fun saveStatement(
+        onSuccess: (Statement) -> Unit,
+        onError: (Throwable) -> Unit,
+    ) {
+        val task =
+            object : Task<Statement>() {
+                override fun call(): Statement {
+                    return statement.apply {
+                        closingDate = statementDateProperty.value
+                        startingBalance = startingBalanceProperty.value
+                        endingBalance = endingBalanceProperty.value
+                        save(database)
+                    }
+                }
 
-        val task = object : Task<Statement>() {
+                override fun succeeded() {
+                    onSuccess.invoke(value)
+                }
 
-            override fun call(): Statement {
-                return statement.apply {
-                    closingDate = statementDateProperty.value
-                    startingBalance = startingBalanceProperty.value
-                    endingBalance = endingBalanceProperty.value
-                    save(database)
+                override fun failed() {
+                    onError.invoke(exception)
                 }
             }
-
-            override fun succeeded() {
-                onSuccess.invoke(value)
-            }
-
-            override fun failed() {
-                onError.invoke(exception)
-            }
-        }
 
         operationInProgress.bind(task.runningProperty())
 

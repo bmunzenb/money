@@ -8,7 +8,6 @@ import javafx.beans.property.SimpleStringProperty
 import java.time.LocalDate
 
 class FXPayee(payee: Payee, lastPaid: LocalDate? = null) {
-
     val nameProperty: ReadOnlyStringProperty = SimpleStringProperty(payee.name)
     val lastPaidProperty: ReadOnlyObjectProperty<LocalDate> = SimpleObjectProperty(lastPaid)
 }

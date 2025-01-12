@@ -4,9 +4,9 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
 import org.junit.Test
+import kotlin.random.Random
 
 class AccountTest : MoneyEntityTest<AccountIdentity, Account>() {
-
     override fun createPersistable() = Account().randomize()
 
     override fun getPersistable(identity: AccountIdentity) = Account.get(identity, database)
@@ -19,7 +19,10 @@ class AccountTest : MoneyEntityTest<AccountIdentity, Account>() {
         persistable.randomize()
     }
 
-    override fun assertPersistablePropertiesAreEquals(p1: Account, p2: Account) {
+    override fun assertPersistablePropertiesAreEquals(
+        p1: Account,
+        p2: Account,
+    ) {
         assertEquals(p1.name, p2.name)
         assertEquals(p1.number, p2.number)
         assertEquals(p1.accountType?.identity, p2.accountType?.identity)
@@ -29,12 +32,12 @@ class AccountTest : MoneyEntityTest<AccountIdentity, Account>() {
 
     @Test
     fun `optional fields`() {
-
-        val account = Account().apply {
-            name = random.nextString()
-            accountType = AccountType().randomize()
-            save(database)
-        }
+        val account =
+            Account().apply {
+                name = Random.nextString()
+                accountType = AccountType().randomize()
+                save(database)
+            }
 
         Account.get(account.identity!!, database).apply {
             assertNotNull(this)

@@ -7,13 +7,15 @@ import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 
 object Executors {
-
     private val singleService: ExecutorService = Executors.newSingleThreadExecutor()
     val SINGLE: Executor = singleService
 
     val PLATFORM: Executor = Executor { command -> Platform.runLater(command) }
 
-    fun shutdownAndAwaitTermination(timeout: Long, unit: TimeUnit): Boolean {
+    fun shutdownAndAwaitTermination(
+        timeout: Long,
+        unit: TimeUnit,
+    ): Boolean {
         singleService.shutdown()
         return singleService.awaitTermination(timeout, unit)
     }

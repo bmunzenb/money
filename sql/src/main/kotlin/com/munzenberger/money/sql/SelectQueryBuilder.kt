@@ -2,7 +2,10 @@ package com.munzenberger.money.sql
 
 import java.lang.StringBuilder
 
-fun selectQuery(from: String, block: SelectQueryBuilder.() -> Unit): Query {
+fun selectQuery(
+    from: String,
+    block: SelectQueryBuilder.() -> Unit,
+): Query {
     val selectQueryBuilder = SelectQueryBuilder(table = from)
     selectQueryBuilder.block()
     return selectQueryBuilder.build()
@@ -10,59 +13,83 @@ fun selectQuery(from: String, block: SelectQueryBuilder.() -> Unit): Query {
 
 @SelectQueryMarker
 class SelectQueryBuilder(private val table: String) {
-
     private val columns = mutableListOf<String>()
     private var where: Condition? = null
     private val joins = mutableListOf<String>()
     private val orderBy = mutableListOf<String>()
     private val groupBy = mutableListOf<String>()
 
-    fun cols(columns: List<String>) = this.apply {
-        this.columns.addAll(columns)
-    }
+    fun cols(columns: List<String>) =
+        this.apply {
+            this.columns.addAll(columns)
+        }
 
-    fun cols(vararg columns: String) = this.apply {
-        this.columns.addAll(columns)
-    }
+    fun cols(vararg columns: String) =
+        this.apply {
+            this.columns.addAll(columns)
+        }
 
-    fun where(condition: Condition) = this.apply {
-        this.where = condition
-    }
+    fun where(condition: Condition) =
+        this.apply {
+            this.where = condition
+        }
 
-    fun innerJoin(leftTable: String, leftColumn: String, rightTable: String, rightColumn: String) = this.apply {
+    fun innerJoin(
+        leftTable: String,
+        leftColumn: String,
+        rightTable: String,
+        rightColumn: String,
+    ) = this.apply {
         joins.add("INNER JOIN $rightTable ON $leftTable.$leftColumn = $rightTable.$rightColumn")
     }
 
-    fun leftJoin(leftTable: String, leftColumn: String, rightTable: String, rightColumn: String) = this.apply {
+    fun leftJoin(
+        leftTable: String,
+        leftColumn: String,
+        rightTable: String,
+        rightColumn: String,
+    ) = this.apply {
         joins.add("LEFT JOIN $rightTable ON $leftTable.$leftColumn = $rightTable.$rightColumn")
     }
 
-    fun rightJoin(leftTable: String, leftColumn: String, rightTable: String, rightColumn: String) = this.apply {
+    fun rightJoin(
+        leftTable: String,
+        leftColumn: String,
+        rightTable: String,
+        rightColumn: String,
+    ) = this.apply {
         joins.add("RIGHT JOIN $rightTable ON $leftTable.$leftColumn = $rightTable.$rightColumn")
     }
 
-    fun orderBy(vararg columns: String) = this.apply {
-        columns.forEach { orderBy(it) }
-    }
+    fun orderBy(vararg columns: String) =
+        this.apply {
+            columns.forEach { orderBy(it) }
+        }
 
-    fun orderBy(column: String, descending: Boolean = false) = this.apply {
+    fun orderBy(
+        column: String,
+        descending: Boolean = false,
+    ) = this.apply {
         val dir = if (descending) "DESC" else "ASC"
         orderBy.add("$column $dir")
     }
 
-    fun groupBy(vararg columns: String) = this.apply {
-        groupBy.clear()
-        groupBy.addAll(columns)
-    }
+    fun groupBy(vararg columns: String) =
+        this.apply {
+            groupBy.clear()
+            groupBy.addAll(columns)
+        }
 
     fun build(): Query {
-
         val sb = StringBuilder("SELECT ")
         val params = mutableListOf<Any?>()
 
         val selectColumns =
-                if (columns.isEmpty()) "*"
-                else columns.joinToString(", ")
+            if (columns.isEmpty()) {
+                "*"
+            } else {
+                columns.joinToString(", ")
+            }
 
         sb.append(selectColumns)
         sb.append(" FROM $table")

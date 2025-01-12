@@ -6,42 +6,47 @@ import com.munzenberger.money.sql.getLongOrNull
 import java.sql.ResultSet
 
 data class CategoryEntryModel(
-        var transaction: Long? = null,
-        var category: Long? = null,
-        var amount: Long? = null,
-        var memo: String? = null,
-        var orderInTransaction: Int? = null
+    var transaction: Long? = null,
+    var category: Long? = null,
+    var amount: Long? = null,
+    var memo: String? = null,
+    var orderInTransaction: Int? = null,
 ) : Model()
 
 object CategoryEntryTable : Table<CategoryEntryModel>() {
-
     override val tableName = "CATEGORY_ENTRIES"
     override val identityColumn = "CATEGORY_ENTRY_ID"
 
-    const val transactionColumn = "CATEGORY_ENTRY_TRANSACTION_ID"
-    const val categoryColumn = "CATEGORY_ENTRY_CATEGORY_ID"
-    const val amountColumn = "CATEGORY_ENTRY_AMOUNT"
-    const val memoColumn = "CATEGORY_ENTRY_MEMO"
-    const val orderInTransaction = "CATEGORY_ENTRY_ORDER_IN_TRANSACTION"
+    const val CATEGORY_ENTRY_TRANSACTION_ID = "CATEGORY_ENTRY_TRANSACTION_ID"
+    const val CATEGORY_ENTRY_CATEGORY_ID = "CATEGORY_ENTRY_CATEGORY_ID"
+    const val CATEGORY_ENTRY_AMOUNT = "CATEGORY_ENTRY_AMOUNT"
+    const val CATEGORY_ENTRY_MEMO = "CATEGORY_ENTRY_MEMO"
+    const val CATEGORY_ENTRY_ORDER_IN_TRANSACTION = "CATEGORY_ENTRY_ORDER_IN_TRANSACTION"
 
-    override fun setValues(settable: SettableQueryBuilder<*>, model: CategoryEntryModel) {
-        settable.set(transactionColumn, model.transaction)
-        settable.set(categoryColumn, model.category)
-        settable.set(amountColumn, model.amount)
-        settable.set(memoColumn, model.memo)
-        settable.set(orderInTransaction, model.orderInTransaction)
+    override fun setValues(
+        settable: SettableQueryBuilder<*>,
+        model: CategoryEntryModel,
+    ) {
+        settable.set(CATEGORY_ENTRY_TRANSACTION_ID, model.transaction)
+        settable.set(CATEGORY_ENTRY_CATEGORY_ID, model.category)
+        settable.set(CATEGORY_ENTRY_AMOUNT, model.amount)
+        settable.set(CATEGORY_ENTRY_MEMO, model.memo)
+        settable.set(CATEGORY_ENTRY_ORDER_IN_TRANSACTION, model.orderInTransaction)
     }
 
-    override fun getValues(resultSet: ResultSet, model: CategoryEntryModel) {
+    override fun getValues(
+        resultSet: ResultSet,
+        model: CategoryEntryModel,
+    ) {
         model.identity = resultSet.getLong(identityColumn)
-        model.transaction = resultSet.getLongOrNull(transactionColumn)
-        model.category = resultSet.getLongOrNull(categoryColumn)
-        model.amount = resultSet.getLongOrNull(amountColumn)
-        model.memo = resultSet.getString(memoColumn)
-        model.orderInTransaction = resultSet.getInt(orderInTransaction)
+        model.transaction = resultSet.getLongOrNull(CATEGORY_ENTRY_TRANSACTION_ID)
+        model.category = resultSet.getLongOrNull(CATEGORY_ENTRY_CATEGORY_ID)
+        model.amount = resultSet.getLongOrNull(CATEGORY_ENTRY_AMOUNT)
+        model.memo = resultSet.getString(CATEGORY_ENTRY_MEMO)
+        model.orderInTransaction = resultSet.getInt(CATEGORY_ENTRY_ORDER_IN_TRANSACTION)
     }
 
     override fun applyJoins(select: SelectQueryBuilder) {
-        select.leftJoin(categoryColumn, CategoryTable)
+        select.leftJoin(CATEGORY_ENTRY_CATEGORY_ID, CategoryTable)
     }
 }

@@ -4,7 +4,6 @@ import javafx.fxml.FXML
 import java.net.URL
 
 class WelcomeController : AutoCloseable {
-
     companion object {
         val LAYOUT: URL = ApplicationController::class.java.getResource("WelcomeLayout.fxml")
     }

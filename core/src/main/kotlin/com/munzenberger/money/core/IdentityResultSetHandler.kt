@@ -5,7 +5,6 @@ import com.munzenberger.money.sql.ResultSetMapper
 import java.sql.ResultSet
 
 class IdentityResultSetHandler : ResultSetConsumer, ResultSetMapper<Long> {
-
     private var mutableIdentity: Long? = null
 
     val identity: Long?

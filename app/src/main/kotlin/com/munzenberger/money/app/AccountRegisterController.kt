@@ -1,8 +1,8 @@
 package com.munzenberger.money.app
 
+import com.munzenberger.money.app.control.AccountEntryTableRow
 import com.munzenberger.money.app.control.DateTableCellFactory
 import com.munzenberger.money.app.control.MoneyTableCellFactory
-import com.munzenberger.money.app.control.AccountEntryTableRow
 import com.munzenberger.money.app.control.TableCellFactory
 import com.munzenberger.money.app.control.bindAsync
 import com.munzenberger.money.app.control.booleanToWaitCursor
@@ -13,8 +13,19 @@ import com.munzenberger.money.app.model.FXTransactionAccountEntry
 import com.munzenberger.money.app.model.FXTransferAccountEntry
 import com.munzenberger.money.app.model.moneyNegativePseudoClass
 import com.munzenberger.money.app.navigation.LayoutControllerNavigation
-import com.munzenberger.money.app.property.*
-import com.munzenberger.money.core.*
+import com.munzenberger.money.app.property.AsyncObject
+import com.munzenberger.money.app.property.NumberStringComparator
+import com.munzenberger.money.app.property.bindAsyncStatus
+import com.munzenberger.money.app.property.bindAsyncValue
+import com.munzenberger.money.app.property.withValue
+import com.munzenberger.money.core.Account
+import com.munzenberger.money.core.AccountIdentity
+import com.munzenberger.money.core.Money
+import com.munzenberger.money.core.Statement
+import com.munzenberger.money.core.Transaction
+import com.munzenberger.money.core.TransactionStatus
+import com.munzenberger.money.core.TransferEntryIdentity
+import com.munzenberger.money.core.isNegative
 import javafx.fxml.FXML
 import javafx.scene.control.Alert
 import javafx.scene.control.Button
@@ -34,31 +45,51 @@ import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
 
 class AccountRegisterController : AutoCloseable {
-
     companion object {
         private val LAYOUT: URL = AccountRegisterController::class.java.getResource("AccountRegisterLayout.fxml")!!
 
-        fun navigation(stage: Stage, database: ObservableMoneyDatabase, accountIdentity: AccountIdentity) = LayoutControllerNavigation(LAYOUT) {
-            controller: AccountRegisterController -> controller.start(stage, database, accountIdentity)
+        fun navigation(
+            stage: Stage,
+            database: ObservableMoneyDatabase,
+            accountIdentity: AccountIdentity,
+        ) = LayoutControllerNavigation(LAYOUT) {
+                controller: AccountRegisterController ->
+            controller.start(stage, database, accountIdentity)
         }
     }
 
     @FXML lateinit var accountNameProgress: ProgressIndicator
+
     @FXML lateinit var accountNameLabel: Label
+
     @FXML lateinit var editAccountButton: Button
+
     @FXML lateinit var addTransactionButton: Button
+
     @FXML lateinit var balanceAccountButton: Button
+
     @FXML lateinit var dateFilterChoiceBox: ChoiceBox<FXAccountEntryFilter>
+
     @FXML lateinit var statusFilterChoiceBox: ChoiceBox<FXAccountEntryFilter>
+
     @FXML lateinit var tableView: TableView<FXAccountEntry>
+
     @FXML lateinit var numberColumn: TableColumn<FXAccountEntry, String>
+
     @FXML lateinit var dateColumn: TableColumn<FXAccountEntry, LocalDate>
+
     @FXML lateinit var payeeColumn: TableColumn<FXAccountEntry, String>
+
     @FXML lateinit var categoryColumn: TableColumn<FXAccountEntry, String>
+
     @FXML lateinit var statusColumn: TableColumn<FXAccountEntry, TransactionStatus>
+
     @FXML lateinit var amountColumn: TableColumn<FXAccountEntry, Money>
+
     @FXML lateinit var balanceColumn: TableColumn<FXAccountEntry, Money>
+
     @FXML lateinit var endingBalanceLabel: Label
+
     @FXML lateinit var endingBalanceProgressIndicator: ProgressIndicator
 
     // TODO remove reference to stage in controller
@@ -68,30 +99,37 @@ class AccountRegisterController : AutoCloseable {
     private val viewModel = AccountRegisterViewModel()
 
     fun initialize() {
-
-        accountNameProgress.visibleProperty().bindAsyncStatus(viewModel.accountProperty,
-                AsyncObject.Status.PENDING,
-                AsyncObject.Status.EXECUTING)
+        accountNameProgress.visibleProperty().bindAsyncStatus(
+            viewModel.accountProperty,
+            AsyncObject.Status.PENDING,
+            AsyncObject.Status.EXECUTING,
+        )
 
         accountNameLabel.apply {
             visibleProperty().bindAsyncStatus(viewModel.accountProperty, AsyncObject.Status.COMPLETE)
             textProperty().bindAsyncValue(viewModel.accountProperty) { it.name }
         }
 
-        editAccountButton.disableProperty().bindAsyncStatus(viewModel.accountProperty,
-                AsyncObject.Status.PENDING,
-                AsyncObject.Status.EXECUTING,
-                AsyncObject.Status.ERROR)
+        editAccountButton.disableProperty().bindAsyncStatus(
+            viewModel.accountProperty,
+            AsyncObject.Status.PENDING,
+            AsyncObject.Status.EXECUTING,
+            AsyncObject.Status.ERROR,
+        )
 
-        addTransactionButton.disableProperty().bindAsyncStatus(viewModel.accountProperty,
-                AsyncObject.Status.PENDING,
-                AsyncObject.Status.EXECUTING,
-                AsyncObject.Status.ERROR)
+        addTransactionButton.disableProperty().bindAsyncStatus(
+            viewModel.accountProperty,
+            AsyncObject.Status.PENDING,
+            AsyncObject.Status.EXECUTING,
+            AsyncObject.Status.ERROR,
+        )
 
-        balanceAccountButton.disableProperty().bindAsyncStatus(viewModel.accountProperty,
-                AsyncObject.Status.PENDING,
-                AsyncObject.Status.EXECUTING,
-                AsyncObject.Status.ERROR)
+        balanceAccountButton.disableProperty().bindAsyncStatus(
+            viewModel.accountProperty,
+            AsyncObject.Status.PENDING,
+            AsyncObject.Status.EXECUTING,
+            AsyncObject.Status.ERROR,
+        )
 
         dateFilterChoiceBox.apply {
             items = viewModel.dateFiltersProperty
@@ -104,26 +142,27 @@ class AccountRegisterController : AutoCloseable {
         }
 
         tableView.apply {
-
-            rowFactory = Callback {
-                AccountEntryTableRow { action ->
-                    when (action) {
-                        is AccountEntryTableRow.Action.Add -> onAddTransaction()
-                        is AccountEntryTableRow.Action.Edit -> editEntry(action.entry)
-                        is AccountEntryTableRow.Action.Delete -> deleteEntry(action.entry)
-                        is AccountEntryTableRow.Action.UpdateStatus -> updateEntryStatus(action.entry, action.status)
+            rowFactory =
+                Callback {
+                    AccountEntryTableRow { action ->
+                        when (action) {
+                            is AccountEntryTableRow.Action.Add -> onAddTransaction()
+                            is AccountEntryTableRow.Action.Edit -> editEntry(action.entry)
+                            is AccountEntryTableRow.Action.Delete -> deleteEntry(action.entry)
+                            is AccountEntryTableRow.Action.UpdateStatus -> updateEntryStatus(action.entry, action.status)
+                        }
                     }
                 }
-            }
 
             selectionModel.selectionMode = SelectionMode.SINGLE
 
             bindAsync(
-                    listProperty = viewModel.transactionsProperty,
-                    filterProperty = viewModel.activeFiltersProperty,
-                    placeholder = Hyperlink("Add a transaction to get started.").apply {
+                listProperty = viewModel.transactionsProperty,
+                filterProperty = viewModel.activeFiltersProperty,
+                placeholder =
+                    Hyperlink("Add a transaction to get started.").apply {
                         setOnAction { onAddTransaction() }
-                    }
+                    },
             )
         }
 
@@ -146,13 +185,14 @@ class AccountRegisterController : AutoCloseable {
         }
 
         statusColumn.apply {
-            cellFactory = TableCellFactory {
-                when (it) {
-                    TransactionStatus.RECONCILED -> "R"
-                    TransactionStatus.CLEARED -> "C"
-                    else -> ""
+            cellFactory =
+                TableCellFactory {
+                    when (it) {
+                        TransactionStatus.RECONCILED -> "R"
+                        TransactionStatus.CLEARED -> "C"
+                        else -> ""
+                    }
                 }
-            }
             cellValueFactory = Callback { it.value.statusProperty }
         }
 
@@ -167,9 +207,11 @@ class AccountRegisterController : AutoCloseable {
             cellValueFactory = Callback { it.value.balanceProperty }
         }
 
-        endingBalanceProgressIndicator.visibleProperty().bindAsyncStatus(viewModel.endingBalanceProperty,
-                AsyncObject.Status.PENDING,
-                AsyncObject.Status.EXECUTING)
+        endingBalanceProgressIndicator.visibleProperty().bindAsyncStatus(
+            viewModel.endingBalanceProperty,
+            AsyncObject.Status.PENDING,
+            AsyncObject.Status.EXECUTING,
+        )
 
         endingBalanceLabel.apply {
             visibleProperty().bindAsyncStatus(viewModel.endingBalanceProperty, AsyncObject.Status.COMPLETE)
@@ -183,13 +225,17 @@ class AccountRegisterController : AutoCloseable {
         }
     }
 
-    fun start(stage: Stage, database: ObservableMoneyDatabase, accountIdentity: AccountIdentity) {
+    fun start(
+        stage: Stage,
+        database: ObservableMoneyDatabase,
+        accountIdentity: AccountIdentity,
+    ) {
         this.stage = stage
         this.database = database
 
         // TODO: save as preferences by account and restore here
-        //dateFilterChoiceBox.selectionModel.select(0)
-        //statusFilterChoiceBox.selectionModel.select(0)
+        // dateFilterChoiceBox.selectionModel.select(0)
+        // statusFilterChoiceBox.selectionModel.select(0)
 
         viewModel.isOperationInProgressProperty.addListener { _, _, newValue ->
             stage.scene.cursor = booleanToWaitCursor(newValue)
@@ -237,18 +283,19 @@ class AccountRegisterController : AutoCloseable {
     }
 
     private fun deleteEntry(entry: FXAccountEntry) {
+        val contentText =
+            when (entry) {
+                is FXTransactionAccountEntry -> "Are you sure you want to delete this transaction?"
+                is FXTransferAccountEntry -> "Are you sure you want to delete this transfer?"
+            }
 
-        val contentText = when (entry) {
-            is FXTransactionAccountEntry -> "Are you sure you want to delete this transaction?"
-            is FXTransferAccountEntry -> "Are you sure you want to delete this transfer?"
-        }
-
-        val result = Alert(Alert.AlertType.CONFIRMATION).let {
-            it.title = "Confirm Delete"
-            it.headerText = null
-            it.contentText = contentText
-            it.showAndWait()
-        }
+        val result =
+            Alert(Alert.AlertType.CONFIRMATION).let {
+                it.title = "Confirm Delete"
+                it.headerText = null
+                it.contentText = contentText
+                it.showAndWait()
+            }
 
         if (result.isPresent && result.get() == ButtonType.OK) {
             viewModel.deleteEntry(entry) { error ->
@@ -257,13 +304,19 @@ class AccountRegisterController : AutoCloseable {
         }
     }
 
-    private fun updateEntryStatus(entry: FXAccountEntry, status: TransactionStatus) {
+    private fun updateEntryStatus(
+        entry: FXAccountEntry,
+        status: TransactionStatus,
+    ) {
         viewModel.updateEntryStatus(entry, status) { error ->
             error?.let { ErrorAlert.showAndWait(it) }
         }
     }
 
-    private fun startEditTransaction(title: String, transaction: Transaction) {
+    private fun startEditTransaction(
+        title: String,
+        transaction: Transaction,
+    ) {
         DialogBuilder.build(EditTransactionController.LAYOUT) { stage, controller: EditTransactionController ->
             stage.title = title
             stage.show()
@@ -295,11 +348,14 @@ class AccountRegisterController : AutoCloseable {
         }
     }
 
-    private fun onStatementReconciled(account: Account, statement: Statement) {
-
-        val formattedDate = DateTimeFormatter
-            .ofLocalizedDate(FormatStyle.SHORT)
-            .format(statement.closingDate)
+    private fun onStatementReconciled(
+        account: Account,
+        statement: Statement,
+    ) {
+        val formattedDate =
+            DateTimeFormatter
+                .ofLocalizedDate(FormatStyle.SHORT)
+                .format(statement.closingDate)
 
         Alert(Alert.AlertType.INFORMATION).apply {
             title = "Balance ${account.name}"

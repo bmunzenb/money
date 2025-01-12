@@ -9,28 +9,28 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 
 abstract class MoneyEntityTest<I : Identity, P : MoneyEntity<I>> : MoneyDatabaseTestSupport() {
-
     abstract fun createPersistable(): P
 
     abstract fun getPersistable(identity: I): P?
 
     abstract fun getAllPersistables(): List<P>
 
-    abstract fun updatePersistable(persistable : P)
+    abstract fun updatePersistable(persistable: P)
 
-    abstract fun assertPersistablePropertiesAreEquals(p1: P, p2: P)
+    abstract fun assertPersistablePropertiesAreEquals(
+        p1: P,
+        p2: P,
+    )
 
     abstract fun createInvalidIdentity(): I
 
     @Test
     fun `retrieve invalid identity returns null`() {
-
         assertNull(getPersistable(createInvalidIdentity()))
     }
 
     @Test
     fun `can delete an unsaved persistable`() {
-
         createPersistable().apply {
             delete(database)
         }
@@ -38,7 +38,6 @@ abstract class MoneyEntityTest<I : Identity, P : MoneyEntity<I>> : MoneyDatabase
 
     @Test
     fun `can store and retrieve a persistable by identity`() {
-
         val p = createPersistable()
         assertNull(p.identity)
 
@@ -54,7 +53,6 @@ abstract class MoneyEntityTest<I : Identity, P : MoneyEntity<I>> : MoneyDatabase
 
     @Test
     open fun `can store and retrieve a list of persistables`() {
-
         val list = listOf(createPersistable(), createPersistable(), createPersistable())
 
         list.forEach {
@@ -72,7 +70,6 @@ abstract class MoneyEntityTest<I : Identity, P : MoneyEntity<I>> : MoneyDatabase
 
     @Test
     fun `can store and delete a persistable`() {
-
         val p = createPersistable().apply { save(database) }
         val identity = p.identity!!
 
@@ -84,7 +81,6 @@ abstract class MoneyEntityTest<I : Identity, P : MoneyEntity<I>> : MoneyDatabase
 
     @Test
     fun `can store and update a persistable`() {
-
         val p = createPersistable().apply { save(database) }
 
         updatePersistable(p)
@@ -100,7 +96,6 @@ abstract class MoneyEntityTest<I : Identity, P : MoneyEntity<I>> : MoneyDatabase
 
     @Test
     fun `persistable equals and hashCode`() {
-
         val p1 = createPersistable()
         p1.save(database)
 
@@ -121,7 +116,6 @@ abstract class MoneyEntityTest<I : Identity, P : MoneyEntity<I>> : MoneyDatabase
 
     @Test
     fun `rolling back a transaction on insert clears the identity`() {
-
         val tx = database.createTransaction()
 
         val p = createPersistable().apply { save(tx) }
@@ -133,7 +127,6 @@ abstract class MoneyEntityTest<I : Identity, P : MoneyEntity<I>> : MoneyDatabase
 
     @Test
     fun `rolling back a transaction on delete restores the identity`() {
-
         val p = createPersistable().apply { save(database) }
 
         val tx = database.createTransaction()

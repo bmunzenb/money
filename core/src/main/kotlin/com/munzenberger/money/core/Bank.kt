@@ -9,7 +9,6 @@ import java.sql.ResultSet
 data class BankIdentity(override val value: Long) : Identity
 
 class Bank internal constructor(model: BankModel) : AbstractMoneyEntity<BankIdentity, BankModel>(model, BankTable) {
-
     constructor() : this(BankModel())
 
     override val identity: BankIdentity?
@@ -17,25 +16,26 @@ class Bank internal constructor(model: BankModel) : AbstractMoneyEntity<BankIden
 
     var name: String?
         get() = model.name
-        set(value) { model.name = value }
+        set(value) {
+            model.name = value
+        }
 
     companion object {
+        fun getAll(executor: QueryExecutor) = getAll(executor, BankTable, BankResultSetMapper())
 
-        fun getAll(executor: QueryExecutor) =
-                getAll(executor, BankTable, BankResultSetMapper())
-
-        fun get(identity: BankIdentity, executor: QueryExecutor) =
-                get(identity, executor, BankTable, BankResultSetMapper())
+        fun get(
+            identity: BankIdentity,
+            executor: QueryExecutor,
+        ) = get(identity, executor, BankTable, BankResultSetMapper())
     }
 }
 
 class BankResultSetMapper : ResultSetMapper<Bank> {
-
     override fun apply(resultSet: ResultSet): Bank {
-
-        val model = BankModel().apply {
-            BankTable.getValues(resultSet, this)
-        }
+        val model =
+            BankModel().apply {
+                BankTable.getValues(resultSet, this)
+            }
 
         return Bank(model)
     }

@@ -11,22 +11,22 @@ import javafx.util.Callback
 import java.net.URL
 
 class CategoryListController : AutoCloseable {
-
     companion object {
         val LAYOUT: URL = CategoryListController::class.java.getResource("CategoryListLayout.fxml")
     }
 
     @FXML lateinit var tableView: TableView<FXCategory>
+
     @FXML lateinit var nameColumn: TableColumn<FXCategory, String>
+
     @FXML lateinit var typeColumn: TableColumn<FXCategory, String>
 
     private val viewModel = CategoryListViewModel()
 
     fun initialize() {
-
         tableView.bindAsync(
-                listProperty = viewModel.categoriesProperty,
-                placeholder = Text("No categories.")
+            listProperty = viewModel.categoriesProperty,
+            placeholder = Text("No categories."),
         )
 
         nameColumn.apply {
@@ -34,7 +34,7 @@ class CategoryListController : AutoCloseable {
         }
 
         typeColumn.apply {
-            cellValueFactory = Callback { it.value.typeProperty}
+            cellValueFactory = Callback { it.value.typeProperty }
         }
     }
 

@@ -9,20 +9,19 @@ import com.munzenberger.money.sql.ResultSetConsumer
 import java.sql.ResultSet
 
 private interface AccountBalanceCollector : ResultSetConsumer {
-
     val query: Query
 
     val result: Long
 }
 
 private class TransactionTransferEntryBalanceCollector(accountId: AccountIdentity) : AccountBalanceCollector {
-
-    private val sql = """
-        SELECT SUM(${TransferEntryTable.amountColumn}) AS TOTAL
+    private val sql =
+        """
+        SELECT SUM(${TransferEntryTable.TRANSFER_ENTRY_AMOUNT}) AS TOTAL
         FROM ${TransactionTable.tableName}
-        INNER JOIN ${TransferEntryTable.tableName} ON ${TransferEntryTable.tableName}.${TransferEntryTable.transactionColumn} = ${TransactionTable.tableName}.${TransactionTable.identityColumn}
-        WHERE ${TransactionTable.accountColumn} = ?
-    """.trimIndent()
+        INNER JOIN ${TransferEntryTable.tableName} ON ${TransferEntryTable.tableName}.${TransferEntryTable.TRANSFER_ENTRY_TRANSACTION_ID} = ${TransactionTable.tableName}.${TransactionTable.identityColumn}
+        WHERE ${TransactionTable.TRANSACTION_ACCOUNT_ID} = ?
+        """.trimIndent()
 
     override val query = Query(sql, listOf(accountId.value))
 
@@ -39,12 +38,12 @@ private class TransactionTransferEntryBalanceCollector(accountId: AccountIdentit
 }
 
 private class TransferEntryBalanceCollector(accountId: AccountIdentity) : AccountBalanceCollector {
-
-    private val sql = """
-        SELECT -SUM(${TransferEntryTable.amountColumn}) AS TOTAL
+    private val sql =
+        """
+        SELECT -SUM(${TransferEntryTable.TRANSFER_ENTRY_AMOUNT}) AS TOTAL
         FROM ${TransferEntryTable.tableName}
-        WHERE ${TransferEntryTable.accountColumn} = ?
-    """.trimIndent()
+        WHERE ${TransferEntryTable.TRANSFER_ENTRY_ACCOUNT_ID} = ?
+        """.trimIndent()
 
     override val query = Query(sql, listOf(accountId.value))
 
@@ -61,13 +60,13 @@ private class TransferEntryBalanceCollector(accountId: AccountIdentity) : Accoun
 }
 
 private class TransactionCategoryEntryBalanceCollector(accountId: AccountIdentity) : AccountBalanceCollector {
-
-    private val sql = """
-        SELECT SUM(${CategoryEntryTable.amountColumn}) AS TOTAL
+    private val sql =
+        """
+        SELECT SUM(${CategoryEntryTable.CATEGORY_ENTRY_AMOUNT}) AS TOTAL
         FROM ${CategoryEntryTable.tableName}
-        INNER JOIN ${TransactionTable.tableName} ON ${TransactionTable.tableName}.${TransactionTable.identityColumn} = ${CategoryEntryTable.tableName}.${CategoryEntryTable.transactionColumn}
-        WHERE ${TransactionTable.tableName}.${TransactionTable.accountColumn} = ?
-    """.trimIndent()
+        INNER JOIN ${TransactionTable.tableName} ON ${TransactionTable.tableName}.${TransactionTable.identityColumn} = ${CategoryEntryTable.tableName}.${CategoryEntryTable.CATEGORY_ENTRY_TRANSACTION_ID}
+        WHERE ${TransactionTable.tableName}.${TransactionTable.TRANSACTION_ACCOUNT_ID} = ?
+        """.trimIndent()
 
     override val query = Query(sql, listOf(accountId.value))
 
@@ -84,21 +83,22 @@ private class TransactionCategoryEntryBalanceCollector(accountId: AccountIdentit
 }
 
 fun Account.getBalance(executor: QueryExecutor): Money {
-
     val accountId = identity ?: error("Can't get balance for an unsaved account.")
 
     val initialBalance: Long = initialBalance?.value ?: 0
 
-    val collectors = listOf(
+    val collectors =
+        listOf(
             TransactionTransferEntryBalanceCollector(accountId),
             TransferEntryBalanceCollector(accountId),
-            TransactionCategoryEntryBalanceCollector(accountId)
-    )
+            TransactionCategoryEntryBalanceCollector(accountId),
+        )
 
-    val totals = collectors.map {
-        executor.executeQuery(it.query, it)
-        it.result
-    }
+    val totals =
+        collectors.map {
+            executor.executeQuery(it.query, it)
+            it.result
+        }
 
     val balance = initialBalance + totals.sum()
 

@@ -5,8 +5,10 @@ import javafx.scene.control.ListView
 import javafx.util.Callback
 
 class TextListCell<T>(private val toString: (T) -> String? = { it.toString() }) : ListCell<T>() {
-
-    override fun updateItem(item: T, empty: Boolean) {
+    override fun updateItem(
+        item: T,
+        empty: Boolean,
+    ) {
         super.updateItem(item, empty)
 
         when {
@@ -27,6 +29,5 @@ class TextListCell<T>(private val toString: (T) -> String? = { it.toString() }) 
 }
 
 class TextListCellFactory<T>(private val toString: (T) -> String? = { it.toString() }) : Callback<ListView<T>, ListCell<T>> {
-
     override fun call(param: ListView<T>?) = TextListCell(toString)
 }

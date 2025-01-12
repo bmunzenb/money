@@ -5,9 +5,7 @@ import com.munzenberger.money.version.Version
 import java.sql.ResultSet
 
 class VersionResultSetMapper(private val hashColumnName: String) : ResultSetMapper<Version> {
-
     override fun apply(resultSet: ResultSet): Version {
-
         val hash = resultSet.getLong(hashColumnName)
 
         return object : Version {

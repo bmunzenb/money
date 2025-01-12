@@ -5,7 +5,6 @@ import java.sql.DriverManager
 import java.util.logging.Logger
 
 interface MoneyDatabase : QueryExecutor {
-
     val name: String
 
     val dialect: DatabaseDialect
@@ -13,7 +12,6 @@ interface MoneyDatabase : QueryExecutor {
     fun close()
 
     companion object {
-
         private val logger = Logger.getLogger(MoneyDatabase::class.java.name)
 
         fun connect(
@@ -21,7 +19,7 @@ interface MoneyDatabase : QueryExecutor {
             dialect: DatabaseDialect,
             url: String,
             user: String? = null,
-            password: String? = null
+            password: String? = null,
         ): MoneyDatabase {
             val connection = DriverManager.getConnection(url, user, password)
             return ConnectionMoneyDatabase(name, dialect, connection).apply {

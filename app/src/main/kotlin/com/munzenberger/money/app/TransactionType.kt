@@ -5,9 +5,9 @@ import com.munzenberger.money.core.Money
 import com.munzenberger.money.core.model.AccountTypeVariant
 
 sealed class TransactionType {
-
     enum class Variant {
-        CREDIT, DEBIT
+        CREDIT,
+        DEBIT,
     }
 
     abstract val variant: Variant
@@ -15,23 +15,25 @@ sealed class TransactionType {
 
     class Credit(accountType: AccountType?) : TransactionType() {
         override val variant = Variant.CREDIT
-        override val name = when (accountType?.variant) {
-            AccountTypeVariant.SAVINGS, AccountTypeVariant.CHECKING -> "Deposit"
-            AccountTypeVariant.ASSET, AccountTypeVariant.CASH -> "Increase"
-            AccountTypeVariant.LOAN -> "Payment"
-            else -> "Credit"
-        }
+        override val name =
+            when (accountType?.variant) {
+                AccountTypeVariant.SAVINGS, AccountTypeVariant.CHECKING -> "Deposit"
+                AccountTypeVariant.ASSET, AccountTypeVariant.CASH -> "Increase"
+                AccountTypeVariant.LOAN -> "Payment"
+                else -> "Credit"
+            }
     }
 
     class Debit(accountType: AccountType?) : TransactionType() {
         override val variant = Variant.DEBIT
-        override val name = when (accountType?.variant) {
-            AccountTypeVariant.SAVINGS, AccountTypeVariant.CHECKING -> "Payment"
-            AccountTypeVariant.ASSET, AccountTypeVariant.CASH -> "Decrease"
-            AccountTypeVariant.CREDIT -> "Charge"
-            AccountTypeVariant.LOAN -> "Increase"
-            else -> "Debit"
-        }
+        override val name =
+            when (accountType?.variant) {
+                AccountTypeVariant.SAVINGS, AccountTypeVariant.CHECKING -> "Payment"
+                AccountTypeVariant.ASSET, AccountTypeVariant.CASH -> "Decrease"
+                AccountTypeVariant.CREDIT -> "Charge"
+                AccountTypeVariant.LOAN -> "Increase"
+                else -> "Debit"
+            }
     }
 
     companion object {

@@ -7,24 +7,27 @@ import org.junit.Assert.fail
 import org.junit.Before
 
 private data class DatabaseConfiguration(
-        val url: String,
-        val dialect: DatabaseDialect)
+    val url: String,
+    val dialect: DatabaseDialect,
+)
 
-private val H2DatabaseConfiguration = DatabaseConfiguration(
+private val H2DatabaseConfiguration =
+    DatabaseConfiguration(
         url = "jdbc:h2:mem:",
-        dialect = H2DatabaseDialect)
+        dialect = H2DatabaseDialect,
+    )
 
-private val SQLiteDatabaseConfiguration = DatabaseConfiguration(
+private val SQLiteDatabaseConfiguration =
+    DatabaseConfiguration(
         url = "jdbc:sqlite::memory:",
-        dialect = SQLiteDatabaseDialect)
+        dialect = SQLiteDatabaseDialect,
+    )
 
 open class MoneyDatabaseTestSupport {
-
     protected lateinit var database: MoneyDatabase
 
     @Before
     fun createDatabase() {
-
         val configuration = SQLiteDatabaseConfiguration
 
         database = MoneyDatabase.connect(configuration.url, configuration.dialect, configuration.url)

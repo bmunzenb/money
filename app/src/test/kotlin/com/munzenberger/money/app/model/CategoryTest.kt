@@ -8,49 +8,53 @@ import org.junit.Assert.assertNull
 import org.junit.Test
 
 class CategoryTest : MoneyDatabaseTestSupport() {
-
     @Test
     fun getAllWithParent() {
+        val p1 =
+            Category().apply {
+                name = "p1"
+                type = CategoryType.INCOME
+                save(database)
+            }
 
-        val p1 = Category().apply {
-            name = "p1"
-            type = CategoryType.INCOME
-            save(database)
-        }
+        val cat1 =
+            Category().apply {
+                name = "cat1"
+                type = CategoryType.INCOME
+                setParent(p1)
+                save(database)
+            }
 
-        val cat1 = Category().apply {
-            name = "cat1"
-            type = CategoryType.INCOME
-            setParent(p1)
-            save(database)
-        }
+        val cat2 =
+            Category().apply {
+                name = "cat2"
+                type = CategoryType.INCOME
+                setParent(p1)
+                save(database)
+            }
 
-        val cat2 = Category().apply {
-            name = "cat2"
-            type = CategoryType.INCOME
-            setParent(p1)
-            save(database)
-        }
+        val p2 =
+            Category().apply {
+                name = "p2"
+                type = CategoryType.EXPENSE
+                save(database)
+            }
 
-        val p2 = Category().apply {
-            name = "p2"
-            type = CategoryType.EXPENSE
-            save(database)
-        }
+        val cat3 =
+            Category().apply {
+                name = "cat3"
+                type = CategoryType.EXPENSE
+                setParent(p2)
+                save(database)
+            }
 
-        val cat3 = Category().apply {
-            name = "cat3"
-            type = CategoryType.EXPENSE
-            setParent(p2)
-            save(database)
-        }
-
-        val cat4 = Category().apply {
-            name = "cat4"
-            type = CategoryType.EXPENSE
-            setParent(p2)
-            save(database)
-        }
+        val cat4 =
+            Category().apply {
+                name = "cat4"
+                type = CategoryType.EXPENSE
+                setParent(p2)
+                save(database)
+            }
 
         val categories = Category.getAllWithParent(database)
 

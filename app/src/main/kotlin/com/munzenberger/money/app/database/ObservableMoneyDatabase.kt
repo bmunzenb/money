@@ -10,7 +10,6 @@ import com.munzenberger.money.sql.TransactionQueryExecutor
 import java.util.concurrent.Executor
 
 class ObservableMoneyDatabase(private val database: MoneyDatabase) : MoneyDatabase by database, Observable {
-
     private val observable = ObservableImpl()
 
     override fun executeUpdate(query: Query): Int {
@@ -21,12 +20,14 @@ class ObservableMoneyDatabase(private val database: MoneyDatabase) : MoneyDataba
 
     override fun execute(query: Query): Boolean {
         return database.execute(query).also { isResults ->
-            if (!isResults) { observable.onChanged() }
+            if (!isResults) {
+                observable.onChanged()
+            }
         }
     }
 
     override fun createTransaction(): TransactionQueryExecutor =
-            ObservableTransactionQueryExecutor(database.createTransaction(), observable)
+        ObservableTransactionQueryExecutor(database.createTransaction(), observable)
 
     override fun close() {
         database.close()
@@ -36,16 +37,18 @@ class ObservableMoneyDatabase(private val database: MoneyDatabase) : MoneyDataba
         return subscribe(Executors.PLATFORM, block)
     }
 
-    override fun subscribe(executor: Executor, block: Runnable): Subscription {
+    override fun subscribe(
+        executor: Executor,
+        block: Runnable,
+    ): Subscription {
         return observable.subscribe(executor, block)
     }
 }
 
 private class ObservableTransactionQueryExecutor(
-        private val executor: TransactionQueryExecutor,
-        private val observable: ObservableImpl? = null
+    private val executor: TransactionQueryExecutor,
+    private val observable: ObservableImpl? = null,
 ) : TransactionQueryExecutor by executor {
-
     override fun createTransaction(): TransactionQueryExecutor {
         return ObservableTransactionQueryExecutor(executor.createTransaction())
     }

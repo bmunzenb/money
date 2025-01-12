@@ -17,16 +17,16 @@ import javafx.scene.paint.Color
 import java.util.function.Predicate
 
 inline fun <reified T> TableView<T>.bindAsync(
-        listProperty: ReadOnlyAsyncObjectProperty<List<T>>,
-        filterProperty: ReadOnlyObjectProperty<Predicate<T>> = SimpleObjectProperty(),
-        placeholder: Node
+    listProperty: ReadOnlyAsyncObjectProperty<List<T>>,
+    filterProperty: ReadOnlyObjectProperty<Predicate<T>> = SimpleObjectProperty(),
+    placeholder: Node,
 ) {
-
     val observableList = listProperty.toObservableList()
 
-    val filteredList = FilteredList(observableList).apply {
-        predicateProperty().bind(filterProperty)
-    }
+    val filteredList =
+        FilteredList(observableList).apply {
+            predicateProperty().bind(filterProperty)
+        }
 
     val sortedList = SortedList(filteredList)
 
@@ -37,18 +37,19 @@ inline fun <reified T> TableView<T>.bindAsync(
 
     placeholderProperty().bindAsync(listProperty) { async ->
         when (async) {
-
-            is AsyncObject.Pending, is AsyncObject.Executing -> ProgressIndicator().apply {
-                setPrefSize(60.0, 60.0)
-                setMaxSize(60.0, 60.0)
-            }
+            is AsyncObject.Pending, is AsyncObject.Executing ->
+                ProgressIndicator().apply {
+                    setPrefSize(60.0, 60.0)
+                    setMaxSize(60.0, 60.0)
+                }
 
             is AsyncObject.Complete -> placeholder
 
-            is AsyncObject.Error -> Hyperlink(async.error.message).apply {
-                textFill = Color.RED
-                setOnAction { ErrorAlert(async.error).showAndWait() }
-            }
+            is AsyncObject.Error ->
+                Hyperlink(async.error.message).apply {
+                    textFill = Color.RED
+                    setOnAction { ErrorAlert(async.error).showAndWait() }
+                }
         }
     }
 }

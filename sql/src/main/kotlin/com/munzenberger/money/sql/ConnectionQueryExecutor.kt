@@ -2,13 +2,10 @@ package com.munzenberger.money.sql
 
 import java.sql.Connection
 import java.sql.PreparedStatement
-import java.sql.ResultSet
-import java.util.function.Consumer
 import java.util.logging.Level
 import java.util.logging.Logger
 
 class ConnectionQueryExecutor(private val connection: Connection) : QueryExecutor {
-
     private val logger = Logger.getLogger(ConnectionQueryExecutor::class.java.name)
 
     override fun execute(query: Query): Boolean {
@@ -20,7 +17,10 @@ class ConnectionQueryExecutor(private val connection: Connection) : QueryExecuto
         }
     }
 
-    override fun executeQuery(query: Query, consumer: ResultSetConsumer) {
+    override fun executeQuery(
+        query: Query,
+        consumer: ResultSetConsumer,
+    ) {
         logger.log(Level.FINE, query.toString())
 
         connection.prepareStatement(query.sql).use {
@@ -39,8 +39,7 @@ class ConnectionQueryExecutor(private val connection: Connection) : QueryExecuto
         }
     }
 
-    override fun createTransaction(): TransactionQueryExecutor =
-        ConnectionTransactionQueryExecutor(connection, this)
+    override fun createTransaction(): TransactionQueryExecutor = ConnectionTransactionQueryExecutor(connection, this)
 
     private fun PreparedStatement.setParameters(parameters: List<Any?>) {
         parameters.withIndex().forEach {
@@ -51,9 +50,8 @@ class ConnectionQueryExecutor(private val connection: Connection) : QueryExecuto
 
 private class ConnectionTransactionQueryExecutor(
     private val connection: Connection,
-    private val executor: QueryExecutor
+    private val executor: QueryExecutor,
 ) : TransactionQueryExecutor {
-
     private val logger = Logger.getLogger(ConnectionTransactionQueryExecutor::class.java.name)
     private val level = Level.FINE
 
@@ -71,7 +69,10 @@ private class ConnectionTransactionQueryExecutor(
         return executor.execute(query)
     }
 
-    override fun executeQuery(query: Query, consumer: ResultSetConsumer) {
+    override fun executeQuery(
+        query: Query,
+        consumer: ResultSetConsumer,
+    ) {
         assertNotClosed()
         executor.executeQuery(query, consumer)
     }
@@ -122,9 +123,8 @@ private class ConnectionTransactionQueryExecutor(
 
 private class NestedTransactionQueryExecutor(
     private val nest: Int,
-    private val tx: TransactionQueryExecutor
+    private val tx: TransactionQueryExecutor,
 ) : TransactionQueryExecutor, QueryExecutor by tx {
-
     private val logger = Logger.getLogger(NestedTransactionQueryExecutor::class.java.name)
     private val level = Level.FINE
 
@@ -132,8 +132,7 @@ private class NestedTransactionQueryExecutor(
         logger.log(level, "Start nested transaction, level $nest")
     }
 
-    override fun createTransaction() =
-        NestedTransactionQueryExecutor(nest + 1, tx)
+    override fun createTransaction() = NestedTransactionQueryExecutor(nest + 1, tx)
 
     override fun commit() {
         logger.log(level, "Delayed commit for nested transaction, level $nest")

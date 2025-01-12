@@ -1,54 +1,68 @@
 package com.munzenberger.money.sql
 
 data class Condition(val clause: String, val parameters: List<Any?> = emptyList()) {
-
     companion object {
+        fun eq(
+            column: String,
+            value: Any?,
+        ) = Condition("$column = ?", listOf(value))
 
-        fun eq(column: String, value: Any?) =
-                Condition("$column = ?", listOf(value))
+        fun greaterThan(
+            column: String,
+            value: Any,
+        ) = Condition("$column > ?", listOf(value))
 
-        fun greaterThan(column: String, value: Any) =
-                Condition("$column > ?", listOf(value))
+        fun greaterThanOrEqualTo(
+            column: String,
+            value: Any,
+        ) = Condition("$column >= ?", listOf(value))
 
-        fun greaterThanOrEqualTo(column: String, value: Any) =
-                Condition("$column >= ?", listOf(value))
+        fun lessThan(
+            column: String,
+            value: Any,
+        ) = Condition("$column < ?", listOf(value))
 
-        fun lessThan(column: String, value: Any) =
-                Condition("$column < ?", listOf(value))
+        fun lessThanOrEqualTo(
+            column: String,
+            value: Any,
+        ) = Condition("$column <= ?", listOf(value))
 
-        fun lessThanOrEqualTo(column: String, value: Any) =
-                Condition("$column <= ?", listOf(value))
+        fun isNull(column: String) = Condition("$column IS NULL")
 
-        fun isNull(column: String) =
-                Condition("$column IS NULL")
+        fun isNotNull(column: String) = Condition("$column IS NOT NULL")
 
-        fun isNotNull(column: String) =
-                Condition("$column IS NOT NULL")
+        fun inGroup(
+            column: String,
+            values: List<Any>,
+        ) = Condition("$column IN (${values.map { '?' }.joinToString(", ")})", values)
 
-        fun inGroup(column: String, values: List<Any>) =
-                Condition("$column IN (${values.map { '?' }.joinToString(", ")})", values)
+        fun inGroup(
+            column: String,
+            vararg values: Any,
+        ) = inGroup(column, values.toList())
 
-        fun inGroup(column: String, vararg values: Any) =
-                inGroup(column, values.toList())
+        fun notInGroup(
+            column: String,
+            values: List<Any>,
+        ) = Condition("$column NOT IN (${values.map { '?' }.joinToString(", ")})", values)
 
-        fun notInGroup(column: String, values: List<Any>) =
-                Condition("$column NOT IN (${values.map { '?' }.joinToString(", ")})", values)
-
-        fun notInGroup(column: String, vararg values: Any) =
-                notInGroup(column, values.toList())
+        fun notInGroup(
+            column: String,
+            vararg values: Any,
+        ) = notInGroup(column, values.toList())
     }
 
     infix fun or(condition: Condition?) =
-            when (condition) {
-                null -> this
-                else -> Condition("($clause) OR (${condition.clause})", parameters.plus(condition.parameters))
-            }
+        when (condition) {
+            null -> this
+            else -> Condition("($clause) OR (${condition.clause})", parameters.plus(condition.parameters))
+        }
 
     infix fun and(condition: Condition?) =
-            when (condition) {
-                null -> this
-                else -> Condition("($clause) AND (${condition.clause})", parameters.plus(condition.parameters))
-            }
+        when (condition) {
+            null -> this
+            else -> Condition("($clause) AND (${condition.clause})", parameters.plus(condition.parameters))
+        }
 }
 
 fun String.eq(value: Int?) = Condition.eq(this, value)

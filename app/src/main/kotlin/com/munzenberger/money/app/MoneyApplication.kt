@@ -15,7 +15,6 @@ fun main(args: Array<String>) {
 }
 
 class MoneyApplication : Application() {
-
     companion object {
         val CSS: String = MoneyApplication::class.java.getResource("money.css")!!.toExternalForm()
     }
@@ -25,16 +24,15 @@ class MoneyApplication : Application() {
     private lateinit var controller: ApplicationController
 
     override fun start(primaryStage: Stage) {
-
         FXMLLoader(ApplicationController.LAYOUT).load { root: Parent, controller: ApplicationController ->
 
             this.controller = controller
 
             primaryStage.apply {
-
-                scene = Scene(root).apply {
-                    stylesheets.add(CSS)
-                }
+                scene =
+                    Scene(root).apply {
+                        stylesheets.add(CSS)
+                    }
 
                 width = 800.0
                 height = 600.0

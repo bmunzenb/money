@@ -3,7 +3,6 @@ package com.munzenberger.money.core
 import org.junit.Assert.assertEquals
 
 class PayeeTest : MoneyEntityTest<PayeeIdentity, Payee>() {
-
     override fun createPersistable() = Payee().randomize()
 
     override fun getPersistable(identity: PayeeIdentity) = Payee.get(identity, database)
@@ -14,7 +13,10 @@ class PayeeTest : MoneyEntityTest<PayeeIdentity, Payee>() {
         persistable.randomize()
     }
 
-    override fun assertPersistablePropertiesAreEquals(p1: Payee, p2: Payee) {
+    override fun assertPersistablePropertiesAreEquals(
+        p1: Payee,
+        p2: Payee,
+    ) {
         assertEquals(p1.name, p2.name)
     }
 

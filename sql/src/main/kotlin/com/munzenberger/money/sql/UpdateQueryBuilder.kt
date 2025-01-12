@@ -2,7 +2,10 @@ package com.munzenberger.money.sql
 
 import java.lang.StringBuilder
 
-fun updateQuery(table: String, block: UpdateQueryBuilder.() -> Unit): Query {
+fun updateQuery(
+    table: String,
+    block: UpdateQueryBuilder.() -> Unit,
+): Query {
     val updateQueryBuilder = UpdateQueryBuilder(table)
     updateQueryBuilder.block()
     return updateQueryBuilder.build()
@@ -10,24 +13,28 @@ fun updateQuery(table: String, block: UpdateQueryBuilder.() -> Unit): Query {
 
 @UpdateQueryMarker
 class UpdateQueryBuilder(table: String) : SettableQueryBuilder<UpdateQueryBuilder>(table) {
-
     private var where: Condition? = null
 
-    fun where(condition: Condition) = this.apply {
-        this.where = condition
-    }
+    fun where(condition: Condition) =
+        this.apply {
+            this.where = condition
+        }
 
     override fun instance() = this
 
-    override fun build(table: String, parameters: Map<String, Any?>): Query {
-
+    override fun build(
+        table: String,
+        parameters: Map<String, Any?>,
+    ): Query {
         val sb = StringBuilder("UPDATE $table SET ")
         val params = mutableListOf<Any?>()
 
-        sb.append(parameters.entries.joinToString(", ") {
-            params.add(it.value)
-            "${it.key} = ?"
-        })
+        sb.append(
+            parameters.entries.joinToString(", ") {
+                params.add(it.value)
+                "${it.key} = ?"
+            },
+        )
 
         where?.run {
             sb.append(" WHERE $clause")

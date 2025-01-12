@@ -16,15 +16,18 @@ import java.net.URL
 import java.util.function.Consumer
 
 class BalanceStatementController {
-
     companion object {
         val LAYOUT: URL = BalanceStatementController::class.java.getResource("BalanceStatementLayout.fxml")
     }
 
     @FXML lateinit var container: Node
+
     @FXML lateinit var statementClosingDatePicker: DatePicker
+
     @FXML lateinit var startingBalanceTextField: TextField
+
     @FXML lateinit var endingBalanceTextField: TextField
+
     @FXML lateinit var continueButton: Button
 
     // TODO remove reference to stage in controller
@@ -36,23 +39,24 @@ class BalanceStatementController {
     private val viewModel = BalanceStatementViewModel()
 
     fun initialize() {
-
         statementClosingDatePicker.apply {
             valueProperty().bindBidirectional(viewModel.statementDateProperty)
         }
 
         startingBalanceTextField.apply {
             val moneyConverter = MoneyStringConverter()
-            textFormatter = TextFormatter(moneyConverter).apply {
-                valueProperty().bindBidirectional(viewModel.startingBalanceProperty)
-            }
+            textFormatter =
+                TextFormatter(moneyConverter).apply {
+                    valueProperty().bindBidirectional(viewModel.startingBalanceProperty)
+                }
         }
 
         endingBalanceTextField.apply {
             val moneyConverter = MoneyStringConverter()
-            textFormatter = TextFormatter(moneyConverter).apply {
-                valueProperty().bindBidirectional(viewModel.endingBalanceProperty)
-            }
+            textFormatter =
+                TextFormatter(moneyConverter).apply {
+                    valueProperty().bindBidirectional(viewModel.endingBalanceProperty)
+                }
         }
 
         continueButton.disableProperty().bind(viewModel.isInvalidBinding)
@@ -60,8 +64,12 @@ class BalanceStatementController {
         container.disableProperty().bind(viewModel.operationInProgressProperty)
     }
 
-    fun start(stage: Stage, database: ObservableMoneyDatabase, account: Account, callback: Consumer<Statement>) {
-
+    fun start(
+        stage: Stage,
+        database: ObservableMoneyDatabase,
+        account: Account,
+        callback: Consumer<Statement>,
+    ) {
         this.stage = stage
         this.database = database
         this.account = account
@@ -87,8 +95,8 @@ class BalanceStatementController {
 
     @FXML fun onContinueButton() {
         viewModel.saveStatement(
-                onSuccess = { onStatementReady(it) },
-                onError = { ErrorAlert.showAndWait(it) }
+            onSuccess = { onStatementReady(it) },
+            onError = { ErrorAlert.showAndWait(it) },
         )
     }
 

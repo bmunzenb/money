@@ -23,18 +23,24 @@ import javafx.stage.Stage
 import java.net.URL
 
 class EditAccountController {
-
     companion object {
         val LAYOUT: URL = AccountListController::class.java.getResource("EditAccountLayout.fxml")!!
     }
 
     @FXML lateinit var container: Node
+
     @FXML lateinit var accountNameTextField: TextField
+
     @FXML lateinit var accountTypeComboBox: ComboBox<AccountType>
+
     @FXML lateinit var accountNumberTextField: TextField
+
     @FXML lateinit var bankComboBox: ComboBox<Bank>
+
     @FXML lateinit var initialBalanceTextField: TextField
+
     @FXML lateinit var saveButton: Button
+
     @FXML lateinit var cancelButton: Button
 
     // TODO remove reference to stage in controller
@@ -43,11 +49,9 @@ class EditAccountController {
     private val viewModel = EditAccountViewModel()
 
     fun initialize() {
-
         accountNameTextField.textProperty().bindBidirectional(viewModel.accountNameProperty)
 
         accountTypeComboBox.apply {
-
             cellFactory = TextListCellFactory { it.name }
             buttonCell = cellFactory.call(null)
 
@@ -55,16 +59,17 @@ class EditAccountController {
 
             valueProperty().bindBidirectional(viewModel.selectedAccountTypeProperty)
 
-            disableProperty().bindAsyncStatus(viewModel.accountTypesProperty,
-                    AsyncObject.Status.PENDING,
-                    AsyncObject.Status.EXECUTING,
-                    AsyncObject.Status.ERROR)
+            disableProperty().bindAsyncStatus(
+                viewModel.accountTypesProperty,
+                AsyncObject.Status.PENDING,
+                AsyncObject.Status.EXECUTING,
+                AsyncObject.Status.ERROR,
+            )
         }
 
         accountNumberTextField.textProperty().bindBidirectional(viewModel.accountNumberProperty)
 
         bankComboBox.apply {
-
             val bankConverter = BlockStringConverter(Bank::name) { Bank().apply { name = it } }
 
             cellFactory = TextListCellFactory(bankConverter::toString)
@@ -77,19 +82,21 @@ class EditAccountController {
 
             valueProperty().bindBidirectional(viewModel.selectedBankProperty)
 
-            disableProperty().bindAsyncStatus(viewModel.banksProperty,
-                    AsyncObject.Status.PENDING,
-                    AsyncObject.Status.EXECUTING,
-                    AsyncObject.Status.ERROR)
+            disableProperty().bindAsyncStatus(
+                viewModel.banksProperty,
+                AsyncObject.Status.PENDING,
+                AsyncObject.Status.EXECUTING,
+                AsyncObject.Status.ERROR,
+            )
         }
 
         initialBalanceTextField.apply {
-
             val moneyConverter = MoneyStringConverter()
 
-            textFormatter = TextFormatter(moneyConverter).apply {
-                valueProperty().bindBidirectional(viewModel.initialBalanceProperty)
-            }
+            textFormatter =
+                TextFormatter(moneyConverter).apply {
+                    valueProperty().bindBidirectional(viewModel.initialBalanceProperty)
+                }
         }
 
         saveButton.disableProperty().bind(viewModel.notValidProperty)
@@ -97,8 +104,11 @@ class EditAccountController {
         container.disableProperty().bind(viewModel.isOperationInProgressProperty)
     }
 
-    fun start(stage: Stage, database: MoneyDatabase, account: Account) {
-
+    fun start(
+        stage: Stage,
+        database: MoneyDatabase,
+        account: Account,
+    ) {
         this.stage = stage
 
         stage.minWidth = stage.width

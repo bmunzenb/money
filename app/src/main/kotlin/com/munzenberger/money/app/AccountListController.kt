@@ -26,18 +26,24 @@ import javafx.util.Callback
 import java.net.URL
 
 class AccountListController : AutoCloseable {
-
     companion object {
         val LAYOUT: URL = AccountListController::class.java.getResource("AccountListLayout.fxml")
     }
 
     @FXML lateinit var createAccountButton: Button
+
     @FXML lateinit var tableView: TableView<FXAccount>
+
     @FXML lateinit var nameColumn: TableColumn<FXAccount, String>
+
     @FXML lateinit var typeColumn: TableColumn<FXAccount, String>
+
     @FXML lateinit var numberColumn: TableColumn<FXAccount, String?>
+
     @FXML lateinit var balanceColumn: TableColumn<FXAccount, AsyncObject<Money>>
+
     @FXML lateinit var totalBalanceProgress: ProgressIndicator
+
     @FXML lateinit var totalBalanceLabel: Label
 
     // TODO remove reference to stage in controller
@@ -48,18 +54,19 @@ class AccountListController : AutoCloseable {
     private val viewModel = AccountListViewModel()
 
     fun initialize() {
-
         tableView.bindAsync(
-                listProperty = viewModel.accountsProperty,
-                placeholder = Hyperlink("Create an account to get started.").apply {
+            listProperty = viewModel.accountsProperty,
+            placeholder =
+                Hyperlink("Create an account to get started.").apply {
                     setOnAction { onCreateAccount() }
-                }
+                },
         )
 
         nameColumn.apply {
-            cellFactory = HyperlinkTableCellFactory {
-                navigator.goTo(AccountRegisterController.navigation(stage, database, it.identity))
-            }
+            cellFactory =
+                HyperlinkTableCellFactory {
+                    navigator.goTo(AccountRegisterController.navigation(stage, database, it.identity))
+                }
             cellValueFactory = Callback { a -> a.value.nameProperty }
         }
 
@@ -92,7 +99,11 @@ class AccountListController : AutoCloseable {
         }
     }
 
-    fun start(stage: Stage, database: ObservableMoneyDatabase, navigator: Navigator) {
+    fun start(
+        stage: Stage,
+        database: ObservableMoneyDatabase,
+        navigator: Navigator,
+    ) {
         this.stage = stage
         this.database = database
         this.navigator = navigator
@@ -105,7 +116,6 @@ class AccountListController : AutoCloseable {
     }
 
     @FXML fun onCreateAccount() {
-
         DialogBuilder.build(EditAccountController.LAYOUT) { stage, controller: EditAccountController ->
             stage.title = createAccountButton.text
             stage.show()

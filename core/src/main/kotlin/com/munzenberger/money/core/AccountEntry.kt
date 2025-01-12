@@ -17,7 +17,6 @@ import java.sql.ResultSet
 import java.time.LocalDate
 
 sealed class AccountEntry {
-
     abstract val transactionId: TransactionIdentity
     abstract val date: LocalDate
     abstract val payeeId: PayeeIdentity?
@@ -28,73 +27,79 @@ sealed class AccountEntry {
     abstract val number: String?
     abstract val status: TransactionStatus
 
-    abstract fun updateStatus(status: TransactionStatus, executor: QueryExecutor)
+    abstract fun updateStatus(
+        status: TransactionStatus,
+        executor: QueryExecutor,
+    )
 
     data class Transaction(
-            override val transactionId: TransactionIdentity,
-            override val date: LocalDate,
-            override val payeeId: PayeeIdentity?,
-            override val payeeName: String?,
-            override val amount: Money,
-            override val balance: Money,
-            override val memo: String?,
-            override val number: String?,
-            override val status: TransactionStatus,
-            val details: List<Detail>
+        override val transactionId: TransactionIdentity,
+        override val date: LocalDate,
+        override val payeeId: PayeeIdentity?,
+        override val payeeName: String?,
+        override val amount: Money,
+        override val balance: Money,
+        override val memo: String?,
+        override val number: String?,
+        override val status: TransactionStatus,
+        val details: List<Detail>,
     ) : AccountEntry() {
-
         sealed class Detail {
-
             abstract val orderInTransaction: Int
 
             data class Transfer(
-                    val transferId: TransferEntryIdentity,
-                    val accountId: AccountIdentity,
-                    val accountName: String,
-                    override val orderInTransaction: Int
+                val transferId: TransferEntryIdentity,
+                val accountId: AccountIdentity,
+                val accountName: String,
+                override val orderInTransaction: Int,
             ) : Detail()
 
             data class Category(
-                    val entryId: CategoryEntryIdentity,
-                    val categoryId: CategoryIdentity,
-                    val categoryName: String,
-                    val parentCategoryName: String?,
-                    override val orderInTransaction: Int
+                val entryId: CategoryEntryIdentity,
+                val categoryId: CategoryIdentity,
+                val categoryName: String,
+                val parentCategoryName: String?,
+                override val orderInTransaction: Int,
             ) : Detail()
         }
 
-        override fun updateStatus(status: TransactionStatus, executor: QueryExecutor) {
-
-            val query = updateQuery(TransactionTable.tableName) {
-                set(TransactionTable.statusColumn, status.name)
-                where(TransactionTable.identityColumn.eq(transactionId.value))
-            }
+        override fun updateStatus(
+            status: TransactionStatus,
+            executor: QueryExecutor,
+        ) {
+            val query =
+                updateQuery(TransactionTable.tableName) {
+                    set(TransactionTable.TRANSACTION_STATUS, status.name)
+                    where(TransactionTable.identityColumn.eq(transactionId.value))
+                }
 
             executor.executeUpdate(query)
         }
     }
 
     data class Transfer(
-            val transferId: TransferEntryIdentity,
-            override val transactionId: TransactionIdentity,
-            override val date: LocalDate,
-            override val payeeId: PayeeIdentity?,
-            override val payeeName: String?,
-            override val amount: Money,
-            override val balance: Money,
-            override val memo: String?,
-            override val number: String?,
-            override val status: TransactionStatus,
-            val transactionAccountId: AccountIdentity,
-            val transactionAccountName: String
+        val transferId: TransferEntryIdentity,
+        override val transactionId: TransactionIdentity,
+        override val date: LocalDate,
+        override val payeeId: PayeeIdentity?,
+        override val payeeName: String?,
+        override val amount: Money,
+        override val balance: Money,
+        override val memo: String?,
+        override val number: String?,
+        override val status: TransactionStatus,
+        val transactionAccountId: AccountIdentity,
+        val transactionAccountName: String,
     ) : AccountEntry() {
-
-        override fun updateStatus(status: TransactionStatus, executor: QueryExecutor) {
-
-            val query = updateQuery(TransferEntryTable.tableName) {
-                set(TransferEntryTable.statusColumn, status.name)
-                where(TransferEntryTable.identityColumn.eq(transferId.value))
-            }
+        override fun updateStatus(
+            status: TransactionStatus,
+            executor: QueryExecutor,
+        ) {
+            val query =
+                updateQuery(TransferEntryTable.tableName) {
+                    set(TransferEntryTable.TRANSFER_ENTRY_STATUS, status.name)
+                    where(TransferEntryTable.identityColumn.eq(transferId.value))
+                }
 
             executor.executeUpdate(query)
         }
@@ -102,40 +107,38 @@ sealed class AccountEntry {
 }
 
 private class AccountEntryCollector {
-
     sealed class Collector {
-
         abstract val transactionId: Long
         abstract val date: LocalDate
         abstract val totalAmount: Long
 
         class Transaction(
-                override val transactionId: Long,
-                override val date: LocalDate,
-                val payeeId: Long?,
-                val payeeName: String?,
-                var amount: Long = 0,
-                val memo: String?,
-                val number: String?,
-                val status: String,
-                val details: MutableList<AccountEntry.Transaction.Detail> = mutableListOf()
+            override val transactionId: Long,
+            override val date: LocalDate,
+            val payeeId: Long?,
+            val payeeName: String?,
+            var amount: Long = 0,
+            val memo: String?,
+            val number: String?,
+            val status: String,
+            val details: MutableList<AccountEntry.Transaction.Detail> = mutableListOf(),
         ) : Collector() {
             override val totalAmount: Long
                 get() = amount
         }
 
         class Transfer(
-                val transferId: Long,
-                override val transactionId: Long,
-                override val date: LocalDate,
-                val payeeId: Long?,
-                val payeeName: String?,
-                override val totalAmount: Long,
-                val memo: String?,
-                val number: String?,
-                val status: String,
-                val transactionAccountId: Long,
-                val transactionAccountName: String
+            val transferId: Long,
+            override val transactionId: Long,
+            override val date: LocalDate,
+            val payeeId: Long?,
+            val payeeName: String?,
+            override val totalAmount: Long,
+            val memo: String?,
+            val number: String?,
+            val status: String,
+            val transactionAccountId: Long,
+            val transactionAccountName: String,
         ) : Collector()
     }
 
@@ -144,83 +147,86 @@ private class AccountEntryCollector {
     private val transfers = mutableListOf<Collector.Transfer>()
 
     fun collectTransaction(
-            transactionId: Long,
-            date: LocalDate,
-            payeeId: Long?,
-            payeeName: String?,
-            memo: String?,
-            number: String?,
-            status: String
+        transactionId: Long,
+        date: LocalDate,
+        payeeId: Long?,
+        payeeName: String?,
+        memo: String?,
+        number: String?,
+        status: String,
     ) {
         transactions.getOrPut(transactionId) {
             Collector.Transaction(
-                    transactionId = transactionId,
-                    date = date,
-                    payeeId = payeeId,
-                    payeeName = payeeName,
-                    memo = memo,
-                    number = number,
-                    status = status
+                transactionId = transactionId,
+                date = date,
+                payeeId = payeeId,
+                payeeName = payeeName,
+                memo = memo,
+                number = number,
+                status = status,
             )
         }
     }
 
     fun collectTransactionTransferEntry(
-            transactionId: Long,
-            amount: Long,
-            transferId: Long,
-            transferAccountId: Long,
-            transferAccountName: String,
-            transferOrderInTransaction: Int
+        transactionId: Long,
+        amount: Long,
+        transferId: Long,
+        transferAccountId: Long,
+        transferAccountName: String,
+        transferOrderInTransaction: Int,
     ) {
         val t = transactions[transactionId] ?: error("No transaction with id: $transactionId")
 
         t.amount += amount
 
-        t.details += AccountEntry.Transaction.Detail.Transfer(
+        t.details +=
+            AccountEntry.Transaction.Detail.Transfer(
                 transferId = TransferEntryIdentity(transferId),
                 accountId = AccountIdentity(transferAccountId),
                 accountName = transferAccountName,
-                orderInTransaction = transferOrderInTransaction
-        )
+                orderInTransaction = transferOrderInTransaction,
+            )
     }
 
     fun collectTransactionCategoryEntry(
-            transactionId: Long,
-            amount: Long,
-            entryId: Long,
-            entryCategoryId: Long,
-            entryCategoryName: String,
-            entryParentCategoryName: String?,
-            entryOrderInTransaction: Int
+        transactionId: Long,
+        amount: Long,
+        entryId: Long,
+        entryCategoryId: Long,
+        entryCategoryName: String,
+        entryParentCategoryName: String?,
+        entryOrderInTransaction: Int,
     ) {
         val t = transactions[transactionId] ?: error("No transaction with id: $transactionId")
 
         t.amount += amount
 
-        t.details += AccountEntry.Transaction.Detail.Category(
+        t.details +=
+            AccountEntry.Transaction.Detail.Category(
                 entryId = CategoryEntryIdentity(entryId),
                 categoryId = CategoryIdentity(entryCategoryId),
                 categoryName = entryCategoryName,
                 parentCategoryName = entryParentCategoryName,
-                orderInTransaction = entryOrderInTransaction
-        )
+                orderInTransaction = entryOrderInTransaction,
+            )
     }
 
     fun collectTransfer(
-            transferId: Long,
-            transactionId: Long,
-            date: LocalDate,
-            payeeId: Long?,
-            payeeName: String?,
-            amount: Long,
-            memo: String?,
-            number: String?,
-            status: String,
-            transactionAccountId: Long,
-            transactionAccountName: String
+        transferId: Long,
+        transactionId: Long,
+        date: LocalDate,
+        payeeId: Long?,
+        payeeName: String?,
+        amount: Long,
+        memo: String?,
+        number: String?,
+        status: String,
+        transactionAccountId: Long,
+        transactionAccountName: String,
     ) {
-        transfers += Collector.Transfer(
+        transfers +=
+            Collector.Transfer(
                 transferId = transferId,
                 transactionId = transactionId,
                 date = date,
@@ -231,24 +237,25 @@ private class AccountEntryCollector {
                 number = number,
                 status = status,
                 transactionAccountId = transactionAccountId,
-                transactionAccountName = transactionAccountName
-        )
+                transactionAccountName = transactionAccountName,
+            )
     }
 
     fun getAccountEntries(initialBalance: Money?): List<AccountEntry> {
-
         var balance = initialBalance?.value ?: 0
 
-        val collectors = (transactions.values + transfers).sortedWith(
-                compareBy({ it.date }, { it.transactionId })
-        )
+        val collectors =
+            (transactions.values + transfers).sortedWith(
+                compareBy({ it.date }, { it.transactionId }),
+            )
 
         return collectors.map { c ->
 
             balance += c.totalAmount
 
             when (c) {
-                is Collector.Transaction -> AccountEntry.Transaction(
+                is Collector.Transaction ->
+                    AccountEntry.Transaction(
                         transactionId = TransactionIdentity(c.transactionId),
                         date = c.date,
                         payeeId = c.payeeId?.let { PayeeIdentity(it) },
@@ -258,10 +265,11 @@ private class AccountEntryCollector {
                         memo = c.memo,
                         number = c.number,
                         status = TransactionStatus.valueOf(c.status),
-                        details = c.details.sortedBy { it.orderInTransaction }
-                )
+                        details = c.details.sortedBy { it.orderInTransaction },
+                    )
 
-                is Collector.Transfer -> AccountEntry.Transfer(
+                is Collector.Transfer ->
+                    AccountEntry.Transfer(
                         transferId = TransferEntryIdentity(c.transferId),
                         transactionId = TransactionIdentity(c.transactionId),
                         date = c.date,
@@ -273,8 +281,8 @@ private class AccountEntryCollector {
                         number = c.number,
                         status = TransactionStatus.valueOf(c.status),
                         transactionAccountId = AccountIdentity(c.transactionAccountId),
-                        transactionAccountName = c.transactionAccountName
-                )
+                        transactionAccountName = c.transactionAccountName,
+                    )
             }
         }
     }
@@ -285,33 +293,33 @@ private class AccountEntryCollector {
  * transfers targeting another account, or a credit/debit for a category.
  */
 private class TransactionResultSetHandler(accountId: AccountIdentity, private val collector: AccountEntryCollector) : ResultSetConsumer {
-
-    private val sql = """
+    private val sql =
+        """
         SELECT
             ${TransactionTable.identityColumn},
-            ${TransactionTable.dateColumn},
+            ${TransactionTable.TRANSACTION_DATE},
             ${PayeeTable.identityColumn},
-            ${PayeeTable.nameColumn},
-            ${TransactionTable.memoColumn},
-            ${TransactionTable.numberColumn},
-            ${TransactionTable.statusColumn}
+            ${PayeeTable.PAYEE_NAME},
+            ${TransactionTable.TRANSACTION_MEMO},
+            ${TransactionTable.TRANSACTION_NUMBER},
+            ${TransactionTable.TRANSACTION_STATUS}
         FROM ${TransactionTable.tableName}
-        LEFT JOIN ${PayeeTable.tableName} ON ${PayeeTable.tableName}.${PayeeTable.identityColumn} = ${TransactionTable.tableName}.${TransactionTable.payeeColumn}
-        WHERE ${TransactionTable.accountColumn} = ?
-    """.trimIndent()
+        LEFT JOIN ${PayeeTable.tableName} ON ${PayeeTable.tableName}.${PayeeTable.identityColumn} = ${TransactionTable.tableName}.${TransactionTable.TRANSACTION_PAYEE_ID}
+        WHERE ${TransactionTable.TRANSACTION_ACCOUNT_ID} = ?
+        """.trimIndent()
 
     val query = Query(sql, listOf(accountId.value))
 
     override fun accept(rs: ResultSet) {
         while (rs.next()) {
             collector.collectTransaction(
-                    transactionId = rs.getLong(TransactionTable.identityColumn),
-                    date = rs.getLocalDate(TransactionTable.dateColumn),
-                    payeeId = rs.getLongOrNull(PayeeTable.identityColumn),
-                    payeeName = rs.getString(PayeeTable.nameColumn),
-                    memo = rs.getString(TransactionTable.memoColumn),
-                    number = rs.getString(TransactionTable.numberColumn),
-                    status = rs.getString(TransactionTable.statusColumn)
+                transactionId = rs.getLong(TransactionTable.identityColumn),
+                date = rs.getLocalDate(TransactionTable.TRANSACTION_DATE),
+                payeeId = rs.getLongOrNull(PayeeTable.identityColumn),
+                payeeName = rs.getString(PayeeTable.PAYEE_NAME),
+                memo = rs.getString(TransactionTable.TRANSACTION_MEMO),
+                number = rs.getString(TransactionTable.TRANSACTION_NUMBER),
+                status = rs.getString(TransactionTable.TRANSACTION_STATUS),
             )
         }
     }
@@ -320,33 +328,36 @@ private class TransactionResultSetHandler(accountId: AccountIdentity, private va
 /**
  * Collects all transfers where the parent transaction is associated with the specified account.
  */
-private class TransactionTransferEntryResultSetHandler(accountId: AccountIdentity, private val collector: AccountEntryCollector) : ResultSetConsumer {
-
-    private val sql = """
+private class TransactionTransferEntryResultSetHandler(
+    accountId: AccountIdentity,
+    private val collector: AccountEntryCollector,
+) : ResultSetConsumer {
+    private val sql =
+        """
         SELECT
             ${TransactionTable.identityColumn},
-            ${TransferEntryTable.amountColumn},
+            ${TransferEntryTable.TRANSFER_ENTRY_AMOUNT},
             ${TransferEntryTable.identityColumn},
             ${AccountTable.identityColumn},
-            ${AccountTable.nameColumn},
-            ${TransferEntryTable.orderInTransaction}
+            ${AccountTable.ACCOUNT_NAME},
+            ${TransferEntryTable.TRANSFER_ENTRY_ORDER_IN_TRANSACTION}
         FROM ${TransactionTable.tableName}
-        INNER JOIN ${TransferEntryTable.tableName} ON ${TransferEntryTable.tableName}.${TransferEntryTable.transactionColumn} = ${TransactionTable.tableName}.${TransactionTable.identityColumn}
-        INNER JOIN ${AccountTable.tableName} ON ${AccountTable.tableName}.${AccountTable.identityColumn} = ${TransferEntryTable.tableName}.${TransferEntryTable.accountColumn}
-        WHERE ${TransactionTable.accountColumn} = ?
-    """.trimIndent()
+        INNER JOIN ${TransferEntryTable.tableName} ON ${TransferEntryTable.tableName}.${TransferEntryTable.TRANSFER_ENTRY_TRANSACTION_ID} = ${TransactionTable.tableName}.${TransactionTable.identityColumn}
+        INNER JOIN ${AccountTable.tableName} ON ${AccountTable.tableName}.${AccountTable.identityColumn} = ${TransferEntryTable.tableName}.${TransferEntryTable.TRANSFER_ENTRY_ACCOUNT_ID}
+        WHERE ${TransactionTable.TRANSACTION_ACCOUNT_ID} = ?
+        """.trimIndent()
 
     val query = Query(sql, listOf(accountId.value))
 
     override fun accept(rs: ResultSet) {
         while (rs.next()) {
             collector.collectTransactionTransferEntry(
-                    transactionId = rs.getLong(TransactionTable.identityColumn),
-                    amount = rs.getLong(TransferEntryTable.amountColumn),
-                    transferId = rs.getLong(TransferEntryTable.identityColumn),
-                    transferAccountId = rs.getLong(AccountTable.identityColumn),
-                    transferAccountName = rs.getString(AccountTable.nameColumn),
-                    transferOrderInTransaction = rs.getInt(TransferEntryTable.orderInTransaction)
+                transactionId = rs.getLong(TransactionTable.identityColumn),
+                amount = rs.getLong(TransferEntryTable.TRANSFER_ENTRY_AMOUNT),
+                transferId = rs.getLong(TransferEntryTable.identityColumn),
+                transferAccountId = rs.getLong(AccountTable.identityColumn),
+                transferAccountName = rs.getString(AccountTable.ACCOUNT_NAME),
+                transferOrderInTransaction = rs.getInt(TransferEntryTable.TRANSFER_ENTRY_ORDER_IN_TRANSACTION),
             )
         }
     }
@@ -355,36 +366,39 @@ private class TransactionTransferEntryResultSetHandler(accountId: AccountIdentit
 /**
  * Collects all category entries where the parent transaction is associated with the specified account.
  */
-private class TransactionCategoryEntryResultSetHandler(accountId: AccountIdentity, private val collector: AccountEntryCollector) : ResultSetConsumer {
-
-    private val sql = """
+private class TransactionCategoryEntryResultSetHandler(
+    accountId: AccountIdentity,
+    private val collector: AccountEntryCollector,
+) : ResultSetConsumer {
+    private val sql =
+        """
         SELECT
             ${TransactionTable.identityColumn},
             ${CategoryEntryTable.identityColumn},
-            ${CategoryEntryTable.amountColumn},
+            ${CategoryEntryTable.CATEGORY_ENTRY_AMOUNT},
             ${CategoryTable.tableName}.${CategoryTable.identityColumn} AS CATEGORY_ID,
-            ${CategoryTable.tableName}.${CategoryTable.nameColumn} AS CATEGORY_NAME,
-            PARENT_CATEGORIES.${CategoryTable.nameColumn} AS PARENT_CATEGORY_NAME,
-            ${CategoryEntryTable.orderInTransaction}
+            ${CategoryTable.tableName}.${CategoryTable.CATEGORY_NAME} AS CATEGORY_NAME,
+            PARENT_CATEGORIES.${CategoryTable.CATEGORY_NAME} AS PARENT_CATEGORY_NAME,
+            ${CategoryEntryTable.CATEGORY_ENTRY_ORDER_IN_TRANSACTION}
         FROM ${TransactionTable.tableName}
-        INNER JOIN ${CategoryEntryTable.tableName} ON ${CategoryEntryTable.tableName}.${CategoryEntryTable.transactionColumn} = ${TransactionTable.tableName}.${TransactionTable.identityColumn}
-        INNER JOIN ${CategoryTable.tableName} ON ${CategoryTable.tableName}.${CategoryTable.identityColumn} = ${CategoryEntryTable.tableName}.${CategoryEntryTable.categoryColumn}
-        LEFT JOIN ${CategoryTable.tableName} AS PARENT_CATEGORIES ON ${CategoryTable.tableName}.${CategoryTable.parentColumn} = PARENT_CATEGORIES.${CategoryTable.identityColumn}
-        WHERE ${TransactionTable.accountColumn} = ?
-    """.trimIndent()
+        INNER JOIN ${CategoryEntryTable.tableName} ON ${CategoryEntryTable.tableName}.${CategoryEntryTable.CATEGORY_ENTRY_TRANSACTION_ID} = ${TransactionTable.tableName}.${TransactionTable.identityColumn}
+        INNER JOIN ${CategoryTable.tableName} ON ${CategoryTable.tableName}.${CategoryTable.identityColumn} = ${CategoryEntryTable.tableName}.${CategoryEntryTable.CATEGORY_ENTRY_CATEGORY_ID}
+        LEFT JOIN ${CategoryTable.tableName} AS PARENT_CATEGORIES ON ${CategoryTable.tableName}.${CategoryTable.CATEGORY_PARENT_ID} = PARENT_CATEGORIES.${CategoryTable.identityColumn}
+        WHERE ${TransactionTable.TRANSACTION_ACCOUNT_ID} = ?
+        """.trimIndent()
 
     val query = Query(sql, listOf(accountId.value))
 
     override fun accept(rs: ResultSet) {
         while (rs.next()) {
             collector.collectTransactionCategoryEntry(
-                    transactionId = rs.getLong(TransactionTable.identityColumn),
-                    amount = rs.getLong(CategoryEntryTable.amountColumn),
-                    entryId = rs.getLong(CategoryEntryTable.identityColumn),
-                    entryCategoryId = rs.getLong("CATEGORY_ID"),
-                    entryCategoryName = rs.getString("CATEGORY_NAME"),
-                    entryParentCategoryName = rs.getString("PARENT_CATEGORY_NAME"),
-                    entryOrderInTransaction = rs.getInt(CategoryEntryTable.orderInTransaction)
+                transactionId = rs.getLong(TransactionTable.identityColumn),
+                amount = rs.getLong(CategoryEntryTable.CATEGORY_ENTRY_AMOUNT),
+                entryId = rs.getLong(CategoryEntryTable.identityColumn),
+                entryCategoryId = rs.getLong("CATEGORY_ID"),
+                entryCategoryName = rs.getString("CATEGORY_NAME"),
+                entryParentCategoryName = rs.getString("PARENT_CATEGORY_NAME"),
+                entryOrderInTransaction = rs.getInt(CategoryEntryTable.CATEGORY_ENTRY_ORDER_IN_TRANSACTION),
             )
         }
     }
@@ -394,50 +408,49 @@ private class TransactionCategoryEntryResultSetHandler(accountId: AccountIdentit
  * Collects all transfers that target the specified account.
  */
 private class TransferEntryResultSetHandler(accountId: AccountIdentity, private val collector: AccountEntryCollector) : ResultSetConsumer {
-
-    private val sql = """
+    private val sql =
+        """
         SELECT
             ${TransferEntryTable.identityColumn},
             ${TransactionTable.identityColumn},
-            ${TransactionTable.dateColumn},
+            ${TransactionTable.TRANSACTION_DATE},
             ${PayeeTable.identityColumn},
-            ${PayeeTable.nameColumn},
-            ${TransferEntryTable.amountColumn},
-            ${TransferEntryTable.memoColumn},
-            ${TransferEntryTable.numberColumn},
-            ${TransferEntryTable.statusColumn},
+            ${PayeeTable.PAYEE_NAME},
+            ${TransferEntryTable.TRANSFER_ENTRY_AMOUNT},
+            ${TransferEntryTable.TRANSFER_ENTRY_MEMO},
+            ${TransferEntryTable.TRANSFER_ENTRY_NUMBER},
+            ${TransferEntryTable.TRANSFER_ENTRY_STATUS},
             ${AccountTable.identityColumn},
-            ${AccountTable.nameColumn}
+            ${AccountTable.ACCOUNT_NAME}
         FROM ${TransferEntryTable.tableName}
-        INNER JOIN ${TransactionTable.tableName} ON ${TransactionTable.tableName}.${TransactionTable.identityColumn} = ${TransferEntryTable.tableName}.${TransferEntryTable.transactionColumn}
-        LEFT JOIN ${PayeeTable.tableName} ON ${PayeeTable.tableName}.${PayeeTable.identityColumn} = ${TransactionTable.tableName}.${TransactionTable.payeeColumn}
-        INNER JOIN ${AccountTable.tableName} ON ${TransactionTable.tableName}.${TransactionTable.accountColumn} = ${AccountTable.tableName}.${AccountTable.identityColumn}
-        WHERE ${TransferEntryTable.accountColumn} = ?
-    """.trimIndent()
+        INNER JOIN ${TransactionTable.tableName} ON ${TransactionTable.tableName}.${TransactionTable.identityColumn} = ${TransferEntryTable.tableName}.${TransferEntryTable.TRANSFER_ENTRY_TRANSACTION_ID}
+        LEFT JOIN ${PayeeTable.tableName} ON ${PayeeTable.tableName}.${PayeeTable.identityColumn} = ${TransactionTable.tableName}.${TransactionTable.TRANSACTION_PAYEE_ID}
+        INNER JOIN ${AccountTable.tableName} ON ${TransactionTable.tableName}.${TransactionTable.TRANSACTION_ACCOUNT_ID} = ${AccountTable.tableName}.${AccountTable.identityColumn}
+        WHERE ${TransferEntryTable.TRANSFER_ENTRY_ACCOUNT_ID} = ?
+        """.trimIndent()
 
     val query = Query(sql, listOf(accountId.value))
 
     override fun accept(rs: ResultSet) {
         while (rs.next()) {
             collector.collectTransfer(
-                    transferId = rs.getLong(TransferEntryTable.identityColumn),
-                    transactionId = rs.getLong(TransactionTable.identityColumn),
-                    date = rs.getLocalDate(TransactionTable.dateColumn),
-                    payeeId = rs.getLongOrNull(PayeeTable.identityColumn),
-                    payeeName = rs.getString(PayeeTable.nameColumn),
-                    amount = rs.getLong(TransferEntryTable.amountColumn),
-                    memo = rs.getString(TransferEntryTable.memoColumn),
-                    number = rs.getString(TransferEntryTable.numberColumn),
-                    status = rs.getString(TransferEntryTable.statusColumn),
-                    transactionAccountId = rs.getLong(AccountTable.identityColumn),
-                    transactionAccountName = rs.getString(AccountTable.nameColumn)
+                transferId = rs.getLong(TransferEntryTable.identityColumn),
+                transactionId = rs.getLong(TransactionTable.identityColumn),
+                date = rs.getLocalDate(TransactionTable.TRANSACTION_DATE),
+                payeeId = rs.getLongOrNull(PayeeTable.identityColumn),
+                payeeName = rs.getString(PayeeTable.PAYEE_NAME),
+                amount = rs.getLong(TransferEntryTable.TRANSFER_ENTRY_AMOUNT),
+                memo = rs.getString(TransferEntryTable.TRANSFER_ENTRY_MEMO),
+                number = rs.getString(TransferEntryTable.TRANSFER_ENTRY_NUMBER),
+                status = rs.getString(TransferEntryTable.TRANSFER_ENTRY_STATUS),
+                transactionAccountId = rs.getLong(AccountTable.identityColumn),
+                transactionAccountName = rs.getString(AccountTable.ACCOUNT_NAME),
             )
         }
     }
 }
 
 fun Account.getAccountEntries(executor: QueryExecutor): List<AccountEntry> {
-
     val accountId = identity ?: error("Can't get entries for an unsaved account.")
 
     val collector = AccountEntryCollector()

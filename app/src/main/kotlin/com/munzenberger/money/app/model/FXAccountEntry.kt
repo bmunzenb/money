@@ -19,7 +19,6 @@ import javafx.beans.property.SimpleStringProperty
 import java.time.LocalDate
 
 sealed class FXAccountEntry(private val accountEntry: AccountEntry) {
-
     companion object {
         fun of(accountEntry: AccountEntry): FXAccountEntry {
             return when (accountEntry) {
@@ -43,7 +42,10 @@ sealed class FXAccountEntry(private val accountEntry: AccountEntry) {
 
     abstract val categoryProperty: ReadOnlyStringProperty
 
-    fun updateStatus(status: TransactionStatus, executor: QueryExecutor) {
+    fun updateStatus(
+        status: TransactionStatus,
+        executor: QueryExecutor,
+    ) {
         accountEntry.updateStatus(status, executor)
         this.status.value = status
     }
@@ -52,29 +54,28 @@ sealed class FXAccountEntry(private val accountEntry: AccountEntry) {
 }
 
 class FXTransactionAccountEntry(private val transactionEntry: AccountEntry.Transaction) : FXAccountEntry(transactionEntry) {
-
     override val categoryProperty: ReadOnlyStringProperty
 
     init {
-        val category = when (transactionEntry.details.size) {
-            0 -> null
-            1 -> transactionEntry.details[0].name
-            else -> SPLIT_CATEGORY_NAME
-        }
+        val category =
+            when (transactionEntry.details.size) {
+                0 -> null
+                1 -> transactionEntry.details[0].name
+                else -> SPLIT_CATEGORY_NAME
+            }
 
         categoryProperty = SimpleStringProperty(category)
     }
 
     override fun delete(executor: QueryExecutor) {
-
         executor.transaction { tx ->
 
             deleteQuery(TransferEntryTable.tableName) {
-                where(TransferEntryTable.transactionColumn.eq(transactionId.value))
+                where(TransferEntryTable.TRANSFER_ENTRY_TRANSACTION_ID.eq(transactionId.value))
             }.let { tx.executeUpdate(it) }
 
             deleteQuery(CategoryEntryTable.tableName) {
-                where(CategoryEntryTable.transactionColumn.eq(transactionId.value))
+                where(CategoryEntryTable.CATEGORY_ENTRY_TRANSACTION_ID.eq(transactionId.value))
             }.let { tx.executeUpdate(it) }
 
             deleteQuery(TransactionTable.tableName) {
@@ -85,15 +86,13 @@ class FXTransactionAccountEntry(private val transactionEntry: AccountEntry.Trans
 }
 
 class FXTransferAccountEntry(private val transferEntry: AccountEntry.Transfer) : FXAccountEntry(transferEntry) {
-
     val transferId: TransferEntryIdentity
         get() = transferEntry.transferId
 
     override val categoryProperty: ReadOnlyStringProperty =
-            SimpleStringProperty("Transfer $CATEGORY_DELIMITER ${transferEntry.transactionAccountName}")
+        SimpleStringProperty("Transfer $CATEGORY_DELIMITER ${transferEntry.transactionAccountName}")
 
     override fun delete(executor: QueryExecutor) {
-
         deleteQuery(TransferEntryTable.tableName) {
             where(TransferEntryTable.identityColumn.eq(transferId.value))
         }.let { executor.executeUpdate(it) }
@@ -101,14 +100,15 @@ class FXTransferAccountEntry(private val transferEntry: AccountEntry.Transfer) :
 }
 
 private val AccountEntry.Transaction.Detail.name: String
-    get() = when (this) {
+    get() =
+        when (this) {
 
-        is AccountEntry.Transaction.Detail.Transfer ->
-            "Transfer $CATEGORY_DELIMITER $accountName"
+            is AccountEntry.Transaction.Detail.Transfer ->
+                "Transfer $CATEGORY_DELIMITER $accountName"
 
-        is AccountEntry.Transaction.Detail.Category ->
-            when (val p = parentCategoryName) {
-                null -> categoryName
-                else -> "$p $CATEGORY_DELIMITER $categoryName"
-            }
-    }
+            is AccountEntry.Transaction.Detail.Category ->
+                when (val p = parentCategoryName) {
+                    null -> categoryName
+                    else -> "$p $CATEGORY_DELIMITER $categoryName"
+                }
+        }

@@ -8,14 +8,11 @@ import java.util.concurrent.Callable
 interface Navigation : Callable<Node>, AutoCloseable
 
 class LayoutControllerNavigation<T : AutoCloseable>(private val layoutLocation: URL, private val start: (T) -> Unit) : Navigation {
-
     private var node: Node? = null
     private var controller: T? = null
 
     override fun call(): Node {
-
         if (node == null) {
-
             val loader = FXMLLoader(layoutLocation)
             node = loader.load()
             controller = loader.getController()

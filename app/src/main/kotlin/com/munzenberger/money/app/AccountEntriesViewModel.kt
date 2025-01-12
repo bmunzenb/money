@@ -6,9 +6,12 @@ import com.munzenberger.money.core.TransactionStatus
 import javafx.beans.property.ReadOnlyStringProperty
 
 interface AccountEntriesViewModel {
-
     val transactionsProperty: ReadOnlyAsyncObjectProperty<List<FXAccountEntry>>
     val amountTextProperty: ReadOnlyStringProperty
 
-    fun updateEntryStatus(entry: FXAccountEntry, status: TransactionStatus, completionBlock: (Throwable?) -> Unit)
+    fun updateEntryStatus(
+        entry: FXAccountEntry,
+        status: TransactionStatus,
+        completionBlock: (Throwable?) -> Unit,
+    )
 }

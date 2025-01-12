@@ -13,22 +13,22 @@ import java.net.URL
 import java.time.LocalDate
 
 class PayeeListController : AutoCloseable {
-
     companion object {
         val LAYOUT: URL = PayeeListController::class.java.getResource("PayeeListLayout.fxml")
     }
 
     @FXML lateinit var tableView: TableView<FXPayee>
+
     @FXML lateinit var nameColumn: TableColumn<FXPayee, String>
+
     @FXML lateinit var lastPaidColumn: TableColumn<FXPayee, LocalDate>
 
     private val viewModel = PayeeListViewModel()
 
     fun initialize() {
-
         tableView.bindAsync(
-                listProperty = viewModel.payeesProperty,
-                placeholder = Text("No payees.")
+            listProperty = viewModel.payeesProperty,
+            placeholder = Text("No payees."),
         )
 
         nameColumn.apply {
@@ -46,7 +46,6 @@ class PayeeListController : AutoCloseable {
     }
 
     @FXML fun onAddPayee() {
-
     }
 
     override fun close() {

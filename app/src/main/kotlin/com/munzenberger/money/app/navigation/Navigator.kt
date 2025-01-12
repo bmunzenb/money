@@ -6,7 +6,6 @@ import javafx.collections.FXCollections
 import javafx.scene.Node
 
 class Navigator(private val consumer: (Node) -> Unit) : AutoCloseable {
-
     private val backHistory = SimpleListProperty<Navigation>(FXCollections.observableArrayList())
     private val forwardHistory = SimpleListProperty<Navigation>(FXCollections.observableArrayList())
 
@@ -16,24 +15,23 @@ class Navigator(private val consumer: (Node) -> Unit) : AutoCloseable {
     val forwardHistoryProperty: ReadOnlyListProperty<Navigation> = forwardHistory
 
     fun goTo(navigation: Navigation) {
-
         if (navigate(navigation, backHistory)) {
             forwardHistory.clear()
         }
     }
 
     fun goBack() {
-
         goHistory(backHistory, forwardHistory)
     }
 
     fun goForward() {
-
         goHistory(forwardHistory, backHistory)
     }
 
-    private fun navigate(to: Navigation, history: SimpleListProperty<Navigation>): Boolean {
-
+    private fun navigate(
+        to: Navigation,
+        history: SimpleListProperty<Navigation>,
+    ): Boolean {
         if (lastNavigation == to) {
             return false
         }
@@ -49,8 +47,10 @@ class Navigator(private val consumer: (Node) -> Unit) : AutoCloseable {
         return true
     }
 
-    private fun goHistory(from: SimpleListProperty<Navigation>, to: SimpleListProperty<Navigation>) {
-
+    private fun goHistory(
+        from: SimpleListProperty<Navigation>,
+        to: SimpleListProperty<Navigation>,
+    ) {
         val callable = from.removeAt(0)
         navigate(callable, to)
     }

@@ -5,10 +5,8 @@ import org.junit.Assert.assertEquals
 import org.junit.Test
 
 class AsyncObjectComparatorTest {
-
     @Test
     fun `it sorts a list of mixed async strings properly`() {
-
         val a1 = AsyncObject.Complete("xyz")
         val a2 = AsyncObject.Error<String>(mockk())
         val a3 = AsyncObject.Pending<String>()

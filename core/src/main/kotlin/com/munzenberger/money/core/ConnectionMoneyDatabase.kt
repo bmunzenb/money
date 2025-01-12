@@ -10,9 +10,8 @@ import java.util.logging.Logger
 internal class ConnectionMoneyDatabase(
     override val name: String,
     override val dialect: DatabaseDialect,
-    private val connection: Connection
+    private val connection: Connection,
 ) : MoneyDatabase, QueryExecutor by ConnectionQueryExecutor(connection) {
-
     private val logger = Logger.getLogger(MoneyDatabase::class.java.name)
 
     override fun close() {

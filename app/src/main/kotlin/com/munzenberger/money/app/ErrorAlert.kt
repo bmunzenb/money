@@ -11,7 +11,6 @@ import java.io.StringWriter
 import java.util.Optional
 
 class ErrorAlert(error: Throwable) : Alert(AlertType.ERROR) {
-
     init {
 
         title = error.javaClass.simpleName
@@ -26,27 +25,28 @@ class ErrorAlert(error: Throwable) : Alert(AlertType.ERROR) {
 
         val label = Label("The error stacktrace was:")
 
-        val textArea = TextArea(stacktrace).apply {
-            isEditable = false
-            isWrapText = true
-            maxWidth = Double.MAX_VALUE
-            maxHeight = Double.MAX_VALUE
-        }
+        val textArea =
+            TextArea(stacktrace).apply {
+                isEditable = false
+                isWrapText = true
+                maxWidth = Double.MAX_VALUE
+                maxHeight = Double.MAX_VALUE
+            }
 
         GridPane.setVgrow(textArea, Priority.ALWAYS)
         GridPane.setHgrow(textArea, Priority.ALWAYS)
 
-        val gridPane = GridPane().apply {
-            maxWidth = Double.MAX_VALUE
-            add(label, 0, 0)
-            add(textArea, 0, 1)
-        }
+        val gridPane =
+            GridPane().apply {
+                maxWidth = Double.MAX_VALUE
+                add(label, 0, 0)
+                add(textArea, 0, 1)
+            }
 
         dialogPane.expandableContent = gridPane
     }
 
     companion object {
-
         fun showAndWait(error: Throwable): Optional<ButtonType> {
             return ErrorAlert(error).showAndWait()
         }

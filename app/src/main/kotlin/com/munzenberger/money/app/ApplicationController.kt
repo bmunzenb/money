@@ -18,12 +18,12 @@ import java.io.File
 import java.net.URL
 
 class ApplicationController : DatabaseConnectorDelegate, DatabaseConnectorCallbacks, AutoCloseable {
-
     companion object {
         val LAYOUT: URL = ApplicationController::class.java.getResource("ApplicationLayout.fxml")!!
     }
 
     @FXML lateinit var menuBar: MenuBar
+
     @FXML lateinit var contentPane: AnchorPane
 
     private val viewModel = ApplicationViewModel()
@@ -33,7 +33,6 @@ class ApplicationController : DatabaseConnectorDelegate, DatabaseConnectorCallba
     private lateinit var stage: Stage
 
     @FXML fun initialize() {
-
         menuBar.isUseSystemMenuBar = true
 
         viewModel.connectedDatabaseProperty.addListener { _, _, db ->
@@ -83,7 +82,6 @@ class ApplicationController : DatabaseConnectorDelegate, DatabaseConnectorCallba
     }
 
     private fun presentWelcome() {
-
         FXMLLoader(WelcomeController.LAYOUT).load { node: Node, controller: WelcomeController ->
             controller.start(this)
             setContent(node, controller)
@@ -91,15 +89,16 @@ class ApplicationController : DatabaseConnectorDelegate, DatabaseConnectorCallba
     }
 
     private fun presentNavigation(database: ObservableMoneyDatabase) {
-
         FXMLLoader(NavigationController.LAYOUT).load { node: Node, controller: NavigationController ->
             controller.start(stage, database)
             setContent(node, controller)
         }
     }
 
-    private fun setContent(content: Node, controller: AutoCloseable) {
-
+    private fun setContent(
+        content: Node,
+        controller: AutoCloseable,
+    ) {
         activeController?.close()
         activeController = controller
 
@@ -115,20 +114,21 @@ class ApplicationController : DatabaseConnectorDelegate, DatabaseConnectorCallba
     }
 
     private fun createDatabaseFile(): File? {
-        val file: File? = FileChooser().let {
-            it.title = "New Money Database"
-            it.initialDirectory = File(System.getProperty("user.home"))
-            it.initialFileName = "Money${FileDatabaseConnector.SUFFIX}"
-            it.extensionFilters.addAll(
+        val file: File? =
+            FileChooser().let {
+                it.title = "New Money Database"
+                it.initialDirectory = File(System.getProperty("user.home"))
+                it.initialFileName = "Money${FileDatabaseConnector.SUFFIX}"
+                it.extensionFilters.addAll(
                     FileChooser.ExtensionFilter("Money Database Files", "*${FileDatabaseConnector.SUFFIX}"),
-                    FileChooser.ExtensionFilter("All Files", "*"))
-            it.showSaveDialog(stage)
-        }
+                    FileChooser.ExtensionFilter("All Files", "*"),
+                )
+                it.showSaveDialog(stage)
+            }
 
         file?.run {
             if (exists()) {
                 if (!delete()) {
-
                     Alert(Alert.AlertType.ERROR).apply {
                         title = "Error"
                         contentText = "Could not delete existing file."
@@ -143,25 +143,30 @@ class ApplicationController : DatabaseConnectorDelegate, DatabaseConnectorCallba
         return file
     }
 
-    private fun openDatabaseFile(): File? = FileChooser().let {
-        it.title = "Open Money Database"
-        it.initialDirectory = File(System.getProperty("user.home"))
-        it.extensionFilters.addAll(
+    private fun openDatabaseFile(): File? =
+        FileChooser().let {
+            it.title = "Open Money Database"
+            it.initialDirectory = File(System.getProperty("user.home"))
+            it.extensionFilters.addAll(
                 FileChooser.ExtensionFilter("Money Database Files", "*${FileDatabaseConnector.SUFFIX}"),
-                FileChooser.ExtensionFilter("All Files", "*"))
-        it.showOpenDialog(stage)
-    }
+                FileChooser.ExtensionFilter("All Files", "*"),
+            )
+            it.showOpenDialog(stage)
+        }
 
     override fun onCanceled() {
         // Do nothing
     }
 
-    override fun onConnected(database: ObservableMoneyDatabase, isFirstUse: Boolean) {
+    override fun onConnected(
+        database: ObservableMoneyDatabase,
+        isFirstUse: Boolean,
+    ) {
         // Do nothing
     }
 
     override fun onUnsupportedVersion() {
-
+        @Suppress("ktlint:standard:max-line-length")
         Alert(Alert.AlertType.ERROR).apply {
             title = "Error"
             headerText = "Could not open database file."
@@ -171,20 +176,20 @@ class ApplicationController : DatabaseConnectorDelegate, DatabaseConnectorCallba
     }
 
     override fun onPendingUpgrades(isFirstUse: Boolean): Boolean {
-
         return when (isFirstUse) {
-
             // always apply updates if this is the first time connecting to the database
             true -> true
 
-            else -> Alert(Alert.AlertType.CONFIRMATION).run {
-                title = "Confirm Upgrade"
-                headerText = "Database upgrade required."
-                contentText = "The database file requires an upgrade to work with this version of Money. This operation cannot be undone. It is recommended you make a backup of your existing file before upgrading it. Would you like to proceed with the upgrade?"
-                val result = showAndWait()
+            else ->
+                @Suppress("ktlint:standard:max-line-length")
+                Alert(Alert.AlertType.CONFIRMATION).run {
+                    title = "Confirm Upgrade"
+                    headerText = "Database upgrade required."
+                    contentText = "The database file requires an upgrade to work with this version of Money. This operation cannot be undone. It is recommended you make a backup of your existing file before upgrading it. Would you like to proceed with the upgrade?"
+                    val result = showAndWait()
 
-                result.isPresent && result.get() == ButtonType.OK
-            }
+                    result.isPresent && result.get() == ButtonType.OK
+                }
         }
     }
 

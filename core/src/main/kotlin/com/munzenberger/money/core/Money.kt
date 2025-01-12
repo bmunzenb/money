@@ -8,34 +8,34 @@ import java.text.ParseException
 import java.util.Currency
 import java.util.Locale
 
-class Money private constructor(val currency: Currency, val value: Long): Comparable<Money> {
-
+class Money private constructor(val currency: Currency, val value: Long) : Comparable<Money> {
     companion object {
-
         val ZERO: Money by lazy { zero() }
 
         private val defaultCurrency = Currency.getInstance("USD")
 
         private val defaultLocale = Locale.getDefault()
 
-        fun zero(currency: Currency = defaultCurrency) =
-                valueOf(0, currency)
+        fun zero(currency: Currency = defaultCurrency) = valueOf(0, currency)
 
-        fun valueOf(value: Long, currency: Currency = defaultCurrency) =
-                Money(currency, value)
+        fun valueOf(
+            value: Long,
+            currency: Currency = defaultCurrency,
+        ) = Money(currency, value)
 
         @Throws(ParseException::class)
         fun valueOf(
-                fraction: String,
-                currency: Currency = defaultCurrency,
-                locale: Locale = defaultLocale
+            fraction: String,
+            currency: Currency = defaultCurrency,
+            locale: Locale = defaultLocale,
         ): Money {
+            val format =
+                (NumberFormat.getNumberInstance(locale) as DecimalFormat).apply {
+                    isParseBigDecimal = true
+                }
 
-            val format = (NumberFormat.getNumberInstance(locale) as DecimalFormat).apply {
-                isParseBigDecimal = true
-            }
-
-            val f = (format.parse(fraction) as BigDecimal)
+            val f =
+                (format.parse(fraction) as BigDecimal)
                     // round down to the nearest fractional digit
                     .setScale(currency.defaultFractionDigits, RoundingMode.FLOOR)
 
@@ -44,15 +44,19 @@ class Money private constructor(val currency: Currency, val value: Long): Compar
             return Money(currency, v)
         }
 
-        private fun fractionToValue(currency: Currency, fraction: BigDecimal): Long {
-
+        private fun fractionToValue(
+            currency: Currency,
+            fraction: BigDecimal,
+        ): Long {
             val multiplier = getMultiplier(currency.defaultFractionDigits)
 
             return fraction.multiply(multiplier).longValueExact()
         }
 
-        private fun valueToFraction(currency: Currency, value: Long): BigDecimal {
-
+        private fun valueToFraction(
+            currency: Currency,
+            value: Long,
+        ): BigDecimal {
             val divisor = getMultiplier(currency.defaultFractionDigits)
 
             val b = BigDecimal.valueOf(value)
@@ -61,7 +65,6 @@ class Money private constructor(val currency: Currency, val value: Long): Compar
         }
 
         private fun getMultiplier(fractionDigits: Int): BigDecimal {
-
             var multiplier = BigDecimal.ONE
 
             repeat(fractionDigits) { multiplier *= BigDecimal.TEN }
@@ -70,14 +73,14 @@ class Money private constructor(val currency: Currency, val value: Long): Compar
         }
     }
 
-    override fun compareTo(other: Money) = when {
-        other.value > this.value -> -1
-        other.value < this.value -> 1
-        else -> 0
-    }
+    override fun compareTo(other: Money) =
+        when {
+            other.value > this.value -> -1
+            other.value < this.value -> 1
+            else -> 0
+        }
 
     operator fun plus(money: Money): Money {
-
         if (currency != money.currency) {
             throw UnsupportedOperationException("Can't add money values of different currencies: $currency != ${money.currency}")
         }
@@ -87,7 +90,6 @@ class Money private constructor(val currency: Currency, val value: Long): Compar
     }
 
     operator fun minus(money: Money): Money {
-
         if (currency != money.currency) {
             throw UnsupportedOperationException("Can't subtract money values of different currencies: $currency != ${money.currency}")
         }
@@ -101,24 +103,24 @@ class Money private constructor(val currency: Currency, val value: Long): Compar
     override fun toString() = toString(defaultLocale)
 
     fun toString(locale: Locale): String {
-
         val fraction = valueToFraction(currency, value)
 
-        val format = NumberFormat.getCurrencyInstance(locale.accountNumberFormat).apply {
-            this.currency = this@Money.currency
-        }
+        val format =
+            NumberFormat.getCurrencyInstance(locale.accountNumberFormat).apply {
+                this.currency = this@Money.currency
+            }
 
         return format.format(fraction)
     }
 
     fun toStringWithoutCurrency(locale: Locale = defaultLocale): String {
-
         val fraction = valueToFraction(currency, value)
 
-        val format = NumberFormat.getInstance(locale).apply {
-            maximumFractionDigits = currency.defaultFractionDigits
-            minimumFractionDigits = currency.defaultFractionDigits
-        }
+        val format =
+            NumberFormat.getInstance(locale).apply {
+                maximumFractionDigits = currency.defaultFractionDigits
+                minimumFractionDigits = currency.defaultFractionDigits
+            }
 
         return format.format(fraction)
     }
@@ -152,7 +154,8 @@ val Money.isPositive: Boolean
     get() = value > 0L
 
 private val Locale.accountNumberFormat: Locale
-    get() = Locale.Builder()
-        .setLocale(this)
-        .setExtension(Locale.UNICODE_LOCALE_EXTENSION, "cf-account")
-        .build()
+    get() =
+        Locale.Builder()
+            .setLocale(this)
+            .setExtension(Locale.UNICODE_LOCALE_EXTENSION, "cf-account")
+            .build()

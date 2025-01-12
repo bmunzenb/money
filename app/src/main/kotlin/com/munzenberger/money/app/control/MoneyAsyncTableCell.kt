@@ -9,7 +9,6 @@ import javafx.scene.control.TableColumn
 import javafx.util.Callback
 
 class MoneyAsyncTableCell<S> : AsyncTableCell<S, Money>() {
-
     override fun onComplete(value: Money) {
         super.onComplete(value)
         pseudoClassStateChanged(moneyNegativePseudoClass, value.isNegative)
@@ -17,6 +16,5 @@ class MoneyAsyncTableCell<S> : AsyncTableCell<S, Money>() {
 }
 
 class MoneyAsyncTableCellFactory<S> : Callback<TableColumn<S, AsyncObject<Money>>, TableCell<S, AsyncObject<Money>>> {
-
     override fun call(param: TableColumn<S, AsyncObject<Money>>?) = MoneyAsyncTableCell<S>()
 }

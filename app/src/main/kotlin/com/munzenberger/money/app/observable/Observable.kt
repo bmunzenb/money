@@ -1,10 +1,13 @@
 package com.munzenberger.money.app.observable
 
-import java.util.*
+import java.util.Collections
 import java.util.concurrent.Executor
 
 interface Observable {
-    fun subscribe(executor: Executor, block: Runnable): Subscription
+    fun subscribe(
+        executor: Executor,
+        block: Runnable,
+    ): Subscription
 }
 
 interface Subscription {
@@ -12,7 +15,6 @@ interface Subscription {
 }
 
 class CompositeSubscription : Subscription {
-
     private val subscriptions = mutableListOf<Subscription>()
 
     fun add(subscription: Subscription) {
@@ -30,10 +32,12 @@ class CompositeSubscription : Subscription {
 }
 
 class ObservableImpl : Observable {
-
     private val subscribers = Collections.synchronizedList(mutableListOf<Pair<Executor, Runnable>>())
 
-    override fun subscribe(executor: Executor, block: Runnable): Subscription {
+    override fun subscribe(
+        executor: Executor,
+        block: Runnable,
+    ): Subscription {
         val pair = executor to block
         subscribers.add(pair)
         executor.execute(block)

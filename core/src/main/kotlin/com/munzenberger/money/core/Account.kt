@@ -10,7 +10,6 @@ import java.sql.ResultSet
 data class AccountIdentity(override val value: Long) : Identity
 
 class Account internal constructor(model: AccountModel) : AbstractMoneyEntity<AccountIdentity, AccountModel>(model, AccountTable) {
-
     constructor() : this(AccountModel())
 
     override val identity: AccountIdentity?
@@ -18,11 +17,15 @@ class Account internal constructor(model: AccountModel) : AbstractMoneyEntity<Ac
 
     var name: String?
         get() = model.name
-        set(value) { model.name = value }
+        set(value) {
+            model.name = value
+        }
 
     var number: String?
         get() = model.number
-        set(value) { model.number = value }
+        set(value) {
+            model.number = value
+        }
 
     var accountType: AccountType? = null
 
@@ -30,31 +33,33 @@ class Account internal constructor(model: AccountModel) : AbstractMoneyEntity<Ac
 
     var initialBalance: Money?
         get() = model.initialBalance?.let { Money.valueOf(it) }
-        set(value) { model.initialBalance = value?.value }
+        set(value) {
+            model.initialBalance = value?.value
+        }
 
-    override fun save(executor: QueryExecutor) = executor.transaction { tx ->
-        model.accountType = accountType.getIdentity(tx)?.value
-        model.bank = bank.getIdentity(tx)?.value
-        super.save(tx)
-    }
+    override fun save(executor: QueryExecutor) =
+        executor.transaction { tx ->
+            model.accountType = accountType.getIdentity(tx)?.value
+            model.bank = bank.getIdentity(tx)?.value
+            super.save(tx)
+        }
 
     companion object {
+        fun getAll(executor: QueryExecutor) = getAll(executor, AccountTable, AccountResultSetMapper())
 
-        fun getAll(executor: QueryExecutor) =
-                getAll(executor, AccountTable, AccountResultSetMapper())
-
-        fun get(identity: AccountIdentity, executor: QueryExecutor) =
-                get(identity, executor, AccountTable, AccountResultSetMapper())
+        fun get(
+            identity: AccountIdentity,
+            executor: QueryExecutor,
+        ) = get(identity, executor, AccountTable, AccountResultSetMapper())
     }
 }
 
 class AccountResultSetMapper : ResultSetMapper<Account> {
-
     override fun apply(resultSet: ResultSet): Account {
-
-        val model = AccountModel().apply {
-            AccountTable.getValues(resultSet, this)
-        }
+        val model =
+            AccountModel().apply {
+                AccountTable.getValues(resultSet, this)
+            }
 
         return Account(model).apply {
             accountType = model.accountType?.let { AccountTypeResultSetMapper().apply(resultSet) }

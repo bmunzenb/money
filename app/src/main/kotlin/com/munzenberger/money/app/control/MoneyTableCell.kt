@@ -8,11 +8,13 @@ import javafx.scene.control.TableColumn
 import javafx.util.Callback
 
 class MoneyTableCell<S>(
-        private val withCurrency: Boolean,
-        private val negativeStyle: Boolean
+    private val withCurrency: Boolean,
+    private val negativeStyle: Boolean,
 ) : TableCell<S, Money>() {
-
-    override fun updateItem(value: Money?, empty: Boolean) {
+    override fun updateItem(
+        value: Money?,
+        empty: Boolean,
+    ) {
         super.updateItem(item, empty)
 
         text = value?.text(withCurrency)
@@ -25,15 +27,14 @@ class MoneyTableCell<S>(
 }
 
 class MoneyTableCellFactory<S>(
-        private val withCurrency: Boolean = true,
-        private val negativeStyle: Boolean = true
+    private val withCurrency: Boolean = true,
+    private val negativeStyle: Boolean = true,
 ) : Callback<TableColumn<S, Money>, TableCell<S, Money>> {
-
-    override fun call(param: TableColumn<S, Money>?) =
-            MoneyTableCell<S>(withCurrency, negativeStyle)
+    override fun call(param: TableColumn<S, Money>?) = MoneyTableCell<S>(withCurrency, negativeStyle)
 }
 
-private fun Money.text(withCurrency: Boolean) = when (withCurrency) {
-    true -> toString()
-    else -> toStringWithoutCurrency()
-}
+private fun Money.text(withCurrency: Boolean) =
+    when (withCurrency) {
+        true -> toString()
+        else -> toStringWithoutCurrency()
+    }

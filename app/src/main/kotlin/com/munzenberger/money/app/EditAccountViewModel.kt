@@ -16,7 +16,6 @@ import javafx.beans.property.SimpleStringProperty
 import javafx.concurrent.Task
 
 class EditAccountViewModel {
-
     private lateinit var database: MoneyDatabase
     private lateinit var account: Account
 
@@ -35,8 +34,10 @@ class EditAccountViewModel {
     val isOperationInProgressProperty: ReadOnlyBooleanProperty = isOperationInProgress
     val notValidProperty: ReadOnlyBooleanProperty = notValid
 
-    fun start(database: MoneyDatabase, account: Account) {
-
+    fun start(
+        database: MoneyDatabase,
+        account: Account,
+    ) {
         this.database = database
         this.account = account
 
@@ -58,30 +59,28 @@ class EditAccountViewModel {
     }
 
     fun save(block: (Throwable?) -> Unit) {
+        val task =
+            object : Task<Unit>() {
+                override fun call() {
+                    account.apply {
+                        name = accountNameProperty.value
+                        accountType = selectedAccountTypeProperty.value
+                        number = accountNumberProperty.value
+                        bank = selectedBankProperty.value
+                        initialBalance = initialBalanceProperty.value
 
-        val task = object : Task<Unit>() {
+                        save(database)
+                    }
+                }
 
-            override fun call() {
-                account.apply {
+                override fun succeeded() {
+                    block.invoke(null)
+                }
 
-                    name = accountNameProperty.value
-                    accountType = selectedAccountTypeProperty.value
-                    number = accountNumberProperty.value
-                    bank = selectedBankProperty.value
-                    initialBalance = initialBalanceProperty.value
-
-                    save(database)
+                override fun failed() {
+                    block.invoke(exception)
                 }
             }
-
-            override fun succeeded() {
-                block.invoke(null)
-            }
-
-            override fun failed() {
-                block.invoke(exception)
-            }
-        }
 
         isOperationInProgress.bind(task.runningProperty())
 

@@ -8,15 +8,12 @@ import com.munzenberger.money.sql.Query
 import javafx.beans.property.SimpleStringProperty
 import javafx.collections.FXCollections
 import javafx.collections.ObservableList
-import java.sql.ResultSet
-import java.util.function.Consumer
 
 class QueryViewModel {
-
     data class QueryResult(
-            val columns: MutableList<String> = mutableListOf(),
-            val data: ObservableList<List<Any?>> = FXCollections.observableArrayList(),
-            var message: String? = null
+        val columns: MutableList<String> = mutableListOf(),
+        val data: ObservableList<List<Any?>> = FXCollections.observableArrayList(),
+        var message: String? = null,
     )
 
     private val result = SimpleAsyncObjectProperty<QueryResult>()
@@ -43,7 +40,6 @@ class QueryViewModel {
     }
 
     private fun executeQuery(input: String): QueryResult {
-
         val result = QueryResult()
 
         database.executeQuery(Query(input)) { resultSet ->
@@ -70,7 +66,6 @@ class QueryViewModel {
     }
 
     private fun executeUpdate(input: String): QueryResult {
-
         val updated = database.executeUpdate(Query(input))
 
         return QueryResult(message = "$updated row(s) updated.")

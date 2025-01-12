@@ -14,7 +14,6 @@ import javafx.beans.property.SimpleStringProperty
 import java.io.File
 
 class ApplicationViewModel : AutoCloseable {
-
     companion object {
         const val DEFAULT_TITLE = "Money"
     }
@@ -29,14 +28,18 @@ class ApplicationViewModel : AutoCloseable {
 
     init {
         connectedDatabaseProperty.addListener { _, _, db ->
-            title.value = when (db) {
-                null -> DEFAULT_TITLE
-                else -> "${db.name} - $DEFAULT_TITLE"
-            }
+            title.value =
+                when (db) {
+                    null -> DEFAULT_TITLE
+                    else -> "${db.name} - $DEFAULT_TITLE"
+                }
         }
     }
 
-    fun openFileDatabase(file: File, callbacks: DatabaseConnectorCallbacks) {
+    fun openFileDatabase(
+        file: File,
+        callbacks: DatabaseConnectorCallbacks,
+    ) {
         connectToDatabase(FileDatabaseConnector(file), callbacks)
     }
 
@@ -44,17 +47,23 @@ class ApplicationViewModel : AutoCloseable {
         connectToDatabase(MemoryDatabaseConnector(), callbacks)
     }
 
-    private fun connectToDatabase(connector: DatabaseConnector, callbacks: DatabaseConnectorCallbacks, ) {
-
+    private fun connectToDatabase(
+        connector: DatabaseConnector,
+        callbacks: DatabaseConnectorCallbacks,
+    ) {
         isConnectionInProgress.bind(connector.isConnectionInProgressProperty)
 
-        val callbacksWrapper = object : DatabaseConnectorCallbacks by callbacks {
-            override fun onConnected(database: ObservableMoneyDatabase, isFirstUse: Boolean) {
-                callbacks.onConnected(database, isFirstUse)
-                connectedDatabase.value?.close()
-                connectedDatabase.value = database
+        val callbacksWrapper =
+            object : DatabaseConnectorCallbacks by callbacks {
+                override fun onConnected(
+                    database: ObservableMoneyDatabase,
+                    isFirstUse: Boolean,
+                ) {
+                    callbacks.onConnected(database, isFirstUse)
+                    connectedDatabase.value?.close()
+                    connectedDatabase.value = database
+                }
             }
-        }
 
         connector.connect(callbacksWrapper)
     }

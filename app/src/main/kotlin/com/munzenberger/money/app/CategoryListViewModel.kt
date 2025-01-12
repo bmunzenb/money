@@ -10,7 +10,6 @@ import com.munzenberger.money.app.property.SimpleAsyncObjectProperty
 import com.munzenberger.money.core.Category
 
 class CategoryListViewModel : AutoCloseable {
-
     private val categories = SimpleAsyncObjectProperty<List<FXCategory>>()
 
     val categoriesProperty: ReadOnlyAsyncObjectProperty<List<FXCategory>> = categories
@@ -21,8 +20,8 @@ class CategoryListViewModel : AutoCloseable {
         database.subscribe {
             categories.setValueAsync {
                 Category.getAllWithParent(database)
-                        .map { FXCategory(it.category, it.parentName) }
-                        .sortedBy { it.nameProperty.value }
+                    .map { FXCategory(it.category, it.parentName) }
+                    .sortedBy { it.nameProperty.value }
             }
         }.also { subscriptions.add(it) }
     }

@@ -32,10 +32,9 @@ import java.sql.ResultSet
 import java.time.LocalDate
 
 class EditTransferViewModel {
-
     private data class TransferResult(
-            val transfer: TransferEntry,
-            val transaction: Transaction
+        val transfer: TransferEntry,
+        val transaction: Transaction,
     )
 
     private val types = SimpleListProperty<TransactionType>()
@@ -63,59 +62,71 @@ class EditTransferViewModel {
     private lateinit var transaction: Transaction
 
     init {
-        notValid.bind(disabledProperty
+        notValid.bind(
+            disabledProperty
                 .or(selectedTypeProperty.isNull)
                 .or(dateProperty.isNull)
-                .or(amountProperty.isNull))
+                .or(amountProperty.isNull),
+        )
     }
 
-    fun start(database: MoneyDatabase, transferId: TransferEntryIdentity, onError: (Throwable) -> Unit) {
-
+    fun start(
+        database: MoneyDatabase,
+        transferId: TransferEntryIdentity,
+        onError: (Throwable) -> Unit,
+    ) {
         this.database = database
 
         payees.setValueAsync { Payee.getAll(database).sortedBy { it.name } }
 
-        val task = object : Task<TransferResult>() {
+        val task =
+            object : Task<TransferResult>() {
+                override fun call(): TransferResult {
+                    return getTransferResult(database, transferId)
+                }
 
-            override fun call(): TransferResult {
-                return getTransferResult(database, transferId)
-            }
+                override fun succeeded() {
+                    value.let { onTransferResult(it.transfer, it.transaction) }
+                }
 
-            override fun succeeded() {
-                value.let { onTransferResult(it.transfer, it.transaction) }
+                override fun failed() {
+                    onError.invoke(exception)
+                }
             }
-
-            override fun failed() {
-                onError.invoke(exception)
-            }
-        }
 
         Executors.SINGLE.execute(task)
     }
 
-    private fun getTransferResult(database: MoneyDatabase, transferId: TransferEntryIdentity): TransferResult {
-
+    private fun getTransferResult(
+        database: MoneyDatabase,
+        transferId: TransferEntryIdentity,
+    ): TransferResult {
         var transactionId: TransactionIdentity? = null
 
-        val transferMapper = object : ResultSetMapper<TransferEntry> {
-            override fun apply(rs: ResultSet): TransferEntry {
-                transactionId = TransactionIdentity(rs.getLong(TransferEntryTable.transactionColumn))
-                return TransferEntryResultSetMapper().apply(rs)
+        val transferMapper =
+            object : ResultSetMapper<TransferEntry> {
+                override fun apply(rs: ResultSet): TransferEntry {
+                    transactionId = TransactionIdentity(rs.getLong(TransferEntryTable.TRANSFER_ENTRY_TRANSACTION_ID))
+                    return TransferEntryResultSetMapper().apply(rs)
+                }
             }
-        }
 
-        val transfer = TransferEntryTable.select(transferId.value)
+        val transfer =
+            TransferEntryTable.select(transferId.value)
                 .let { database.getFirst(it, transferMapper) }
                 ?: throw PersistableNotFoundException(TransferEntry::class, transferId)
 
-        val transaction = Transaction.get(transactionId!!, database)
+        val transaction =
+            Transaction.get(transactionId!!, database)
                 ?: throw PersistableNotFoundException(Transaction::class, transactionId!!)
 
         return TransferResult(transfer = transfer, transaction = transaction)
     }
 
-    private fun onTransferResult(transfer: TransferEntry, transaction: Transaction) {
-
+    private fun onTransferResult(
+        transfer: TransferEntry,
+        transaction: Transaction,
+    ) {
         this.transferEntry = transfer
         this.transaction = transaction
 
@@ -125,10 +136,11 @@ class EditTransferViewModel {
 
         // transfers follow the opposite rules from transactions:
         // a negative amount is a credit to the transfer account
-        val selectedTypeVariant = when (transfer.amount?.isNegative) {
-            true -> TransactionType.Variant.CREDIT
-            else -> TransactionType.Variant.DEBIT
-        }
+        val selectedTypeVariant =
+            when (transfer.amount?.isNegative) {
+                true -> TransactionType.Variant.CREDIT
+                else -> TransactionType.Variant.DEBIT
+            }
 
         selectedTypeProperty.value = typesList.find { it.variant == selectedTypeVariant }
 
@@ -148,36 +160,34 @@ class EditTransferViewModel {
     }
 
     fun save(block: (Throwable?) -> Unit) {
+        val task =
+            object : Task<Unit>() {
+                override fun call() {
+                    database.transaction { tx ->
 
-        val task = object : Task<Unit>() {
+                        transaction.apply {
+                            this.date = dateProperty.value
+                            this.payee = selectedPayeeProperty.value
+                            save(tx)
+                        }
 
-            override fun call() {
-
-                database.transaction { tx ->
-
-                    transaction.apply {
-                        this.date = dateProperty.value
-                        this.payee = selectedPayeeProperty.value
-                        save(tx)
-                    }
-
-                    transferEntry.apply {
-                        this.number = numberProperty.value
-                        this.amount = amountProperty.value.forTransferType(selectedTypeProperty.value)
-                        this.memo = memoProperty.value
-                        save(tx)
+                        transferEntry.apply {
+                            this.number = numberProperty.value
+                            this.amount = amountProperty.value.forTransferType(selectedTypeProperty.value)
+                            this.memo = memoProperty.value
+                            save(tx)
+                        }
                     }
                 }
-            }
 
-            override fun succeeded() {
-                block.invoke(null)
-            }
+                override fun succeeded() {
+                    block.invoke(null)
+                }
 
-            override fun failed() {
-                block.invoke(exception)
+                override fun failed() {
+                    block.invoke(exception)
+                }
             }
-        }
 
         isOperationInProgress.bind(task.runningProperty())
 

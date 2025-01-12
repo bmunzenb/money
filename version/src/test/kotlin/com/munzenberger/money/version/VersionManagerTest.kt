@@ -9,7 +9,6 @@ import org.junit.Assert.fail
 import org.junit.Test
 
 class VersionManagerTest {
-
     private class TestableVersion(override val versionId: Long) : ApplicableVersion<Any> {
         override fun apply(obj: Any) {
             // do nothing
@@ -17,22 +16,23 @@ class VersionManagerTest {
     }
 
     private class TestableVersionManager(
-            val applicable: List<ApplicableVersion<Any>>,
-            val applied: List<Version>
+        val applicable: List<ApplicableVersion<Any>>,
+        val applied: List<Version>,
     ) : VersionManager<Any>() {
-
         override fun getApplicableVersions() = applicable
 
         override fun getAppliedVersions(obj: Any) = applied
 
-        override fun onVersionApplied(obj: Any, version: Version) {
+        override fun onVersionApplied(
+            obj: Any,
+            version: Version,
+        ) {
             // do nothing
         }
     }
 
     @Test
     fun `get version status with no versions applied or applicable returns Current`() {
-
         val vm = TestableVersionManager(applicable = emptyList(), applied = emptyList())
 
         assertEquals(VersionStatus.CurrentVersion, vm.getVersionStatus(Unit))
@@ -40,7 +40,6 @@ class VersionManagerTest {
 
     @Test
     fun `get version status with versions applied and applicable returns Current`() {
-
         val versions = listOf(TestableVersion(1L))
 
         val vm = TestableVersionManager(applicable = versions, applied = versions)
@@ -50,7 +49,6 @@ class VersionManagerTest {
 
     @Test
     fun `get version status with applied and no applicable versions returns Unsupported`() {
-
         val applied = listOf(TestableVersion(1L))
 
         val vm = TestableVersionManager(applicable = emptyList(), applied = applied)
@@ -60,7 +58,6 @@ class VersionManagerTest {
 
     @Test
     fun `get version status with applied and different applicable versions returns Unsupported`() {
-
         val applied = listOf(TestableVersion(1L))
         val applicable = listOf(TestableVersion(2L))
 
@@ -71,7 +68,6 @@ class VersionManagerTest {
 
     @Test
     fun `get version status with no applied and applicable versions returns Pending with first flag`() {
-
         val applicable = listOf(TestableVersion(1L))
 
         val vm = TestableVersionManager(applicable = applicable, applied = emptyList())
@@ -83,7 +79,6 @@ class VersionManagerTest {
 
     @Test
     fun `get version status with applied and more applicable versions returns Pending without first flag`() {
-
         val applied = listOf(TestableVersion(1L))
         val applicable = applied + TestableVersion(2L)
 
@@ -96,7 +91,6 @@ class VersionManagerTest {
 
     @Test
     fun `applying pending versions calls onVersionApplied for each version`() {
-
         val version1 = TestableVersion(1L)
         val version2 = TestableVersion(2L)
 
@@ -109,7 +103,6 @@ class VersionManagerTest {
         val spy = spyk(vm, recordPrivateCalls = true)
 
         when (val status = spy.getVersionStatus(obj)) {
-
             is VersionStatus.PendingUpgrades -> {
                 status.apply()
                 verify {

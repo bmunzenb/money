@@ -3,7 +3,6 @@ package com.munzenberger.money.core
 import com.munzenberger.money.sql.QueryExecutor
 
 internal class PersistableIdentityReference<I : Identity>(private var identity: I?) {
-
     private var value: MoneyEntity<I>? = null
     private var dirty = false
 

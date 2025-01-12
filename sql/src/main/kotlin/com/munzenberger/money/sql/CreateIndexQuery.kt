@@ -1,10 +1,18 @@
 package com.munzenberger.money.sql
 
-fun QueryExecutor.createIndex(name: String, table: String, block: IndexDefinition.() -> Unit) {
+fun QueryExecutor.createIndex(
+    name: String,
+    table: String,
+    block: IndexDefinition.() -> Unit,
+) {
     execute(createIndexQuery(name, table, block))
 }
 
-fun createIndexQuery(name: String, table: String, block: IndexDefinition.() -> Unit): Query {
+fun createIndexQuery(
+    name: String,
+    table: String,
+    block: IndexDefinition.() -> Unit,
+): Query {
     val def = IndexDefinition(name, table)
     def.block()
     return def.toQuery()
@@ -12,7 +20,6 @@ fun createIndexQuery(name: String, table: String, block: IndexDefinition.() -> U
 
 @CreateIndexQuery
 class IndexDefinition(name: String, table: String) {
-
     private val builder = CreateIndexQueryBuilder(name, table)
 
     fun unique() {

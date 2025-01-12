@@ -11,7 +11,6 @@ import java.sql.ResultSet
 data class CategoryIdentity(override val value: Long) : Identity
 
 class Category internal constructor(model: CategoryModel) : AbstractMoneyEntity<CategoryIdentity, CategoryModel>(model, CategoryTable) {
-
     constructor() : this(CategoryModel())
 
     override val identity: CategoryIdentity?
@@ -19,7 +18,9 @@ class Category internal constructor(model: CategoryModel) : AbstractMoneyEntity<
 
     var name: String?
         get() = model.name
-        set(value) { model.name = value }
+        set(value) {
+            model.name = value
+        }
 
     internal val parentRef = PersistableIdentityReference(model.parent?.let { CategoryIdentity(it) })
 
@@ -29,30 +30,32 @@ class Category internal constructor(model: CategoryModel) : AbstractMoneyEntity<
 
     var type: CategoryType?
         get() = model.type
-        set(value) { model.type = value }
+        set(value) {
+            model.type = value
+        }
 
-    override fun save(executor: QueryExecutor) = executor.transaction { tx ->
-        model.parent = parentRef.getIdentity(tx)?.value
-        super.save(tx)
-    }
+    override fun save(executor: QueryExecutor) =
+        executor.transaction { tx ->
+            model.parent = parentRef.getIdentity(tx)?.value
+            super.save(tx)
+        }
 
     companion object {
+        fun getAll(executor: QueryExecutor) = getAll(executor, CategoryTable, CategoryResultSetMapper())
 
-        fun getAll(executor: QueryExecutor) =
-                getAll(executor, CategoryTable, CategoryResultSetMapper())
-
-        fun get(identity: CategoryIdentity, executor: QueryExecutor) =
-                get(identity, executor, CategoryTable, CategoryResultSetMapper())
+        fun get(
+            identity: CategoryIdentity,
+            executor: QueryExecutor,
+        ) = get(identity, executor, CategoryTable, CategoryResultSetMapper())
     }
 }
 
 class CategoryResultSetMapper : ResultSetMapper<Category> {
-
     override fun apply(resultSet: ResultSet): Category {
-
-        val model = CategoryModel().apply {
-            CategoryTable.getValues(resultSet, this)
-        }
+        val model =
+            CategoryModel().apply {
+                CategoryTable.getValues(resultSet, this)
+            }
 
         return Category(model)
     }

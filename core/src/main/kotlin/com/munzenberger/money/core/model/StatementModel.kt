@@ -4,38 +4,43 @@ import com.munzenberger.money.sql.SettableQueryBuilder
 import java.sql.ResultSet
 
 data class StatementModel(
-        var account: Long? = null,
-        var closingDate: Long? = null,
-        var startingBalance: Long? = null,
-        var endingBalance: Long? = null,
-        var isReconciled: Boolean? = null
+    var account: Long? = null,
+    var closingDate: Long? = null,
+    var startingBalance: Long? = null,
+    var endingBalance: Long? = null,
+    var isReconciled: Boolean? = null,
 ) : Model()
 
-object StatementTable: Table<StatementModel>() {
-
+object StatementTable : Table<StatementModel>() {
     override val tableName = "STATEMENTS"
     override val identityColumn = "STATEMENT_ID"
 
-    const val accountColumn = "STATEMENT_ACCOUNT_ID"
-    const val closingDateColumn = "STATEMENT_CLOSING_DATE"
-    const val startingBalanceColumn = "STATEMENT_STARTING_BALANCE"
-    const val endingBalanceColumn = "STATEMENT_ENDING_BALANCE"
-    const val isReconciledColumn = "STATEMENT_IS_RECONCILED"
+    const val STATEMENT_ACCOUNT_ID = "STATEMENT_ACCOUNT_ID"
+    const val STATEMENT_CLOSING_DATE = "STATEMENT_CLOSING_DATE"
+    const val STATEMENT_STARTING_BALANCE = "STATEMENT_STARTING_BALANCE"
+    const val STATEMENT_ENDING_BALANCE = "STATEMENT_ENDING_BALANCE"
+    const val STATEMENT_IS_RECONCILED = "STATEMENT_IS_RECONCILED"
 
-    override fun setValues(settable: SettableQueryBuilder<*>, model: StatementModel) {
-        settable.set(accountColumn, model.account)
-        settable.set(closingDateColumn, model.closingDate)
-        settable.set(startingBalanceColumn, model.startingBalance)
-        settable.set(endingBalanceColumn, model.endingBalance)
-        settable.set(isReconciledColumn, model.isReconciled)
+    override fun setValues(
+        settable: SettableQueryBuilder<*>,
+        model: StatementModel,
+    ) {
+        settable.set(STATEMENT_ACCOUNT_ID, model.account)
+        settable.set(STATEMENT_CLOSING_DATE, model.closingDate)
+        settable.set(STATEMENT_STARTING_BALANCE, model.startingBalance)
+        settable.set(STATEMENT_ENDING_BALANCE, model.endingBalance)
+        settable.set(STATEMENT_IS_RECONCILED, model.isReconciled)
     }
 
-    override fun getValues(resultSet: ResultSet, model: StatementModel) {
+    override fun getValues(
+        resultSet: ResultSet,
+        model: StatementModel,
+    ) {
         model.identity = resultSet.getLong(identityColumn)
-        model.account = resultSet.getLong(accountColumn)
-        model.closingDate = resultSet.getLong(closingDateColumn)
-        model.startingBalance = resultSet.getLong(startingBalanceColumn)
-        model.endingBalance = resultSet.getLong(endingBalanceColumn)
-        model.isReconciled = resultSet.getBoolean(isReconciledColumn)
+        model.account = resultSet.getLong(STATEMENT_ACCOUNT_ID)
+        model.closingDate = resultSet.getLong(STATEMENT_CLOSING_DATE)
+        model.startingBalance = resultSet.getLong(STATEMENT_STARTING_BALANCE)
+        model.endingBalance = resultSet.getLong(STATEMENT_ENDING_BALANCE)
+        model.isReconciled = resultSet.getBoolean(STATEMENT_IS_RECONCILED)
     }
 }

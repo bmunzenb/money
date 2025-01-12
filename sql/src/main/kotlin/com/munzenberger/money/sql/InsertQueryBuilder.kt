@@ -2,7 +2,10 @@ package com.munzenberger.money.sql
 
 import java.lang.StringBuilder
 
-fun insertQuery(into: String, block: InsertQueryBuilder.() -> Unit): Query {
+fun insertQuery(
+    into: String,
+    block: InsertQueryBuilder.() -> Unit,
+): Query {
     val insertQueryBuilder = InsertQueryBuilder(table = into)
     insertQueryBuilder.block()
     return insertQueryBuilder.build()
@@ -10,18 +13,21 @@ fun insertQuery(into: String, block: InsertQueryBuilder.() -> Unit): Query {
 
 @InsertQueryMarker
 class InsertQueryBuilder(table: String) : SettableQueryBuilder<InsertQueryBuilder>(table) {
-
     override fun instance() = this
 
-    override fun build(table: String, parameters: Map<String, Any?>): Query {
-
+    override fun build(
+        table: String,
+        parameters: Map<String, Any?>,
+    ): Query {
         val sb = StringBuilder("INSERT INTO $table (")
         val params = mutableListOf<Any?>()
 
-        sb.append(parameters.entries.joinToString(separator = ", ") {
-            params.add(it.value)
-            it.key
-        })
+        sb.append(
+            parameters.entries.joinToString(separator = ", ") {
+                params.add(it.value)
+                it.key
+            },
+        )
 
         sb.append(") VALUES (")
         sb.append(parameters.entries.map { '?' }.joinToString(", "))

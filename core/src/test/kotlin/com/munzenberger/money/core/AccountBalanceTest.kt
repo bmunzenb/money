@@ -4,30 +4,30 @@ import org.junit.Assert
 import org.junit.Test
 
 class AccountBalanceTest : MoneyDatabaseTestSupport() {
-
     @Test
     fun getBalance() {
+        val account1 =
+            Account().apply {
+                randomize()
+                initialBalance = Money.valueOf(100)
+                save(database)
+            }
 
-        val account1 = Account().apply {
-            randomize()
-            initialBalance = Money.valueOf(100)
-            save(database)
-        }
+        val account2 =
+            Account().apply {
+                randomize()
+                initialBalance = Money.valueOf(-100)
+                save(database)
+            }
 
-        val account2 = Account().apply {
-            randomize()
-            initialBalance = Money.valueOf(-100)
-            save(database)
-        }
-
-        val transaction1 = Transaction().apply {
-            randomize()
-            account = account1
-            save(database)
-        }
+        val transaction1 =
+            Transaction().apply {
+                randomize()
+                account = account1
+                save(database)
+            }
 
         transaction1.let {
-
             TransferEntry().apply {
                 setTransaction(it)
                 account = account2

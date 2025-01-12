@@ -21,20 +21,28 @@ import javafx.stage.Stage
 import java.net.URL
 
 class EditTransferController {
-
     companion object {
         val LAYOUT: URL = EditTransferController::class.java.getResource("EditTransferLayout.fxml")!!
     }
 
     @FXML lateinit var container: Node
+
     @FXML lateinit var typeComboBox: ComboBox<TransactionType>
+
     @FXML lateinit var datePicker: DatePicker
+
     @FXML lateinit var numberTextField: TextField
+
     @FXML lateinit var payeeComboBox: ComboBox<Payee>
+
     @FXML lateinit var amountTextField: TextField
+
     @FXML lateinit var memoTextField: TextField
+
     @FXML lateinit var statusLabel: Label
+
     @FXML lateinit var saveButton: Button
+
     @FXML lateinit var cancelButton: Button
 
     // TODO remove reference to stage in controller
@@ -43,9 +51,7 @@ class EditTransferController {
     private val viewModel = EditTransferViewModel()
 
     fun initialize() {
-
         typeComboBox.apply {
-
             cellFactory = TextListCellFactory(TransactionType::name)
             buttonCell = cellFactory.call(null)
 
@@ -66,7 +72,6 @@ class EditTransferController {
         }
 
         payeeComboBox.apply {
-
             val payeeConverter = BlockStringConverter(Payee::name) { Payee().apply { name = it } }
 
             cellFactory = TextListCellFactory(payeeConverter::toString)
@@ -84,12 +89,12 @@ class EditTransferController {
         }
 
         amountTextField.apply {
-
             val moneyConverter = MoneyStringConverter()
 
-            textFormatter = TextFormatter(moneyConverter).apply {
-                valueProperty().bindBidirectional(viewModel.amountProperty)
-            }
+            textFormatter =
+                TextFormatter(moneyConverter).apply {
+                    valueProperty().bindBidirectional(viewModel.amountProperty)
+                }
 
             disableProperty().bind(viewModel.disabledProperty)
         }
@@ -106,8 +111,11 @@ class EditTransferController {
         container.disableProperty().bind(viewModel.isOperationInProgressProperty)
     }
 
-    fun start(stage: Stage, database: MoneyDatabase, transferId: TransferEntryIdentity) {
-
+    fun start(
+        stage: Stage,
+        database: MoneyDatabase,
+        transferId: TransferEntryIdentity,
+    ) {
         this.stage = stage
 
         stage.minWidth = stage.width

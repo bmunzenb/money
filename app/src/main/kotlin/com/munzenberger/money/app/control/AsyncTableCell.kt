@@ -10,18 +10,23 @@ import javafx.scene.paint.Color
 import javafx.util.Callback
 
 open class AsyncTableCell<S, T>(
-        private val toString: (T) -> String = { it.toString() }
+    private val toString: (T) -> String = { it.toString() },
 ) : TableCell<S, AsyncObject<T>>() {
-
-    override fun updateItem(item: AsyncObject<T>?, empty: Boolean) {
+    override fun updateItem(
+        item: AsyncObject<T>?,
+        empty: Boolean,
+    ) {
         super.updateItem(item, empty)
 
-        if (empty || item == null) onEmpty()
-        else when (item) {
-            is AsyncObject.Pending<T> -> onPending()
-            is AsyncObject.Executing<T> -> onExecuting()
-            is AsyncObject.Complete<T> -> onComplete(item.value)
-            is AsyncObject.Error<T> -> onError(item.error)
+        if (empty || item == null) {
+            onEmpty()
+        } else {
+            when (item) {
+                is AsyncObject.Pending<T> -> onPending()
+                is AsyncObject.Executing<T> -> onExecuting()
+                is AsyncObject.Complete<T> -> onComplete(item.value)
+                is AsyncObject.Error<T> -> onError(item.error)
+            }
         }
     }
 
@@ -36,10 +41,11 @@ open class AsyncTableCell<S, T>(
 
     open fun onExecuting() {
         text = null
-        graphic = ProgressIndicator().apply {
-            setPrefSize(12.0, 12.0)
-            setMaxSize(12.0, 12.0)
-        }
+        graphic =
+            ProgressIndicator().apply {
+                setPrefSize(12.0, 12.0)
+                setMaxSize(12.0, 12.0)
+            }
     }
 
     open fun onComplete(value: T) {
@@ -49,16 +55,16 @@ open class AsyncTableCell<S, T>(
 
     open fun onError(error: Throwable) {
         text = null
-        graphic = Hyperlink(error.message).apply {
-            textFill = Color.RED
-            setOnAction { ErrorAlert(error).showAndWait() }
-        }
+        graphic =
+            Hyperlink(error.message).apply {
+                textFill = Color.RED
+                setOnAction { ErrorAlert(error).showAndWait() }
+            }
     }
 }
 
 class AsyncTableCellFactory<S, T>(
-        private val toString: (T) -> String = { it.toString() }
+    private val toString: (T) -> String = { it.toString() },
 ) : Callback<TableColumn<S, AsyncObject<T>>, TableCell<S, AsyncObject<T>>> {
-
     override fun call(param: TableColumn<S, AsyncObject<T>>?) = AsyncTableCell<S, T>(toString)
 }

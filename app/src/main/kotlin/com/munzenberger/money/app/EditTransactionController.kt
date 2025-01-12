@@ -25,23 +25,34 @@ import javafx.stage.Stage
 import java.net.URL
 
 class EditTransactionController {
-
     companion object {
         val LAYOUT: URL = AccountListController::class.java.getResource("EditTransactionLayout.fxml")!!
     }
 
     @FXML lateinit var container: Node
+
     @FXML lateinit var accountComboBox: ComboBox<Account>
+
     @FXML lateinit var typeComboBox: ComboBox<TransactionType>
+
     @FXML lateinit var datePicker: DatePicker
+
     @FXML lateinit var numberTextField: TextField
+
     @FXML lateinit var payeeComboBox: ComboBox<Payee>
+
     @FXML lateinit var categoryComboBox: ComboBox<TransactionCategory>
+
     @FXML lateinit var categorySplitButton: Button
+
     @FXML lateinit var amountTextField: TextField
+
     @FXML lateinit var memoTextField: TextField
+
     @FXML lateinit var statusLabel: Label
+
     @FXML lateinit var saveButton: Button
+
     @FXML lateinit var cancelButton: Button
 
     // TODO remove reference to stage in controller
@@ -50,9 +61,7 @@ class EditTransactionController {
     private val viewModel = EditTransactionViewModel()
 
     fun initialize() {
-
         accountComboBox.apply {
-
             cellFactory = TextListCellFactory(Account::name)
             buttonCell = cellFactory.call(null)
 
@@ -60,14 +69,15 @@ class EditTransactionController {
 
             valueProperty().bindBidirectional(viewModel.selectedAccountProperty)
 
-            disableProperty().bindAsyncStatus(viewModel.accountsProperty,
-                    AsyncObject.Status.PENDING,
-                    AsyncObject.Status.EXECUTING,
-                    AsyncObject.Status.ERROR)
+            disableProperty().bindAsyncStatus(
+                viewModel.accountsProperty,
+                AsyncObject.Status.PENDING,
+                AsyncObject.Status.EXECUTING,
+                AsyncObject.Status.ERROR,
+            )
         }
 
         typeComboBox.apply {
-
             cellFactory = TextListCellFactory(TransactionType::name)
             buttonCell = cellFactory.call(null)
 
@@ -83,7 +93,6 @@ class EditTransactionController {
         numberTextField.textProperty().bindBidirectional(viewModel.numberProperty)
 
         payeeComboBox.apply {
-
             val payeeConverter = BlockStringConverter(Payee::name) { Payee().apply { name = it } }
 
             cellFactory = TextListCellFactory(payeeConverter::toString)
@@ -97,17 +106,19 @@ class EditTransactionController {
 
             valueProperty().bindBidirectional(viewModel.selectedPayeeProperty)
 
-            disableProperty().bindAsyncStatus(viewModel.payeesProperty,
-                    AsyncObject.Status.PENDING,
-                    AsyncObject.Status.EXECUTING,
-                    AsyncObject.Status.ERROR)
+            disableProperty().bindAsyncStatus(
+                viewModel.payeesProperty,
+                AsyncObject.Status.PENDING,
+                AsyncObject.Status.EXECUTING,
+                AsyncObject.Status.ERROR,
+            )
         }
 
         categoryComboBox.apply {
-
-            val categoryConverter = BlockStringConverter<TransactionCategory>(TransactionCategory::name) {
-                TransactionCategory.Pending(it)
-            }
+            val categoryConverter =
+                BlockStringConverter<TransactionCategory>(TransactionCategory::name) {
+                    TransactionCategory.Pending(it)
+                }
 
             cellFactory = TextListCellFactory(categoryConverter::toString)
             buttonCell = cellFactory.call(null)
@@ -126,12 +137,12 @@ class EditTransactionController {
         categorySplitButton.disableProperty().bind(viewModel.splitDisabledProperty)
 
         amountTextField.apply {
-
             val moneyConverter = MoneyStringConverter()
 
-            textFormatter = TextFormatter(moneyConverter).apply {
-                valueProperty().bindBidirectional(viewModel.amountProperty)
-            }
+            textFormatter =
+                TextFormatter(moneyConverter).apply {
+                    valueProperty().bindBidirectional(viewModel.amountProperty)
+                }
 
             disableProperty().bind(viewModel.amountDisabledProperty)
         }
@@ -145,7 +156,11 @@ class EditTransactionController {
         container.disableProperty().bind(viewModel.isOperationInProgressProperty)
     }
 
-    fun start(stage: Stage, database: MoneyDatabase, transaction: Transaction) {
+    fun start(
+        stage: Stage,
+        database: MoneyDatabase,
+        transaction: Transaction,
+    ) {
         this.stage = stage
 
         stage.minWidth = stage.width
@@ -159,7 +174,6 @@ class EditTransactionController {
     }
 
     @FXML fun onCategorySplitButton() {
-
         viewModel.prepareSplit { editors, categories ->
             DialogBuilder.build(SplitTransactionController.LAYOUT) { stage, controller: SplitTransactionController ->
                 stage.title = "Split Transaction"

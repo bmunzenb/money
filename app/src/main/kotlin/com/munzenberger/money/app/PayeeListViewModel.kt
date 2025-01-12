@@ -10,7 +10,6 @@ import com.munzenberger.money.app.property.SimpleAsyncObjectProperty
 import com.munzenberger.money.core.Payee
 
 class PayeeListViewModel : AutoCloseable {
-
     private val payees = SimpleAsyncObjectProperty<List<FXPayee>>()
 
     val payeesProperty: ReadOnlyAsyncObjectProperty<List<FXPayee>> = payees

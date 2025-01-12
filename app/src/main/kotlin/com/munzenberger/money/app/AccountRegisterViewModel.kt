@@ -42,17 +42,18 @@ import javafx.concurrent.Task
 import java.util.function.Predicate
 
 class AccountRegisterViewModel : AccountEntriesViewModel, AutoCloseable {
-
     sealed class Edit {
         data class Transaction(val transaction: com.munzenberger.money.core.Transaction) : Edit()
+
         data class Transfer(val transferId: TransferEntryIdentity) : Edit()
+
         data class Error(val error: Throwable) : Edit()
     }
 
     private data class Register(
-            val account: Account,
-            val transactions: List<FXAccountEntry>,
-            val endingBalance: Money
+        val account: Account,
+        val transactions: List<FXAccountEntry>,
+        val endingBalance: Money,
     )
 
     private val subscriptions = CompositeSubscription()
@@ -81,32 +82,35 @@ class AccountRegisterViewModel : AccountEntriesViewModel, AutoCloseable {
 
     init {
 
-        val dateFilters = FXCollections.observableArrayList(
+        val dateFilters =
+            FXCollections.observableArrayList(
                 FXAccountEntryFilter("All Dates") { true },
                 FXAccountEntryFilter("Current Month") { it.dateProperty.value.inCurrentMonth() },
                 FXAccountEntryFilter("Current Year") { it.dateProperty.value.inCurrentYear() },
                 FXAccountEntryFilter("Last 3 Months") { it.dateProperty.value.inLastMonths(3) },
-                FXAccountEntryFilter("Last 12 Months") { it.dateProperty.value.inLastMonths(12) }
-        )
+                FXAccountEntryFilter("Last 12 Months") { it.dateProperty.value.inLastMonths(12) },
+            )
 
         dateFiltersProperty = SimpleListProperty(dateFilters)
 
         selectedDateFilterProperty.value = dateFilters[0]
 
-        val statusFilters = FXCollections.observableArrayList(
+        val statusFilters =
+            FXCollections.observableArrayList(
                 FXAccountEntryFilter("All Transactions") { true },
-                FXAccountEntryFilter("Unreconciled Transactions") { it.statusProperty.value != TransactionStatus.RECONCILED }
-        )
+                FXAccountEntryFilter("Unreconciled Transactions") { it.statusProperty.value != TransactionStatus.RECONCILED },
+            )
 
         statusFiltersProperty = SimpleListProperty(statusFilters)
 
         selectedStatusFilterProperty.value = statusFilters[0]
 
-        val filtersBinding = Bindings.createObjectBinding(
+        val filtersBinding =
+            Bindings.createObjectBinding(
                 { selectedDateFilterProperty.value.and(selectedStatusFilterProperty.value) },
                 selectedDateFilterProperty,
-                selectedStatusFilterProperty
-        )
+                selectedStatusFilterProperty,
+            )
 
         activeFilters.bind(filtersBinding)
 
@@ -123,13 +127,16 @@ class AccountRegisterViewModel : AccountEntriesViewModel, AutoCloseable {
         }
     }
 
-    fun start(database: ObservableMoneyDatabase, accountIdentity: AccountIdentity) {
-
+    fun start(
+        database: ObservableMoneyDatabase,
+        accountIdentity: AccountIdentity,
+    ) {
         this.database = database
 
         database.subscribe {
             register.setValueAsync {
-                val account = Account.get(accountIdentity, database)
+                val account =
+                    Account.get(accountIdentity, database)
                         ?: throw PersistableNotFoundException(Account::class, accountIdentity)
 
                 var transactions = account.getAccountEntries(database)
@@ -141,82 +148,92 @@ class AccountRegisterViewModel : AccountEntriesViewModel, AutoCloseable {
                 }
 
                 Register(
-                        account = account,
-                        transactions = transactions.map { FXAccountEntry.of(it) },
-                        endingBalance = endingBalance
+                    account = account,
+                    transactions = transactions.map { FXAccountEntry.of(it) },
+                    endingBalance = endingBalance,
                 )
             }
         }.also { subscriptions.add(it) }
     }
 
-    fun prepareEditEntry(entry: FXAccountEntry, block: (Edit) -> Unit) {
+    fun prepareEditEntry(
+        entry: FXAccountEntry,
+        block: (Edit) -> Unit,
+    ) {
         when (entry) {
             is FXTransactionAccountEntry -> prepareEditTransaction(entry.transactionId, block)
             is FXTransferAccountEntry -> block.invoke(Edit.Transfer(entry.transferId))
         }
     }
 
-    private fun prepareEditTransaction(transactionId: TransactionIdentity, block: (Edit) -> Unit) {
-
-        val task = object : Task<Transaction>() {
-
-            override fun call(): Transaction {
-                return Transaction.get(transactionId, database)
+    private fun prepareEditTransaction(
+        transactionId: TransactionIdentity,
+        block: (Edit) -> Unit,
+    ) {
+        val task =
+            object : Task<Transaction>() {
+                override fun call(): Transaction {
+                    return Transaction.get(transactionId, database)
                         ?: throw PersistableNotFoundException(Transaction::class, transactionId)
-            }
+                }
 
-            override fun succeeded() {
-                block.invoke(Edit.Transaction(value))
-            }
+                override fun succeeded() {
+                    block.invoke(Edit.Transaction(value))
+                }
 
-            override fun failed() {
-                block.invoke(Edit.Error(exception))
+                override fun failed() {
+                    block.invoke(Edit.Error(exception))
+                }
             }
-        }
 
         isOperationInProgress.bind(task.runningProperty())
 
         Executors.SINGLE.execute(task)
     }
 
-    fun deleteEntry(entry: FXAccountEntry, completionBlock: (Throwable?) -> Unit) {
+    fun deleteEntry(
+        entry: FXAccountEntry,
+        completionBlock: (Throwable?) -> Unit,
+    ) {
+        val task =
+            object : Task<Unit>() {
+                override fun call() {
+                    entry.delete(database)
+                }
 
-        val task = object : Task<Unit>() {
+                override fun succeeded() {
+                    completionBlock.invoke(null)
+                }
 
-            override fun call() {
-                entry.delete(database)
+                override fun failed() {
+                    completionBlock.invoke(exception)
+                }
             }
-
-            override fun succeeded() {
-                completionBlock.invoke(null)
-            }
-
-            override fun failed() {
-                completionBlock.invoke(exception)
-            }
-        }
 
         isOperationInProgress.bind(task.runningProperty())
 
         Executors.SINGLE.execute(task)
     }
 
-    override fun updateEntryStatus(entry: FXAccountEntry, status: TransactionStatus, completionBlock: (Throwable?) -> Unit) {
+    override fun updateEntryStatus(
+        entry: FXAccountEntry,
+        status: TransactionStatus,
+        completionBlock: (Throwable?) -> Unit,
+    ) {
+        val task =
+            object : Task<Unit>() {
+                override fun call() {
+                    entry.updateStatus(status, database)
+                }
 
-        val task = object : Task<Unit>() {
+                override fun succeeded() {
+                    completionBlock.invoke(null)
+                }
 
-            override fun call() {
-                entry.updateStatus(status, database)
+                override fun failed() {
+                    completionBlock.invoke(exception)
+                }
             }
-
-            override fun succeeded() {
-                completionBlock.invoke(null)
-            }
-
-            override fun failed() {
-                completionBlock.invoke(exception)
-            }
-        }
 
         isOperationInProgress.bind(task.runningProperty())
 

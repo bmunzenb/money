@@ -10,8 +10,10 @@ import java.time.LocalDate
 
 data class StatementIdentity(override val value: Long) : Identity
 
-class Statement internal constructor(model: StatementModel) : AbstractMoneyEntity<StatementIdentity, StatementModel>(model, StatementTable) {
-
+class Statement internal constructor(model: StatementModel) : AbstractMoneyEntity<StatementIdentity, StatementModel>(
+    model,
+    StatementTable,
+) {
     constructor() : this(StatementModel())
 
     private val accountRef = PersistableIdentityReference(model.account?.let { AccountIdentity(it) })
@@ -25,42 +27,50 @@ class Statement internal constructor(model: StatementModel) : AbstractMoneyEntit
 
     var closingDate: LocalDate?
         get() = model.closingDate?.let { LocalDate.ofEpochDay(it) }
-        set(value) { model.closingDate = value?.toEpochDay() }
+        set(value) {
+            model.closingDate = value?.toEpochDay()
+        }
 
     var startingBalance: Money?
         get() = model.startingBalance?.let { Money.valueOf(it) }
-        set(value) { model.startingBalance = value?.value }
+        set(value) {
+            model.startingBalance = value?.value
+        }
 
     var endingBalance: Money?
         get() = model.endingBalance?.let { Money.valueOf(it) }
-        set(value) { model.endingBalance = value?.value }
+        set(value) {
+            model.endingBalance = value?.value
+        }
 
     var isReconciled: Boolean?
         get() = model.isReconciled
-        set(value) { model.isReconciled = value }
+        set(value) {
+            model.isReconciled = value
+        }
 
-    override fun save(executor: QueryExecutor) = executor.transaction { tx ->
-        model.account = accountRef.getIdentity(tx)?.value
-        super.save(tx)
-    }
+    override fun save(executor: QueryExecutor) =
+        executor.transaction { tx ->
+            model.account = accountRef.getIdentity(tx)?.value
+            super.save(tx)
+        }
 
     companion object {
+        fun getAll(executor: QueryExecutor) = getAll(executor, StatementTable, StatementResultSetMapper())
 
-        fun getAll(executor: QueryExecutor) =
-                getAll(executor, StatementTable, StatementResultSetMapper())
-
-        fun get(identity: StatementIdentity, executor: QueryExecutor) =
-                get(identity, executor, StatementTable, StatementResultSetMapper())
+        fun get(
+            identity: StatementIdentity,
+            executor: QueryExecutor,
+        ) = get(identity, executor, StatementTable, StatementResultSetMapper())
     }
 }
 
 class StatementResultSetMapper : ResultSetMapper<Statement> {
-
     override fun apply(rs: ResultSet): Statement {
-
-        val model = StatementModel().apply {
-            StatementTable.getValues(rs, this)
-        }
+        val model =
+            StatementModel().apply {
+                StatementTable.getValues(rs, this)
+            }
 
         return Statement(model)
     }
