@@ -4,6 +4,7 @@ import com.munzenberger.money.core.model.AccountTypeGroup
 import com.munzenberger.money.core.model.AccountTypeModel
 import com.munzenberger.money.core.model.AccountTypeTable
 import com.munzenberger.money.core.model.AccountTypeVariant
+import com.munzenberger.money.sql.OrderableQueryBuilder
 import com.munzenberger.money.sql.QueryExecutor
 import com.munzenberger.money.sql.ResultSetMapper
 import java.sql.ResultSet
@@ -32,16 +33,19 @@ class AccountType internal constructor(model: AccountTypeModel) : AbstractMoneyE
         }
 
     companion object {
-        fun getAll(executor: QueryExecutor) = getAll(executor, AccountTypeTable, AccountTypeResultSetMapper())
+        fun find(
+            executor: QueryExecutor,
+            block: OrderableQueryBuilder<*>.() -> Unit = {},
+        ) = find(executor, AccountTypeTable, AccountTypeResultSetMapper, block)
 
         fun get(
             identity: AccountTypeIdentity,
             executor: QueryExecutor,
-        ) = get(identity, executor, AccountTypeTable, AccountTypeResultSetMapper())
+        ) = get(identity, executor, AccountTypeTable, AccountTypeResultSetMapper)
     }
 }
 
-class AccountTypeResultSetMapper : ResultSetMapper<AccountType> {
+object AccountTypeResultSetMapper : ResultSetMapper<AccountType> {
     override fun apply(resultSet: ResultSet): AccountType {
         val model =
             AccountTypeModel().apply {

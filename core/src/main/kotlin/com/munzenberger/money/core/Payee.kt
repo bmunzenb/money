@@ -2,6 +2,7 @@ package com.munzenberger.money.core
 
 import com.munzenberger.money.core.model.PayeeModel
 import com.munzenberger.money.core.model.PayeeTable
+import com.munzenberger.money.sql.OrderableQueryBuilder
 import com.munzenberger.money.sql.QueryExecutor
 import com.munzenberger.money.sql.ResultSetMapper
 import java.sql.ResultSet
@@ -21,16 +22,19 @@ class Payee internal constructor(model: PayeeModel) : AbstractMoneyEntity<PayeeI
         }
 
     companion object {
-        fun getAll(executor: QueryExecutor) = getAll(executor, PayeeTable, PayeeResultSetMapper())
+        fun find(
+            executor: QueryExecutor,
+            block: OrderableQueryBuilder<*>.() -> Unit = {},
+        ) = find(executor, PayeeTable, PayeeResultSetMapper, block)
 
         fun get(
             identity: PayeeIdentity,
             executor: QueryExecutor,
-        ) = get(identity, executor, PayeeTable, PayeeResultSetMapper())
+        ) = get(identity, executor, PayeeTable, PayeeResultSetMapper)
     }
 }
 
-class PayeeResultSetMapper : ResultSetMapper<Payee> {
+object PayeeResultSetMapper : ResultSetMapper<Payee> {
     override fun apply(resultSet: ResultSet): Payee {
         val model =
             PayeeModel().apply {

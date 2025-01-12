@@ -9,15 +9,15 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 
 abstract class MoneyEntityTest<I : Identity, P : MoneyEntity<I>> : MoneyDatabaseTestSupport() {
-    abstract fun createPersistable(): P
+    abstract fun createEntity(): P
 
-    abstract fun getPersistable(identity: I): P?
+    abstract fun getEntity(identity: I): P?
 
-    abstract fun getAllPersistables(): List<P>
+    abstract fun findEntities(): List<P>
 
-    abstract fun updatePersistable(persistable: P)
+    abstract fun updateEntity(entity: P)
 
-    abstract fun assertPersistablePropertiesAreEquals(
+    abstract fun assertEntityPropertiesAreEquals(
         p1: P,
         p2: P,
     )
@@ -26,90 +26,90 @@ abstract class MoneyEntityTest<I : Identity, P : MoneyEntity<I>> : MoneyDatabase
 
     @Test
     fun `retrieve invalid identity returns null`() {
-        assertNull(getPersistable(createInvalidIdentity()))
+        assertNull(getEntity(createInvalidIdentity()))
     }
 
     @Test
-    fun `can delete an unsaved persistable`() {
-        createPersistable().apply {
+    fun `can delete an unsaved entity`() {
+        createEntity().apply {
             delete(database)
         }
     }
 
     @Test
-    fun `can store and retrieve a persistable by identity`() {
-        val p = createPersistable()
+    fun `can store and retrieve an entity by identity`() {
+        val p = createEntity()
         assertNull(p.identity)
 
         p.save(database)
         assertNotNull(p.identity)
 
-        getPersistable(p.identity!!).apply {
+        getEntity(p.identity!!).apply {
             assertNotNull(this)
             assertEquals(this!!.identity, p.identity)
-            assertPersistablePropertiesAreEquals(p, this)
+            assertEntityPropertiesAreEquals(p, this)
         }
     }
 
     @Test
-    open fun `can store and retrieve a list of persistables`() {
-        val list = listOf(createPersistable(), createPersistable(), createPersistable())
+    open fun `can store and retrieve a list of entities`() {
+        val list = listOf(createEntity(), createEntity(), createEntity())
 
         list.forEach {
             it.save(database)
         }
 
-        getAllPersistables().apply {
+        findEntities().apply {
             assertEquals(this.size, list.size)
             this.zip(list).forEach {
                 assertEquals(it.first.identity, it.second.identity)
-                assertPersistablePropertiesAreEquals(it.first, it.second)
+                assertEntityPropertiesAreEquals(it.first, it.second)
             }
         }
     }
 
     @Test
-    fun `can store and delete a persistable`() {
-        val p = createPersistable().apply { save(database) }
+    fun `can store and delete an entity`() {
+        val p = createEntity().apply { save(database) }
         val identity = p.identity!!
 
         p.delete(database)
         assertNull(p.identity)
 
-        assertNull(getPersistable(identity))
+        assertNull(getEntity(identity))
     }
 
     @Test
-    fun `can store and update a persistable`() {
-        val p = createPersistable().apply { save(database) }
+    fun `can store and update an entity`() {
+        val p = createEntity().apply { save(database) }
 
-        updatePersistable(p)
+        updateEntity(p)
 
         p.save(database)
 
-        getPersistable(p.identity!!).apply {
+        getEntity(p.identity!!).apply {
             assertNotNull(this)
             assertEquals(this!!.identity, p.identity)
-            assertPersistablePropertiesAreEquals(p, this)
+            assertEntityPropertiesAreEquals(p, this)
         }
     }
 
     @Test
-    fun `persistable equals and hashCode`() {
-        val p1 = createPersistable()
+    fun `entity equals and hashCode`() {
+        val p1 = createEntity()
         p1.save(database)
 
-        val p2 = getPersistable(p1.identity!!)
+        val p2 = getEntity(p1.identity!!)
         assertTrue(p1 == p2)
         assertEquals(p1.hashCode(), p2.hashCode())
 
-        val p3 = createPersistable()
+        val p3 = createEntity()
         p3.save(database)
 
         assertFalse(p2 == p3)
         assertNotEquals(p2, p3)
 
-        updatePersistable(p1)
+        updateEntity(p1)
         assertFalse(p1 == p2)
         assertNotEquals(p1, p2)
     }
@@ -118,7 +118,7 @@ abstract class MoneyEntityTest<I : Identity, P : MoneyEntity<I>> : MoneyDatabase
     fun `rolling back a transaction on insert clears the identity`() {
         val tx = database.createTransaction()
 
-        val p = createPersistable().apply { save(tx) }
+        val p = createEntity().apply { save(tx) }
         assertNotNull(p.identity)
 
         tx.rollback()
@@ -127,7 +127,7 @@ abstract class MoneyEntityTest<I : Identity, P : MoneyEntity<I>> : MoneyDatabase
 
     @Test
     fun `rolling back a transaction on delete restores the identity`() {
-        val p = createPersistable().apply { save(database) }
+        val p = createEntity().apply { save(database) }
 
         val tx = database.createTransaction()
 

@@ -2,6 +2,7 @@ package com.munzenberger.money.core
 
 import com.munzenberger.money.core.model.StatementModel
 import com.munzenberger.money.core.model.StatementTable
+import com.munzenberger.money.sql.OrderableQueryBuilder
 import com.munzenberger.money.sql.QueryExecutor
 import com.munzenberger.money.sql.ResultSetMapper
 import com.munzenberger.money.sql.transaction
@@ -56,16 +57,19 @@ class Statement internal constructor(model: StatementModel) : AbstractMoneyEntit
         }
 
     companion object {
-        fun getAll(executor: QueryExecutor) = getAll(executor, StatementTable, StatementResultSetMapper())
+        fun find(
+            executor: QueryExecutor,
+            block: OrderableQueryBuilder<*>.() -> Unit = {},
+        ) = find(executor, StatementTable, StatementResultSetMapper, block)
 
         fun get(
             identity: StatementIdentity,
             executor: QueryExecutor,
-        ) = get(identity, executor, StatementTable, StatementResultSetMapper())
+        ) = get(identity, executor, StatementTable, StatementResultSetMapper)
     }
 }
 
-class StatementResultSetMapper : ResultSetMapper<Statement> {
+object StatementResultSetMapper : ResultSetMapper<Statement> {
     override fun apply(rs: ResultSet): Statement {
         val model =
             StatementModel().apply {

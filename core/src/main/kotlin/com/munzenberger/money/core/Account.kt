@@ -2,6 +2,7 @@ package com.munzenberger.money.core
 
 import com.munzenberger.money.core.model.AccountModel
 import com.munzenberger.money.core.model.AccountTable
+import com.munzenberger.money.sql.OrderableQueryBuilder
 import com.munzenberger.money.sql.QueryExecutor
 import com.munzenberger.money.sql.ResultSetMapper
 import com.munzenberger.money.sql.transaction
@@ -45,16 +46,19 @@ class Account internal constructor(model: AccountModel) : AbstractMoneyEntity<Ac
         }
 
     companion object {
-        fun getAll(executor: QueryExecutor) = getAll(executor, AccountTable, AccountResultSetMapper())
+        fun find(
+            executor: QueryExecutor,
+            block: OrderableQueryBuilder<*>.() -> Unit = {},
+        ) = find(executor, AccountTable, AccountResultSetMapper, block)
 
         fun get(
             identity: AccountIdentity,
             executor: QueryExecutor,
-        ) = get(identity, executor, AccountTable, AccountResultSetMapper())
+        ) = get(identity, executor, AccountTable, AccountResultSetMapper)
     }
 }
 
-class AccountResultSetMapper : ResultSetMapper<Account> {
+object AccountResultSetMapper : ResultSetMapper<Account> {
     override fun apply(resultSet: ResultSet): Account {
         val model =
             AccountModel().apply {
@@ -62,8 +66,8 @@ class AccountResultSetMapper : ResultSetMapper<Account> {
             }
 
         return Account(model).apply {
-            accountType = model.accountType?.let { AccountTypeResultSetMapper().apply(resultSet) }
-            bank = model.bank?.let { BankResultSetMapper().apply(resultSet) }
+            accountType = model.accountType?.let { AccountTypeResultSetMapper.apply(resultSet) }
+            bank = model.bank?.let { BankResultSetMapper.apply(resultSet) }
         }
     }
 }

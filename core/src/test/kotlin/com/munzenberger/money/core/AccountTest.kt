@@ -7,19 +7,19 @@ import org.junit.Test
 import kotlin.random.Random
 
 class AccountTest : MoneyEntityTest<AccountIdentity, Account>() {
-    override fun createPersistable() = Account().randomize()
+    override fun createEntity() = Account().randomize()
 
-    override fun getPersistable(identity: AccountIdentity) = Account.get(identity, database)
+    override fun getEntity(identity: AccountIdentity) = Account.get(identity, database)
 
-    override fun getAllPersistables() = Account.getAll(database)
+    override fun findEntities() = Account.find(database)
 
     override fun createInvalidIdentity() = AccountIdentity(42L)
 
-    override fun updatePersistable(persistable: Account) {
-        persistable.randomize()
+    override fun updateEntity(entity: Account) {
+        entity.randomize()
     }
 
-    override fun assertPersistablePropertiesAreEquals(
+    override fun assertEntityPropertiesAreEquals(
         p1: Account,
         p2: Account,
     ) {

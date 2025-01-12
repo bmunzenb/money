@@ -2,6 +2,7 @@ package com.munzenberger.money.core
 
 import com.munzenberger.money.core.model.CategoryEntryModel
 import com.munzenberger.money.core.model.CategoryEntryTable
+import com.munzenberger.money.sql.OrderableQueryBuilder
 import com.munzenberger.money.sql.QueryExecutor
 import com.munzenberger.money.sql.ResultSetMapper
 import com.munzenberger.money.sql.transaction
@@ -58,16 +59,19 @@ class CategoryEntry internal constructor(model: CategoryEntryModel) :
             }
 
         companion object {
-            fun getAll(executor: QueryExecutor) = getAll(executor, CategoryEntryTable, CategoryEntryResultSetMapper())
+            fun find(
+                executor: QueryExecutor,
+                block: OrderableQueryBuilder<*>.() -> Unit = {},
+            ) = find(executor, CategoryEntryTable, CategoryEntryResultSetMapper, block)
 
             fun get(
                 identity: CategoryEntryIdentity,
                 executor: QueryExecutor,
-            ) = get(identity, executor, CategoryEntryTable, CategoryEntryResultSetMapper())
+            ) = get(identity, executor, CategoryEntryTable, CategoryEntryResultSetMapper)
         }
     }
 
-class CategoryEntryResultSetMapper : ResultSetMapper<CategoryEntry> {
+object CategoryEntryResultSetMapper : ResultSetMapper<CategoryEntry> {
     override fun apply(resultSet: ResultSet): CategoryEntry {
         val model =
             CategoryEntryModel().apply {
@@ -75,7 +79,7 @@ class CategoryEntryResultSetMapper : ResultSetMapper<CategoryEntry> {
             }
 
         return CategoryEntry(model).apply {
-            category = model.category?.let { CategoryResultSetMapper().apply(resultSet) }
+            category = model.category?.let { CategoryResultSetMapper.apply(resultSet) }
         }
     }
 }

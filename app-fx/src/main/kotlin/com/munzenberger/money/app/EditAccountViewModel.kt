@@ -43,13 +43,13 @@ class EditAccountViewModel {
 
         accountNameProperty.value = account.name
 
-        accountTypes.setValueAsync { AccountType.getAll(database) }
+        accountTypes.setValueAsync { AccountType.find(database) }
 
         selectedAccountTypeProperty.value = account.accountType
 
         accountNumberProperty.value = account.number
 
-        banks.setValueAsync { Bank.getAll(database).sortedBy { it.name } }
+        banks.setValueAsync { Bank.find(database).sortedBy { it.name } }
 
         selectedBankProperty.value = account.bank
 

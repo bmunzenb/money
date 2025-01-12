@@ -3,6 +3,7 @@ package com.munzenberger.money.core
 import com.munzenberger.money.core.model.CategoryModel
 import com.munzenberger.money.core.model.CategoryTable
 import com.munzenberger.money.core.model.CategoryType
+import com.munzenberger.money.sql.OrderableQueryBuilder
 import com.munzenberger.money.sql.QueryExecutor
 import com.munzenberger.money.sql.ResultSetMapper
 import com.munzenberger.money.sql.transaction
@@ -41,16 +42,19 @@ class Category internal constructor(model: CategoryModel) : AbstractMoneyEntity<
         }
 
     companion object {
-        fun getAll(executor: QueryExecutor) = getAll(executor, CategoryTable, CategoryResultSetMapper())
+        fun find(
+            executor: QueryExecutor,
+            block: OrderableQueryBuilder<*>.() -> Unit = {},
+        ) = find(executor, CategoryTable, CategoryResultSetMapper, block)
 
         fun get(
             identity: CategoryIdentity,
             executor: QueryExecutor,
-        ) = get(identity, executor, CategoryTable, CategoryResultSetMapper())
+        ) = get(identity, executor, CategoryTable, CategoryResultSetMapper)
     }
 }
 
-class CategoryResultSetMapper : ResultSetMapper<Category> {
+object CategoryResultSetMapper : ResultSetMapper<Category> {
     override fun apply(resultSet: ResultSet): Category {
         val model =
             CategoryModel().apply {

@@ -3,17 +3,17 @@ package com.munzenberger.money.core
 import org.junit.Assert.assertEquals
 
 class TransferEntryTest : MoneyEntityTest<TransferEntryIdentity, TransferEntry>() {
-    override fun createPersistable() = TransferEntry().randomize()
+    override fun createEntity() = TransferEntry().randomize()
 
-    override fun getPersistable(identity: TransferEntryIdentity) = TransferEntry.get(identity, database)
+    override fun getEntity(identity: TransferEntryIdentity) = TransferEntry.get(identity, database)
 
-    override fun getAllPersistables() = TransferEntry.getAll(database)
+    override fun findEntities() = TransferEntry.find(database)
 
-    override fun updatePersistable(persistable: TransferEntry) {
-        persistable.randomize()
+    override fun updateEntity(entity: TransferEntry) {
+        entity.randomize()
     }
 
-    override fun assertPersistablePropertiesAreEquals(
+    override fun assertEntityPropertiesAreEquals(
         p1: TransferEntry,
         p2: TransferEntry,
     ) {

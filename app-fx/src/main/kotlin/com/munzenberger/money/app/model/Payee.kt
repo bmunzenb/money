@@ -6,10 +6,8 @@ import com.munzenberger.money.core.PayeeResultSetMapper
 import com.munzenberger.money.core.model.PayeeTable
 import com.munzenberger.money.core.model.TransactionTable
 import com.munzenberger.money.core.model.leftJoin
-import com.munzenberger.money.sql.ResultSetMapper
 import com.munzenberger.money.sql.getLocalDateOrNull
 import com.munzenberger.money.sql.selectQuery
-import java.sql.ResultSet
 import java.time.LocalDate
 
 fun Payee.Companion.getAllWithLastPaid(database: MoneyDatabase): List<Pair<Payee, LocalDate?>> {
@@ -22,15 +20,10 @@ fun Payee.Companion.getAllWithLastPaid(database: MoneyDatabase): List<Pair<Payee
 
     return database.getList(
         query,
-        object : ResultSetMapper<Pair<Payee, LocalDate?>> {
-            private val payeeMapper = PayeeResultSetMapper()
+    ) { rs ->
+        val payee = PayeeResultSetMapper.apply(rs)
+        val latePaid = rs.getLocalDateOrNull("LAST_PAID")
 
-            override fun apply(rs: ResultSet): Pair<Payee, LocalDate?> {
-                val payee = payeeMapper.apply(rs)
-                val latePaid = rs.getLocalDateOrNull("LAST_PAID")
-
-                return payee to latePaid
-            }
-        },
-    )
+        payee to latePaid
+    }
 }

@@ -4,6 +4,7 @@ import com.munzenberger.money.core.model.CategoryEntryTable
 import com.munzenberger.money.core.model.TransactionModel
 import com.munzenberger.money.core.model.TransactionTable
 import com.munzenberger.money.core.model.TransferEntryTable
+import com.munzenberger.money.sql.OrderableQueryBuilder
 import com.munzenberger.money.sql.QueryExecutor
 import com.munzenberger.money.sql.ResultSetMapper
 import com.munzenberger.money.sql.eq
@@ -62,16 +63,19 @@ class Transaction internal constructor(model: TransactionModel) : AbstractMoneyE
         }
 
     companion object {
-        fun getAll(executor: QueryExecutor) = getAll(executor, TransactionTable, TransactionResultSetMapper())
+        fun find(
+            executor: QueryExecutor,
+            block: OrderableQueryBuilder<*>.() -> Unit = {},
+        ) = find(executor, TransactionTable, TransactionResultSetMapper, block)
 
         fun get(
             identity: TransactionIdentity,
             executor: QueryExecutor,
-        ) = get(identity, executor, TransactionTable, TransactionResultSetMapper())
+        ) = get(identity, executor, TransactionTable, TransactionResultSetMapper)
     }
 }
 
-class TransactionResultSetMapper : ResultSetMapper<Transaction> {
+object TransactionResultSetMapper : ResultSetMapper<Transaction> {
     override fun apply(resultSet: ResultSet): Transaction {
         val model =
             TransactionModel().apply {
@@ -79,8 +83,8 @@ class TransactionResultSetMapper : ResultSetMapper<Transaction> {
             }
 
         return Transaction(model).apply {
-            account = model.account?.let { AccountResultSetMapper().apply(resultSet) }
-            payee = model.payee?.let { PayeeResultSetMapper().apply(resultSet) }
+            account = model.account?.let { AccountResultSetMapper.apply(resultSet) }
+            payee = model.payee?.let { PayeeResultSetMapper.apply(resultSet) }
         }
     }
 }
@@ -89,12 +93,12 @@ fun Transaction.getEntries(executor: QueryExecutor): List<Entry<out EntryIdentit
     val transfers =
         TransferEntryTable.select {
             where(TransferEntryTable.TRANSFER_ENTRY_TRANSACTION_ID.eq(identity?.value))
-        }.let { executor.getList(it, TransferEntryResultSetMapper()) }
+        }.let { executor.getList(it, TransferEntryResultSetMapper) }
 
     val categories =
         CategoryEntryTable.select {
             where(CategoryEntryTable.CATEGORY_ENTRY_TRANSACTION_ID.eq(identity?.value))
-        }.let { executor.getList(it, CategoryEntryResultSetMapper()) }
+        }.let { executor.getList(it, CategoryEntryResultSetMapper) }
 
     return (transfers + categories).sortedBy { it.orderInTransaction }
 }

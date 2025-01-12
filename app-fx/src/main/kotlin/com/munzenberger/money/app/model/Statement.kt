@@ -17,5 +17,5 @@ fun Statement.Companion.getUnreconciled(
             orderBy(StatementTable.STATEMENT_CLOSING_DATE)
         }
 
-    return executor.getFirst(query, StatementResultSetMapper())
+    return executor.getFirst(query, StatementResultSetMapper)
 }

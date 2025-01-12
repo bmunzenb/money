@@ -1,5 +1,6 @@
 package com.munzenberger.money.core.model
 
+import com.munzenberger.money.sql.OrderableQueryBuilder
 import com.munzenberger.money.sql.SelectQueryBuilder
 import com.munzenberger.money.sql.SettableQueryBuilder
 import com.munzenberger.money.sql.deleteQuery
@@ -28,7 +29,7 @@ abstract class Table<M : Model> {
 
     open fun applyJoins(select: SelectQueryBuilder) {}
 
-    fun select(block: SelectQueryBuilder.() -> Unit = {}) =
+    fun select(block: OrderableQueryBuilder<*>.() -> Unit = {}) =
         selectQuery(tableName) {
             applyJoins(this)
             this.block()

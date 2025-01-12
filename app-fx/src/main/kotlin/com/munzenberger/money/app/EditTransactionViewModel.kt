@@ -142,13 +142,13 @@ class EditTransactionViewModel : TransactionEntryEditor(), AutoCloseable {
 
         selectedAccountProperty.value = transaction.account
 
-        accounts.setValueAsync { Account.getAll(database).sortedBy { it.name } }
+        accounts.setValueAsync { Account.find(database).sortedBy { it.name } }
 
         dateProperty.value = transaction.date ?: LocalDate.now()
 
         selectedPayeeProperty.value = transaction.payee
 
-        payees.setValueAsync { Payee.getAll(database).sortedBy { it.name } }
+        payees.setValueAsync { Payee.find(database).sortedBy { it.name } }
 
         numberProperty.value = transaction.number
 
@@ -169,7 +169,7 @@ class EditTransactionViewModel : TransactionEntryEditor(), AutoCloseable {
                             .sortedBy { it.name }
 
                     val accounts =
-                        Account.getAll(database)
+                        Account.find(database)
                             .map { TransactionCategory.TransferType(it) }
                             .sortedBy { it.name }
 

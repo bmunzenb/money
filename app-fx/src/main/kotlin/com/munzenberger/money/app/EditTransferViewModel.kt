@@ -77,7 +77,7 @@ class EditTransferViewModel {
     ) {
         this.database = database
 
-        payees.setValueAsync { Payee.getAll(database).sortedBy { it.name } }
+        payees.setValueAsync { Payee.find(database).sortedBy { it.name } }
 
         val task =
             object : Task<TransferResult>() {
@@ -107,7 +107,7 @@ class EditTransferViewModel {
             object : ResultSetMapper<TransferEntry> {
                 override fun apply(rs: ResultSet): TransferEntry {
                     transactionId = TransactionIdentity(rs.getLong(TransferEntryTable.TRANSFER_ENTRY_TRANSACTION_ID))
-                    return TransferEntryResultSetMapper().apply(rs)
+                    return TransferEntryResultSetMapper.apply(rs)
                 }
             }
 

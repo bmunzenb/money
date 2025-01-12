@@ -2,9 +2,11 @@ package com.munzenberger.money.core
 
 import com.munzenberger.money.core.model.Model
 import com.munzenberger.money.core.model.Table
+import com.munzenberger.money.sql.OrderableQueryBuilder
 import com.munzenberger.money.sql.QueryExecutor
 import com.munzenberger.money.sql.ResultSetMapper
 import com.munzenberger.money.sql.TransactionQueryExecutor
+import com.munzenberger.money.sql.selectQuery
 import com.munzenberger.money.sql.transaction
 
 interface MoneyEntity<I : Identity> {
@@ -37,7 +39,7 @@ abstract class AbstractMoneyEntity<I : Identity, M : Model>(
             // consider exposing the database dialect here and using it for a database-specific implementation
             val identityHandler = IdentityResultSetConsumer()
             val getIdentity =
-                table.select {
+                selectQuery(table.tableName) {
                     cols("MAX(${table.identityColumn})")
                 }
 
@@ -98,20 +100,26 @@ abstract class AbstractMoneyEntity<I : Identity, M : Model>(
     }
 
     companion object {
-        internal fun <I : Identity, M : Model, P : AbstractMoneyEntity<I, M>> getAll(
-            executor: QueryExecutor,
-            table: Table<M>,
-            mapper: ResultSetMapper<P>,
-        ) = table.select {
-            orderBy(table.identityColumn)
-        }.let { executor.getList(it, mapper) }
-
-        internal fun <I : Identity, M : Model, P : AbstractMoneyEntity<I, M>> get(
+        fun <I : Identity, M : Model, P : AbstractMoneyEntity<I, M>> get(
             identity: I,
             executor: QueryExecutor,
             table: Table<M>,
             mapper: ResultSetMapper<P>,
-        ) = table.select(identity.value).let { executor.getFirst(it, mapper) }
+        ): P? {
+            val query = table.select(identity.value)
+            return executor.getFirst(query, mapper)
+        }
+
+        fun <I : Identity, M : Model, P : AbstractMoneyEntity<I, M>> find(
+            executor: QueryExecutor,
+            table: Table<M>,
+            mapper: ResultSetMapper<P>,
+            block: OrderableQueryBuilder<*>.() -> Unit = {
+            },
+        ): List<P> {
+            val query = table.select(block)
+            return executor.getList(query, mapper)
+        }
     }
 }
 

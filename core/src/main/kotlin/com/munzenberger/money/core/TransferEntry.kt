@@ -2,6 +2,7 @@ package com.munzenberger.money.core
 
 import com.munzenberger.money.core.model.TransferEntryModel
 import com.munzenberger.money.core.model.TransferEntryTable
+import com.munzenberger.money.sql.OrderableQueryBuilder
 import com.munzenberger.money.sql.QueryExecutor
 import com.munzenberger.money.sql.ResultSetMapper
 import com.munzenberger.money.sql.transaction
@@ -71,16 +72,19 @@ class TransferEntry internal constructor(model: TransferEntryModel) :
             }
 
         companion object {
-            fun getAll(executor: QueryExecutor) = getAll(executor, TransferEntryTable, TransferEntryResultSetMapper())
+            fun find(
+                executor: QueryExecutor,
+                block: OrderableQueryBuilder<*>.() -> Unit = {},
+            ) = find(executor, TransferEntryTable, TransferEntryResultSetMapper, block)
 
             fun get(
                 identity: TransferEntryIdentity,
                 executor: QueryExecutor,
-            ) = get(identity, executor, TransferEntryTable, TransferEntryResultSetMapper())
+            ) = get(identity, executor, TransferEntryTable, TransferEntryResultSetMapper)
         }
     }
 
-class TransferEntryResultSetMapper : ResultSetMapper<TransferEntry> {
+object TransferEntryResultSetMapper : ResultSetMapper<TransferEntry> {
     override fun apply(resultSet: ResultSet): TransferEntry {
         val model =
             TransferEntryModel().apply {
@@ -88,7 +92,7 @@ class TransferEntryResultSetMapper : ResultSetMapper<TransferEntry> {
             }
 
         return TransferEntry(model).apply {
-            account = model.account?.let { AccountResultSetMapper().apply(resultSet) }
+            account = model.account?.let { AccountResultSetMapper.apply(resultSet) }
         }
     }
 }

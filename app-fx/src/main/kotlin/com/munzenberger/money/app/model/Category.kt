@@ -8,12 +8,10 @@ import com.munzenberger.money.core.model.CategoryTable
 import com.munzenberger.money.core.model.CategoryType
 import com.munzenberger.money.sql.Query
 import com.munzenberger.money.sql.QueryExecutor
-import com.munzenberger.money.sql.ResultSetMapper
 import com.munzenberger.money.sql.eq
 import com.munzenberger.money.sql.getLongOrNull
 import com.munzenberger.money.sql.isNotNull
 import com.munzenberger.money.sql.isNull
-import java.sql.ResultSet
 
 data class CategoryWithParent(
     val category: Category,
@@ -43,19 +41,14 @@ fun Category.Companion.getAllWithParent(database: MoneyDatabase): List<CategoryW
 
     return database.getList(
         Query(sql),
-        object : ResultSetMapper<CategoryWithParent> {
-            private val categoryMapper = CategoryResultSetMapper()
+    ) { rs ->
+        val category = CategoryResultSetMapper.apply(rs)
 
-            override fun apply(rs: ResultSet): CategoryWithParent {
-                val category = categoryMapper.apply(rs)
+        val parentId = rs.getLongOrNull("PARENT_ID")
+        val parentName = rs.getString("PARENT_NAME")
 
-                val parentId = rs.getLongOrNull("PARENT_ID")
-                val parentName = rs.getString("PARENT_NAME")
-
-                return CategoryWithParent(category, parentId, parentName)
-            }
-        },
-    )
+        CategoryWithParent(category, parentId, parentName)
+    }
 }
 
 fun Category.Companion.find(
@@ -90,5 +83,5 @@ fun Category.Companion.find(
             }
         }
 
-    return executor.getList(query, CategoryResultSetMapper())
+    return executor.getList(query, CategoryResultSetMapper)
 }

@@ -2,6 +2,7 @@ package com.munzenberger.money.core
 
 import com.munzenberger.money.core.model.BankModel
 import com.munzenberger.money.core.model.BankTable
+import com.munzenberger.money.sql.OrderableQueryBuilder
 import com.munzenberger.money.sql.QueryExecutor
 import com.munzenberger.money.sql.ResultSetMapper
 import java.sql.ResultSet
@@ -21,16 +22,19 @@ class Bank internal constructor(model: BankModel) : AbstractMoneyEntity<BankIden
         }
 
     companion object {
-        fun getAll(executor: QueryExecutor) = getAll(executor, BankTable, BankResultSetMapper())
+        fun find(
+            executor: QueryExecutor,
+            block: OrderableQueryBuilder<*>.() -> Unit = {},
+        ) = find(executor, BankTable, BankResultSetMapper, block)
 
         fun get(
             identity: BankIdentity,
             executor: QueryExecutor,
-        ) = get(identity, executor, BankTable, BankResultSetMapper())
+        ) = get(identity, executor, BankTable, BankResultSetMapper)
     }
 }
 
-class BankResultSetMapper : ResultSetMapper<Bank> {
+object BankResultSetMapper : ResultSetMapper<Bank> {
     override fun apply(resultSet: ResultSet): Bank {
         val model =
             BankModel().apply {

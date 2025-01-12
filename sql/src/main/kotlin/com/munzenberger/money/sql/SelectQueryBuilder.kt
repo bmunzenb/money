@@ -12,11 +12,9 @@ fun selectQuery(
 }
 
 @SelectQueryMarker
-class SelectQueryBuilder(private val table: String) {
+class SelectQueryBuilder(private val table: String) : OrderableQueryBuilder<SelectQueryBuilder>() {
     private val columns = mutableListOf<String>()
-    private var where: Condition? = null
     private val joins = mutableListOf<String>()
-    private val orderBy = mutableListOf<String>()
     private val groupBy = mutableListOf<String>()
 
     fun cols(columns: List<String>) =
@@ -27,11 +25,6 @@ class SelectQueryBuilder(private val table: String) {
     fun cols(vararg columns: String) =
         this.apply {
             this.columns.addAll(columns)
-        }
-
-    fun where(condition: Condition) =
-        this.apply {
-            this.where = condition
         }
 
     fun innerJoin(
@@ -61,26 +54,16 @@ class SelectQueryBuilder(private val table: String) {
         joins.add("RIGHT JOIN $rightTable ON $leftTable.$leftColumn = $rightTable.$rightColumn")
     }
 
-    fun orderBy(vararg columns: String) =
-        this.apply {
-            columns.forEach { orderBy(it) }
-        }
-
-    fun orderBy(
-        column: String,
-        descending: Boolean = false,
-    ) = this.apply {
-        val dir = if (descending) "DESC" else "ASC"
-        orderBy.add("$column $dir")
-    }
-
     fun groupBy(vararg columns: String) =
         this.apply {
             groupBy.clear()
             groupBy.addAll(columns)
         }
 
-    fun build(): Query {
+    override fun build(
+        where: Condition?,
+        orderBy: List<String>,
+    ): Query {
         val sb = StringBuilder("SELECT ")
         val params = mutableListOf<Any?>()
 
@@ -113,6 +96,8 @@ class SelectQueryBuilder(private val table: String) {
 
         return Query(sb.toString(), params)
     }
+
+    override fun instance() = this
 }
 
 @DslMarker

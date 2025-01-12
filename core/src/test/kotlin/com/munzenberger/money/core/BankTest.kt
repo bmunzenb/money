@@ -3,19 +3,19 @@ package com.munzenberger.money.core
 import org.junit.Assert.assertEquals
 
 class BankTest : MoneyEntityTest<BankIdentity, Bank>() {
-    override fun createPersistable() = Bank().randomize()
+    override fun createEntity() = Bank().randomize()
 
-    override fun getPersistable(identity: BankIdentity) = Bank.get(identity, database)
+    override fun getEntity(identity: BankIdentity) = Bank.get(identity, database)
 
-    override fun getAllPersistables() = Bank.getAll(database)
+    override fun findEntities() = Bank.find(database)
 
     override fun createInvalidIdentity() = BankIdentity(42L)
 
-    override fun updatePersistable(persistable: Bank) {
-        persistable.randomize()
+    override fun updateEntity(entity: Bank) {
+        entity.randomize()
     }
 
-    override fun assertPersistablePropertiesAreEquals(
+    override fun assertEntityPropertiesAreEquals(
         p1: Bank,
         p2: Bank,
     ) {
