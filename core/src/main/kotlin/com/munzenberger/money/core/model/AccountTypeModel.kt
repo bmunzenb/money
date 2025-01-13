@@ -40,9 +40,11 @@ object AccountTypeTable : Table<AccountTypeModel>() {
     override fun getValues(
         resultSet: ResultSet,
         model: AccountTypeModel,
-    ) {
-        model.identity = resultSet.getLong(identityColumn)
-        model.group = resultSet.getString(ACCOUNT_TYPE_GROUP)?.let { AccountTypeGroup.valueOf(it) }
-        model.variant = resultSet.getString(ACCOUNT_TYPE_VARIANT)?.let { AccountTypeVariant.valueOf(it) }
+    ): AccountTypeModel {
+        return model.apply {
+            identity = resultSet.getLong(identityColumn)
+            group = resultSet.getString(ACCOUNT_TYPE_GROUP)?.let { AccountTypeGroup.valueOf(it) }
+            variant = resultSet.getString(ACCOUNT_TYPE_VARIANT)?.let { AccountTypeVariant.valueOf(it) }
+        }
     }
 }

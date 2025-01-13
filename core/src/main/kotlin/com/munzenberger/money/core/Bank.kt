@@ -36,11 +36,7 @@ class Bank internal constructor(model: BankModel) : AbstractMoneyEntity<BankIden
 
 object BankResultSetMapper : ResultSetMapper<Bank> {
     override fun apply(resultSet: ResultSet): Bank {
-        val model =
-            BankModel().apply {
-                BankTable.getValues(resultSet, this)
-            }
-
+        val model = BankTable.getValues(resultSet, BankModel())
         return Bank(model)
     }
 }

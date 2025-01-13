@@ -21,8 +21,10 @@ object BankTable : Table<BankModel>() {
     override fun getValues(
         resultSet: ResultSet,
         model: BankModel,
-    ) {
-        model.identity = resultSet.getLong(identityColumn)
-        model.name = resultSet.getString(BANK_NAME)
+    ): BankModel {
+        return model.apply {
+            identity = resultSet.getLong(identityColumn)
+            name = resultSet.getString(BANK_NAME)
+        }
     }
 }

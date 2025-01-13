@@ -76,11 +76,7 @@ class Statement internal constructor(model: StatementModel) : AbstractMoneyEntit
 
 object StatementResultSetMapper : ResultSetMapper<Statement> {
     override fun apply(rs: ResultSet): Statement {
-        val model =
-            StatementModel().apply {
-                StatementTable.getValues(rs, this)
-            }
-
+        val model = StatementTable.getValues(rs, StatementModel())
         return Statement(model)
     }
 }

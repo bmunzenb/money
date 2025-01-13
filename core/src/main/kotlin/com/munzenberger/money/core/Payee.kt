@@ -36,11 +36,7 @@ class Payee internal constructor(model: PayeeModel) : AbstractMoneyEntity<PayeeI
 
 object PayeeResultSetMapper : ResultSetMapper<Payee> {
     override fun apply(resultSet: ResultSet): Payee {
-        val model =
-            PayeeModel().apply {
-                PayeeTable.getValues(resultSet, this)
-            }
-
+        val model = PayeeTable.getValues(resultSet, PayeeModel())
         return Payee(model)
     }
 }

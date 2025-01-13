@@ -76,11 +76,7 @@ class CategoryEntry internal constructor(model: CategoryEntryModel) :
 
 object CategoryEntryResultSetMapper : ResultSetMapper<CategoryEntry> {
     override fun apply(resultSet: ResultSet): CategoryEntry {
-        val model =
-            CategoryEntryModel().apply {
-                CategoryEntryTable.getValues(resultSet, this)
-            }
-
+        val model = CategoryEntryTable.getValues(resultSet, CategoryEntryModel())
         return CategoryEntry(model).apply {
             category = model.category?.let { CategoryResultSetMapper.apply(resultSet) }
         }

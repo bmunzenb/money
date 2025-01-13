@@ -25,14 +25,14 @@ abstract class Table<M : Model> {
     internal abstract fun getValues(
         resultSet: ResultSet,
         model: M,
-    )
+    ): M
 
     protected open fun applyJoins(select: SelectQueryBuilder) {}
 
     internal fun select(block: OrderableQueryBuilder<*>.() -> Unit = {}) =
         selectQuery(tableName) {
             applyJoins(this)
-            this.block()
+            block()
         }
 
     internal fun select(identity: Long) =

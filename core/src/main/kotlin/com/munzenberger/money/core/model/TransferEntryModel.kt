@@ -44,15 +44,17 @@ object TransferEntryTable : Table<TransferEntryModel>() {
     override fun getValues(
         resultSet: ResultSet,
         model: TransferEntryModel,
-    ) {
-        model.identity = resultSet.getLong(identityColumn)
-        model.transaction = resultSet.getLongOrNull(TRANSFER_ENTRY_TRANSACTION_ID)
-        model.account = resultSet.getLongOrNull(TRANSFER_ENTRY_ACCOUNT_ID)
-        model.amount = resultSet.getLongOrNull(TRANSFER_ENTRY_AMOUNT)
-        model.number = resultSet.getString(TRANSFER_ENTRY_NUMBER)
-        model.memo = resultSet.getString(TRANSFER_ENTRY_MEMO)
-        model.status = resultSet.getString(TRANSFER_ENTRY_STATUS)?.let { TransactionStatus.valueOf(it) }
-        model.orderInTransaction = resultSet.getInt(TRANSFER_ENTRY_ORDER_IN_TRANSACTION)
+    ): TransferEntryModel {
+        return model.apply {
+            identity = resultSet.getLong(identityColumn)
+            transaction = resultSet.getLongOrNull(TRANSFER_ENTRY_TRANSACTION_ID)
+            account = resultSet.getLongOrNull(TRANSFER_ENTRY_ACCOUNT_ID)
+            amount = resultSet.getLongOrNull(TRANSFER_ENTRY_AMOUNT)
+            number = resultSet.getString(TRANSFER_ENTRY_NUMBER)
+            memo = resultSet.getString(TRANSFER_ENTRY_MEMO)
+            status = resultSet.getString(TRANSFER_ENTRY_STATUS)?.let { TransactionStatus.valueOf(it) }
+            orderInTransaction = resultSet.getInt(TRANSFER_ENTRY_ORDER_IN_TRANSACTION)
+        }
     }
 
     override fun applyJoins(select: SelectQueryBuilder) {

@@ -60,10 +60,7 @@ class Account internal constructor(model: AccountModel) : AbstractMoneyEntity<Ac
 
 object AccountResultSetMapper : ResultSetMapper<Account> {
     override fun apply(resultSet: ResultSet): Account {
-        val model =
-            AccountModel().apply {
-                AccountTable.getValues(resultSet, this)
-            }
+        val model = AccountTable.getValues(resultSet, AccountModel())
 
         return Account(model).apply {
             accountType = model.accountType?.let { AccountTypeResultSetMapper.apply(resultSet) }

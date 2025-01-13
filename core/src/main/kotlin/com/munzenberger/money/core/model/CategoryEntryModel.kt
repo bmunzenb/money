@@ -37,13 +37,15 @@ object CategoryEntryTable : Table<CategoryEntryModel>() {
     override fun getValues(
         resultSet: ResultSet,
         model: CategoryEntryModel,
-    ) {
-        model.identity = resultSet.getLong(identityColumn)
-        model.transaction = resultSet.getLongOrNull(CATEGORY_ENTRY_TRANSACTION_ID)
-        model.category = resultSet.getLongOrNull(CATEGORY_ENTRY_CATEGORY_ID)
-        model.amount = resultSet.getLongOrNull(CATEGORY_ENTRY_AMOUNT)
-        model.memo = resultSet.getString(CATEGORY_ENTRY_MEMO)
-        model.orderInTransaction = resultSet.getInt(CATEGORY_ENTRY_ORDER_IN_TRANSACTION)
+    ): CategoryEntryModel {
+        return model.apply {
+            identity = resultSet.getLong(identityColumn)
+            transaction = resultSet.getLongOrNull(CATEGORY_ENTRY_TRANSACTION_ID)
+            category = resultSet.getLongOrNull(CATEGORY_ENTRY_CATEGORY_ID)
+            amount = resultSet.getLongOrNull(CATEGORY_ENTRY_AMOUNT)
+            memo = resultSet.getString(CATEGORY_ENTRY_MEMO)
+            orderInTransaction = resultSet.getInt(CATEGORY_ENTRY_ORDER_IN_TRANSACTION)
+        }
     }
 
     override fun applyJoins(select: SelectQueryBuilder) {

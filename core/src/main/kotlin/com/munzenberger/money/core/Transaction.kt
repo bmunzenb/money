@@ -77,11 +77,7 @@ class Transaction internal constructor(model: TransactionModel) : AbstractMoneyE
 
 object TransactionResultSetMapper : ResultSetMapper<Transaction> {
     override fun apply(resultSet: ResultSet): Transaction {
-        val model =
-            TransactionModel().apply {
-                TransactionTable.getValues(resultSet, this)
-            }
-
+        val model = TransactionTable.getValues(resultSet, TransactionModel())
         return Transaction(model).apply {
             account = model.account?.let { AccountResultSetMapper.apply(resultSet) }
             payee = model.payee?.let { PayeeResultSetMapper.apply(resultSet) }

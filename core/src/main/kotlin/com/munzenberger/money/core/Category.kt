@@ -56,11 +56,7 @@ class Category internal constructor(model: CategoryModel) : AbstractMoneyEntity<
 
 object CategoryResultSetMapper : ResultSetMapper<Category> {
     override fun apply(resultSet: ResultSet): Category {
-        val model =
-            CategoryModel().apply {
-                CategoryTable.getValues(resultSet, this)
-            }
-
+        val model = CategoryTable.getValues(resultSet, CategoryModel())
         return Category(model)
     }
 }

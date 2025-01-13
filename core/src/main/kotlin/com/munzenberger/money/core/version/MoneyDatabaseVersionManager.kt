@@ -13,7 +13,7 @@ class MoneyDatabaseVersionManager : VersionManager<MoneyDatabase>() {
         )
 
     override fun getAppliedVersions(obj: MoneyDatabase): List<Version> {
-        obj.executeUpdate(queryBuilder.create())
+        obj.execute(queryBuilder.create())
 
         return obj.getList(queryBuilder.select(), VersionResultSetMapper(queryBuilder.versionIdColumnName))
     }

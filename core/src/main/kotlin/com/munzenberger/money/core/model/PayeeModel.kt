@@ -21,8 +21,10 @@ object PayeeTable : Table<PayeeModel>() {
     override fun getValues(
         resultSet: ResultSet,
         model: PayeeModel,
-    ) {
-        model.identity = resultSet.getLong(identityColumn)
-        model.name = resultSet.getString(PAYEE_NAME)
+    ): PayeeModel {
+        return model.apply {
+            identity = resultSet.getLong(identityColumn)
+            name = resultSet.getString(PAYEE_NAME)
+        }
     }
 }

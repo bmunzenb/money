@@ -47,11 +47,7 @@ class AccountType internal constructor(model: AccountTypeModel) : AbstractMoneyE
 
 object AccountTypeResultSetMapper : ResultSetMapper<AccountType> {
     override fun apply(resultSet: ResultSet): AccountType {
-        val model =
-            AccountTypeModel().apply {
-                AccountTypeTable.getValues(resultSet, this)
-            }
-
+        val model = AccountTypeTable.getValues(resultSet, AccountTypeModel())
         return AccountType(model)
     }
 }

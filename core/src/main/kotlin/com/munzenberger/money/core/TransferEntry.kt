@@ -89,11 +89,7 @@ class TransferEntry internal constructor(model: TransferEntryModel) :
 
 object TransferEntryResultSetMapper : ResultSetMapper<TransferEntry> {
     override fun apply(resultSet: ResultSet): TransferEntry {
-        val model =
-            TransferEntryModel().apply {
-                TransferEntryTable.getValues(resultSet, this)
-            }
-
+        val model = TransferEntryTable.getValues(resultSet, TransferEntryModel())
         return TransferEntry(model).apply {
             account = model.account?.let { AccountResultSetMapper.apply(resultSet) }
         }

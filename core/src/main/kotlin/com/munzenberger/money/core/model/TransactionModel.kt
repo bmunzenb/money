@@ -41,14 +41,16 @@ object TransactionTable : Table<TransactionModel>() {
     override fun getValues(
         resultSet: ResultSet,
         model: TransactionModel,
-    ) {
-        model.identity = resultSet.getLong(identityColumn)
-        model.account = resultSet.getLongOrNull(TRANSACTION_ACCOUNT_ID)
-        model.payee = resultSet.getLongOrNull(TRANSACTION_PAYEE_ID)
-        model.date = resultSet.getLongOrNull(TRANSACTION_DATE)
-        model.number = resultSet.getString(TRANSACTION_NUMBER)
-        model.memo = resultSet.getString(TRANSACTION_MEMO)
-        model.status = resultSet.getString(TRANSACTION_STATUS)?.let { TransactionStatus.valueOf(it) }
+    ): TransactionModel {
+        return model.apply {
+            identity = resultSet.getLong(identityColumn)
+            account = resultSet.getLongOrNull(TRANSACTION_ACCOUNT_ID)
+            payee = resultSet.getLongOrNull(TRANSACTION_PAYEE_ID)
+            date = resultSet.getLongOrNull(TRANSACTION_DATE)
+            number = resultSet.getString(TRANSACTION_NUMBER)
+            memo = resultSet.getString(TRANSACTION_MEMO)
+            status = resultSet.getString(TRANSACTION_STATUS)?.let { TransactionStatus.valueOf(it) }
+        }
     }
 
     override fun applyJoins(select: SelectQueryBuilder) {

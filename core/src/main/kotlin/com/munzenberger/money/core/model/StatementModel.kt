@@ -35,12 +35,14 @@ object StatementTable : Table<StatementModel>() {
     override fun getValues(
         resultSet: ResultSet,
         model: StatementModel,
-    ) {
-        model.identity = resultSet.getLong(identityColumn)
-        model.account = resultSet.getLong(STATEMENT_ACCOUNT_ID)
-        model.closingDate = resultSet.getLong(STATEMENT_CLOSING_DATE)
-        model.startingBalance = resultSet.getLong(STATEMENT_STARTING_BALANCE)
-        model.endingBalance = resultSet.getLong(STATEMENT_ENDING_BALANCE)
-        model.isReconciled = resultSet.getBoolean(STATEMENT_IS_RECONCILED)
+    ): StatementModel {
+        return model.apply {
+            identity = resultSet.getLong(identityColumn)
+            account = resultSet.getLong(STATEMENT_ACCOUNT_ID)
+            closingDate = resultSet.getLong(STATEMENT_CLOSING_DATE)
+            startingBalance = resultSet.getLong(STATEMENT_STARTING_BALANCE)
+            endingBalance = resultSet.getLong(STATEMENT_ENDING_BALANCE)
+            isReconciled = resultSet.getBoolean(STATEMENT_IS_RECONCILED)
+        }
     }
 }
