@@ -65,12 +65,12 @@ class CategoryEntry internal constructor(model: CategoryEntryModel) :
             fun find(
                 executor: QueryExecutor,
                 block: OrderableQueryBuilder<*>.() -> Unit = {},
-            ) = MoneyEntity.find(executor, CategoryEntryTable, CategoryEntryResultSetMapper, block)
+            ) = find(executor, CategoryEntryTable, CategoryEntryResultSetMapper, block)
 
             fun get(
                 identity: CategoryEntryIdentity,
                 executor: QueryExecutor,
-            ) = MoneyEntity.get(identity, executor, CategoryEntryTable, CategoryEntryResultSetMapper)
+            ) = get(identity, executor, CategoryEntryTable, CategoryEntryResultSetMapper)
         }
     }
 

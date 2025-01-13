@@ -25,12 +25,12 @@ class Bank internal constructor(model: BankModel) : AbstractMoneyEntity<BankIden
         fun find(
             executor: QueryExecutor,
             block: OrderableQueryBuilder<*>.() -> Unit = {},
-        ) = MoneyEntity.find(executor, BankTable, BankResultSetMapper, block)
+        ) = find(executor, BankTable, BankResultSetMapper, block)
 
         fun get(
             identity: BankIdentity,
             executor: QueryExecutor,
-        ) = MoneyEntity.get(identity, executor, BankTable, BankResultSetMapper)
+        ) = get(identity, executor, BankTable, BankResultSetMapper)
     }
 }
 

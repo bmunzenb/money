@@ -66,12 +66,12 @@ class Transaction internal constructor(model: TransactionModel) : AbstractMoneyE
         fun find(
             executor: QueryExecutor,
             block: OrderableQueryBuilder<*>.() -> Unit = {},
-        ) = MoneyEntity.find(executor, TransactionTable, TransactionResultSetMapper, block)
+        ) = find(executor, TransactionTable, TransactionResultSetMapper, block)
 
         fun get(
             identity: TransactionIdentity,
             executor: QueryExecutor,
-        ) = MoneyEntity.get(identity, executor, TransactionTable, TransactionResultSetMapper)
+        ) = get(identity, executor, TransactionTable, TransactionResultSetMapper)
     }
 }
 

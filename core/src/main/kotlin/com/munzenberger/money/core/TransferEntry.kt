@@ -78,12 +78,12 @@ class TransferEntry internal constructor(model: TransferEntryModel) :
             fun find(
                 executor: QueryExecutor,
                 block: OrderableQueryBuilder<*>.() -> Unit = {},
-            ) = MoneyEntity.find(executor, TransferEntryTable, TransferEntryResultSetMapper, block)
+            ) = find(executor, TransferEntryTable, TransferEntryResultSetMapper, block)
 
             fun get(
                 identity: TransferEntryIdentity,
                 executor: QueryExecutor,
-            ) = MoneyEntity.get(identity, executor, TransferEntryTable, TransferEntryResultSetMapper)
+            ) = get(identity, executor, TransferEntryTable, TransferEntryResultSetMapper)
         }
     }
 

@@ -60,12 +60,17 @@ class Statement internal constructor(model: StatementModel) : AbstractMoneyEntit
         fun find(
             executor: QueryExecutor,
             block: OrderableQueryBuilder<*>.() -> Unit = {},
-        ) = MoneyEntity.find(executor, StatementTable, StatementResultSetMapper, block)
+        ) = find(executor, StatementTable, StatementResultSetMapper, block)
+
+        fun findFirst(
+            executor: QueryExecutor,
+            block: OrderableQueryBuilder<*>.() -> Unit = {},
+        ) = findFirst(executor, StatementTable, StatementResultSetMapper, block)
 
         fun get(
             identity: StatementIdentity,
             executor: QueryExecutor,
-        ) = MoneyEntity.get(identity, executor, StatementTable, StatementResultSetMapper)
+        ) = get(identity, executor, StatementTable, StatementResultSetMapper)
     }
 }
 
