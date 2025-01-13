@@ -4,6 +4,10 @@ import com.munzenberger.money.core.MoneyDatabase
 import com.munzenberger.money.version.Version
 import com.munzenberger.money.version.VersionManager
 
+/**
+ * Used to verify the schema for a Money database is compatible with the version of the core module.
+ * This must be done immediately after connecting to the Money database. Call [getVersionStatus].
+ */
 class MoneyDatabaseVersionManager : VersionManager<MoneyDatabase>() {
     private val queryBuilder: VersionQueryBuilder = VersionQueryBuilder("CORE_VERSIONS")
 

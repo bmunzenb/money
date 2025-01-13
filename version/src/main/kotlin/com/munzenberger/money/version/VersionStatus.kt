@@ -1,9 +1,9 @@
 package com.munzenberger.money.version
 
 sealed class VersionStatus {
-    object UnsupportedVersion : VersionStatus()
+    data object UnsupportedVersion : VersionStatus()
 
-    object CurrentVersion : VersionStatus()
+    data object CurrentVersion : VersionStatus()
 
     abstract class PendingUpgrades(
         val isFirstUse: Boolean,
