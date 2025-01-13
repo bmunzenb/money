@@ -18,14 +18,15 @@ import javafx.beans.property.SimpleObjectProperty
 import javafx.beans.property.SimpleStringProperty
 import java.time.LocalDate
 
-sealed class FXAccountEntry(private val accountEntry: AccountEntry) {
+sealed class FXAccountEntry(
+    private val accountEntry: AccountEntry,
+) {
     companion object {
-        fun of(accountEntry: AccountEntry): FXAccountEntry {
-            return when (accountEntry) {
+        fun of(accountEntry: AccountEntry): FXAccountEntry =
+            when (accountEntry) {
                 is AccountEntry.Transaction -> FXTransactionAccountEntry(accountEntry)
                 is AccountEntry.Transfer -> FXTransferAccountEntry(accountEntry)
             }
-        }
     }
 
     val transactionId: TransactionIdentity
@@ -53,7 +54,9 @@ sealed class FXAccountEntry(private val accountEntry: AccountEntry) {
     abstract fun delete(executor: QueryExecutor)
 }
 
-class FXTransactionAccountEntry(private val transactionEntry: AccountEntry.Transaction) : FXAccountEntry(transactionEntry) {
+class FXTransactionAccountEntry(
+    private val transactionEntry: AccountEntry.Transaction,
+) : FXAccountEntry(transactionEntry) {
     override val categoryProperty: ReadOnlyStringProperty
 
     init {
@@ -85,7 +88,9 @@ class FXTransactionAccountEntry(private val transactionEntry: AccountEntry.Trans
     }
 }
 
-class FXTransferAccountEntry(private val transferEntry: AccountEntry.Transfer) : FXAccountEntry(transferEntry) {
+class FXTransferAccountEntry(
+    private val transferEntry: AccountEntry.Transfer,
+) : FXAccountEntry(transferEntry) {
     val transferId: TransferEntryIdentity
         get() = transferEntry.transferId
 

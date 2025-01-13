@@ -5,7 +5,9 @@ import com.munzenberger.money.sql.insertQuery
 import com.munzenberger.money.sql.selectQuery
 import com.munzenberger.money.version.Version
 
-class VersionQueryBuilder(val tableName: String) {
+class VersionQueryBuilder(
+    val tableName: String,
+) {
     val versionIdColumnName: String = "VERSION_ID"
     val timestampColumnName: String = "VERSION_TIMESTAMP"
 

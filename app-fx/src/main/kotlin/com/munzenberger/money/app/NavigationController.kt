@@ -35,26 +35,22 @@ class NavigationController : AutoCloseable {
         }
 
     private val accountsNavigation =
-        LayoutControllerNavigation(AccountListController.LAYOUT) {
-                controller: AccountListController ->
+        LayoutControllerNavigation(AccountListController.LAYOUT) { controller: AccountListController ->
             controller.start(stage, database, navigator)
         }
 
     private val categoriesNavigation =
-        LayoutControllerNavigation(CategoryListController.LAYOUT) {
-                controller: CategoryListController ->
+        LayoutControllerNavigation(CategoryListController.LAYOUT) { controller: CategoryListController ->
             controller.start(database)
         }
 
     private val payeesNavigation =
-        LayoutControllerNavigation(PayeeListController.LAYOUT) {
-                controller: PayeeListController ->
+        LayoutControllerNavigation(PayeeListController.LAYOUT) { controller: PayeeListController ->
             controller.start(database)
         }
 
     private val queryNavigation =
-        LayoutControllerNavigation(QueryController.LAYOUT) {
-                controller: QueryController ->
+        LayoutControllerNavigation(QueryController.LAYOUT) { controller: QueryController ->
             controller.start(database)
         }
 

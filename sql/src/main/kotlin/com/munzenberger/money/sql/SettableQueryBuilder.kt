@@ -1,6 +1,8 @@
 package com.munzenberger.money.sql
 
-abstract class SettableQueryBuilder<T>(private val table: String) {
+abstract class SettableQueryBuilder<T>(
+    private val table: String,
+) {
     private val parameters = mutableMapOf<String, Any?>()
 
     fun set(

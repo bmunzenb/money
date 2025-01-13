@@ -14,7 +14,9 @@ private interface AccountBalanceCollector : ResultSetConsumer {
     val result: Long
 }
 
-private class TransactionTransferEntryBalanceCollector(accountId: AccountIdentity) : AccountBalanceCollector {
+private class TransactionTransferEntryBalanceCollector(
+    accountId: AccountIdentity,
+) : AccountBalanceCollector {
     private val sql =
         """
         SELECT SUM(${TransferEntryTable.TRANSFER_ENTRY_AMOUNT}) AS TOTAL
@@ -37,7 +39,9 @@ private class TransactionTransferEntryBalanceCollector(accountId: AccountIdentit
     }
 }
 
-private class TransferEntryBalanceCollector(accountId: AccountIdentity) : AccountBalanceCollector {
+private class TransferEntryBalanceCollector(
+    accountId: AccountIdentity,
+) : AccountBalanceCollector {
     private val sql =
         """
         SELECT -SUM(${TransferEntryTable.TRANSFER_ENTRY_AMOUNT}) AS TOTAL
@@ -59,7 +63,9 @@ private class TransferEntryBalanceCollector(accountId: AccountIdentity) : Accoun
     }
 }
 
-private class TransactionCategoryEntryBalanceCollector(accountId: AccountIdentity) : AccountBalanceCollector {
+private class TransactionCategoryEntryBalanceCollector(
+    accountId: AccountIdentity,
+) : AccountBalanceCollector {
     private val sql =
         """
         SELECT SUM(${CategoryEntryTable.CATEGORY_ENTRY_AMOUNT}) AS TOTAL

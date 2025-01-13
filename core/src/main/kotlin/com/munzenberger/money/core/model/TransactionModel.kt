@@ -41,8 +41,8 @@ object TransactionTable : Table<TransactionModel>() {
     override fun getValues(
         resultSet: ResultSet,
         model: TransactionModel,
-    ): TransactionModel {
-        return model.apply {
+    ): TransactionModel =
+        model.apply {
             identity = resultSet.getLong(identityColumn)
             account = resultSet.getLongOrNull(TRANSACTION_ACCOUNT_ID)
             payee = resultSet.getLongOrNull(TRANSACTION_PAYEE_ID)
@@ -51,7 +51,6 @@ object TransactionTable : Table<TransactionModel>() {
             memo = resultSet.getString(TRANSACTION_MEMO)
             status = resultSet.getString(TRANSACTION_STATUS)?.let { TransactionStatus.valueOf(it) }
         }
-    }
 
     override fun applyJoins(select: SelectQueryBuilder) {
         select.leftJoin(TRANSACTION_ACCOUNT_ID, AccountTable).leftJoin(TRANSACTION_PAYEE_ID, PayeeTable)

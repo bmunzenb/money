@@ -76,9 +76,7 @@ class EditTransferViewModel {
 
         val task =
             object : Task<TransferResult>() {
-                override fun call(): TransferResult {
-                    return getTransferResult(database, transferId)
-                }
+                override fun call(): TransferResult = getTransferResult(database, transferId)
 
                 override fun succeeded() {
                     value.let { onTransferResult(it.transfer, it.transaction) }

@@ -14,8 +14,7 @@ import javafx.collections.ObservableList
 
 class SplitTransactionViewModel {
     private val editors =
-        FXCollections.observableArrayList<TransactionEntryEditor> {
-                e ->
+        FXCollections.observableArrayList<TransactionEntryEditor> { e ->
             arrayOf(e.selectedCategoryProperty, e.amountProperty)
         }
     private val categories = FXCollections.observableArrayList<TransactionCategory>()

@@ -35,12 +35,11 @@ object CategoryTable : Table<CategoryModel>() {
     override fun getValues(
         resultSet: ResultSet,
         model: CategoryModel,
-    ): CategoryModel {
-        return model.apply {
+    ): CategoryModel =
+        model.apply {
             identity = resultSet.getLong(identityColumn)
             name = resultSet.getString(CATEGORY_NAME)
             parent = resultSet.getLongOrNull(CATEGORY_PARENT_ID)
             type = resultSet.getString(CATEGORY_TYPE)?.let { CategoryType.valueOf(it) }
         }
-    }
 }

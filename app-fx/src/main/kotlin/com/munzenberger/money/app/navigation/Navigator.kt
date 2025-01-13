@@ -5,7 +5,9 @@ import javafx.beans.property.SimpleListProperty
 import javafx.collections.FXCollections
 import javafx.scene.Node
 
-class Navigator(private val consumer: (Node) -> Unit) : AutoCloseable {
+class Navigator(
+    private val consumer: (Node) -> Unit,
+) : AutoCloseable {
     private val backHistory = SimpleListProperty<Navigation>(FXCollections.observableArrayList())
     private val forwardHistory = SimpleListProperty<Navigation>(FXCollections.observableArrayList())
 

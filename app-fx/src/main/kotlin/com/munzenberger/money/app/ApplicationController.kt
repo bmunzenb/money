@@ -17,7 +17,10 @@ import javafx.stage.Stage
 import java.io.File
 import java.net.URL
 
-class ApplicationController : DatabaseConnectorDelegate, DatabaseConnectorCallbacks, AutoCloseable {
+class ApplicationController :
+    DatabaseConnectorDelegate,
+    DatabaseConnectorCallbacks,
+    AutoCloseable {
     companion object {
         val LAYOUT: URL = ApplicationController::class.java.getResource("ApplicationLayout.fxml")!!
     }
@@ -170,13 +173,14 @@ class ApplicationController : DatabaseConnectorDelegate, DatabaseConnectorCallba
         Alert(Alert.AlertType.ERROR).apply {
             title = "Error"
             headerText = "Could not open database file."
-            contentText = "The database file is unsupported by this version of Money. This is likely due to having used the database file with a newer version of Money. Please update your version of Money and try again."
+            contentText =
+                "The database file is unsupported by this version of Money. This is likely due to having used the database file with a newer version of Money. Please update your version of Money and try again."
             showAndWait()
         }
     }
 
-    override fun onPendingUpgrades(isFirstUse: Boolean): Boolean {
-        return when (isFirstUse) {
+    override fun onPendingUpgrades(isFirstUse: Boolean): Boolean =
+        when (isFirstUse) {
             // always apply updates if this is the first time connecting to the database
             true -> true
 
@@ -185,13 +189,13 @@ class ApplicationController : DatabaseConnectorDelegate, DatabaseConnectorCallba
                 Alert(Alert.AlertType.CONFIRMATION).run {
                     title = "Confirm Upgrade"
                     headerText = "Database upgrade required."
-                    contentText = "The database file requires an upgrade to work with this version of Money. This operation cannot be undone. It is recommended you make a backup of your existing file before upgrading it. Would you like to proceed with the upgrade?"
+                    contentText =
+                        "The database file requires an upgrade to work with this version of Money. This operation cannot be undone. It is recommended you make a backup of your existing file before upgrading it. Would you like to proceed with the upgrade?"
                     val result = showAndWait()
 
                     result.isPresent && result.get() == ButtonType.OK
                 }
         }
-    }
 
     override fun onConnectError(error: Throwable) {
         ErrorAlert(error).showAndWait()

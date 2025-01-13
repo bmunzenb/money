@@ -9,7 +9,9 @@ import org.junit.Assert.fail
 import org.junit.Test
 
 class VersionManagerTest {
-    private class TestableVersion(override val versionId: Long) : ApplicableVersion<Any> {
+    private class TestableVersion(
+        override val versionId: Long,
+    ) : ApplicableVersion<Any> {
         override fun apply(obj: Any) {
             // do nothing
         }

@@ -1,6 +1,9 @@
 package com.munzenberger.money.sql
 
-data class Condition(val clause: String, val parameters: List<Any?> = emptyList()) {
+data class Condition(
+    val clause: String,
+    val parameters: List<Any?> = emptyList(),
+) {
     companion object {
         fun eq(
             column: String,

@@ -11,7 +11,10 @@ import com.munzenberger.money.core.getBalance
 import javafx.beans.property.ReadOnlyStringProperty
 import javafx.beans.property.SimpleStringProperty
 
-class FXAccount(private val account: Account, private val database: MoneyDatabase) {
+class FXAccount(
+    private val account: Account,
+    private val database: MoneyDatabase,
+) {
     val identity = account.identity!!
 
     val nameProperty: ReadOnlyStringProperty = SimpleStringProperty(account.name)

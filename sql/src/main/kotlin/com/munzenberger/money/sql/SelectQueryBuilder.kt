@@ -12,7 +12,9 @@ fun selectQuery(
 }
 
 @SelectQueryMarker
-class SelectQueryBuilder(private val table: String) : OrderableQueryBuilder<SelectQueryBuilder>() {
+class SelectQueryBuilder(
+    private val table: String,
+) : OrderableQueryBuilder<SelectQueryBuilder>() {
     private val columns = mutableListOf<String>()
     private val joins = mutableListOf<String>()
     private val groupBy = mutableListOf<String>()

@@ -13,7 +13,8 @@ fun Random.nextString(length: Int = 50): String {
 
     return (0..length)
         .map { alphabet[nextInt(alphabet.length)] }
-        .joinTo(StringBuilder(), "").toString()
+        .joinTo(StringBuilder(), "")
+        .toString()
 }
 
 fun Random.nextMoney() = Money.valueOf(nextLong())

@@ -50,9 +50,10 @@ class AccountListViewModel : AutoCloseable {
     }
 
     fun start(database: ObservableMoneyDatabase) {
-        database.subscribe {
-            accounts.setValueAsync { Account.find(database).map { FXAccount(it, database) } }
-        }.also { subscriptions.add(it) }
+        database
+            .subscribe {
+                accounts.setValueAsync { Account.find(database).map { FXAccount(it, database) } }
+            }.also { subscriptions.add(it) }
     }
 
     override fun close() {

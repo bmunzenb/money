@@ -10,7 +10,9 @@ import java.io.PrintWriter
 import java.io.StringWriter
 import java.util.Optional
 
-class ErrorAlert(error: Throwable) : Alert(AlertType.ERROR) {
+class ErrorAlert(
+    error: Throwable,
+) : Alert(AlertType.ERROR) {
     init {
 
         title = error.javaClass.simpleName
@@ -47,8 +49,6 @@ class ErrorAlert(error: Throwable) : Alert(AlertType.ERROR) {
     }
 
     companion object {
-        fun showAndWait(error: Throwable): Optional<ButtonType> {
-            return ErrorAlert(error).showAndWait()
-        }
+        fun showAndWait(error: Throwable): Optional<ButtonType> = ErrorAlert(error).showAndWait()
     }
 }

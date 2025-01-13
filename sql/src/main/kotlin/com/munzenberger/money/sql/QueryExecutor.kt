@@ -15,22 +15,20 @@ interface QueryExecutor {
     fun <T> getList(
         query: Query,
         mapper: ResultSetMapper<T>,
-    ): List<T> {
-        return ListResultSetConsumer(mapper).let {
+    ): List<T> =
+        ListResultSetConsumer(mapper).let {
             executeQuery(query, it)
             it.results
         }
-    }
 
     fun <T> getFirst(
         query: Query,
         mapper: ResultSetMapper<T>,
-    ): T? {
-        return FirstResultSetConsumer(mapper).let {
+    ): T? =
+        FirstResultSetConsumer(mapper).let {
             executeQuery(query, it)
             it.result
         }
-    }
 }
 
 fun QueryExecutor.transaction(block: (TransactionQueryExecutor) -> Unit) {

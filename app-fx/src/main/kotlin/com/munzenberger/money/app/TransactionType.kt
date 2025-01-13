@@ -13,7 +13,9 @@ sealed class TransactionType {
     abstract val variant: Variant
     abstract val name: String
 
-    class Credit(accountType: AccountType?) : TransactionType() {
+    class Credit(
+        accountType: AccountType?,
+    ) : TransactionType() {
         override val variant = Variant.CREDIT
         override val name =
             when (accountType?.variant) {
@@ -24,7 +26,9 @@ sealed class TransactionType {
             }
     }
 
-    class Debit(accountType: AccountType?) : TransactionType() {
+    class Debit(
+        accountType: AccountType?,
+    ) : TransactionType() {
         override val variant = Variant.DEBIT
         override val name =
             when (accountType?.variant) {
@@ -41,24 +45,18 @@ sealed class TransactionType {
     }
 }
 
-fun Money.forTransactionType(transactionType: TransactionType?): Money {
-    return forTransactionType(transactionType?.variant)
-}
+fun Money.forTransactionType(transactionType: TransactionType?): Money = forTransactionType(transactionType?.variant)
 
-fun Money.forTransactionType(variant: TransactionType.Variant?): Money {
-    return when (variant) {
+fun Money.forTransactionType(variant: TransactionType.Variant?): Money =
+    when (variant) {
         TransactionType.Variant.DEBIT -> negate()
         else -> this
     }
-}
 
-fun Money.forTransferType(transactionType: TransactionType?): Money {
-    return forTransferType(transactionType?.variant)
-}
+fun Money.forTransferType(transactionType: TransactionType?): Money = forTransferType(transactionType?.variant)
 
-fun Money.forTransferType(variant: TransactionType.Variant?): Money {
-    return when (variant) {
+fun Money.forTransferType(variant: TransactionType.Variant?): Money =
+    when (variant) {
         TransactionType.Variant.CREDIT -> negate()
         else -> this
     }
-}

@@ -12,12 +12,16 @@ import com.munzenberger.money.sql.transaction
 import java.sql.ResultSet
 import java.time.LocalDate
 
-data class TransactionIdentity(override val value: Long) : Identity
+data class TransactionIdentity(
+    override val value: Long,
+) : Identity
 
-class Transaction internal constructor(model: TransactionModel) : AbstractMoneyEntity<TransactionIdentity, TransactionModel>(
-    model,
-    TransactionTable,
-) {
+class Transaction internal constructor(
+    model: TransactionModel,
+) : AbstractMoneyEntity<TransactionIdentity, TransactionModel>(
+        model,
+        TransactionTable,
+    ) {
     constructor() : this(
         TransactionModel(
             status = TransactionStatus.UNRECONCILED,
@@ -87,14 +91,16 @@ object TransactionResultSetMapper : ResultSetMapper<Transaction> {
 
 fun Transaction.getEntries(executor: QueryExecutor): List<Entry<out EntryIdentity>> {
     val transfers =
-        TransferEntryTable.select {
-            where(TransferEntryTable.TRANSFER_ENTRY_TRANSACTION_ID.eq(identity?.value))
-        }.let { executor.getList(it, TransferEntryResultSetMapper) }
+        TransferEntryTable
+            .select {
+                where(TransferEntryTable.TRANSFER_ENTRY_TRANSACTION_ID.eq(identity?.value))
+            }.let { executor.getList(it, TransferEntryResultSetMapper) }
 
     val categories =
-        CategoryEntryTable.select {
-            where(CategoryEntryTable.CATEGORY_ENTRY_TRANSACTION_ID.eq(identity?.value))
-        }.let { executor.getList(it, CategoryEntryResultSetMapper) }
+        CategoryEntryTable
+            .select {
+                where(CategoryEntryTable.CATEGORY_ENTRY_TRANSACTION_ID.eq(identity?.value))
+            }.let { executor.getList(it, CategoryEntryResultSetMapper) }
 
     return (transfers + categories).sortedBy { it.orderInTransaction }
 }

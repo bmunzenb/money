@@ -37,8 +37,8 @@ object CategoryEntryTable : Table<CategoryEntryModel>() {
     override fun getValues(
         resultSet: ResultSet,
         model: CategoryEntryModel,
-    ): CategoryEntryModel {
-        return model.apply {
+    ): CategoryEntryModel =
+        model.apply {
             identity = resultSet.getLong(identityColumn)
             transaction = resultSet.getLongOrNull(CATEGORY_ENTRY_TRANSACTION_ID)
             category = resultSet.getLongOrNull(CATEGORY_ENTRY_CATEGORY_ID)
@@ -46,7 +46,6 @@ object CategoryEntryTable : Table<CategoryEntryModel>() {
             memo = resultSet.getString(CATEGORY_ENTRY_MEMO)
             orderInTransaction = resultSet.getInt(CATEGORY_ENTRY_ORDER_IN_TRANSACTION)
         }
-    }
 
     override fun applyJoins(select: SelectQueryBuilder) {
         select.leftJoin(CATEGORY_ENTRY_CATEGORY_ID, CategoryTable)

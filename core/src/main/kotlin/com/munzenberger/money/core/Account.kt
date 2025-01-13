@@ -8,9 +8,13 @@ import com.munzenberger.money.sql.ResultSetMapper
 import com.munzenberger.money.sql.transaction
 import java.sql.ResultSet
 
-data class AccountIdentity(override val value: Long) : Identity
+data class AccountIdentity(
+    override val value: Long,
+) : Identity
 
-class Account internal constructor(model: AccountModel) : AbstractMoneyEntity<AccountIdentity, AccountModel>(model, AccountTable) {
+class Account internal constructor(
+    model: AccountModel,
+) : AbstractMoneyEntity<AccountIdentity, AccountModel>(model, AccountTable) {
     constructor() : this(AccountModel())
 
     override val identity: AccountIdentity?

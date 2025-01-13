@@ -292,7 +292,10 @@ private class AccountEntryCollector {
  * Collects all transactions associated with the specified account.  Each transaction is the parent to one or more
  * transfers targeting another account, or a credit/debit for a category.
  */
-private class TransactionResultSetConsumer(accountId: AccountIdentity, private val collector: AccountEntryCollector) : ResultSetConsumer {
+private class TransactionResultSetConsumer(
+    accountId: AccountIdentity,
+    private val collector: AccountEntryCollector,
+) : ResultSetConsumer {
     private val sql =
         """
         SELECT
@@ -407,7 +410,10 @@ private class TransactionCategoryEntryResultSetConsumer(
 /**
  * Collects all transfers that target the specified account.
  */
-private class TransferEntryResultSetConsumer(accountId: AccountIdentity, private val collector: AccountEntryCollector) : ResultSetConsumer {
+private class TransferEntryResultSetConsumer(
+    accountId: AccountIdentity,
+    private val collector: AccountEntryCollector,
+) : ResultSetConsumer {
     private val sql =
         """
         SELECT

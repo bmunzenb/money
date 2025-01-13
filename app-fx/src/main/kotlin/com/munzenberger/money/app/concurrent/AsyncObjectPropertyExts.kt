@@ -11,9 +11,7 @@ fun <T> AsyncObjectProperty<T>.setValueAsync(
 ) {
     val task =
         object : Task<T>() {
-            override fun call(): T {
-                return block.invoke()
-            }
+            override fun call(): T = block.invoke()
 
             override fun running() {
                 setValue(AsyncObject.Executing())

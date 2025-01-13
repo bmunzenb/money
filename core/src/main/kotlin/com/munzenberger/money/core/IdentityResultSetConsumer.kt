@@ -4,7 +4,9 @@ import com.munzenberger.money.sql.ResultSetConsumer
 import com.munzenberger.money.sql.ResultSetMapper
 import java.sql.ResultSet
 
-internal class IdentityResultSetConsumer : ResultSetConsumer, ResultSetMapper<Long> {
+internal class IdentityResultSetConsumer :
+    ResultSetConsumer,
+    ResultSetMapper<Long> {
     private var mutableIdentity: Long? = null
 
     val identity: Long?
@@ -16,7 +18,5 @@ internal class IdentityResultSetConsumer : ResultSetConsumer, ResultSetMapper<Lo
         }
     }
 
-    override fun apply(resultSet: ResultSet): Long {
-        return resultSet.getLong(1)
-    }
+    override fun apply(resultSet: ResultSet): Long = resultSet.getLong(1)
 }

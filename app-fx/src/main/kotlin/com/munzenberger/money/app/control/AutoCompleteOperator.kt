@@ -7,7 +7,10 @@ import javafx.util.StringConverter
 import java.util.SortedSet
 import java.util.function.UnaryOperator
 
-class AutoCompleteOperator<T>(items: ObservableList<T>, converter: StringConverter<T>) : UnaryOperator<TextFormatter.Change> {
+class AutoCompleteOperator<T>(
+    items: ObservableList<T>,
+    converter: StringConverter<T>,
+) : UnaryOperator<TextFormatter.Change> {
     private val strings: SortedSet<String> = items.map { converter.toString(it) }.toSortedSet(compareBy({ it.length }, { it }))
 
     init {

@@ -7,9 +7,13 @@ import com.munzenberger.money.sql.QueryExecutor
 import com.munzenberger.money.sql.ResultSetMapper
 import java.sql.ResultSet
 
-data class BankIdentity(override val value: Long) : Identity
+data class BankIdentity(
+    override val value: Long,
+) : Identity
 
-class Bank internal constructor(model: BankModel) : AbstractMoneyEntity<BankIdentity, BankModel>(model, BankTable) {
+class Bank internal constructor(
+    model: BankModel,
+) : AbstractMoneyEntity<BankIdentity, BankModel>(model, BankTable) {
     constructor() : this(BankModel())
 
     override val identity: BankIdentity?

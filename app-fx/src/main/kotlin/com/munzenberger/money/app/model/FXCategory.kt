@@ -5,7 +5,10 @@ import com.munzenberger.money.core.model.CategoryType
 import javafx.beans.property.ReadOnlyStringProperty
 import javafx.beans.property.SimpleStringProperty
 
-class FXCategory(category: Category, parentName: String?) {
+class FXCategory(
+    category: Category,
+    parentName: String?,
+) {
     val nameProperty: ReadOnlyStringProperty
     val typeProperty: ReadOnlyStringProperty
 

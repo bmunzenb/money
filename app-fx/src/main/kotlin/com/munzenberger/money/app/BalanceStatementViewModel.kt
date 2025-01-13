@@ -70,14 +70,13 @@ class BalanceStatementViewModel {
     ) {
         val task =
             object : Task<Statement>() {
-                override fun call(): Statement {
-                    return statement.apply {
+                override fun call(): Statement =
+                    statement.apply {
                         closingDate = statementDateProperty.value
                         startingBalance = startingBalanceProperty.value
                         endingBalance = endingBalanceProperty.value
                         save(database)
                     }
-                }
 
                 override fun succeeded() {
                     onSuccess.invoke(value)

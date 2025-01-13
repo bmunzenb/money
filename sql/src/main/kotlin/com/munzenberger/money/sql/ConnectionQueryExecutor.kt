@@ -5,7 +5,9 @@ import java.sql.PreparedStatement
 import java.util.logging.Level
 import java.util.logging.Logger
 
-class ConnectionQueryExecutor(private val connection: Connection) : QueryExecutor {
+class ConnectionQueryExecutor(
+    private val connection: Connection,
+) : QueryExecutor {
     private val logger = Logger.getLogger(ConnectionQueryExecutor::class.java.name)
 
     override fun execute(query: Query): Boolean {
@@ -124,7 +126,8 @@ private class ConnectionTransactionQueryExecutor(
 private class NestedTransactionQueryExecutor(
     private val nest: Int,
     private val tx: TransactionQueryExecutor,
-) : TransactionQueryExecutor, QueryExecutor by tx {
+) : TransactionQueryExecutor,
+    QueryExecutor by tx {
     private val logger = Logger.getLogger(NestedTransactionQueryExecutor::class.java.name)
     private val level = Level.FINE
 

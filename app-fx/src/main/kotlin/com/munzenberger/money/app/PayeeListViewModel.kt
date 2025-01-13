@@ -17,11 +17,12 @@ class PayeeListViewModel : AutoCloseable {
     private val subscriptions = CompositeSubscription()
 
     fun start(database: ObservableMoneyDatabase) {
-        database.subscribe {
-            payees.setValueAsync {
-                Payee.getAllWithLastPaid(database).map { FXPayee(it.first, it.second) }
-            }
-        }.also { subscriptions.add(it) }
+        database
+            .subscribe {
+                payees.setValueAsync {
+                    Payee.getAllWithLastPaid(database).map { FXPayee(it.first, it.second) }
+                }
+            }.also { subscriptions.add(it) }
     }
 
     override fun close() {

@@ -37,8 +37,8 @@ object AccountTable : Table<AccountModel>() {
     override fun getValues(
         resultSet: ResultSet,
         model: AccountModel,
-    ): AccountModel {
-        return model.apply {
+    ): AccountModel =
+        model.apply {
             identity = resultSet.getLong(identityColumn)
             name = resultSet.getString(ACCOUNT_NAME)
             number = resultSet.getString(ACCOUNT_NUMBER)
@@ -46,7 +46,6 @@ object AccountTable : Table<AccountModel>() {
             bank = resultSet.getLongOrNull(ACCOUNT_BANK_ID)
             initialBalance = resultSet.getLongOrNull(ACCOUNT_INITIAL_BALANCE)
         }
-    }
 
     override fun applyJoins(select: SelectQueryBuilder) {
         select.leftJoin(ACCOUNT_TYPE_ID, AccountTypeTable).leftJoin(ACCOUNT_BANK_ID, BankTable)

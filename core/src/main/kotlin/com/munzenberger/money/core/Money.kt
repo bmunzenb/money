@@ -8,7 +8,10 @@ import java.text.ParseException
 import java.util.Currency
 import java.util.Locale
 
-class Money private constructor(val currency: Currency, val value: Long) : Comparable<Money> {
+class Money private constructor(
+    val currency: Currency,
+    val value: Long,
+) : Comparable<Money> {
     companion object {
         val ZERO: Money by lazy { zero() }
 
@@ -155,7 +158,8 @@ val Money.isPositive: Boolean
 
 private val Locale.accountNumberFormat: Locale
     get() =
-        Locale.Builder()
+        Locale
+            .Builder()
             .setLocale(this)
             .setExtension(Locale.UNICODE_LOCALE_EXTENSION, "cf-account")
             .build()

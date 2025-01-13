@@ -41,13 +41,21 @@ import javafx.collections.FXCollections
 import javafx.concurrent.Task
 import java.util.function.Predicate
 
-class AccountRegisterViewModel : AccountEntriesViewModel, AutoCloseable {
+class AccountRegisterViewModel :
+    AccountEntriesViewModel,
+    AutoCloseable {
     sealed class Edit {
-        data class Transaction(val transaction: com.munzenberger.money.core.Transaction) : Edit()
+        data class Transaction(
+            val transaction: com.munzenberger.money.core.Transaction,
+        ) : Edit()
 
-        data class Transfer(val transferId: TransferEntryIdentity) : Edit()
+        data class Transfer(
+            val transferId: TransferEntryIdentity,
+        ) : Edit()
 
-        data class Error(val error: Throwable) : Edit()
+        data class Error(
+            val error: Throwable,
+        ) : Edit()
     }
 
     private data class Register(
@@ -133,27 +141,28 @@ class AccountRegisterViewModel : AccountEntriesViewModel, AutoCloseable {
     ) {
         this.database = database
 
-        database.subscribe {
-            register.setValueAsync {
-                val account =
-                    Account.get(accountIdentity, database)
-                        ?: throw EntityNotFoundException(Account::class, accountIdentity)
+        database
+            .subscribe {
+                register.setValueAsync {
+                    val account =
+                        Account.get(accountIdentity, database)
+                            ?: throw EntityNotFoundException(Account::class, accountIdentity)
 
-                var transactions = account.getAccountEntries(database)
-                var endingBalance = account.getBalance(database)
+                    var transactions = account.getAccountEntries(database)
+                    var endingBalance = account.getBalance(database)
 
-                if (account.accountType?.group == AccountTypeGroup.LIABILITIES) {
-                    transactions = transactions.map { it.negate() }
-                    endingBalance = endingBalance.negate()
+                    if (account.accountType?.group == AccountTypeGroup.LIABILITIES) {
+                        transactions = transactions.map { it.negate() }
+                        endingBalance = endingBalance.negate()
+                    }
+
+                    Register(
+                        account = account,
+                        transactions = transactions.map { FXAccountEntry.of(it) },
+                        endingBalance = endingBalance,
+                    )
                 }
-
-                Register(
-                    account = account,
-                    transactions = transactions.map { FXAccountEntry.of(it) },
-                    endingBalance = endingBalance,
-                )
-            }
-        }.also { subscriptions.add(it) }
+            }.also { subscriptions.add(it) }
     }
 
     fun prepareEditEntry(
@@ -172,10 +181,9 @@ class AccountRegisterViewModel : AccountEntriesViewModel, AutoCloseable {
     ) {
         val task =
             object : Task<Transaction>() {
-                override fun call(): Transaction {
-                    return Transaction.get(transactionId, database)
+                override fun call(): Transaction =
+                    Transaction.get(transactionId, database)
                         ?: throw EntityNotFoundException(Transaction::class, transactionId)
-                }
 
                 override fun succeeded() {
                     block.invoke(Edit.Transaction(value))
@@ -245,9 +253,8 @@ class AccountRegisterViewModel : AccountEntriesViewModel, AutoCloseable {
     }
 }
 
-private fun AccountEntry.negate(): AccountEntry {
-    return when (this) {
+private fun AccountEntry.negate(): AccountEntry =
+    when (this) {
         is AccountEntry.Transaction -> copy(balance = balance.negate(), amount = amount.negate())
         is AccountEntry.Transfer -> copy(balance = balance.negate(), amount = amount.negate())
     }
-}

@@ -12,7 +12,9 @@ fun deleteQuery(
 }
 
 @DeleteQueryMarker
-class DeleteQueryBuilder(private val table: String) : ConditionalQueryBuilder<DeleteQueryBuilder>() {
+class DeleteQueryBuilder(
+    private val table: String,
+) : ConditionalQueryBuilder<DeleteQueryBuilder>() {
     override fun build(where: Condition?): Query {
         val sb = StringBuilder("DELETE FROM $table")
         val params = mutableListOf<Any?>()

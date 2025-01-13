@@ -3,7 +3,9 @@ package com.munzenberger.money.core.model
 import com.munzenberger.money.sql.SettableQueryBuilder
 import java.sql.ResultSet
 
-data class PayeeModel(var name: String? = null) : Model()
+data class PayeeModel(
+    var name: String? = null,
+) : Model()
 
 object PayeeTable : Table<PayeeModel>() {
     override val tableName = "PAYEES"
@@ -21,10 +23,9 @@ object PayeeTable : Table<PayeeModel>() {
     override fun getValues(
         resultSet: ResultSet,
         model: PayeeModel,
-    ): PayeeModel {
-        return model.apply {
+    ): PayeeModel =
+        model.apply {
             identity = resultSet.getLong(identityColumn)
             name = resultSet.getString(PAYEE_NAME)
         }
-    }
 }

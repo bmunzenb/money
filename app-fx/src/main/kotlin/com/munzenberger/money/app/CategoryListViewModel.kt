@@ -17,13 +17,15 @@ class CategoryListViewModel : AutoCloseable {
     private val subscriptions = CompositeSubscription()
 
     fun start(database: ObservableMoneyDatabase) {
-        database.subscribe {
-            categories.setValueAsync {
-                Category.getAllWithParent(database)
-                    .map { FXCategory(it.category, it.parentName) }
-                    .sortedBy { it.nameProperty.value }
-            }
-        }.also { subscriptions.add(it) }
+        database
+            .subscribe {
+                categories.setValueAsync {
+                    Category
+                        .getAllWithParent(database)
+                        .map { FXCategory(it.category, it.parentName) }
+                        .sortedBy { it.nameProperty.value }
+                }
+            }.also { subscriptions.add(it) }
     }
 
     override fun close() {

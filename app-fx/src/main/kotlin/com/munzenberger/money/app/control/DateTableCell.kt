@@ -7,7 +7,9 @@ import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
 
-class DateTableCell<S>(style: FormatStyle) : TableCell<S, LocalDate>() {
+class DateTableCell<S>(
+    style: FormatStyle,
+) : TableCell<S, LocalDate>() {
     private val formatter = DateTimeFormatter.ofLocalizedDate(style)
 
     override fun updateItem(

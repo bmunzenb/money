@@ -12,7 +12,9 @@ fun insertQuery(
 }
 
 @InsertQueryMarker
-class InsertQueryBuilder(table: String) : SettableQueryBuilder<InsertQueryBuilder>(table) {
+class InsertQueryBuilder(
+    table: String,
+) : SettableQueryBuilder<InsertQueryBuilder>(table) {
     override fun instance() = this
 
     override fun build(

@@ -44,8 +44,8 @@ object TransferEntryTable : Table<TransferEntryModel>() {
     override fun getValues(
         resultSet: ResultSet,
         model: TransferEntryModel,
-    ): TransferEntryModel {
-        return model.apply {
+    ): TransferEntryModel =
+        model.apply {
             identity = resultSet.getLong(identityColumn)
             transaction = resultSet.getLongOrNull(TRANSFER_ENTRY_TRANSACTION_ID)
             account = resultSet.getLongOrNull(TRANSFER_ENTRY_ACCOUNT_ID)
@@ -55,7 +55,6 @@ object TransferEntryTable : Table<TransferEntryModel>() {
             status = resultSet.getString(TRANSFER_ENTRY_STATUS)?.let { TransactionStatus.valueOf(it) }
             orderInTransaction = resultSet.getInt(TRANSFER_ENTRY_ORDER_IN_TRANSACTION)
         }
-    }
 
     override fun applyJoins(select: SelectQueryBuilder) {
         select.leftJoin(TRANSFER_ENTRY_ACCOUNT_ID, AccountTable)

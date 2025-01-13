@@ -17,7 +17,9 @@ fun createTableQuery(
 }
 
 @CreateTableQuery
-class TableDefinition(name: String) {
+class TableDefinition(
+    name: String,
+) {
     private val builder = CreateTableQueryBuilder(name)
 
     fun ifNotExists() {

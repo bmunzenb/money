@@ -17,11 +17,18 @@ class AccountEntryTableRow(
     sealed class Action {
         object Add : Action()
 
-        data class Edit(val entry: FXAccountEntry) : Action()
+        data class Edit(
+            val entry: FXAccountEntry,
+        ) : Action()
 
-        data class Delete(val entry: FXAccountEntry) : Action()
+        data class Delete(
+            val entry: FXAccountEntry,
+        ) : Action()
 
-        data class UpdateStatus(val status: TransactionStatus, val entry: FXAccountEntry) : Action()
+        data class UpdateStatus(
+            val status: TransactionStatus,
+            val entry: FXAccountEntry,
+        ) : Action()
     }
 
     companion object {

@@ -8,7 +8,9 @@ fun interface ResultSetConsumer : Consumer<ResultSet>
 
 fun interface ResultSetMapper<T> : Function<ResultSet, T>
 
-open class ListResultSetConsumer<T>(private val mapper: ResultSetMapper<T>) : ResultSetConsumer {
+open class ListResultSetConsumer<T>(
+    private val mapper: ResultSetMapper<T>,
+) : ResultSetConsumer {
     private val mutableResults = mutableListOf<T>()
 
     val results: List<T>
@@ -21,7 +23,9 @@ open class ListResultSetConsumer<T>(private val mapper: ResultSetMapper<T>) : Re
     }
 }
 
-open class FirstResultSetConsumer<T>(private val mapper: ResultSetMapper<T>) : ResultSetConsumer {
+open class FirstResultSetConsumer<T>(
+    private val mapper: ResultSetMapper<T>,
+) : ResultSetConsumer {
     private var mutableResult: T? = null
 
     val result: T?

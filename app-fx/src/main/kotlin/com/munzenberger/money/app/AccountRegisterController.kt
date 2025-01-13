@@ -52,8 +52,7 @@ class AccountRegisterController : AutoCloseable {
             stage: Stage,
             database: ObservableMoneyDatabase,
             accountIdentity: AccountIdentity,
-        ) = LayoutControllerNavigation(LAYOUT) {
-                controller: AccountRegisterController ->
+        ) = LayoutControllerNavigation(LAYOUT) { controller: AccountRegisterController ->
             controller.start(stage, database, accountIdentity)
         }
     }

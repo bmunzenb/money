@@ -2,7 +2,9 @@ package com.munzenberger.money.sql
 
 import java.lang.StringBuilder
 
-class CreateTableQueryBuilder(private val table: String) {
+class CreateTableQueryBuilder(
+    private val table: String,
+) {
     private var ifNotExists = false
     private val columns = mutableListOf<String>()
     private val constraints = mutableListOf<String>()

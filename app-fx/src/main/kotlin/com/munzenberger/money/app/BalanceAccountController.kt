@@ -81,7 +81,8 @@ class BalanceAccountController {
         payeeColumn.apply {
             cellValueFactory =
                 Callback {
-                    Bindings.`when`(it.value.payeeProperty.isEmpty)
+                    Bindings
+                        .`when`(it.value.payeeProperty.isEmpty)
                         .then(it.value.categoryProperty.value)
                         .otherwise(it.value.payeeProperty.value)
                 }

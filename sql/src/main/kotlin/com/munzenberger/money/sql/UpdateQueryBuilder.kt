@@ -12,7 +12,9 @@ fun updateQuery(
 }
 
 @UpdateQueryMarker
-class UpdateQueryBuilder(table: String) : SettableQueryBuilder<UpdateQueryBuilder>(table) {
+class UpdateQueryBuilder(
+    table: String,
+) : SettableQueryBuilder<UpdateQueryBuilder>(table) {
     private var where: Condition? = null
 
     fun where(condition: Condition) =

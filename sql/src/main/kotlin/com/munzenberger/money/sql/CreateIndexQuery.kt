@@ -19,7 +19,10 @@ fun createIndexQuery(
 }
 
 @CreateIndexQuery
-class IndexDefinition(name: String, table: String) {
+class IndexDefinition(
+    name: String,
+    table: String,
+) {
     private val builder = CreateIndexQueryBuilder(name, table)
 
     fun unique() {

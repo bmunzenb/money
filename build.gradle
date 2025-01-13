@@ -7,8 +7,9 @@ buildscript {
         javafx_plugin_version = '0.1.0'
         javafx_version = '22.0.2'
         junit_version = '4.13.2'
-        mockk_version = '1.13.14'
-        ktlint_version = '12.1.2'
+        mockk_version = '1.13.16'
+        ktlint_plugin_version = '12.1.2'
+        ktlint_version = '1.5.0'
     }
 
     repositories {
@@ -20,7 +21,7 @@ buildscript {
 plugins {
     id "com.github.ben-manes.versions" version "$versions_plugin_version"
     id "org.jetbrains.kotlin.jvm" version "$kotlin_version"
-    id "org.jlleitschuh.gradle.ktlint" version "$ktlint_version"
+    id "org.jlleitschuh.gradle.ktlint" version "$ktlint_plugin_version"
 }
 
 allprojects {
@@ -43,6 +44,10 @@ subprojects {
         jvmToolchain {
             languageVersion = JavaLanguageVersion.of(22)
         }
+    }
+
+    ktlint {
+        version = "$ktlint_version"
     }
 
     dependencies {

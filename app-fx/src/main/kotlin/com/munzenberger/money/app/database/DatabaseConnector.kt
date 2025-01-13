@@ -66,9 +66,7 @@ abstract class DatabaseConnector {
     ) {
         val task =
             object : Task<VersionStatus>() {
-                override fun call(): VersionStatus {
-                    return MoneyDatabaseVersionManager().getVersionStatus(database)
-                }
+                override fun call(): VersionStatus = MoneyDatabaseVersionManager().getVersionStatus(database)
 
                 override fun succeeded() {
                     onVersionStatus(database, value, callbacks)

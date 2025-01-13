@@ -3,7 +3,9 @@ package com.munzenberger.money.app.database
 import com.munzenberger.money.core.SQLiteDatabaseDialect
 import java.io.File
 
-class FileDatabaseConnector(private val file: File) : DatabaseConnector() {
+class FileDatabaseConnector(
+    private val file: File,
+) : DatabaseConnector() {
     companion object {
         const val SUFFIX = ".money"
     }

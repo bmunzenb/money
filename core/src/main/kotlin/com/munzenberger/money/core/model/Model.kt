@@ -10,7 +10,9 @@ import com.munzenberger.money.sql.selectQuery
 import com.munzenberger.money.sql.updateQuery
 import java.sql.ResultSet
 
-abstract class Model(var identity: Long? = null)
+abstract class Model(
+    var identity: Long? = null,
+)
 
 abstract class Table<M : Model> {
     abstract val tableName: String

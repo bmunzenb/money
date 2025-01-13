@@ -12,11 +12,16 @@ const val CATEGORY_DELIMITER = ":"
 sealed class TransactionCategory {
     abstract val name: String
 
-    class TransferType(val account: Account) : TransactionCategory() {
+    class TransferType(
+        val account: Account,
+    ) : TransactionCategory() {
         override val name = "Transfer $CATEGORY_DELIMITER ${account.name}"
     }
 
-    class CategoryType(val category: Category, parentName: String?) : TransactionCategory() {
+    class CategoryType(
+        val category: Category,
+        parentName: String?,
+    ) : TransactionCategory() {
         override val name =
             when (parentName) {
                 null -> "${category.name}"
@@ -24,7 +29,9 @@ sealed class TransactionCategory {
             }
     }
 
-    class Pending(string: String) : TransactionCategory() {
+    class Pending(
+        string: String,
+    ) : TransactionCategory() {
         private val categoryName: String
         private val parentName: String?
 
@@ -57,11 +64,12 @@ sealed class TransactionCategory {
             val parentCategory =
                 parentName?.let {
                     val c =
-                        Category.find(
-                            executor,
-                            name = it,
-                            isParent = true,
-                        ).firstOrNull()
+                        Category
+                            .find(
+                                executor,
+                                name = it,
+                                isParent = true,
+                            ).firstOrNull()
 
                     c ?: Category().apply {
                         this.name = parentName
@@ -71,12 +79,13 @@ sealed class TransactionCategory {
                 }
 
             val category =
-                Category.find(
-                    executor,
-                    name = categoryName,
-                    isParent = parentName == null,
-                    parentId = parentCategory?.identity,
-                ).firstOrNull()
+                Category
+                    .find(
+                        executor,
+                        name = categoryName,
+                        isParent = parentName == null,
+                        parentId = parentCategory?.identity,
+                    ).firstOrNull()
 
             return category ?: Category().apply {
                 this.name = categoryName

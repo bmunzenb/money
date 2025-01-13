@@ -87,7 +87,8 @@ class BalanceAccountViewModel(
     private fun reconcile() {
         database.transaction { tx ->
             transactionsProperty.value.withValue { transactions ->
-                transactions.filter { it.statusProperty.value == TransactionStatus.CLEARED }
+                transactions
+                    .filter { it.statusProperty.value == TransactionStatus.CLEARED }
                     .forEach { it.updateStatus(TransactionStatus.RECONCILED, tx) }
             }
 

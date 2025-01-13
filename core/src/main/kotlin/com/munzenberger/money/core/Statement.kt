@@ -9,12 +9,16 @@ import com.munzenberger.money.sql.transaction
 import java.sql.ResultSet
 import java.time.LocalDate
 
-data class StatementIdentity(override val value: Long) : Identity
+data class StatementIdentity(
+    override val value: Long,
+) : Identity
 
-class Statement internal constructor(model: StatementModel) : AbstractMoneyEntity<StatementIdentity, StatementModel>(
-    model,
-    StatementTable,
-) {
+class Statement internal constructor(
+    model: StatementModel,
+) : AbstractMoneyEntity<StatementIdentity, StatementModel>(
+        model,
+        StatementTable,
+    ) {
     constructor() : this(StatementModel())
 
     private val accountRef = IdentityReference(model.account?.let { AccountIdentity(it) })

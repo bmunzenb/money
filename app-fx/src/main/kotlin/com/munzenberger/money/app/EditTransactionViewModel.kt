@@ -35,7 +35,9 @@ import javafx.collections.ObservableList
 import javafx.concurrent.Task
 import java.time.LocalDate
 
-class EditTransactionViewModel : TransactionEntryEditor(), AutoCloseable {
+class EditTransactionViewModel :
+    TransactionEntryEditor(),
+    AutoCloseable {
     private val accounts = SimpleAsyncObjectProperty<List<Account>>()
     private val payees = SimpleAsyncObjectProperty<List<Payee>>()
     private val types = FXCollections.observableArrayList<TransactionType>()
@@ -164,12 +166,14 @@ class EditTransactionViewModel : TransactionEntryEditor(), AutoCloseable {
 
                 override fun call(): Pair<List<TransactionCategory>, List<Entry<out EntryIdentity>>> {
                     val categories =
-                        Category.getAllWithParent(database)
+                        Category
+                            .getAllWithParent(database)
                             .map { TransactionCategory.CategoryType(it.category, it.parentName) }
                             .sortedBy { it.name }
 
                     val accounts =
-                        Account.find(database)
+                        Account
+                            .find(database)
                             .map { TransactionCategory.TransferType(it) }
                             .sortedBy { it.name }
 
@@ -216,7 +220,8 @@ class EditTransactionViewModel : TransactionEntryEditor(), AutoCloseable {
             }
 
         // map to a set of editable transaction details
-        entries.map { TransactionEntryEditor(it, categories, transactionType) }
+        entries
+            .map { TransactionEntryEditor(it, categories, transactionType) }
             .let { editors.setAll(it) }
 
         // if there are no editors, create one
