@@ -39,6 +39,7 @@ interface MoneyDatabase : QueryExecutor {
          * @return an instance of `MoneyDatabase` that's backed by a single JDBC connection. Callers should take care
          * not to execute queries in parallel.
          */
+        // TODO replace this with a function that takes a connection directly
         fun connect(
             name: String,
             dialect: DatabaseDialect,
