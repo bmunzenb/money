@@ -8,6 +8,7 @@ import com.munzenberger.money.version.VersionStatus
 import javafx.beans.property.ReadOnlyBooleanProperty
 import javafx.beans.property.SimpleBooleanProperty
 import javafx.concurrent.Task
+import java.sql.DriverManager
 
 interface DatabaseConnectorCallbacks {
     fun onCanceled()
@@ -42,7 +43,8 @@ abstract class DatabaseConnector {
         val task =
             object : Task<ObservableMoneyDatabase>() {
                 override fun call(): ObservableMoneyDatabase {
-                    val database = MoneyDatabase.connect(name, dialect, connectionUrl, user, password)
+                    val connection = DriverManager.getConnection(connectionUrl, user, password)
+                    val database = MoneyDatabase.open(name, dialect, connection)
                     return ObservableMoneyDatabase(database)
                 }
 

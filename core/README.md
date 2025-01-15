@@ -8,23 +8,25 @@ from a Money database.
 ### Connecting to a Money database
 
 All access to a Money database is through a JDBC connection. Establishing a connection requires that you provide a JDBC
-connection URL and any optional parameters necessary for the database system being used. Currently supported databases
-are:
+connection and a dialect for the database system. Currently supported database dialects are:
 
 1. [SQLite](https://www.sqlite.org/)
 2. [H2](https://www.h2database.com/)
 
-To connect to a Money database, call the `MoneyDatabase.connect` function:
+To establish a connection to a Money database, call the `MoneyDatabase.open` function:
 
 ```kotlin
-val database = MoneyDatabase.connect(
+// acquire a JDBC connection to the database
+val connection = DriverManager.getConnection("jdbc:sqlite:/database.money")
+
+val database = MoneyDatabase.open(
     name = "My Money database",
     dialect = SQLiteDatabaseDialect,
-    url = "jdbc:sqlite:/database.money"
+    connection = connection
 )
 ```
 
-Note that the returned instance of `MoneyDatabase` is backed by a single JDBC connection, and callers should take care
+Note that since the returned instance of `MoneyDatabase` is backed by a single JDBC connection, callers should take care
 not to execute multiple queries in parallel.
 
 #### Verify and update the database version
@@ -39,10 +41,10 @@ val status = MoneyDatabaseVersionManager().getVersionStatus(database)
 
 The resulting status object will be one of:
 
-| `VersionStatus` Type | Description                                                                                  |
-|----------------------|----------------------------------------------------------------------------------------------|
-| `CurrentVersion`     | The Money database is up-to-date and ready to use.                                           |
-| `PendingUpgrades`    | The Money database requires updates before it can be used.                                   |
+| Type               | Description                                                                                  |
+|--------------------|----------------------------------------------------------------------------------------------|
+| `CurrentVersion`   | The Money database is up-to-date and ready to use.                                           |
+| `PendingUpgrades`  | The Money database requires updates before it can be used.                                   |
 | `UnsupportedVersion` | The version of the Money database is not supported by the version of the core module in use. |
 
 When `PendingUpdgrades` is returned, you can all the `apply` function to apply the pending updates to the database
