@@ -1,25 +1,11 @@
 plugins {
     application
-    alias(libs.plugins.kotlinJvm)
+    id("money.kotlin-conventions")
     alias(libs.plugins.javafx)
-    alias(libs.plugins.ktlint)
 }
 
 repositories {
     mavenCentral()
-}
-
-kotlin {
-    jvmToolchain {
-        languageVersion.set(JavaLanguageVersion.of(21))
-    }
-}
-
-ktlint {
-    version =
-        libs.versions.ktlint
-            .asProvider()
-            .get()
 }
 
 application {

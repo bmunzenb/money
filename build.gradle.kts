@@ -1,27 +1,13 @@
 import com.github.benmanes.gradle.versions.updates.DependencyUpdatesTask
 
 plugins {
-    alias(libs.plugins.kotlinJvm)
+    id("money.kotlin-conventions")
     alias(libs.plugins.versions)
-    alias(libs.plugins.ktlint)
 }
 
 repositories {
     mavenCentral()
     gradlePluginPortal()
-}
-
-kotlin {
-    jvmToolchain {
-        languageVersion.set(JavaLanguageVersion.of(21))
-    }
-}
-
-ktlint {
-    version =
-        libs.versions.ktlint
-            .asProvider()
-            .get()
 }
 
 // https://github.com/ben-manes/gradle-versions-plugin
