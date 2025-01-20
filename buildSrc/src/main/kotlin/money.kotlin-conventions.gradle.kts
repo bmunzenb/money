@@ -12,3 +12,10 @@ kotlin {
 ktlint {
     version = "1.5.0"
 }
+
+group = "com.munzenberger"
+version = "0.1-SNAPSHOT"
+
+base {
+    archivesName = "${rootProject.name}-${project.name}"
+}
