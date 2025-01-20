@@ -19,7 +19,3 @@ version = "0.1-SNAPSHOT"
 base {
     archivesName = "${rootProject.name}-${project.name}"
 }
-
-dependencyLocking {
-    lockAllConfigurations()
-}
