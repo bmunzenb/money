@@ -1,0 +1,21 @@
+<?xml version="1.0" ?>
+<SmellBaseline>
+  <ManuallySuppressedIssues></ManuallySuppressedIssues>
+  <CurrentIssues>
+    <ID>ClassNaming:MoneyDatabaseVersion_1.kt$MoneyDatabaseVersion_1 : ApplicableVersion</ID>
+    <ID>ConstructorParameterNaming:IdentityReference.kt$IdentityReference$private var _identity: I?</ID>
+    <ID>LongMethod:AccountEntryTest.kt$AccountEntryTest$@Test fun `get account entries for entry`()</ID>
+    <ID>LongMethod:AccountEntryTest.kt$AccountEntryTest$@Test fun `get account entries for transfer`()</ID>
+    <ID>LongMethod:MoneyDatabaseVersion_1.kt$MoneyDatabaseVersion_1$override fun apply(obj: MoneyDatabase)</ID>
+    <ID>LongParameterList:AccountEntry.kt$AccountEntryCollector$( transactionId: Long, amount: Long, entryId: Long, entryCategoryId: Long, entryCategoryName: String, entryParentCategoryName: String?, entryOrderInTransaction: Int, )</ID>
+    <ID>LongParameterList:AccountEntry.kt$AccountEntryCollector$( transactionId: Long, amount: Long, transferId: Long, transferAccountId: Long, transferAccountName: String, transferOrderInTransaction: Int, )</ID>
+    <ID>LongParameterList:AccountEntry.kt$AccountEntryCollector$( transactionId: Long, date: LocalDate, payeeId: Long?, payeeName: String?, memo: String?, number: String?, status: String, )</ID>
+    <ID>LongParameterList:AccountEntry.kt$AccountEntryCollector$( transferId: Long, transactionId: Long, date: LocalDate, payeeId: Long?, payeeName: String?, amount: Long, memo: String?, number: String?, status: String, transactionAccountId: Long, transactionAccountName: String, )</ID>
+    <ID>LongParameterList:AccountEntry.kt$AccountEntryCollector.Collector.Transaction$( override val transactionId: Long, override val date: LocalDate, val payeeId: Long?, val payeeName: String?, var amount: Long = 0, val memo: String?, val number: String?, val status: String, val details: MutableList&lt;AccountEntry.Transaction.Detail&gt; = mutableListOf(), )</ID>
+    <ID>LongParameterList:AccountEntry.kt$AccountEntryCollector.Collector.Transfer$( val transferId: Long, override val transactionId: Long, override val date: LocalDate, val payeeId: Long?, val payeeName: String?, override val totalAmount: Long, val memo: String?, val number: String?, val status: String, val transactionAccountId: Long, val transactionAccountName: String, )</ID>
+    <ID>MaxLineLength:Money.kt$Money$throw UnsupportedOperationException("Can't add money values of different currencies: $currency != ${money.currency}")</ID>
+    <ID>MaxLineLength:Money.kt$Money$throw UnsupportedOperationException("Can't subtract money values of different currencies: $currency != ${money.currency}")</ID>
+    <ID>MaxLineLength:MoneyDatabaseVersion_1.kt$MoneyDatabaseVersion_1$constraint("TRANSACTION_STATUS_CONSTRAINT", "CHECK (TRANSACTION_STATUS IN ('UNRECONCILED', 'CLEARED', 'RECONCILED'))")</ID>
+    <ID>SwallowedException:MoneyTest.kt$MoneyTest$e: ArithmeticException</ID>
+  </CurrentIssues>
+</SmellBaseline>

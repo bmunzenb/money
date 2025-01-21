@@ -1,0 +1,7 @@
+<?xml version="1.0" ?>
+<SmellBaseline>
+  <ManuallySuppressedIssues></ManuallySuppressedIssues>
+  <CurrentIssues>
+    <ID>ReturnCount:VersionManager.kt$VersionManager$fun getVersionStatus(obj: T): VersionStatus</ID>
+  </CurrentIssues>
+</SmellBaseline>

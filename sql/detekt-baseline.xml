@@ -1,0 +1,11 @@
+<?xml version="1.0" ?>
+<SmellBaseline>
+  <ManuallySuppressedIssues></ManuallySuppressedIssues>
+  <CurrentIssues>
+    <ID>MaxLineLength:CreateTableQueryBuilderTest.kt$CreateTableQueryBuilderTest$"CREATE TABLE IF NOT EXISTS FOO (FIZZ TEXT, BUZZ INTEGER REFERENCES BAR (BAZ), CONSTRAINT C_FIZZ UNIQUE (FIZZ), CONSTRAINT C_BUZZ CHECK (BUZZ))"</ID>
+    <ID>TooGenericExceptionCaught:AutoClosableExtensions.kt$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:QueryExecutor.kt$e: Throwable</ID>
+    <ID>TooManyFunctions:Condition.kt$Condition$Companion</ID>
+    <ID>TooManyFunctions:Condition.kt$com.munzenberger.money.sql.Condition.kt</ID>
+  </CurrentIssues>
+</SmellBaseline>

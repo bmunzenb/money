@@ -1,0 +1,51 @@
+<?xml version="1.0" ?>
+<SmellBaseline>
+  <ManuallySuppressedIssues></ManuallySuppressedIssues>
+  <CurrentIssues>
+    <ID>CyclomaticComplexMethod:AccountRegisterController.kt$AccountRegisterController$fun initialize()</ID>
+    <ID>EmptyFunctionBlock:PayeeListController.kt$PayeeListController${ }</ID>
+    <ID>ForEachOnRange:String.kt$0 until length - last</ID>
+    <ID>ForbiddenComment:AccountRegisterController.kt$AccountRegisterController$// TODO: save as preferences by account and restore here</ID>
+    <ID>LongMethod:AccountRegisterController.kt$AccountRegisterController$fun initialize()</ID>
+    <ID>LongMethod:EditTransactionController.kt$EditTransactionController$fun initialize()</ID>
+    <ID>LongMethod:EditTransactionViewModel.kt$EditTransactionViewModel.&lt;no name provided&gt;$override fun call()</ID>
+    <ID>LongMethod:SplitTransactionController.kt$SplitTransactionController$fun initialize()</ID>
+    <ID>LongParameterList:DatabaseConnector.kt$DatabaseConnector$( name: String, dialect: DatabaseDialect, connectionUrl: String, user: String? = null, password: String? = null, callbacks: DatabaseConnectorCallbacks, )</ID>
+    <ID>MagicNumber:AccountRegisterViewModel.kt$AccountRegisterViewModel$12</ID>
+    <ID>MagicNumber:AccountRegisterViewModel.kt$AccountRegisterViewModel$3</ID>
+    <ID>MagicNumber:AsyncTableCell.kt$AsyncTableCell$12.0</ID>
+    <ID>MagicNumber:MoneyApplication.kt$MoneyApplication$5</ID>
+    <ID>MagicNumber:MoneyApplication.kt$MoneyApplication$600.0</ID>
+    <ID>MagicNumber:MoneyApplication.kt$MoneyApplication$800.0</ID>
+    <ID>MagicNumber:QueryController.kt$QueryController$60.0</ID>
+    <ID>MagicNumber:String.kt$3</ID>
+    <ID>MagicNumber:String.kt$4</ID>
+    <ID>MagicNumber:String.kt$6</ID>
+    <ID>MagicNumber:String.kt$8</ID>
+    <ID>MagicNumber:TableViewExt.kt$60.0</ID>
+    <ID>MatchingDeclarationName:Category.kt$CategoryWithParent</ID>
+    <ID>MaxLineLength:AccountListController.kt$AccountListController$totalBalanceProgress.visibleProperty().bindAsyncStatus(viewModel.totalBalanceProperty, AsyncObject.Status.EXECUTING)</ID>
+    <ID>MaxLineLength:AccountListViewModel.kt$AccountListViewModel$totalBalance.value = balanceProperties.fold(initialValue) { acc, b -&gt; acc + b.value }</ID>
+    <ID>MaxLineLength:AccountListViewModel.kt$private operator fun AsyncObject&lt;Money&gt;.plus(other: AsyncObject&lt;Money&gt;): AsyncObject&lt;Money&gt;</ID>
+    <ID>MaxLineLength:AccountRegisterController.kt$AccountRegisterController$is AccountEntryTableRow.Action.UpdateStatus -&gt; updateEntryStatus(action.entry, action.status)</ID>
+    <ID>MaxLineLength:AccountRegisterViewModel.kt$AccountRegisterViewModel$FXAccountEntryFilter("Unreconciled Transactions") { it.statusProperty.value != TransactionStatus.RECONCILED }</ID>
+    <ID>MaxLineLength:ApplicationController.kt$ApplicationController$"The database file is unsupported by this version of Money. This is likely due to having used the database file with a newer version of Money. Please update your version of Money and try again."</ID>
+    <ID>MaxLineLength:ApplicationController.kt$ApplicationController$"The database file requires an upgrade to work with this version of Money. This operation cannot be undone. It is recommended you make a backup of your existing file before upgrading it. Would you like to proceed with the upgrade?"</ID>
+    <ID>MaxLineLength:AutoCompleteOperator.kt$AutoCompleteOperator$private val strings: SortedSet&lt;String&gt; = items.map { converter.toString(it) }.toSortedSet(compareBy({ it.length }, { it }))</ID>
+    <ID>MaxLineLength:ObservableMoneyDatabase.kt$ObservableTransactionQueryExecutor$override fun createTransaction(): TransactionQueryExecutor</ID>
+    <ID>MaxLineLength:Payee.kt$cols(PayeeTable.identityColumn, PayeeTable.PAYEE_NAME, "MAX(${TransactionTable.TRANSACTION_DATE}) AS LAST_PAID")</ID>
+    <ID>MaxLineLength:SplitTransactionController.kt$SplitTransactionController$ComboBoxTableCell&lt;TransactionEntryEditor, TransactionCategory&gt;(converter, viewModel.categoriesProperty)</ID>
+    <ID>MaxLineLength:Statement.kt$where(StatementTable.STATEMENT_ACCOUNT_ID.eq(accountId.value) and StatementTable.STATEMENT_IS_RECONCILED.eq(false))</ID>
+    <ID>NestedBlockDepth:ApplicationController.kt$ApplicationController$private fun createDatabaseFile(): File?</ID>
+    <ID>ReturnCount:AsyncObject.kt$fun &lt;T&gt; AsyncObject&lt;T&gt;.combineWith( other: AsyncObject&lt;T&gt;, combiner: (value1: T, value2: T) -&gt; T, ): AsyncObject&lt;T&gt;</ID>
+    <ID>ReturnCount:AutoCompleteOperator.kt$AutoCompleteOperator$override fun apply(change: TextFormatter.Change): TextFormatter.Change</ID>
+    <ID>ReturnCount:NumberStringComparator.kt$NumberStringComparator$override fun compare( o1: String?, o2: String?, ): Int</ID>
+    <ID>ReturnCount:SplitTransactionViewModel.kt$SplitTransactionViewModel$fun moveDown(items: List&lt;TransactionEntryEditor&gt;): Int</ID>
+    <ID>ReturnCount:SplitTransactionViewModel.kt$SplitTransactionViewModel$fun moveUp(items: List&lt;TransactionEntryEditor&gt;): Int</ID>
+    <ID>SpreadOperator:MoneyApplication.kt$(MoneyApplication::class.java, *args)</ID>
+    <ID>TooManyFunctions:AccountRegisterController.kt$AccountRegisterController : AutoCloseable</ID>
+    <ID>TooManyFunctions:ApplicationController.kt$ApplicationController : DatabaseConnectorDelegateDatabaseConnectorCallbacksAutoCloseable</ID>
+    <ID>UnusedPrivateProperty:SplitTransactionController.kt$SplitTransactionController$@FXML private lateinit var addButton: Button</ID>
+    <ID>UnusedPrivateProperty:WelcomeController.kt$WelcomeController$private val viewModel = WelcomeViewModel()</ID>
+  </CurrentIssues>
+</SmellBaseline>
