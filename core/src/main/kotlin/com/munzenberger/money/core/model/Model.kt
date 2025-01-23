@@ -17,6 +17,7 @@ abstract class Model(
 abstract class Table<M : Model> {
     abstract val tableName: String
 
+    // TODO consider creating a Column data class for all columns in Tables
     abstract val identityColumn: String
 
     protected abstract fun setValues(
