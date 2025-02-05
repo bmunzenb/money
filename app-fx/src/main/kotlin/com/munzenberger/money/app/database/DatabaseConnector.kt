@@ -3,7 +3,7 @@ package com.munzenberger.money.app.database
 import com.munzenberger.money.app.concurrent.Executors
 import com.munzenberger.money.core.DatabaseDialect
 import com.munzenberger.money.core.MoneyDatabase
-import com.munzenberger.money.core.version.MoneyDatabaseVersionManager
+import com.munzenberger.money.core.version.getVersionStatus
 import com.munzenberger.money.version.VersionStatus
 import javafx.beans.property.ReadOnlyBooleanProperty
 import javafx.beans.property.SimpleBooleanProperty
@@ -68,7 +68,7 @@ abstract class DatabaseConnector {
     ) {
         val task =
             object : Task<VersionStatus>() {
-                override fun call(): VersionStatus = MoneyDatabaseVersionManager().getVersionStatus(database)
+                override fun call(): VersionStatus = database.getVersionStatus()
 
                 override fun succeeded() {
                     onVersionStatus(database, value, callbacks)
@@ -100,7 +100,7 @@ abstract class DatabaseConnector {
             }
 
             is VersionStatus.PendingUpgrades ->
-                when (callbacks.onPendingUpgrades(status.isFirstUse)) {
+                when (callbacks.onPendingUpgrades(status.requiresInitialization)) {
                     true -> applyPendingUpgrades(database, status, callbacks)
                     else -> {
                         database.close()
@@ -122,7 +122,7 @@ abstract class DatabaseConnector {
                 }
 
                 override fun succeeded() {
-                    callbacks.onConnected(database, upgrades.isFirstUse)
+                    callbacks.onConnected(database, upgrades.requiresInitialization)
                 }
 
                 override fun failed() {

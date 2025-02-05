@@ -6,7 +6,7 @@ sealed class VersionStatus {
     data object CurrentVersion : VersionStatus()
 
     abstract class PendingUpgrades(
-        val isFirstUse: Boolean,
+        val requiresInitialization: Boolean,
     ) : VersionStatus() {
         abstract fun apply()
     }

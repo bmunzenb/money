@@ -76,7 +76,7 @@ class VersionManagerTest {
 
         val status = vm.getVersionStatus(Unit)
 
-        assertTrue(status is VersionStatus.PendingUpgrades && status.isFirstUse)
+        assertTrue(status is VersionStatus.PendingUpgrades && status.requiresInitialization)
     }
 
     @Test
@@ -88,7 +88,7 @@ class VersionManagerTest {
 
         val status = vm.getVersionStatus(Unit)
 
-        assertTrue(status is VersionStatus.PendingUpgrades && !status.isFirstUse)
+        assertTrue(status is VersionStatus.PendingUpgrades && !status.requiresInitialization)
     }
 
     @Test
