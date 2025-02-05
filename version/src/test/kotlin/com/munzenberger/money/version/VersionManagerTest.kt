@@ -76,7 +76,7 @@ class VersionManagerTest {
 
         val status = vm.getVersionStatus(Unit)
 
-        assertTrue(status is VersionStatus.PendingUpgrades && status.requiresInitialization)
+        assertTrue(status is VersionStatus.RequiresUpgrade && status.requiresInitialization)
     }
 
     @Test
@@ -88,7 +88,7 @@ class VersionManagerTest {
 
         val status = vm.getVersionStatus(Unit)
 
-        assertTrue(status is VersionStatus.PendingUpgrades && !status.requiresInitialization)
+        assertTrue(status is VersionStatus.RequiresUpgrade && !status.requiresInitialization)
     }
 
     @Test
@@ -105,8 +105,8 @@ class VersionManagerTest {
         val spy = spyk(vm, recordPrivateCalls = true)
 
         when (val status = spy.getVersionStatus(obj)) {
-            is VersionStatus.PendingUpgrades -> {
-                status.apply()
+            is VersionStatus.RequiresUpgrade -> {
+                status.applyUpgrade()
                 verify {
                     spy["onVersionApplied"](obj, version1)
                     spy["onVersionApplied"](obj, version2)

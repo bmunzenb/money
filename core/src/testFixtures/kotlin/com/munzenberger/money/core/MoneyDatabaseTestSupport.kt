@@ -35,7 +35,7 @@ open class MoneyDatabaseTestSupport {
         database = MoneyDatabase.open(configuration.url, configuration.dialect, connection)
 
         when (val status = MoneyDatabaseVersionManager().getVersionStatus(database)) {
-            is VersionStatus.PendingUpgrades -> status.apply()
+            is VersionStatus.RequiresUpgrade -> status.applyUpgrade()
             is VersionStatus.UnsupportedVersion -> fail("Unsupported database version")
             else -> Unit // do nothing
         }

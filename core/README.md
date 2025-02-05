@@ -36,27 +36,23 @@ out-of-date.  To check the database version, call the `getVersionStatus(autoInit
 the status of the database version:
 
 ```kotlin
-val status = database.getVersionStatus(autoInitialize = true)
+val status = database.getVersionStatus()
 ```
 
 The resulting status object will be one of:
 
-| Type               | Description                                                                                  |
-|--------------------|----------------------------------------------------------------------------------------------|
-| `CurrentVersion`   | The Money database is up-to-date and ready to use.                                           |
-| `PendingUpgrades`  | The Money database requires updates before it can be used.                                   |
+| Type                 | Description                                                                                  |
+|----------------------|----------------------------------------------------------------------------------------------|
+| `CurrentVersion`     | The Money database is up-to-date and ready to use.                                           |
+| `RequiresUpgrade`    | The Money database requires an upgrade before it can be used.                                |
 | `UnsupportedVersion` | The version of the Money database is not supported by the version of the core module in use. |
 
-Passing `true` for `autoInitialize` will automatically initialize a new database, otherwise a new database will return
-a `PendingUpgrades` object.
-
-When `PendingUpgrades` is returned, call the `apply()` function to update the database schema.  The 
+When `RequiresUpgrade` is returned, call the `applyUpgrade()` function to upgrade the database schema.  The
 `requiresInitialization` property will be `true` if the database does not yet have any version information.  Call
-`apply()` to initialize the database with the latest schema.  Once all updates are applied, the database is ready to
-use.
+`applyUpgrade()` to initialize the database with the latest schema.  Once upgraded, the database is ready to use.
 
-*Note that when `PendingUpgrades` is returned and `requiresInitialization` is `false`, you should request confirmation
-from the user before calling `apply()` as performing a database upgrade is an irreversible operation.*
+*Note that when `RequiresUpgrade` is returned and `requiresInitialization` is `false`, you should request confirmation
+from the user before calling `applyUpgrade()` as performing a database upgrade is an irreversible operation.*
 
 Here is an example of handling the result of a Money database version check:
 
@@ -70,19 +66,13 @@ when (status) {
         // notify the user and close the connection
         database.close()
     }
-    is VersionStatus.PendingUpgrades -> {
-        if (status.requiresInitialization) {
-            // database needs to be initialized
-            status.apply()
+    is VersionStatus.RequiresUpgrade -> {
+        // initialize the database, or upgrade if the user confirms
+        if (status.requiresInitialization || requestUserConfirmationForUpgrade()) {
+            status.applyUpgrade()
         } else {
-            // request confirmation from the user before performing upgrade
-            if (requestUserConfirmation()) {
-                // user confirmed, apply the updates
-                status.apply()
-            } else {
-                // user declined, close the connection
-                database.close()
-            }
+            // user declined upgrade, close the connection
+            database.close()
         }
     }
 }

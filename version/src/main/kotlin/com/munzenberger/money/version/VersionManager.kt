@@ -32,8 +32,8 @@ abstract class VersionManager<T> {
 
         // check for pending upgrades
         if (iter2.hasNext()) {
-            return object : VersionStatus.PendingUpgrades(applied.isEmpty()) {
-                override fun apply() =
+            return object : VersionStatus.RequiresUpgrade(applied.isEmpty()) {
+                override fun applyUpgrade() =
                     iter2.forEachRemaining {
                         it.apply(obj)
                         onVersionApplied(obj, it)

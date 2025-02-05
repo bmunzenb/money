@@ -17,4 +17,5 @@ dependencies {
     testFixturesImplementation(libs.sqlite.jdbc)
 
     testImplementation(libs.junit)
+    testImplementation(libs.mockk)
 }

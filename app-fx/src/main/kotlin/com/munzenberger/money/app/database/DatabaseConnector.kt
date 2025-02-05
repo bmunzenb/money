@@ -99,7 +99,7 @@ abstract class DatabaseConnector {
                 callbacks.onUnsupportedVersion()
             }
 
-            is VersionStatus.PendingUpgrades ->
+            is VersionStatus.RequiresUpgrade ->
                 when (callbacks.onPendingUpgrades(status.requiresInitialization)) {
                     true -> applyPendingUpgrades(database, status, callbacks)
                     else -> {
@@ -112,13 +112,13 @@ abstract class DatabaseConnector {
 
     private fun applyPendingUpgrades(
         database: ObservableMoneyDatabase,
-        upgrades: VersionStatus.PendingUpgrades,
+        upgrades: VersionStatus.RequiresUpgrade,
         callbacks: DatabaseConnectorCallbacks,
     ) {
         val task =
             object : Task<Unit>() {
                 override fun call() {
-                    upgrades.apply()
+                    upgrades.applyUpgrade()
                 }
 
                 override fun succeeded() {

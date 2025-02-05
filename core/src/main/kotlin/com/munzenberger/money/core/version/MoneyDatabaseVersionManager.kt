@@ -32,18 +32,13 @@ class MoneyDatabaseVersionManager : VersionManager<MoneyDatabase>() {
 }
 
 /**
- * Convenience extension function to retrieve the database version status and optionally auto initialize a new database.
+ * Convenience extension function to retrieve the database version status.
  * See [MoneyDatabaseVersionManager].
  *
- * @param autoInitialize If true, will initialize the database
+ * @param versionManager The version manager to use when getting the version status.  Defaults to
+ * [MoneyDatabaseVersionManager].
  * @return the [VersionStatus] of the database
  */
-fun MoneyDatabase.getVersionStatus(autoInitialize: Boolean = false): VersionStatus {
-    val status = MoneyDatabaseVersionManager().getVersionStatus(this)
-    if (status is VersionStatus.PendingUpgrades && status.requiresInitialization && autoInitialize) {
-        status.apply()
-        return VersionStatus.CurrentVersion
-    } else {
-        return status
-    }
-}
+@Suppress("MaxLineLength")
+fun MoneyDatabase.getVersionStatus(versionManager: VersionManager<MoneyDatabase> = MoneyDatabaseVersionManager()): VersionStatus =
+    versionManager.getVersionStatus(this)
