@@ -3,10 +3,6 @@ plugins {
     id("java-test-fixtures")
 }
 
-repositories {
-    mavenCentral()
-}
-
 dependencies {
 
     api(project(":sql"))

@@ -4,10 +4,6 @@ plugins {
     alias(libs.plugins.javafx)
 }
 
-repositories {
-    mavenCentral()
-}
-
 application {
     mainClass.set("com.munzenberger.money.app.MoneyApplicationKt")
     applicationName = "Money"
