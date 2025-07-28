@@ -1,7 +1,7 @@
 [versions]
 kotlin = "2.2.0"
 h2 = "2.3.232"
-sqlite-jdbc = "3.50.2.0"
+sqlite-jdbc = "3.50.3.0"
 javafx-plugin = "0.1.0"
 javafx = "22.0.2"
 junit = "4.13.2"
