@@ -1,5 +1,5 @@
 [versions]
-kotlin = "2.2.0"
+kotlin = "2.2.10"
 h2 = "2.3.232"
 sqlite-jdbc = "3.50.3.0"
 javafx-plugin = "0.1.0"
