@@ -6,7 +6,7 @@ javafx-plugin = "0.1.0"
 javafx = "22.0.2"
 junit = "4.13.2"
 mockk = "1.14.5"
-versions = "0.52.0"
+versions = "0.53.0"
 detekt = "1.23.8"
 ktlint-plugin = "12.1.2"
 
