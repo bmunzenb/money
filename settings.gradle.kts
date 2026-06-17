@@ -33,4 +33,5 @@ plugins {
 }
 
 include(":desktopApp")
+include(":repository-api")
 include(":shared")
