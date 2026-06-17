@@ -25,7 +25,7 @@ class SqliteBanksRepository(
 
     private val database = MoneyDatabase(driver)
 
-    override val banks: Flow<ModelState<List<Bank>>> = database.bankQueries
+    override val banks: Flow<ModelState<List<Bank>>> = database.banksQueries
         .selectAll { id, name, memo ->
             Bank(
                 id = BankId(Uuid.parse(id)),
@@ -41,7 +41,7 @@ class SqliteBanksRepository(
 
     override suspend fun create(bank: Bank) {
         withContext(context) {
-            database.bankQueries.insert(
+            database.banksQueries.insert(
                 id = bank.id.value.toString(),
                 name = bank.name,
                 memo = bank.memo,
@@ -51,7 +51,7 @@ class SqliteBanksRepository(
 
     override suspend fun update(bank: Bank) {
         withContext(context) {
-            database.bankQueries.update(
+            database.banksQueries.update(
                 name = bank.name,
                 memo = bank.memo,
                 id = bank.id.value.toString(),
@@ -61,7 +61,7 @@ class SqliteBanksRepository(
 
     override suspend fun delete(id: BankId) {
         withContext(context) {
-            database.bankQueries.deleteById(id.value.toString())
+            database.banksQueries.deleteById(id.value.toString())
         }
     }
 }
