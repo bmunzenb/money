@@ -39,23 +39,29 @@ class SqliteBanksRepository(
         .onStart { emit(ModelState.Loading()) }
         .catch { emit(ModelState.Error(it)) }
 
-    override suspend fun create(bank: Bank) = withContext(context) {
-        database.bankQueries.insert(
-            id = bank.id.value.toString(),
-            name = bank.name,
-            memo = bank.memo,
-        )
+    override suspend fun create(bank: Bank) {
+        withContext(context) {
+            database.bankQueries.insert(
+                id = bank.id.value.toString(),
+                name = bank.name,
+                memo = bank.memo,
+            )
+        }
     }
 
-    override suspend fun update(bank: Bank) = withContext(context) {
-        database.bankQueries.update(
-            name = bank.name,
-            memo = bank.memo,
-            id = bank.id.value.toString(),
-        )
+    override suspend fun update(bank: Bank) {
+        withContext(context) {
+            database.bankQueries.update(
+                name = bank.name,
+                memo = bank.memo,
+                id = bank.id.value.toString(),
+            )
+        }
     }
 
-    override suspend fun delete(id: BankId) = withContext(context) {
-        database.bankQueries.deleteById(id.value.toString())
+    override suspend fun delete(id: BankId) {
+        withContext(context) {
+            database.bankQueries.deleteById(id.value.toString())
+        }
     }
 }

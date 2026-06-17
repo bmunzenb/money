@@ -1,7 +1,8 @@
 CREATE TABLE bank (
     id TEXT NOT NULL,
     name TEXT NOT NULL,
-    memo TEXT
+    memo TEXT,
+    PRIMARY KEY (id)
 );
 
 selectAll:
