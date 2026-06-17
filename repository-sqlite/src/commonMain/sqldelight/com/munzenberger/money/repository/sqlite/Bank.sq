@@ -1,0 +1,17 @@
+CREATE TABLE bank (
+    id TEXT NOT NULL,
+    name TEXT NOT NULL,
+    memo TEXT
+);
+
+selectAll:
+SELECT * FROM bank;
+
+insert:
+INSERT INTO bank (id, name, memo) VALUES (?, ?, ?);
+
+update:
+UPDATE bank SET name = ?, memo = ? WHERE id = ?;
+
+deleteById:
+DELETE FROM bank WHERE id = ?;

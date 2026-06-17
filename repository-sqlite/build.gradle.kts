@@ -1,5 +1,6 @@
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
+    alias(libs.plugins.sqldelight)
 }
 
 kotlin {
@@ -8,9 +9,24 @@ kotlin {
     sourceSets {
         commonMain.dependencies {
             api(projects.repositoryApi)
+            implementation(libs.sqldelight.runtime)
+            implementation(libs.sqldelight.coroutinesExtensions)
+        }
+        jvmMain.dependencies {
+            implementation(libs.sqldelight.sqliteDriver)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)
+        }
+    }
+}
+
+sqldelight {
+    databases {
+        create("MoneyDatabase") {
+            packageName.set("com.munzenberger.money.repository.sqlite")
+            schemaOutputDirectory.set(file("src/commonMain/sqldelight/migrations"))
+            verifyMigrations.set(true)
         }
     }
 }
