@@ -4,7 +4,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlin.uuid.ExperimentalUuidApi
 
 interface BanksRepository {
-    val banks: Flow<List<Bank>>
+    val banks: Flow<ModelState<List<Bank>>>
 
     suspend fun create(bank: Bank)
 

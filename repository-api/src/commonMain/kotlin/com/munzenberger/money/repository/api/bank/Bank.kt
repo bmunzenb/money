@@ -7,8 +7,8 @@ import kotlin.uuid.Uuid
 @ExperimentalUuidApi
 value class BankId(val value: Uuid)
 
-@OptIn(ExperimentalUuidApi::class)
 data class Bank(
+    @OptIn(ExperimentalUuidApi::class)
     val id: BankId,
     val name: String,
     val memo: String?
