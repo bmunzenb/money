@@ -1,4 +1,4 @@
-package com.munzenberger.money.repository.api.bank
+package com.munzenberger.money.repository.api
 
 /**
  * Represents the state of an asynchronous data load operation.

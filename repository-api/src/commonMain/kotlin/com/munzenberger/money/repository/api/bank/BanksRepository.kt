@@ -1,5 +1,6 @@
 package com.munzenberger.money.repository.api.bank
 
+import com.munzenberger.money.repository.api.ModelState
 import kotlinx.coroutines.flow.Flow
 import kotlin.uuid.ExperimentalUuidApi
 
