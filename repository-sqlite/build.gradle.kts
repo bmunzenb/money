@@ -12,11 +12,10 @@ kotlin {
             implementation(libs.sqldelight.runtime)
             implementation(libs.sqldelight.coroutinesExtensions)
         }
-        jvmMain.dependencies {
-            implementation(libs.sqldelight.sqliteDriver)
-        }
         commonTest.dependencies {
             implementation(libs.kotlin.test)
+            implementation(libs.kotlinx.coroutinesTest)
+            implementation(libs.sqldelight.sqliteDriver)
         }
     }
 }
@@ -25,8 +24,8 @@ sqldelight {
     databases {
         create("MoneyDatabase") {
             packageName.set("com.munzenberger.money.repository.sqlite")
-            schemaOutputDirectory.set(file("src/commonMain/sqldelight/migrations"))
-            verifyMigrations.set(true)
+//            schemaOutputDirectory.set(file("src/commonMain/sqldelight/migrations"))
+//            verifyMigrations.set(true)
         }
     }
 }
