@@ -11,5 +11,5 @@ data class Payee(
     @OptIn(ExperimentalUuidApi::class)
     val id: PayeeId = PayeeId(),
     val name: String,
-    val memo: String?
+    val memo: String? = null,
 )

@@ -11,9 +11,10 @@ interface BankRepository {
 
     suspend fun update(bank: Bank)
 
-    suspend fun remove(bank: Bank) {
-        removeById(bank.id)
-    }
-
     suspend fun removeById(bankId: BankId)
+}
+
+@OptIn(ExperimentalUuidApi::class)
+suspend fun BankRepository.remove(bank: Bank) {
+    removeById(bank.id)
 }

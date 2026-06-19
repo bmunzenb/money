@@ -11,9 +11,10 @@ interface PayeeRepository {
 
     suspend fun update(payee: Payee)
 
-    suspend fun remove(payee: Payee) {
-        removeById(payee.id)
-    }
-
     suspend fun removeById(payeeId: PayeeId)
+}
+
+@OptIn(ExperimentalUuidApi::class)
+suspend fun PayeeRepository.remove(payee: Payee) {
+    removeById(payee.id)
 }

@@ -3,6 +3,7 @@ package com.munzenberger.money.repository.sql.payee
 import app.cash.sqldelight.driver.jdbc.sqlite.JdbcSqliteDriver
 import com.munzenberger.money.repository.api.payee.Payee
 import com.munzenberger.money.repository.api.payee.PayeeId
+import com.munzenberger.money.repository.api.payee.remove
 import com.munzenberger.money.repository.sql.MoneyDatabase
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.ExperimentalCoroutinesApi

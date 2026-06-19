@@ -1,0 +1,7 @@
+CREATE TABLE CategoryType (
+    id INTEGER NOT NULL PRIMARY KEY,
+    value TEXT NOT NULL
+);
+
+INSERT INTO CategoryType (id, value) VALUES (1, 'Income');
+INSERT INTO CategoryType (id, value) VALUES (2, 'Expense');

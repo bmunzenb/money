@@ -1,0 +1,29 @@
+CREATE TABLE Category (
+    id TEXT NOT NULL PRIMARY KEY,
+    name TEXT NOT NULL,
+    parent_id TEXT,
+    type_id INTEGER NOT NULL,
+    memo TEXT,
+    FOREIGN KEY (parent_id) REFERENCES Category (id),
+    FOREIGN KEY (type_id) REFERENCES CategoryType (id)
+);
+
+selectAll:
+SELECT
+    Category.id AS id,
+    Category.name AS name,
+    Category.parent_id AS parent_id,
+    Category.memo AS memo,
+    CategoryType.id AS type_id,
+    CategoryType.value AS type_value
+FROM Category
+JOIN CategoryType ON Category.type_id = CategoryType.id;
+
+insert:
+INSERT INTO Category (id, name, parent_id, type_id, memo) VALUES (?, ?, ?, ?, ?);
+
+update:
+UPDATE Category SET name = ?, parent_id = ?, type_id = ?, memo = ? WHERE id = ?;
+
+deleteById:
+DELETE FROM Category WHERE id = ?;

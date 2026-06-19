@@ -11,5 +11,5 @@ data class Bank(
     @OptIn(ExperimentalUuidApi::class)
     val id: BankId = BankId(),
     val name: String,
-    val memo: String?
+    val memo: String? = null,
 )
