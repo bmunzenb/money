@@ -5,7 +5,7 @@ import kotlin.uuid.ExperimentalUuidApi
 
 @OptIn(ExperimentalUuidApi::class)
 interface BankRepository {
-    fun allBanks(): Flow<List<Bank>>
+    val banks: Flow<List<Bank>>
 
     suspend fun add(bank: Bank)
 
