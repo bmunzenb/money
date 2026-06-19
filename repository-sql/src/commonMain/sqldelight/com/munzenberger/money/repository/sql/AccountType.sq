@@ -5,6 +5,9 @@ CREATE TABLE AccountType (
     FOREIGN KEY (group_id) REFERENCES AccountTypeGroup (id)
 );
 
+INSERT INTO AccountTypeGroup (id, value) VALUES (1, 'Assets');
+INSERT INTO AccountTypeGroup (id, value) VALUES (2, 'Liabilities');
+
 INSERT INTO AccountType (id, group_id, value) VALUES (1, 1, 'Savings');
 INSERT INTO AccountType (id, group_id, value) VALUES (2, 1, 'Checking');
 INSERT INTO AccountType (id, group_id, value) VALUES (3, 1, 'Asset');

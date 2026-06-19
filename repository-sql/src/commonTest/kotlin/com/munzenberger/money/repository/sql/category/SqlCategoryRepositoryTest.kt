@@ -1,13 +1,7 @@
 package com.munzenberger.money.repository.sql.category
 
-import app.cash.sqldelight.driver.jdbc.sqlite.JdbcSqliteDriver
-import com.munzenberger.money.repository.api.category.Category
-import com.munzenberger.money.repository.api.category.CategoryId
-import com.munzenberger.money.repository.api.category.CategoryType
-import com.munzenberger.money.repository.api.category.CategoryTypeConstant
-import com.munzenberger.money.repository.api.category.CategoryTypeId
-import com.munzenberger.money.repository.api.category.remove
-import com.munzenberger.money.repository.sql.MoneyDatabase
+import com.munzenberger.money.repository.api.category.*
+import com.munzenberger.money.repository.sql.createTestDatabase
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.first
@@ -26,9 +20,7 @@ class SqlCategoryRepositoryTest {
     private val expense = CategoryType(id = CategoryTypeId(2), value = CategoryTypeConstant.Expense)
 
     private fun createRepository(context: CoroutineDispatcher): SqlCategoryRepository {
-        val driver = JdbcSqliteDriver(JdbcSqliteDriver.IN_MEMORY)
-        MoneyDatabase.Schema.create(driver)
-        return SqlCategoryRepository(MoneyDatabase(driver), context)
+        return SqlCategoryRepository(createTestDatabase(), context)
     }
 
     @Test

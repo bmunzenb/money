@@ -2,6 +2,3 @@ CREATE TABLE AccountTypeGroup (
     id INTEGER NOT NULL PRIMARY KEY,
     value TEXT NOT NULL
 );
-
-INSERT INTO AccountTypeGroup (id, value) VALUES (1, 'Assets');
-INSERT INTO AccountTypeGroup (id, value) VALUES (2, 'Liabilities');

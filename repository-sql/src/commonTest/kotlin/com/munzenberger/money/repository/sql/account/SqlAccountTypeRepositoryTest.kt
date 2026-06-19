@@ -1,9 +1,8 @@
 package com.munzenberger.money.repository.sql.account
 
-import app.cash.sqldelight.driver.jdbc.sqlite.JdbcSqliteDriver
 import com.munzenberger.money.repository.api.account.AccountTypeConstant
 import com.munzenberger.money.repository.api.account.AccountTypeGroupConstant
-import com.munzenberger.money.repository.sql.MoneyDatabase
+import com.munzenberger.money.repository.sql.createTestDatabase
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.first
@@ -16,9 +15,7 @@ import kotlin.test.assertEquals
 class SqlAccountTypeRepositoryTest {
 
     private fun createRepository(context: CoroutineDispatcher): SqlAccountTypeRepository {
-        val driver = JdbcSqliteDriver(JdbcSqliteDriver.IN_MEMORY)
-        MoneyDatabase.Schema.create(driver)
-        return SqlAccountTypeRepository(MoneyDatabase(driver), context)
+        return SqlAccountTypeRepository(createTestDatabase(), context)
     }
 
     @Test

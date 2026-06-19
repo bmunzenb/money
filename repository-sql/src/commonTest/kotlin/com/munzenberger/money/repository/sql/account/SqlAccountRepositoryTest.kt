@@ -1,18 +1,10 @@
 package com.munzenberger.money.repository.sql.account
 
-import app.cash.sqldelight.driver.jdbc.sqlite.JdbcSqliteDriver
 import com.munzenberger.money.repository.api.Money
-import com.munzenberger.money.repository.api.account.Account
-import com.munzenberger.money.repository.api.account.AccountId
-import com.munzenberger.money.repository.api.account.AccountType
-import com.munzenberger.money.repository.api.account.AccountTypeConstant
-import com.munzenberger.money.repository.api.account.AccountTypeGroup
-import com.munzenberger.money.repository.api.account.AccountTypeGroupConstant
-import com.munzenberger.money.repository.api.account.AccountTypeGroupId
-import com.munzenberger.money.repository.api.account.AccountTypeId
-import com.munzenberger.money.repository.api.account.remove
-import com.munzenberger.money.repository.api.bank.BankId
-import com.munzenberger.money.repository.sql.MoneyDatabase
+import com.munzenberger.money.repository.api.account.*
+import com.munzenberger.money.repository.api.bank.Bank
+import com.munzenberger.money.repository.sql.bank.SqlBankRepository
+import com.munzenberger.money.repository.sql.createTestDatabase
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.first
@@ -33,11 +25,8 @@ class SqlAccountRepositoryTest {
     private val checking = AccountType(id = AccountTypeId(2), group = assets, value = AccountTypeConstant.Checking)
     private val credit = AccountType(id = AccountTypeId(5), group = liabilities, value = AccountTypeConstant.Credit)
 
-    private fun createRepository(context: CoroutineDispatcher): SqlAccountRepository {
-        val driver = JdbcSqliteDriver(JdbcSqliteDriver.IN_MEMORY)
-        MoneyDatabase.Schema.create(driver)
-        return SqlAccountRepository(MoneyDatabase(driver), context)
-    }
+    private fun createRepository(context: CoroutineDispatcher): SqlAccountRepository =
+        SqlAccountRepository(createTestDatabase(), context)
 
     @Test
     fun `accounts emits empty list when no accounts exist`() = runTest {
@@ -63,8 +52,12 @@ class SqlAccountRepositoryTest {
 
     @Test
     fun `add inserts an account with a bank`() = runTest {
-        val repository = createRepository(UnconfinedTestDispatcher(testScheduler))
-        val account = Account(name = "Checking", accountType = checking, bankId = BankId())
+        val dispatcher = UnconfinedTestDispatcher(testScheduler)
+        val database = createTestDatabase()
+        val bank = Bank(name = "First Bank")
+        SqlBankRepository(database, dispatcher).add(bank)
+        val repository = SqlAccountRepository(database, dispatcher)
+        val account = Account(name = "Checking", accountType = checking, bankId = bank.id)
         repository.add(account)
         assertEquals(listOf(account), repository.accounts.first())
     }
@@ -120,10 +113,14 @@ class SqlAccountRepositoryTest {
 
     @Test
     fun `update modifies the bank of an existing account`() = runTest {
-        val repository = createRepository(UnconfinedTestDispatcher(testScheduler))
+        val dispatcher = UnconfinedTestDispatcher(testScheduler)
+        val database = createTestDatabase()
+        val bank = Bank(name = "First Bank")
+        SqlBankRepository(database, dispatcher).add(bank)
+        val repository = SqlAccountRepository(database, dispatcher)
         val original = Account(name = "Checking", accountType = checking)
         repository.add(original)
-        val updated = original.copy(bankId = BankId())
+        val updated = original.copy(bankId = bank.id)
         repository.update(updated)
         assertEquals(listOf(updated), repository.accounts.first())
     }

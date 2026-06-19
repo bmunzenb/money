@@ -1,10 +1,9 @@
 package com.munzenberger.money.repository.sql.payee
 
-import app.cash.sqldelight.driver.jdbc.sqlite.JdbcSqliteDriver
 import com.munzenberger.money.repository.api.payee.Payee
 import com.munzenberger.money.repository.api.payee.PayeeId
 import com.munzenberger.money.repository.api.payee.remove
-import com.munzenberger.money.repository.sql.MoneyDatabase
+import com.munzenberger.money.repository.sql.createTestDatabase
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.first
@@ -20,9 +19,7 @@ import kotlin.uuid.ExperimentalUuidApi
 class SqlPayeeRepositoryTest {
 
     private fun createRepository(context: CoroutineDispatcher): SqlPayeeRepository {
-        val driver = JdbcSqliteDriver(JdbcSqliteDriver.IN_MEMORY)
-        MoneyDatabase.Schema.create(driver)
-        return SqlPayeeRepository(MoneyDatabase(driver), context)
+        return SqlPayeeRepository(createTestDatabase(), context)
     }
 
     @Test
