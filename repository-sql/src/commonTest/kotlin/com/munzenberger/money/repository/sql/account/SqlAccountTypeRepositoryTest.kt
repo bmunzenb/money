@@ -18,7 +18,7 @@ class SqlAccountTypeRepositoryTest {
     private fun createRepository(context: CoroutineDispatcher): SqlAccountTypeRepository {
         val driver = JdbcSqliteDriver(JdbcSqliteDriver.IN_MEMORY)
         MoneyDatabase.Schema.create(driver)
-        return SqlAccountTypeRepository(driver, context)
+        return SqlAccountTypeRepository(MoneyDatabase(driver), context)
     }
 
     @Test

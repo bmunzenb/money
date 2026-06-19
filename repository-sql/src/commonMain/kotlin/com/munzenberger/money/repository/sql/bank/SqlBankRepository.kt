@@ -2,7 +2,6 @@ package com.munzenberger.money.repository.sql.bank
 
 import app.cash.sqldelight.coroutines.asFlow
 import app.cash.sqldelight.coroutines.mapToList
-import app.cash.sqldelight.db.SqlDriver
 import com.munzenberger.money.repository.api.bank.Bank
 import com.munzenberger.money.repository.api.bank.BankId
 import com.munzenberger.money.repository.api.bank.BankRepository
@@ -16,11 +15,9 @@ import kotlin.uuid.Uuid
 
 @OptIn(ExperimentalUuidApi::class)
 class SqlBankRepository(
-    driver: SqlDriver,
+    private val database: MoneyDatabase,
     private val context: CoroutineContext = Dispatchers.IO,
 ) : BankRepository {
-
-    private val database = MoneyDatabase(driver)
 
     override val banks: Flow<List<Bank>> = database.bankQueries
         .selectAll { id, name, memo ->

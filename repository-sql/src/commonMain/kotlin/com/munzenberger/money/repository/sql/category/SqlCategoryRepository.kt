@@ -2,7 +2,6 @@ package com.munzenberger.money.repository.sql.category
 
 import app.cash.sqldelight.coroutines.asFlow
 import app.cash.sqldelight.coroutines.mapToList
-import app.cash.sqldelight.db.SqlDriver
 import com.munzenberger.money.repository.api.category.Category
 import com.munzenberger.money.repository.api.category.CategoryId
 import com.munzenberger.money.repository.api.category.CategoryRepository
@@ -19,11 +18,9 @@ import kotlin.uuid.Uuid
 
 @OptIn(ExperimentalUuidApi::class)
 class SqlCategoryRepository(
-    driver: SqlDriver,
+    private val database: MoneyDatabase,
     private val context: CoroutineContext = Dispatchers.IO,
 ) : CategoryRepository {
-
-    private val database = MoneyDatabase(driver)
 
     override val categories: Flow<List<Category>> = database.categoryQueries
         .selectAll { id, name, parentId, memo, typeId, typeValue ->

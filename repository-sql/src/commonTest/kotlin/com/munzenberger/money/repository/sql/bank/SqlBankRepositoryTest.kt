@@ -22,7 +22,7 @@ class SqlBankRepositoryTest {
     private fun createRepository(context: CoroutineDispatcher): SqlBankRepository {
         val driver = JdbcSqliteDriver(JdbcSqliteDriver.IN_MEMORY)
         MoneyDatabase.Schema.create(driver)
-        return SqlBankRepository(driver, context)
+        return SqlBankRepository(MoneyDatabase(driver), context)
     }
 
     @Test

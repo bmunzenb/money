@@ -28,7 +28,7 @@ class SqlCategoryRepositoryTest {
     private fun createRepository(context: CoroutineDispatcher): SqlCategoryRepository {
         val driver = JdbcSqliteDriver(JdbcSqliteDriver.IN_MEMORY)
         MoneyDatabase.Schema.create(driver)
-        return SqlCategoryRepository(driver, context)
+        return SqlCategoryRepository(MoneyDatabase(driver), context)
     }
 
     @Test

@@ -2,7 +2,6 @@ package com.munzenberger.money.repository.sql.account
 
 import app.cash.sqldelight.coroutines.asFlow
 import app.cash.sqldelight.coroutines.mapToList
-import app.cash.sqldelight.db.SqlDriver
 import com.munzenberger.money.repository.api.account.AccountType
 import com.munzenberger.money.repository.api.account.AccountTypeConstant
 import com.munzenberger.money.repository.api.account.AccountTypeGroup
@@ -16,11 +15,9 @@ import kotlinx.coroutines.flow.Flow
 import kotlin.coroutines.CoroutineContext
 
 class SqlAccountTypeRepository(
-    driver: SqlDriver,
+    private val database: MoneyDatabase,
     private val context: CoroutineContext = Dispatchers.IO,
 ) : AccountTypeRepository {
-
-    private val database = MoneyDatabase(driver)
 
     override val accountTypes: Flow<List<AccountType>> = database.accountTypeQueries
         .selectAll { id, value, groupId, groupValue ->

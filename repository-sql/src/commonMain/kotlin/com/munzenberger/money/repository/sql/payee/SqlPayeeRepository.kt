@@ -2,7 +2,6 @@ package com.munzenberger.money.repository.sql.payee
 
 import app.cash.sqldelight.coroutines.asFlow
 import app.cash.sqldelight.coroutines.mapToList
-import app.cash.sqldelight.db.SqlDriver
 import com.munzenberger.money.repository.api.payee.Payee
 import com.munzenberger.money.repository.api.payee.PayeeId
 import com.munzenberger.money.repository.api.payee.PayeeRepository
@@ -16,11 +15,9 @@ import kotlin.uuid.Uuid
 
 @OptIn(ExperimentalUuidApi::class)
 class SqlPayeeRepository(
-    driver: SqlDriver,
+    private val database: MoneyDatabase,
     private val context: CoroutineContext = Dispatchers.IO,
 ) : PayeeRepository {
-
-    private val database = MoneyDatabase(driver)
 
     override val payees: Flow<List<Payee>> = database.payeeQueries
         .selectAll { id, name, memo ->
