@@ -7,12 +7,11 @@ import kotlin.uuid.Uuid
 @ExperimentalUuidApi
 value class CategoryId(val value: Uuid = Uuid.random())
 
+@OptIn(ExperimentalUuidApi::class)
 data class Category(
-    @OptIn(ExperimentalUuidApi::class)
     val id: CategoryId = CategoryId(),
     val name: String,
-    @OptIn(ExperimentalUuidApi::class)
-    val parent: CategoryId? = null,
+    val parentId: CategoryId? = null,
     val type: CategoryType,
     val memo: String? = null,
 )

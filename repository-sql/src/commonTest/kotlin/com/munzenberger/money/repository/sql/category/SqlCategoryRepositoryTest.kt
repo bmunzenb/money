@@ -66,7 +66,7 @@ class SqlCategoryRepositoryTest {
         val repository = createRepository(UnconfinedTestDispatcher(testScheduler))
         val parent = Category(name = "Food", type = expense, memo = null)
         repository.add(parent)
-        val child = Category(name = "Groceries", parent = parent.id, type = expense, memo = null)
+        val child = Category(name = "Groceries", parentId = parent.id, type = expense, memo = null)
         repository.add(child)
         val categories = repository.categories.first()
         assertContains(categories, parent)
@@ -113,7 +113,7 @@ class SqlCategoryRepositoryTest {
         repository.add(parent)
         val original = Category(name = "Groceries", type = expense, memo = null)
         repository.add(original)
-        val updated = original.copy(parent = parent.id)
+        val updated = original.copy(parentId = parent.id)
         repository.update(updated)
         assertContains(repository.categories.first(), updated)
     }

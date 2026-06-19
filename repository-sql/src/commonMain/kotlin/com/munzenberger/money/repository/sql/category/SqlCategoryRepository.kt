@@ -30,7 +30,7 @@ class SqlCategoryRepository(
             Category(
                 id = CategoryId(Uuid.parse(id)),
                 name = name,
-                parent = parentId?.let { CategoryId(Uuid.parse(it)) },
+                parentId = parentId?.let { CategoryId(Uuid.parse(it)) },
                 type = CategoryType(
                     id = CategoryTypeId(typeId),
                     value = CategoryTypeConstant.valueOf(typeValue),
@@ -46,7 +46,7 @@ class SqlCategoryRepository(
             database.categoryQueries.insert(
                 id = category.id.value.toString(),
                 name = category.name,
-                parent_id = category.parent?.value?.toString(),
+                parent_id = category.parentId?.value?.toString(),
                 type_id = category.type.id.value,
                 memo = category.memo,
             )
@@ -57,7 +57,7 @@ class SqlCategoryRepository(
         withContext(context) {
             database.categoryQueries.update(
                 name = category.name,
-                parent_id = category.parent?.value?.toString(),
+                parent_id = category.parentId?.value?.toString(),
                 type_id = category.type.id.value,
                 memo = category.memo,
                 id = category.id.value.toString(),

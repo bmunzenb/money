@@ -7,8 +7,8 @@ import kotlin.uuid.Uuid
 @ExperimentalUuidApi
 value class PayeeId(val value: Uuid = Uuid.random())
 
+@OptIn(ExperimentalUuidApi::class)
 data class Payee(
-    @OptIn(ExperimentalUuidApi::class)
     val id: PayeeId = PayeeId(),
     val name: String,
     val memo: String? = null,
