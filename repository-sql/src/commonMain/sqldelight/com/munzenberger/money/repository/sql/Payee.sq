@@ -1,0 +1,17 @@
+CREATE TABLE Payee (
+    id TEXT NOT NULL PRIMARY KEY,
+    name TEXT NOT NULL,
+    memo TEXT
+);
+
+selectAll:
+SELECT id, name, memo FROM Payee;
+
+insert:
+INSERT INTO Payee (id, name, memo) VALUES (?, ?, ?);
+
+update:
+UPDATE Payee SET name = ?, memo = ? WHERE id = ?;
+
+deleteById:
+DELETE FROM Payee WHERE id = ?;

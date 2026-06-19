@@ -5,7 +5,7 @@ CREATE TABLE Bank (
 );
 
 selectAll:
-SELECT * FROM Bank;
+SELECT id, name, memo FROM Bank;
 
 insert:
 INSERT INTO Bank (id, name, memo) VALUES (?, ?, ?);
