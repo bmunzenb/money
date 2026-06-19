@@ -1,0 +1,34 @@
+CREATE TABLE Account (
+    id TEXT NOT NULL PRIMARY KEY,
+    name TEXT NOT NULL,
+    number TEXT,
+    account_type_id INTEGER NOT NULL,
+    bank_id TEXT,
+    initial_balance INTEGER,
+    FOREIGN KEY (account_type_id) REFERENCES AccountType (id),
+    FOREIGN KEY (bank_id) REFERENCES Bank (id)
+);
+
+selectAll:
+SELECT
+    Account.id AS id,
+    Account.name AS name,
+    Account.number AS number,
+    Account.bank_id AS bank_id,
+    Account.initial_balance AS initial_balance,
+    AccountType.id AS type_id,
+    AccountType.value AS type_value,
+    AccountTypeGroup.id AS type_group_id,
+    AccountTypeGroup.value AS type_group_value
+FROM Account
+JOIN AccountType ON Account.account_type_id = AccountType.id
+JOIN AccountTypeGroup ON AccountType.group_id = AccountTypeGroup.id;
+
+insert:
+INSERT INTO Account (id, name, number, account_type_id, bank_id, initial_balance) VALUES (?, ?, ?, ?, ?, ?);
+
+update:
+UPDATE Account SET name = ?, number = ?, account_type_id = ?, bank_id = ?, initial_balance = ? WHERE id = ?;
+
+deleteById:
+DELETE FROM Account WHERE id = ?;
