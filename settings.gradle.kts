@@ -34,5 +34,4 @@ plugins {
 
 include(":desktopApp")
 include(":repository-api")
-include(":repository-sqlite")
 include(":shared")
