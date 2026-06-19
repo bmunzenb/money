@@ -1,3 +1,8 @@
+CREATE TABLE AccountTypeGroup (
+    id INTEGER NOT NULL PRIMARY KEY,
+    value TEXT NOT NULL
+);
+
 CREATE TABLE AccountType (
     id INTEGER NOT NULL PRIMARY KEY,
     group_id INTEGER NOT NULL,
