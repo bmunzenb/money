@@ -1,0 +1,23 @@
+CREATE TABLE "Transaction" (
+    id TEXT NOT NULL PRIMARY KEY,
+    account_id TEXT NOT NULL,
+    payee_id TEXT,
+    date INTEGER NOT NULL,
+    number TEXT,
+    memo TEXT,
+    status TEXT NOT NULL,
+    FOREIGN KEY (account_id) REFERENCES Account (id),
+    FOREIGN KEY (payee_id) REFERENCES Payee (id)
+);
+
+selectByAccountId:
+SELECT id, account_id, payee_id, date, number, memo, status FROM "Transaction" WHERE account_id = ?;
+
+insert:
+INSERT INTO "Transaction" (id, account_id, payee_id, date, number, memo, status) VALUES (?, ?, ?, ?, ?, ?, ?);
+
+update:
+UPDATE "Transaction" SET account_id = ?, payee_id = ?, date = ?, number = ?, memo = ?, status = ? WHERE id = ?;
+
+deleteById:
+DELETE FROM "Transaction" WHERE id = ?;
