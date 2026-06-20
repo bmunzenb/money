@@ -11,6 +11,8 @@ CREATE TABLE "Transaction" (
     FOREIGN KEY (status_id) REFERENCES TransactionStatus (id)
 );
 
+CREATE INDEX Transaction_account_id ON "Transaction" (account_id);
+
 selectByAccountId:
 SELECT
     t.id AS id,
