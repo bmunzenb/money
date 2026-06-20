@@ -16,8 +16,8 @@ class SqlTransactionStatusRepository(
     private val context: CoroutineContext = Dispatchers.IO,
 ) : TransactionStatusRepository {
 
-    override val transactionStatuses: Flow<List<TransactionStatus>> = database.transactionQueries
-        .selectAllStatuses { id, value ->
+    override val transactionStatuses: Flow<List<TransactionStatus>> = database.transactionStatusQueries
+        .selectAll { id, value ->
             TransactionStatus(
                 id = TransactionStatusId(id),
                 value = TransactionStatusConstant.valueOf(value),

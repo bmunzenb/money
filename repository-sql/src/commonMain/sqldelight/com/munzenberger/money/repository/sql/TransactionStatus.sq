@@ -1,0 +1,14 @@
+CREATE TABLE TransactionStatus (
+    id INTEGER NOT NULL PRIMARY KEY,
+    value TEXT NOT NULL
+);
+
+INSERT INTO TransactionStatus (id, value) VALUES (1, 'Unreconciled');
+INSERT INTO TransactionStatus (id, value) VALUES (2, 'Cleared');
+INSERT INTO TransactionStatus (id, value) VALUES (3, 'Reconciled');
+
+selectAll:
+SELECT
+    TransactionStatus.id AS id,
+    TransactionStatus.value AS value
+FROM TransactionStatus;
