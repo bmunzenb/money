@@ -8,6 +8,8 @@ import com.munzenberger.money.repository.api.transaction.Transaction
 import com.munzenberger.money.repository.api.transaction.TransactionId
 import com.munzenberger.money.repository.api.transaction.TransactionRepository
 import com.munzenberger.money.repository.api.transaction.TransactionStatus
+import com.munzenberger.money.repository.api.transaction.TransactionStatusConstant
+import com.munzenberger.money.repository.api.transaction.TransactionStatusId
 import com.munzenberger.money.repository.sql.MoneyDatabase
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
@@ -25,7 +27,7 @@ class SqlTransactionRepository(
 
     override suspend fun transactionsByAccountId(accountId: AccountId): Flow<List<Transaction>> =
         database.transactionQueries
-            .selectByAccountId(accountId.value.toString()) { id, accountIdValue, payeeId, date, number, memo, status ->
+            .selectByAccountId(accountId.value.toString()) { id, accountIdValue, payeeId, date, number, memo, statusId, statusValue ->
                 Transaction(
                     id = TransactionId(Uuid.parse(id)),
                     accountId = AccountId(Uuid.parse(accountIdValue)),
@@ -33,7 +35,10 @@ class SqlTransactionRepository(
                     date = LocalDate.fromEpochDays(date),
                     number = number,
                     memo = memo,
-                    status = TransactionStatus.valueOf(status),
+                    status = TransactionStatus(
+                        id = TransactionStatusId(statusId),
+                        value = TransactionStatusConstant.valueOf(statusValue),
+                    ),
                 )
             }
             .asFlow()
@@ -48,7 +53,7 @@ class SqlTransactionRepository(
                 date = transaction.date.toEpochDays(),
                 number = transaction.number,
                 memo = transaction.memo,
-                status = transaction.status.name,
+                status_id = transaction.status.id.value,
             )
         }
     }
@@ -61,7 +66,7 @@ class SqlTransactionRepository(
                 date = transaction.date.toEpochDays(),
                 number = transaction.number,
                 memo = transaction.memo,
-                status = transaction.status.name,
+                status_id = transaction.status.id.value,
                 id = transaction.id.value.toString(),
             )
         }

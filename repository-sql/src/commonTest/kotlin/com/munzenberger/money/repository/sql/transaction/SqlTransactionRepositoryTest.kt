@@ -12,6 +12,8 @@ import com.munzenberger.money.repository.api.payee.Payee
 import com.munzenberger.money.repository.api.transaction.Transaction
 import com.munzenberger.money.repository.api.transaction.TransactionId
 import com.munzenberger.money.repository.api.transaction.TransactionStatus
+import com.munzenberger.money.repository.api.transaction.TransactionStatusConstant
+import com.munzenberger.money.repository.api.transaction.TransactionStatusId
 import com.munzenberger.money.repository.api.transaction.remove
 import com.munzenberger.money.repository.sql.MoneyDatabase
 import com.munzenberger.money.repository.sql.account.SqlAccountRepository
@@ -38,6 +40,10 @@ class SqlTransactionRepositoryTest {
         value = AccountTypeConstant.Checking,
     )
 
+    private val unreconciled = TransactionStatus(id = TransactionStatusId(1), value = TransactionStatusConstant.Unreconciled)
+    private val cleared = TransactionStatus(id = TransactionStatusId(2), value = TransactionStatusConstant.Cleared)
+    private val reconciled = TransactionStatus(id = TransactionStatusId(3), value = TransactionStatusConstant.Reconciled)
+
     private suspend fun createAccount(database: MoneyDatabase, dispatcher: CoroutineDispatcher): AccountId {
         val account = Account(name = "Checking", accountType = checking)
         SqlAccountRepository(database, dispatcher).add(account)
@@ -62,7 +68,12 @@ class SqlTransactionRepositoryTest {
         val database = createTestDatabase()
         val accountId = createAccount(database, dispatcher)
         val repository = createRepository(database, dispatcher)
-        val transaction = Transaction(accountId = accountId, date = LocalDate(2024, 1, 15), memo = "Groceries")
+        val transaction = Transaction(
+            accountId = accountId,
+            date = LocalDate(2024, 1, 15),
+            memo = "Groceries",
+            status = unreconciled,
+        )
         repository.add(transaction)
         assertEquals(listOf(transaction), repository.transactionsByAccountId(accountId).first())
     }
@@ -75,7 +86,12 @@ class SqlTransactionRepositoryTest {
         val payee = Payee(name = "Grocery Store")
         SqlPayeeRepository(database, dispatcher).add(payee)
         val repository = createRepository(database, dispatcher)
-        val transaction = Transaction(accountId = accountId, payeeId = payee.id, date = LocalDate(2024, 1, 15))
+        val transaction = Transaction(
+            accountId = accountId,
+            payeeId = payee.id,
+            date = LocalDate(2024, 1, 15),
+            status = unreconciled,
+        )
         repository.add(transaction)
         assertEquals(listOf(transaction), repository.transactionsByAccountId(accountId).first())
     }
@@ -86,7 +102,12 @@ class SqlTransactionRepositoryTest {
         val database = createTestDatabase()
         val accountId = createAccount(database, dispatcher)
         val repository = createRepository(database, dispatcher)
-        val transaction = Transaction(accountId = accountId, date = LocalDate(2024, 1, 15), number = "1001")
+        val transaction = Transaction(
+            accountId = accountId,
+            date = LocalDate(2024, 1, 15),
+            number = "1001",
+            status = unreconciled,
+        )
         repository.add(transaction)
         assertEquals(listOf(transaction), repository.transactionsByAccountId(accountId).first())
     }
@@ -100,7 +121,7 @@ class SqlTransactionRepositoryTest {
         val transaction = Transaction(
             accountId = accountId,
             date = LocalDate(2024, 1, 15),
-            status = TransactionStatus.Reconciled,
+            status = reconciled,
         )
         repository.add(transaction)
         assertEquals(listOf(transaction), repository.transactionsByAccountId(accountId).first())
@@ -112,8 +133,18 @@ class SqlTransactionRepositoryTest {
         val database = createTestDatabase()
         val accountId = createAccount(database, dispatcher)
         val repository = createRepository(database, dispatcher)
-        val transaction1 = Transaction(accountId = accountId, date = LocalDate(2024, 1, 15), memo = "First")
-        val transaction2 = Transaction(accountId = accountId, date = LocalDate(2024, 1, 16), memo = "Second")
+        val transaction1 = Transaction(
+            accountId = accountId,
+            date = LocalDate(2024, 1, 15),
+            memo = "First",
+            status = unreconciled,
+        )
+        val transaction2 = Transaction(
+            accountId = accountId,
+            date = LocalDate(2024, 1, 16),
+            memo = "Second",
+            status = unreconciled,
+        )
         repository.add(transaction1)
         repository.add(transaction2)
         val transactions = repository.transactionsByAccountId(accountId).first()
@@ -129,8 +160,8 @@ class SqlTransactionRepositoryTest {
         val accountId1 = createAccount(database, dispatcher)
         val accountId2 = createAccount(database, dispatcher)
         val repository = createRepository(database, dispatcher)
-        val transaction1 = Transaction(accountId = accountId1, date = LocalDate(2024, 1, 15))
-        val transaction2 = Transaction(accountId = accountId2, date = LocalDate(2024, 1, 16))
+        val transaction1 = Transaction(accountId = accountId1, date = LocalDate(2024, 1, 15), status = unreconciled)
+        val transaction2 = Transaction(accountId = accountId2, date = LocalDate(2024, 1, 16), status = unreconciled)
         repository.add(transaction1)
         repository.add(transaction2)
         assertEquals(listOf(transaction1), repository.transactionsByAccountId(accountId1).first())
@@ -142,7 +173,12 @@ class SqlTransactionRepositoryTest {
         val database = createTestDatabase()
         val accountId = createAccount(database, dispatcher)
         val repository = createRepository(database, dispatcher)
-        val original = Transaction(accountId = accountId, date = LocalDate(2024, 1, 15), memo = "Original")
+        val original = Transaction(
+            accountId = accountId,
+            date = LocalDate(2024, 1, 15),
+            memo = "Original",
+            status = unreconciled,
+        )
         repository.add(original)
         val updated = original.copy(memo = "Updated", number = "1002")
         repository.update(updated)
@@ -155,9 +191,9 @@ class SqlTransactionRepositoryTest {
         val database = createTestDatabase()
         val accountId = createAccount(database, dispatcher)
         val repository = createRepository(database, dispatcher)
-        val original = Transaction(accountId = accountId, date = LocalDate(2024, 1, 15))
+        val original = Transaction(accountId = accountId, date = LocalDate(2024, 1, 15), status = unreconciled)
         repository.add(original)
-        val updated = original.copy(date = LocalDate(2024, 2, 1), status = TransactionStatus.Cleared)
+        val updated = original.copy(date = LocalDate(2024, 2, 1), status = cleared)
         repository.update(updated)
         assertEquals(listOf(updated), repository.transactionsByAccountId(accountId).first())
     }
@@ -170,7 +206,7 @@ class SqlTransactionRepositoryTest {
         val payee = Payee(name = "Grocery Store")
         SqlPayeeRepository(database, dispatcher).add(payee)
         val repository = createRepository(database, dispatcher)
-        val original = Transaction(accountId = accountId, date = LocalDate(2024, 1, 15))
+        val original = Transaction(accountId = accountId, date = LocalDate(2024, 1, 15), status = unreconciled)
         repository.add(original)
         val updated = original.copy(payeeId = payee.id)
         repository.update(updated)
@@ -183,8 +219,18 @@ class SqlTransactionRepositoryTest {
         val database = createTestDatabase()
         val accountId = createAccount(database, dispatcher)
         val repository = createRepository(database, dispatcher)
-        val transaction1 = Transaction(accountId = accountId, date = LocalDate(2024, 1, 15), memo = "First")
-        val transaction2 = Transaction(accountId = accountId, date = LocalDate(2024, 1, 16), memo = "Second")
+        val transaction1 = Transaction(
+            accountId = accountId,
+            date = LocalDate(2024, 1, 15),
+            memo = "First",
+            status = unreconciled,
+        )
+        val transaction2 = Transaction(
+            accountId = accountId,
+            date = LocalDate(2024, 1, 16),
+            memo = "Second",
+            status = unreconciled,
+        )
         repository.add(transaction1)
         repository.add(transaction2)
         val updatedTransaction1 = transaction1.copy(memo = "First Updated")
@@ -200,7 +246,7 @@ class SqlTransactionRepositoryTest {
         val database = createTestDatabase()
         val accountId = createAccount(database, dispatcher)
         val repository = createRepository(database, dispatcher)
-        val transaction = Transaction(accountId = accountId, date = LocalDate(2024, 1, 15))
+        val transaction = Transaction(accountId = accountId, date = LocalDate(2024, 1, 15), status = unreconciled)
         repository.add(transaction)
         repository.removeById(transaction.id)
         assertTrue(repository.transactionsByAccountId(accountId).first().isEmpty())
@@ -212,8 +258,8 @@ class SqlTransactionRepositoryTest {
         val database = createTestDatabase()
         val accountId = createAccount(database, dispatcher)
         val repository = createRepository(database, dispatcher)
-        val transaction1 = Transaction(accountId = accountId, date = LocalDate(2024, 1, 15))
-        val transaction2 = Transaction(accountId = accountId, date = LocalDate(2024, 1, 16))
+        val transaction1 = Transaction(accountId = accountId, date = LocalDate(2024, 1, 15), status = unreconciled)
+        val transaction2 = Transaction(accountId = accountId, date = LocalDate(2024, 1, 16), status = unreconciled)
         repository.add(transaction1)
         repository.add(transaction2)
         repository.removeById(transaction2.id)
@@ -226,7 +272,7 @@ class SqlTransactionRepositoryTest {
         val database = createTestDatabase()
         val accountId = createAccount(database, dispatcher)
         val repository = createRepository(database, dispatcher)
-        val transaction = Transaction(accountId = accountId, date = LocalDate(2024, 1, 15))
+        val transaction = Transaction(accountId = accountId, date = LocalDate(2024, 1, 15), status = unreconciled)
         repository.add(transaction)
         repository.removeById(TransactionId())
         assertEquals(listOf(transaction), repository.transactionsByAccountId(accountId).first())
@@ -238,7 +284,7 @@ class SqlTransactionRepositoryTest {
         val database = createTestDatabase()
         val accountId = createAccount(database, dispatcher)
         val repository = createRepository(database, dispatcher)
-        val transaction = Transaction(accountId = accountId, date = LocalDate(2024, 1, 15))
+        val transaction = Transaction(accountId = accountId, date = LocalDate(2024, 1, 15), status = unreconciled)
         repository.add(transaction)
         repository.remove(transaction)
         assertTrue(repository.transactionsByAccountId(accountId).first().isEmpty())

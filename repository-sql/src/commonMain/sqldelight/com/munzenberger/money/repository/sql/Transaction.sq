@@ -1,3 +1,12 @@
+CREATE TABLE TransactionStatus (
+    id INTEGER NOT NULL PRIMARY KEY,
+    value TEXT NOT NULL
+);
+
+INSERT INTO TransactionStatus (id, value) VALUES (1, 'Unreconciled');
+INSERT INTO TransactionStatus (id, value) VALUES (2, 'Cleared');
+INSERT INTO TransactionStatus (id, value) VALUES (3, 'Reconciled');
+
 CREATE TABLE "Transaction" (
     id TEXT NOT NULL PRIMARY KEY,
     account_id TEXT NOT NULL,
@@ -5,19 +14,37 @@ CREATE TABLE "Transaction" (
     date INTEGER NOT NULL,
     number TEXT,
     memo TEXT,
-    status TEXT NOT NULL,
+    status_id INTEGER NOT NULL,
     FOREIGN KEY (account_id) REFERENCES Account (id),
-    FOREIGN KEY (payee_id) REFERENCES Payee (id)
+    FOREIGN KEY (payee_id) REFERENCES Payee (id),
+    FOREIGN KEY (status_id) REFERENCES TransactionStatus (id)
 );
 
+selectAllStatuses:
+SELECT
+    TransactionStatus.id AS id,
+    TransactionStatus.value AS value
+FROM TransactionStatus;
+
 selectByAccountId:
-SELECT id, account_id, payee_id, date, number, memo, status FROM "Transaction" WHERE account_id = ?;
+SELECT
+    t.id AS id,
+    t.account_id AS account_id,
+    t.payee_id AS payee_id,
+    t.date AS date,
+    t.number AS number,
+    t.memo AS memo,
+    TransactionStatus.id AS status_id,
+    TransactionStatus.value AS status_value
+FROM "Transaction" AS t
+JOIN TransactionStatus ON t.status_id = TransactionStatus.id
+WHERE t.account_id = ?;
 
 insert:
-INSERT INTO "Transaction" (id, account_id, payee_id, date, number, memo, status) VALUES (?, ?, ?, ?, ?, ?, ?);
+INSERT INTO "Transaction" (id, account_id, payee_id, date, number, memo, status_id) VALUES (?, ?, ?, ?, ?, ?, ?);
 
 update:
-UPDATE "Transaction" SET account_id = ?, payee_id = ?, date = ?, number = ?, memo = ?, status = ? WHERE id = ?;
+UPDATE "Transaction" SET account_id = ?, payee_id = ?, date = ?, number = ?, memo = ?, status_id = ? WHERE id = ?;
 
 deleteById:
 DELETE FROM "Transaction" WHERE id = ?;

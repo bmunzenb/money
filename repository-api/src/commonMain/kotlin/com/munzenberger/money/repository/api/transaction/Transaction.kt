@@ -11,10 +11,6 @@ import kotlin.uuid.Uuid
 @ExperimentalUuidApi
 value class TransactionId(val value: Uuid = Uuid.random())
 
-enum class TransactionStatus {
-    Unreconciled, Cleared, Reconciled
-}
-
 @OptIn(ExperimentalUuidApi::class)
 data class Transaction(
     val id: TransactionId = TransactionId(),
@@ -23,5 +19,5 @@ data class Transaction(
     val date: LocalDate = LocalDate.today(),
     val number: String? = null,
     val memo: String? = null,
-    val status: TransactionStatus = TransactionStatus.Unreconciled,
+    val status: TransactionStatus,
 )
