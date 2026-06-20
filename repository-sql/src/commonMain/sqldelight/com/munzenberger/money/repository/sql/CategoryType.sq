@@ -5,3 +5,9 @@ CREATE TABLE CategoryType (
 
 INSERT INTO CategoryType (id, value) VALUES (1, 'Income');
 INSERT INTO CategoryType (id, value) VALUES (2, 'Expense');
+
+selectAll:
+SELECT
+    CategoryType.id AS id,
+    CategoryType.value AS value
+FROM CategoryType;
