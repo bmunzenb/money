@@ -1,0 +1,56 @@
+CREATE TABLE TransferEntry (
+    id TEXT NOT NULL PRIMARY KEY,
+    transaction_id TEXT NOT NULL,
+    account_id TEXT NOT NULL,
+    amount INTEGER NOT NULL,
+    number TEXT,
+    memo TEXT,
+    status_id INTEGER NOT NULL,
+    order_in_transaction INTEGER NOT NULL,
+    FOREIGN KEY (transaction_id) REFERENCES "Transaction" (id),
+    FOREIGN KEY (account_id) REFERENCES Account (id),
+    FOREIGN KEY (status_id) REFERENCES TransactionStatus (id)
+);
+
+CREATE INDEX TransferEntry_transaction_id ON TransferEntry (transaction_id);
+
+CREATE INDEX TransferEntry_account_id ON TransferEntry (account_id);
+
+selectByTransactionId:
+SELECT
+    TransferEntry.id AS id,
+    TransferEntry.transaction_id AS transaction_id,
+    TransferEntry.account_id AS account_id,
+    TransferEntry.amount AS amount,
+    TransferEntry.number AS number,
+    TransferEntry.memo AS memo,
+    TransactionStatus.id AS status_id,
+    TransactionStatus.value AS status_value,
+    TransferEntry.order_in_transaction AS order_in_transaction
+FROM TransferEntry
+JOIN TransactionStatus ON TransferEntry.status_id = TransactionStatus.id
+WHERE TransferEntry.transaction_id = ?;
+
+selectByAccountId:
+SELECT
+    TransferEntry.id AS id,
+    TransferEntry.transaction_id AS transaction_id,
+    TransferEntry.account_id AS account_id,
+    TransferEntry.amount AS amount,
+    TransferEntry.number AS number,
+    TransferEntry.memo AS memo,
+    TransactionStatus.id AS status_id,
+    TransactionStatus.value AS status_value,
+    TransferEntry.order_in_transaction AS order_in_transaction
+FROM TransferEntry
+JOIN TransactionStatus ON TransferEntry.status_id = TransactionStatus.id
+WHERE TransferEntry.account_id = ?;
+
+insert:
+INSERT INTO TransferEntry (id, transaction_id, account_id, amount, number, memo, status_id, order_in_transaction) VALUES (?, ?, ?, ?, ?, ?, ?, ?);
+
+update:
+UPDATE TransferEntry SET transaction_id = ?, account_id = ?, amount = ?, number = ?, memo = ?, status_id = ?, order_in_transaction = ? WHERE id = ?;
+
+deleteById:
+DELETE FROM TransferEntry WHERE id = ?;
