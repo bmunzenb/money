@@ -2,9 +2,7 @@ package com.munzenberger.money.repository.api.transaction
 
 import com.munzenberger.money.repository.api.account.AccountId
 import kotlinx.coroutines.flow.Flow
-import kotlin.uuid.ExperimentalUuidApi
 
-@OptIn(ExperimentalUuidApi::class)
 interface TransferEntryRepository {
     suspend fun transferEntriesByTransactionId(transactionId: TransactionId): Flow<List<TransferEntry>>
 
@@ -17,7 +15,6 @@ interface TransferEntryRepository {
     suspend fun removeById(transferEntryId: TransferEntryId)
 }
 
-@OptIn(ExperimentalUuidApi::class)
 suspend fun TransferEntryRepository.remove(transferEntry: TransferEntry) {
     removeById(transferEntry.id)
 }

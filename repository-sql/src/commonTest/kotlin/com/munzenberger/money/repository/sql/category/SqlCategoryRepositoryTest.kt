@@ -11,9 +11,8 @@ import kotlin.test.Test
 import kotlin.test.assertContains
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
-import kotlin.uuid.ExperimentalUuidApi
 
-@OptIn(ExperimentalUuidApi::class, ExperimentalCoroutinesApi::class)
+@OptIn(ExperimentalCoroutinesApi::class)
 class SqlCategoryRepositoryTest {
 
     private val income = CategoryType(id = CategoryTypeId(1), value = CategoryTypeConstant.Income)

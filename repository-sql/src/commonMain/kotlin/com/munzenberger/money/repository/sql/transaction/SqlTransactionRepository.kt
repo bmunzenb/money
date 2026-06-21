@@ -16,10 +16,8 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.withContext
 import kotlinx.datetime.LocalDate
 import kotlin.coroutines.CoroutineContext
-import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 
-@OptIn(ExperimentalUuidApi::class)
 class SqlTransactionRepository(
     private val database: MoneyDatabase,
     private val context: CoroutineContext = Dispatchers.IO,
