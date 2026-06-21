@@ -1,0 +1,45 @@
+CREATE TABLE CategoryEntry (
+    id TEXT NOT NULL PRIMARY KEY,
+    transaction_id TEXT NOT NULL,
+    category_id TEXT NOT NULL,
+    amount INTEGER NOT NULL,
+    memo TEXT,
+    order_in_transaction INTEGER NOT NULL,
+    FOREIGN KEY (transaction_id) REFERENCES "Transaction" (id),
+    FOREIGN KEY (category_id) REFERENCES Category (id)
+);
+
+CREATE INDEX CategoryEntry_transaction_id ON CategoryEntry (transaction_id);
+
+CREATE INDEX CategoryEntry_category_id ON CategoryEntry (category_id);
+
+selectByTransactionId:
+SELECT
+    id,
+    transaction_id,
+    category_id,
+    amount,
+    memo,
+    order_in_transaction
+FROM CategoryEntry
+WHERE transaction_id = ?;
+
+selectByCategoryId:
+SELECT
+    id,
+    transaction_id,
+    category_id,
+    amount,
+    memo,
+    order_in_transaction
+FROM CategoryEntry
+WHERE category_id = ?;
+
+insert:
+INSERT INTO CategoryEntry (id, transaction_id, category_id, amount, memo, order_in_transaction) VALUES (?, ?, ?, ?, ?, ?);
+
+update:
+UPDATE CategoryEntry SET transaction_id = ?, category_id = ?, amount = ?, memo = ?, order_in_transaction = ? WHERE id = ?;
+
+deleteById:
+DELETE FROM CategoryEntry WHERE id = ?;
