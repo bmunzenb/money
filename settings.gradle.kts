@@ -33,6 +33,6 @@ plugins {
 }
 
 include(":desktopApp")
-include(":repository-api")
-include(":repository-sql")
+include(":data-api")
+include(":data-sql")
 include(":shared")
