@@ -1,0 +1,33 @@
+import kotlin.Boolean;
+
+CREATE TABLE Statement (
+    id TEXT NOT NULL PRIMARY KEY,
+    account_id TEXT NOT NULL,
+    closing_date INTEGER NOT NULL,
+    starting_balance INTEGER NOT NULL,
+    ending_balance INTEGER NOT NULL,
+    is_reconciled INTEGER AS Boolean NOT NULL,
+    FOREIGN KEY (account_id) REFERENCES Account (id)
+);
+
+CREATE INDEX Statement_account_id ON Statement (account_id);
+
+selectByAccountId:
+SELECT
+    id,
+    account_id,
+    closing_date,
+    starting_balance,
+    ending_balance,
+    is_reconciled
+FROM Statement
+WHERE account_id = ?;
+
+insert:
+INSERT INTO Statement (id, account_id, closing_date, starting_balance, ending_balance, is_reconciled) VALUES (?, ?, ?, ?, ?, ?);
+
+update:
+UPDATE Statement SET account_id = ?, closing_date = ?, starting_balance = ?, ending_balance = ?, is_reconciled = ? WHERE id = ?;
+
+deleteById:
+DELETE FROM Statement WHERE id = ?;
