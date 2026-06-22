@@ -27,3 +27,8 @@ compose.desktop {
         }
     }
 }
+
+detekt {
+    config.setFrom(project.file("detekt.yml"))
+    buildUponDefaultConfig = true
+}
