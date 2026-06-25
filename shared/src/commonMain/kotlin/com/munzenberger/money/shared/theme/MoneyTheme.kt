@@ -5,41 +5,54 @@ import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Shapes
 import androidx.compose.material3.Typography
-import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.ReadOnlyComposable
+import androidx.compose.runtime.staticCompositionLocalOf
+
+val LocalMoneyTheme = staticCompositionLocalOf { MoneyTheme() }
 
 @Composable
 fun MoneyTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
     content: @Composable () -> Unit
 ) {
-    val colorScheme = if (darkTheme) {
-        darkColorScheme()
-    } else {
-        lightColorScheme()
-    }
-
-    MaterialTheme(
-        colorScheme = colorScheme,
-        content = content
+    val moneyTheme = MoneyTheme(
+        colorScheme = if (darkTheme) darkColorScheme else lightColorScheme,
+        typography = typography,
+        shapes = shapes,
     )
+
+    CompositionLocalProvider(LocalMoneyTheme provides moneyTheme) {
+        MaterialTheme(
+            colorScheme = moneyTheme.colorScheme,
+            shapes = moneyTheme.shapes,
+            typography = moneyTheme.typography,
+            content = content
+        )
+    }
 }
 
-object MoneyTheme {
-    val colorScheme: ColorScheme
-        @Composable
-        @ReadOnlyComposable
-        get() = MaterialTheme.colorScheme
+data class MoneyTheme(
+    val colorScheme: ColorScheme = lightColorScheme(),
+    val typography: Typography = Typography(),
+    val shapes: Shapes = Shapes(),
+) {
+    companion object {
+        val colorScheme: ColorScheme
+            @Composable
+            @ReadOnlyComposable
+            get() = LocalMoneyTheme.current.colorScheme
 
-    val typography: Typography
-        @Composable
-        @ReadOnlyComposable
-        get() = MaterialTheme.typography
+        val typography: Typography
+            @Composable
+            @ReadOnlyComposable
+            get() = LocalMoneyTheme.current.typography
 
-    val shapes: Shapes
-        @Composable
-        @ReadOnlyComposable
-        get() = MaterialTheme.shapes
+        val shapes: Shapes
+            @Composable
+            @ReadOnlyComposable
+            get() = LocalMoneyTheme.current.shapes
+    }
 }
