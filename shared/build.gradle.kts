@@ -5,10 +5,13 @@ plugins {
     alias(libs.plugins.detekt)
 }
 
+compose.resources {
+    publicResClass = true
+}
+
 kotlin {
     jvm()
-    
-    
+
     sourceSets {
         commonMain.dependencies {
             api(libs.compose.runtime)

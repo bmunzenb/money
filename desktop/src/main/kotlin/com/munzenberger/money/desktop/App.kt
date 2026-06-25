@@ -8,6 +8,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import com.munzenberger.money.shared.theme.MoneyTheme
+import org.jetbrains.compose.resources.stringResource
+import money.shared.generated.resources.Res
+import money.shared.generated.resources.welcome_message
 
 @Composable
 fun App() {
@@ -19,7 +22,7 @@ fun App() {
                 .fillMaxSize()
         ) {
             Text(
-                text = "Welcome to Money!",
+                text = stringResource(Res.string.welcome_message),
                 style = MoneyTheme.typography.titleLarge
             )
         }
