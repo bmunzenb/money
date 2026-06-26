@@ -1,30 +1,26 @@
 package com.munzenberger.money.desktop
 
-import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.safeContentPadding
-import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.navigation3.runtime.NavBackStack
+import androidx.navigation3.ui.NavDisplay
+import com.munzenberger.money.desktop.navigation.Route
+import com.munzenberger.money.desktop.navigation.navigationRouter
 import com.munzenberger.money.shared.theme.MoneyTheme
-import org.jetbrains.compose.resources.stringResource
-import money.shared.generated.resources.Res
-import money.shared.generated.resources.welcome_message
 
 @Composable
 fun App() {
     MoneyTheme {
-        Box(
-            contentAlignment = Alignment.Center,
+        val backStack = remember { NavBackStack(Route.Welcome) }
+        NavDisplay(
+            backStack = backStack,
+            entryProvider = navigationRouter,
             modifier = Modifier
-                .safeContentPadding()
+                .background(color = MoneyTheme.colorScheme.background)
                 .fillMaxSize()
-        ) {
-            Text(
-                text = stringResource(Res.string.welcome_message),
-                style = MoneyTheme.typography.titleLarge
-            )
-        }
+        )
     }
 }

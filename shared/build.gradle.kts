@@ -22,6 +22,9 @@ kotlin {
             api(libs.compose.uiToolingPreview)
             api(libs.androidx.lifecycle.viewmodelCompose)
             api(libs.androidx.lifecycle.runtimeCompose)
+            api(libs.navigation3.ui)
+            api(libs.compose.material3.adaptiveNavigation3)
+            api(libs.lifecycle.viewmodelNavigation3)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)
