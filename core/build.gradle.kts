@@ -7,6 +7,10 @@ kotlin {
     jvm()
 
     sourceSets {
+        commonMain.dependencies {
+            api(projects.dataApi)
+        }
+
         commonTest.dependencies {
             implementation(libs.kotlin.test)
         }
