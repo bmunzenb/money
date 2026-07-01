@@ -11,7 +11,7 @@ sealed interface Route : NavKey {
     data object Welcome : Route
 }
 
-val navigationRouter = entryProvider {
+val navigationRouter = entryProvider<Route> {
     entry<Route.Welcome> {
         WelcomeScreen()
     }
