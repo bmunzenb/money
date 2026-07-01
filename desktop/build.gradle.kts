@@ -17,6 +17,10 @@ dependencies {
 
     implementation(libs.compose.uiToolingPreview)
 
+    implementation(libs.filekit.core)
+    implementation(libs.filekit.dialogs)
+    implementation(libs.filekit.dialogs.compose)
+
     testImplementation(libs.kotlin.test)
     testImplementation(libs.kotlinx.coroutinesTest)
     testImplementation(libs.turbine)
