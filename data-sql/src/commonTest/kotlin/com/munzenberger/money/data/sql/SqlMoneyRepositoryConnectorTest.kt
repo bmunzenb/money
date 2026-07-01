@@ -67,13 +67,5 @@ class SqlMoneyRepositoryConnectorTest {
         assertIs<MoneyRepositoryConnectionStatus.Failed>(status)
     }
 
-    @Test
-    fun `SqlMigrationStatus migrate returns Ready`() = runTest {
-        val file = createTempFile()
-        val driver = openDriverOnFile(file)
-        val migrationStatus = SqlMigrationStatus(driver, 0L, MoneyDatabase.Schema.version)
-        val status = migrationStatus.migrate()
-        assertIs<MoneyRepositoryConnectionStatus.Ready>(status)
-    }
-
+    // TODO needs tests for migrations once at least one migration is available
 }

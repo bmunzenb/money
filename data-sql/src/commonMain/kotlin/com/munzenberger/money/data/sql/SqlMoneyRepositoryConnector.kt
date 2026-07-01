@@ -30,7 +30,7 @@ class SqlMoneyRepositoryConnector(private val url: String) : MoneyRepositoryConn
                     MoneyRepositoryConnectionStatus.Ready(SqlMoneyRepository(MoneyDatabase(driver)))
                 }
                 existingVersion < schemaVersion -> {
-                    SqlMigrationStatus(driver, existingVersion, schemaVersion)
+                    SqlRequiresMigration(driver, existingVersion, schemaVersion)
                 }
                 else -> {
                     driver.close()
@@ -51,7 +51,7 @@ private fun SqlDriver.userVersion(): Long =
         parameters = 0,
     ).value
 
-class SqlMigrationStatus(
+internal class SqlRequiresMigration(
     private val driver: SqlDriver,
     private val fromVersion: Long,
     private val toVersion: Long,
