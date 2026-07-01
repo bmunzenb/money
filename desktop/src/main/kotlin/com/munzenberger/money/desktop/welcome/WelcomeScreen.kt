@@ -11,9 +11,11 @@ import com.munzenberger.money.shared.theme.MoneyTheme
 import money.shared.generated.resources.Res
 import money.shared.generated.resources.welcome_message
 import org.jetbrains.compose.resources.stringResource
+import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
-fun WelcomeScreen() {
+@Suppress("detekt:UnusedParameter")
+fun WelcomeScreen(viewModel: WelcomeViewModel = koinViewModel()) {
     Box(
         contentAlignment = Alignment.Center,
         modifier = Modifier

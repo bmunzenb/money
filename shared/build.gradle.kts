@@ -25,6 +25,8 @@ kotlin {
             api(libs.navigation3.ui)
             api(libs.compose.material3.adaptiveNavigation3)
             api(libs.lifecycle.viewmodelNavigation3)
+            api(libs.koin.compose)
+            api(libs.koin.compose.viewmodel)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)
