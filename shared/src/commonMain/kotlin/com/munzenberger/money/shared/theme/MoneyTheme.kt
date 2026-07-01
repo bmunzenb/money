@@ -22,6 +22,7 @@ fun MoneyTheme(
         colorScheme = if (darkTheme) darkColorScheme else lightColorScheme,
         typography = typography,
         shapes = shapes,
+        spacing = spacing,
     )
 
     CompositionLocalProvider(LocalMoneyTheme provides moneyTheme) {
@@ -38,6 +39,7 @@ data class MoneyTheme(
     val colorScheme: ColorScheme = lightColorScheme(),
     val typography: Typography = Typography(),
     val shapes: Shapes = Shapes(),
+    val spacing: Spacing = Spacing(),
 ) {
     companion object {
         val colorScheme: ColorScheme
@@ -54,5 +56,10 @@ data class MoneyTheme(
             @Composable
             @ReadOnlyComposable
             get() = LocalMoneyTheme.current.shapes
+
+        val spacing: Spacing
+            @Composable
+            @ReadOnlyComposable
+            get() = LocalMoneyTheme.current.spacing
     }
 }

@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <resources>
     <string name="app_title">Money</string>
-    <string name="welcome_message">Welcome to Money!</string>
+    <string name="create_database_button_title">Create a new Money database</string>
+    <string name="open_database_button_title">Open an existing Money database</string>
 </resources>
