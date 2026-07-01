@@ -8,3 +8,9 @@ class SqlMoneyRepositoryConnector : MoneyRepositoryConnector {
         TODO()
     }
 }
+
+class SqlMigrationStatus : MoneyRepositoryConnectionStatus.RequiresMigration {
+    override suspend fun migrate(): MoneyRepositoryConnectionStatus {
+        TODO()
+    }
+}
