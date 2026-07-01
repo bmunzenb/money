@@ -23,10 +23,7 @@ import com.munzenberger.money.data.sql.transaction.SqlCategoryEntryRepository
 import com.munzenberger.money.data.sql.transaction.SqlTransactionRepository
 import com.munzenberger.money.data.sql.transaction.SqlTransactionStatusRepository
 import com.munzenberger.money.data.sql.transaction.SqlTransferEntryRepository
-import app.cash.sqldelight.driver.jdbc.sqlite.JdbcSqliteDriver
 import kotlinx.coroutines.Dispatchers
-import java.io.File
-import java.util.Properties
 import kotlin.coroutines.CoroutineContext
 
 class SqlMoneyRepository(
@@ -43,21 +40,4 @@ class SqlMoneyRepository(
     CategoryEntryRepository by SqlCategoryEntryRepository(database, context),
     TransactionRepository by SqlTransactionRepository(database, context),
     TransactionStatusRepository by SqlTransactionStatusRepository(database, context),
-    TransferEntryRepository by SqlTransferEntryRepository(database, context) {
-
-    companion object {
-        fun open(file: File): SqlMoneyRepository {
-            val isNew = !file.exists()
-            val driver = JdbcSqliteDriver(
-                url = "jdbc:sqlite:${file.absolutePath}",
-                properties = Properties().apply { put("foreign_keys", "true") }
-            )
-
-            if (isNew) {
-                MoneyDatabase.Schema.create(driver)
-            }
-
-            return SqlMoneyRepository(MoneyDatabase(driver))
-        }
-    }
-}
+    TransferEntryRepository by SqlTransferEntryRepository(database, context)
