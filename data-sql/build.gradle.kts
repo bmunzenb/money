@@ -12,11 +12,11 @@ kotlin {
             api(projects.dataApi)
             implementation(libs.sqldelight.runtime)
             implementation(libs.sqldelight.coroutinesExtensions)
+            implementation(libs.sqldelight.sqliteDriver)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)
             implementation(libs.kotlinx.coroutinesTest)
-            implementation(libs.sqldelight.sqliteDriver)
         }
     }
 }
