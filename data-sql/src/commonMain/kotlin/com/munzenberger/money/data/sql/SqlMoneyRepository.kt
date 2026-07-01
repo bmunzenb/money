@@ -1,5 +1,6 @@
 package com.munzenberger.money.data.sql
 
+import app.cash.sqldelight.db.SqlDriver
 import com.munzenberger.money.data.api.MoneyRepository
 import com.munzenberger.money.data.api.account.AccountRepository
 import com.munzenberger.money.data.api.account.AccountTypeRepository
@@ -27,7 +28,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlin.coroutines.CoroutineContext
 
 class SqlMoneyRepository(
-    database: MoneyDatabase,
+    private val driver: SqlDriver,
+    database: MoneyDatabase = MoneyDatabase(driver),
     context: CoroutineContext = Dispatchers.IO,
 ) : MoneyRepository,
     AccountRepository by SqlAccountRepository(database, context),
@@ -41,3 +43,8 @@ class SqlMoneyRepository(
     TransactionRepository by SqlTransactionRepository(database, context),
     TransactionStatusRepository by SqlTransactionStatusRepository(database, context),
     TransferEntryRepository by SqlTransferEntryRepository(database, context)
+{
+    override fun close() {
+        driver.close()
+    }
+}

@@ -10,6 +10,7 @@ plugins {
 dependencies {
     implementation(projects.shared)
     implementation(projects.core)
+    implementation(projects.dataSql)
 
     implementation(compose.desktop.currentOs)
     implementation(libs.kotlinx.coroutinesSwing)

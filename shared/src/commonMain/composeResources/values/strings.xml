@@ -3,4 +3,6 @@
     <string name="app_title">Money</string>
     <string name="create_database_button_title">Create a new Money database</string>
     <string name="open_database_button_title">Open an existing Money database</string>
+    <string name="create_database_dialog_title">Create Money Database</string>
+    <string name="open_database_dialog_title">Open Money Database</string>
 </resources>

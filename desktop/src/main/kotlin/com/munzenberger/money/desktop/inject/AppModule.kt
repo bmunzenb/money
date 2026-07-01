@@ -10,5 +10,5 @@ val appModule = module {
     single { MoneyRepositoryController() }
     single { Navigator() }
 
-    viewModel { WelcomeViewModel() }
+    viewModel { WelcomeViewModel(get()) }
 }

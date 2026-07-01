@@ -11,8 +11,9 @@ import com.munzenberger.money.data.api.transaction.CategoryEntryRepository
 import com.munzenberger.money.data.api.transaction.TransactionRepository
 import com.munzenberger.money.data.api.transaction.TransactionStatusRepository
 import com.munzenberger.money.data.api.transaction.TransferEntryRepository
+import java.io.Closeable
 
 interface MoneyRepository : AccountRepository, AccountTypeRepository, StatementRepository, BankRepository,
     CategoryRepository, CategoryTypeRepository,
     PayeeRepository, CategoryEntryRepository, TransactionRepository, TransactionStatusRepository,
-    TransferEntryRepository
+    TransferEntryRepository, Closeable
