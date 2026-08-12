@@ -9,7 +9,7 @@ kotlinx-datetime = "0.8.0"
 mockk = "1.14.11"
 turbine = "1.2.1"
 sqldelight = "2.3.2"
-detekt = "2.0.0-alpha.5"
+detekt = "2.0.0-alpha.6"
 koin = "4.2.2"
 filekit = "0.14.2"
 
