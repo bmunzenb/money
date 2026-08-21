@@ -10,6 +10,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.awt.LocalAwtWindow
+import androidx.compose.ui.tooling.preview.Preview
+import com.munzenberger.money.shared.theme.PreviewThemed
 import io.github.vinceglb.filekit.dialogs.FileKitDialogParent
 import io.github.vinceglb.filekit.dialogs.FileKitDialogSettings
 import io.github.vinceglb.filekit.dialogs.compose.rememberFilePickerLauncher
@@ -47,21 +49,41 @@ fun WelcomeScreen(viewModel: WelcomeViewModel = koinViewModel()) {
         file?.let { viewModel.openDatabase(it.file) }
     }
 
+    WelcomeScreenContent(
+        onCreateDatabaseClick = {
+            createDatabaseLauncher.launch(suggestedName = defaultFileName, defaultExtension = "mdb")
+        },
+        onOpenDatabaseClick = { openDatabaseLauncher.launch() }
+    )
+}
+
+@Composable
+private fun WelcomeScreenContent(
+    onCreateDatabaseClick: () -> Unit,
+    onOpenDatabaseClick: () -> Unit
+) {
     Column(
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier.fillMaxSize()
     ) {
-        Button(
-            onClick = { createDatabaseLauncher.launch(suggestedName = defaultFileName, defaultExtension = "mdb") }
-        ) {
+        Button(onClick = onCreateDatabaseClick) {
             Text(text = stringResource(Res.string.create_database_button_title))
         }
 
-        Button(
-            onClick = { openDatabaseLauncher.launch() }
-        ) {
+        Button(onClick = onOpenDatabaseClick) {
             Text(text = stringResource(Res.string.open_database_button_title))
         }
+    }
+}
+
+@Preview
+@Composable
+private fun WelcomeScreenPreview() {
+    PreviewThemed {
+        WelcomeScreenContent(
+            onCreateDatabaseClick = {},
+            onOpenDatabaseClick = {}
+        )
     }
 }

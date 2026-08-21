@@ -63,3 +63,13 @@ data class MoneyTheme(
             get() = LocalMoneyTheme.current.spacing
     }
 }
+
+@Composable
+fun PreviewThemed(
+    darkTheme: Boolean = isSystemInDarkTheme(),
+    content: @Composable () -> Unit
+) {
+    MoneyTheme(darkTheme = darkTheme) {
+        content()
+    }
+}
