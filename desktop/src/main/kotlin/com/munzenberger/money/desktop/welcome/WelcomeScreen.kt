@@ -11,6 +11,7 @@ import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.awt.LocalAwtWindow
 import androidx.compose.ui.tooling.preview.Preview
+import com.munzenberger.money.shared.theme.PreviewThemed
 import io.github.vinceglb.filekit.dialogs.FileKitDialogParent
 import io.github.vinceglb.filekit.dialogs.FileKitDialogSettings
 import io.github.vinceglb.filekit.dialogs.compose.rememberFilePickerLauncher
@@ -79,8 +80,10 @@ private fun WelcomeScreenContent(
 @Preview
 @Composable
 private fun WelcomeScreenPreview() {
-    WelcomeScreenContent(
-        onCreateDatabaseClick = {},
-        onOpenDatabaseClick = {}
-    )
+    PreviewThemed {
+        WelcomeScreenContent(
+            onCreateDatabaseClick = {},
+            onOpenDatabaseClick = {}
+        )
+    }
 }
