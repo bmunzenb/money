@@ -11,7 +11,7 @@ turbine = "1.2.1"
 sqldelight = "2.3.2"
 detekt = "2.0.0-alpha.6"
 koin = "4.2.2"
-filekit = "0.14.2"
+filekit = "0.15.0"
 
 [libraries]
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }

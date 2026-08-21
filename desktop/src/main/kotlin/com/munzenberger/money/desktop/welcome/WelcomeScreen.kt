@@ -10,6 +10,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.awt.LocalAwtWindow
+import io.github.vinceglb.filekit.dialogs.FileKitDialogParent
 import io.github.vinceglb.filekit.dialogs.FileKitDialogSettings
 import io.github.vinceglb.filekit.dialogs.compose.rememberFilePickerLauncher
 import io.github.vinceglb.filekit.dialogs.compose.rememberFileSaverLauncher
@@ -31,7 +32,7 @@ fun WelcomeScreen(viewModel: WelcomeViewModel = koinViewModel()) {
     val createDatabaseLauncher = rememberFileSaverLauncher(
         dialogSettings = FileKitDialogSettings(
             title = stringResource(Res.string.create_database_dialog_title),
-            parentWindow = window
+            parent = window?.let { FileKitDialogParent.awt(it) }
         )
     ) { file ->
         file?.let { viewModel.createDatabase(it.file) }
@@ -40,7 +41,7 @@ fun WelcomeScreen(viewModel: WelcomeViewModel = koinViewModel()) {
     val openDatabaseLauncher = rememberFilePickerLauncher(
         dialogSettings = FileKitDialogSettings(
             title = stringResource(Res.string.open_database_dialog_title),
-            parentWindow = window
+            parent = window?.let { FileKitDialogParent.awt(it) }
         )
     ) { file ->
         file?.let { viewModel.openDatabase(it.file) }
