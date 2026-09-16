@@ -11,7 +11,7 @@ import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
-fun AccountListScreen(viewModel: AccountListViewModel = koinViewModel()) {
+fun AccountListScreen(@Suppress("UnusedParameter") viewModel: AccountListViewModel = koinViewModel()) {
     AccountListScreenContent()
 }
 
