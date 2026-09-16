@@ -28,7 +28,7 @@ val navigationRouter = entryProvider<Route> {
 - Wire each route to its composable with `entry<Route.X> { XScreen() }` inside `navigationRouter`.
 - Screen composables live in their own subpackage under
   `desktop/src/main/kotlin/com/munzenberger/money/desktop/<screenName>/`, e.g. `welcome/WelcomeScreen.kt`,
-  `accountlist/AccountListScreen.kt`.
+  `accounts/AccountListScreen.kt`.
 
 Navigation is triggered via the `Navigator` singleton
 (`desktop/src/main/kotlin/com/munzenberger/money/desktop/navigation/Navigator.kt`), not by directly
@@ -47,6 +47,46 @@ observe app-lifetime singleton flows and react with navigation — e.g. it colle
 a repository is open. Use a `LaunchedEffect(Unit) { someSingleton.someFlow.collect { ... } }` block in
 `App.kt` for this kind of app-wide reactive navigation rather than introducing a dedicated
 `AppViewModel`.
+
+## ViewModels
+
+Each screen that needs one has its own `ViewModel`, defined alongside the screen composable in the
+same package, e.g. `welcome/WelcomeViewModel.kt`, `accounts/AccountListViewModel.kt`. It extends
+`androidx.lifecycle.ViewModel` and takes any dependencies (singletons like `MoneyRepositoryController`)
+as constructor params:
+
+```kotlin
+class AccountListViewModel : ViewModel()
+
+class WelcomeViewModel(
+    private val repositoryController: MoneyRepositoryController
+) : ViewModel() { /* ... */ }
+```
+
+Register it in `desktop/src/main/kotlin/com/munzenberger/money/desktop/inject/AppModule.kt` with Koin's
+`viewModel { ... }` DSL, passing constructor deps via `get()`:
+
+```kotlin
+val appModule = module {
+    viewModel { WelcomeViewModel(get()) }
+    viewModel { AccountListViewModel() }
+}
+```
+
+The public screen composable takes the ViewModel as a default parameter injected with `koinViewModel()`,
+and immediately delegates to the stateless `XScreenContent` composable (see Compose previews below) —
+the ViewModel itself never leaks past the top-level `XScreen` function:
+
+```kotlin
+@Composable
+fun AccountListScreen(viewModel: AccountListViewModel = koinViewModel()) {
+    AccountListScreenContent()
+}
+```
+
+Requires `org.koin.compose.viewmodel.koinViewModel` import. A screen with no state/behavior yet (like
+`AccountListScreen` today) can still take an empty `ViewModel` — this keeps the wiring in place so
+behavior can be added to the ViewModel later without changing the composable's shape.
 
 ## Compose previews
 

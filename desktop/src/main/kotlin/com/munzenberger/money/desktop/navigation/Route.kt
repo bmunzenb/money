@@ -2,7 +2,7 @@ package com.munzenberger.money.desktop.navigation
 
 import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.entryProvider
-import com.munzenberger.money.desktop.accountlist.AccountListScreen
+import com.munzenberger.money.desktop.accounts.AccountListScreen
 import com.munzenberger.money.desktop.welcome.WelcomeScreen
 import kotlinx.serialization.Serializable
 
