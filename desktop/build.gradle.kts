@@ -12,7 +12,6 @@ dependencies {
     implementation(projects.core)
     implementation(projects.dataSql)
 
-    implementation(compose.desktop.currentOs)
     implementation(libs.kotlinx.coroutinesSwing)
 
     implementation(libs.compose.uiToolingPreview)

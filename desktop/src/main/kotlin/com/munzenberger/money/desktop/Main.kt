@@ -7,13 +7,14 @@ import money.shared.generated.resources.Res
 import money.shared.generated.resources.app_title
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.KoinApplication
+import org.koin.dsl.koinConfiguration
 
 fun main() = application {
     Window(
         onCloseRequest = ::exitApplication,
         title = stringResource(Res.string.app_title),
     ) {
-        KoinApplication(application = {
+        KoinApplication(configuration = koinConfiguration {
             modules(appModule)
         }) {
             App()
