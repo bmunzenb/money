@@ -6,4 +6,7 @@
     <string name="create_database_dialog_title">Create Money Database</string>
     <string name="open_database_dialog_title">Open Money Database</string>
     <string name="default_file_name">My Money</string>
+    <string name="account_list_title">Accounts</string>
+    <string name="file_menu_title">File</string>
+    <string name="exit_menu_item_title">Exit</string>
 </resources>

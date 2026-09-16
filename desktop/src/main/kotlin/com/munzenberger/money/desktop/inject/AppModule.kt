@@ -1,6 +1,7 @@
 package com.munzenberger.money.desktop.inject
 
 import com.munzenberger.money.core.MoneyRepositoryController
+import com.munzenberger.money.desktop.accounts.AccountListViewModel
 import com.munzenberger.money.desktop.navigation.Navigator
 import com.munzenberger.money.desktop.welcome.WelcomeViewModel
 import org.koin.core.module.dsl.viewModel
@@ -11,4 +12,5 @@ val appModule = module {
     single { Navigator() }
 
     viewModel { WelcomeViewModel(get()) }
+    viewModel { AccountListViewModel() }
 }
