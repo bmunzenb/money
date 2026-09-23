@@ -16,4 +16,9 @@ class MoneyRepositoryController {
     fun clear() {
         moneyRepositoryFlow.update { null }
     }
+
+    fun closeRepository() {
+        moneyRepositoryFlow.value?.close()
+        clear()
+    }
 }
