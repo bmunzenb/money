@@ -4,6 +4,7 @@ import androidx.navigation3.runtime.NavBackStack
 import app.cash.turbine.test
 import com.munzenberger.money.core.MoneyRepositoryController
 import com.munzenberger.money.data.api.MoneyRepository
+import com.munzenberger.money.desktop.navigation.NavigationEvent
 import com.munzenberger.money.desktop.navigation.Navigator
 import com.munzenberger.money.desktop.navigation.Route
 import io.mockk.mockk
@@ -34,9 +35,9 @@ class AppViewModelTest {
         Dispatchers.resetMain()
     }
 
-    private fun routeAfter(block: NavBackStack<Route>.() -> Unit): Route {
+    private fun routeAfter(event: NavigationEvent): Route {
         val backStack = NavBackStack<Route>()
-        backStack.block()
+        backStack.event()
         return backStack.single()
     }
 
@@ -45,7 +46,7 @@ class AppViewModelTest {
         navigator.events.test {
             AppViewModel(navigator, controller)
 
-            assertEquals(Route.Welcome, routeAfter(awaitItem().block))
+            assertEquals(Route.Welcome, routeAfter(awaitItem()))
         }
     }
 
@@ -57,7 +58,7 @@ class AppViewModelTest {
 
             controller.update(mockk<MoneyRepository>())
 
-            assertEquals(Route.AccountList, routeAfter(awaitItem().block))
+            assertEquals(Route.AccountList, routeAfter(awaitItem()))
         }
     }
 
@@ -72,7 +73,7 @@ class AppViewModelTest {
 
             controller.clear()
 
-            assertEquals(Route.Welcome, routeAfter(awaitItem().block))
+            assertEquals(Route.Welcome, routeAfter(awaitItem()))
         }
     }
 }

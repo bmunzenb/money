@@ -22,7 +22,7 @@ fun App(@Suppress("UnusedParameter") viewModel: AppViewModel = koinViewModel()) 
 
     LaunchedEffect(Unit) {
         navigator.events.collect { event ->
-            event.block(backStack)
+            event(backStack)
         }
     }
 
