@@ -6,6 +6,7 @@ import androidx.compose.ui.window.MenuBar
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
 import com.munzenberger.money.core.MoneyRepositoryController
+import com.munzenberger.money.core.close
 import com.munzenberger.money.desktop.inject.appModule
 import money.shared.generated.resources.Res
 import money.shared.generated.resources.app_title
@@ -28,7 +29,7 @@ fun main() {
         val repositoryController: MoneyRepositoryController = koinInject()
 
         val shutdown: () -> Unit = {
-            repositoryController.closeRepository()
+            repositoryController.close()
             exitApplication()
         }
 

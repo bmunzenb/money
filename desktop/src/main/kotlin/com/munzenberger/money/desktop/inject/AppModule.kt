@@ -12,5 +12,5 @@ val appModule = module {
     single { Navigator() }
 
     viewModel { WelcomeViewModel(get()) }
-    viewModel { AccountListViewModel() }
+    viewModel { AccountListViewModel(get()) }
 }
