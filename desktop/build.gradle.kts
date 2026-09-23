@@ -23,6 +23,7 @@ dependencies {
     testImplementation(libs.kotlin.test)
     testImplementation(libs.kotlinx.coroutinesTest)
     testImplementation(libs.turbine)
+    testImplementation(libs.mockk)
 }
 
 compose.desktop {

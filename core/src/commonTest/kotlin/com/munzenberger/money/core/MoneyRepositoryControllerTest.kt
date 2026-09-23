@@ -2,6 +2,7 @@ package com.munzenberger.money.core
 
 import com.munzenberger.money.data.api.MoneyRepository
 import io.mockk.mockk
+import io.mockk.verify
 import kotlin.test.Test
 import kotlin.test.assertNull
 import kotlin.test.assertSame
@@ -52,6 +53,36 @@ class MoneyRepositoryControllerTest {
         val controller = MoneyRepositoryController()
 
         controller.clear()
+
+        assertNull(controller.moneyRepository.value)
+    }
+
+    @Test
+    fun testCloseClosesRepository() {
+        val controller = MoneyRepositoryController()
+        val repository = mockk<MoneyRepository>(relaxUnitFun = true)
+        controller.update(repository)
+
+        controller.close()
+
+        verify(exactly = 1) { repository.close() }
+    }
+
+    @Test
+    fun testCloseResetsToNull() {
+        val controller = MoneyRepositoryController()
+        controller.update(mockk<MoneyRepository>(relaxUnitFun = true))
+
+        controller.close()
+
+        assertNull(controller.moneyRepository.value)
+    }
+
+    @Test
+    fun testCloseWithoutUpdateStaysNull() {
+        val controller = MoneyRepositoryController()
+
+        controller.close()
 
         assertNull(controller.moneyRepository.value)
     }
