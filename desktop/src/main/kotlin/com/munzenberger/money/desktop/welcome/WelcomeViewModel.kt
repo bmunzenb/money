@@ -3,8 +3,8 @@ package com.munzenberger.money.desktop.welcome
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.munzenberger.money.core.MoneyRepositoryController
-import com.munzenberger.money.data.api.MoneyRepositoryConnectionStatus
-import com.munzenberger.money.data.sql.SqlMoneyRepositoryConnector
+import com.munzenberger.money.desktop.database.createDatabase
+import com.munzenberger.money.desktop.database.openDatabase
 import kotlinx.coroutines.launch
 import java.io.File
 
@@ -13,26 +13,14 @@ class WelcomeViewModel(
 ) : ViewModel() {
 
     fun createDatabase(file: File) {
-        if (file.exists()) {
-            file.delete()
-        }
         viewModelScope.launch {
-            handleConnectionStatus(SqlMoneyRepositoryConnector(file).create())
+            repositoryController.createDatabase(file)
         }
     }
 
     fun openDatabase(file: File) {
         viewModelScope.launch {
-            handleConnectionStatus(SqlMoneyRepositoryConnector(file).connect())
-        }
-    }
-
-    private suspend fun handleConnectionStatus(status: MoneyRepositoryConnectionStatus) {
-        when (status) {
-            is MoneyRepositoryConnectionStatus.Ready -> repositoryController.update(status.moneyRepository)
-            is MoneyRepositoryConnectionStatus.Failed -> { status.error.printStackTrace() }
-            is MoneyRepositoryConnectionStatus.RequiresMigration -> TODO("Database migrations not yet implemented.")
-            MoneyRepositoryConnectionStatus.UnsupportedVersion -> TODO("Database versioning not yet implemented.")
+            repositoryController.openDatabase(file)
         }
     }
 }

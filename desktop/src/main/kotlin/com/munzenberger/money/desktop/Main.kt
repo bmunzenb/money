@@ -7,6 +7,8 @@ import androidx.compose.ui.input.key.KeyShortcut
 import androidx.compose.ui.window.MenuBar
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
+import com.munzenberger.money.desktop.database.rememberCreateDatabaseLauncher
+import com.munzenberger.money.desktop.database.rememberOpenDatabaseLauncher
 import com.munzenberger.money.desktop.inject.appModule
 import money.shared.generated.resources.Res
 import money.shared.generated.resources.app_title
@@ -43,13 +45,20 @@ fun main() {
         ) {
             MenuBar {
                 Menu(stringResource(Res.string.file_menu_title)) {
+                    val createDatabase = rememberCreateDatabaseLauncher(
+                        onFileSelected = menuBarViewModel::onNewDatabaseSelected,
+                    )
+                    val openDatabase = rememberOpenDatabaseLauncher(
+                        onFileSelected = menuBarViewModel::onOpenDatabaseSelected,
+                    )
+
                     Item(
                         stringResource(Res.string.new_database_menu_item_title),
-                        onClick = {},
+                        onClick = createDatabase,
                     )
                     Item(
                         stringResource(Res.string.open_database_menu_item_title),
-                        onClick = {},
+                        onClick = openDatabase,
                     )
                     Item(
                         stringResource(Res.string.close_database_menu_item_title),
