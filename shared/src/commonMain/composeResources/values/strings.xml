@@ -9,5 +9,6 @@
     <string name="account_list_title">Accounts</string>
     <string name="account_list_empty_message">No accounts</string>
     <string name="file_menu_title">File</string>
+    <string name="close_database_menu_item_title">Close Money database</string>
     <string name="exit_menu_item_title">Exit</string>
 </resources>
