@@ -61,7 +61,6 @@ fun FrameWindowScope.MoneyMenuBar(
                 Separator()
                 Item(
                     stringResource(Res.string.exit_menu_item_title),
-                    shortcut = KeyShortcut(Key.Q, ctrl = true),
                     onClick = {
                         viewModel.onExitSelected()
                         onExit()
