@@ -11,7 +11,7 @@ import money.shared.generated.resources.app_title
 import money.shared.generated.resources.exit_menu_item_title
 import money.shared.generated.resources.file_menu_title
 import org.jetbrains.compose.resources.stringResource
-import org.koin.compose.viewmodel.koinViewModel
+import org.koin.compose.koinInject
 import org.koin.core.context.startKoin
 import java.util.Locale
 
@@ -24,7 +24,7 @@ fun main() {
     }
 
     application {
-        val menuBarViewModel: MenuBarViewModel = koinViewModel()
+        val menuBarViewModel: MenuBarViewModel = koinInject()
 
         val shutdown: () -> Unit = {
             menuBarViewModel.onExitSelected()
