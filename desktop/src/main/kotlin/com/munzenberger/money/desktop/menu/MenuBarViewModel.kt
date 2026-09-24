@@ -1,4 +1,4 @@
-package com.munzenberger.money.desktop
+package com.munzenberger.money.desktop.menu
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
