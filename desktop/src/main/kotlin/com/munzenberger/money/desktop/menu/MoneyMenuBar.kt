@@ -22,6 +22,9 @@ import java.util.Locale
 private val isWindows: Boolean
     get() = System.getProperty("os.name")?.lowercase(Locale.ENGLISH)?.contains("windows") == true
 
+private fun primaryShortcut(key: Key): KeyShortcut =
+    if (isWindows) KeyShortcut(key, ctrl = true) else KeyShortcut(key, meta = true)
+
 @Composable
 fun FrameWindowScope.MoneyMenuBar(
     onExit: () -> Unit,
@@ -40,14 +43,17 @@ fun FrameWindowScope.MoneyMenuBar(
 
             Item(
                 stringResource(Res.string.new_database_menu_item_title),
+                shortcut = primaryShortcut(Key.N),
                 onClick = createDatabase,
             )
             Item(
                 stringResource(Res.string.open_database_menu_item_title),
+                shortcut = primaryShortcut(Key.O),
                 onClick = openDatabase,
             )
             Item(
                 stringResource(Res.string.close_database_menu_item_title),
+                shortcut = primaryShortcut(Key.W),
                 enabled = state.closeRepositoryEnabled,
                 onClick = viewModel::onCloseDatabaseSelected,
             )
