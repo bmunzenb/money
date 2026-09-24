@@ -5,15 +5,13 @@ import androidx.compose.ui.input.key.KeyShortcut
 import androidx.compose.ui.window.MenuBar
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
-import com.munzenberger.money.core.MoneyRepositoryController
-import com.munzenberger.money.core.close
 import com.munzenberger.money.desktop.inject.appModule
 import money.shared.generated.resources.Res
 import money.shared.generated.resources.app_title
 import money.shared.generated.resources.exit_menu_item_title
 import money.shared.generated.resources.file_menu_title
 import org.jetbrains.compose.resources.stringResource
-import org.koin.compose.koinInject
+import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.context.startKoin
 import java.util.Locale
 
@@ -26,10 +24,10 @@ fun main() {
     }
 
     application {
-        val repositoryController: MoneyRepositoryController = koinInject()
+        val menuBarViewModel: MenuBarViewModel = koinViewModel()
 
         val shutdown: () -> Unit = {
-            repositoryController.close()
+            menuBarViewModel.onExitSelected()
             exitApplication()
         }
 
