@@ -13,6 +13,8 @@ import money.shared.generated.resources.app_title
 import money.shared.generated.resources.close_database_menu_item_title
 import money.shared.generated.resources.exit_menu_item_title
 import money.shared.generated.resources.file_menu_title
+import money.shared.generated.resources.new_database_menu_item_title
+import money.shared.generated.resources.open_database_menu_item_title
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 import org.koin.core.context.startKoin
@@ -42,11 +44,20 @@ fun main() {
             MenuBar {
                 Menu(stringResource(Res.string.file_menu_title)) {
                     Item(
+                        stringResource(Res.string.new_database_menu_item_title),
+                        onClick = {},
+                    )
+                    Item(
+                        stringResource(Res.string.open_database_menu_item_title),
+                        onClick = {},
+                    )
+                    Item(
                         stringResource(Res.string.close_database_menu_item_title),
                         enabled = menuBarState.closeRepositoryEnabled,
                         onClick = menuBarViewModel::onCloseDatabaseSelected,
                     )
                     if (isWindows) {
+                        Separator()
                         Item(
                             stringResource(Res.string.exit_menu_item_title),
                             shortcut = KeyShortcut(Key.Q, ctrl = true),
