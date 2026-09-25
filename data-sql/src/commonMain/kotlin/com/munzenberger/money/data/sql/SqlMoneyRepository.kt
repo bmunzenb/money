@@ -46,7 +46,7 @@ class SqlMoneyRepository(
     TransferEntryRepository by SqlTransferEntryRepository(database, context)
 {
     override fun close() {
-        logger.info("Closing database $name")
+        logger.info("Closing database: $name")
         driver.close()
     }
 }
