@@ -28,6 +28,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlin.coroutines.CoroutineContext
 
 class SqlMoneyRepository(
+    private val name: String,
     private val driver: SqlDriver,
     database: MoneyDatabase = MoneyDatabase(driver),
     context: CoroutineContext = Dispatchers.IO,
@@ -45,6 +46,7 @@ class SqlMoneyRepository(
     TransferEntryRepository by SqlTransferEntryRepository(database, context)
 {
     override fun close() {
+        logger.info("Closing database $name")
         driver.close()
     }
 }

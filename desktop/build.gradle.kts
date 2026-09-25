@@ -30,6 +30,10 @@ compose.desktop {
     application {
         mainClass = "com.munzenberger.money.desktop.MainKt"
 
+        rootProject.file("logging.local.properties").takeIf { it.exists() }?.let {
+            jvmArgs("-Djava.util.logging.config.file=${it.absolutePath}")
+        }
+
         nativeDistributions {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
             packageName = "com.munzenberger.money"
