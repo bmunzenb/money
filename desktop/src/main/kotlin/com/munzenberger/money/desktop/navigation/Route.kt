@@ -4,6 +4,7 @@ import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.entryProvider
 import com.munzenberger.money.desktop.accounts.AccountListScreen
 import com.munzenberger.money.desktop.categories.CategoryListScreen
+import com.munzenberger.money.desktop.payees.PayeeListScreen
 import com.munzenberger.money.desktop.welcome.WelcomeScreen
 import kotlinx.serialization.Serializable
 
@@ -33,5 +34,9 @@ val navigationRouter = entryProvider<Route> {
 
     entry<Route.CategoryList> {
         CategoryListScreen()
+    }
+
+    entry<Route.PayeeList> {
+        PayeeListScreen()
     }
 }

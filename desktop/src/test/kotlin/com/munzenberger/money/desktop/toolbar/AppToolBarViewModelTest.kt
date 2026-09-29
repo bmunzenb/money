@@ -107,11 +107,21 @@ class AppToolBarViewModelTest {
     }
 
     @Test
-    fun `onPayeesClick does not change the back stack`() {
+    fun `onPayeesClick adds the PayeeList route to the back stack`() {
         val viewModel = AppToolBarViewModel(navigator)
 
         viewModel.onPayeesClick()
 
-        assertEquals(listOf(Route.Welcome), navigator.backStack.toList())
+        assertEquals(listOf(Route.Welcome, Route.PayeeList), navigator.backStack.toList())
+    }
+
+    @Test
+    fun `onPayeesClick does nothing when the PayeeList route is already last`() {
+        navigator.navigate { add(Route.PayeeList) }
+        val viewModel = AppToolBarViewModel(navigator)
+
+        viewModel.onPayeesClick()
+
+        assertEquals(listOf(Route.Welcome, Route.PayeeList), navigator.backStack.toList())
     }
 }

@@ -40,5 +40,8 @@ class AppToolBarViewModel(
     }
 
     fun onPayeesClick() {
+        if (navigator.backStack.lastOrNull() != Route.PayeeList) {
+            navigator.navigate { add(Route.PayeeList) }
+        }
     }
 }
