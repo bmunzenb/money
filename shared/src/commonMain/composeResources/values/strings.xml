@@ -14,4 +14,7 @@
     <string name="close_database_menu_item_title">Close Database</string>
     <string name="exit_menu_item_title">Exit</string>
     <string name="navigate_back_button_description">Back</string>
+    <string name="accounts_button_title">Accounts</string>
+    <string name="categories_button_title">Categories</string>
+    <string name="payees_button_title">Payees</string>
 </resources>
