@@ -11,5 +11,5 @@ class PayeeListViewModel(
 ) : ViewModel() {
 
     val state: Flow<PayeeListUiState> = repositoryController.flow { it.payees }
-        .map { payees -> PayeeListUiState(payees = payees) }
+        .map { payees -> PayeeListUiState.Content(payees = payees) }
 }

@@ -1,12 +1,17 @@
 package com.munzenberger.money.desktop.categories
 
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import com.munzenberger.money.data.api.category.Category
 import com.munzenberger.money.data.api.category.CategoryType
@@ -22,25 +27,34 @@ import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
 fun CategoryListScreen(viewModel: CategoryListViewModel = koinViewModel()) {
-    val state by viewModel.state.collectAsState(initial = CategoryListUiState())
+    val state by viewModel.state.collectAsState(initial = CategoryListUiState.Loading)
 
-    CategoryListScreenContent(categories = state.categories)
+    CategoryListScreenContent(state = state)
 }
 
 @Composable
-private fun CategoryListScreenContent(categories: List<Category>) {
+private fun CategoryListScreenContent(state: CategoryListUiState) {
     Column {
         Text(
             text = stringResource(Res.string.category_list_title),
             style = MoneyTheme.typography.headlineMedium
         )
 
-        if (categories.isEmpty()) {
-            Text(text = stringResource(Res.string.category_list_empty_message))
-        } else {
-            LazyColumn {
-                items(categories, key = { it.id.value }) { category ->
-                    Text(text = category.name)
+        when (state) {
+            is CategoryListUiState.Loading -> {
+                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    CircularProgressIndicator()
+                }
+            }
+            is CategoryListUiState.Content -> {
+                if (state.categories.isEmpty()) {
+                    Text(text = stringResource(Res.string.category_list_empty_message))
+                } else {
+                    LazyColumn {
+                        items(state.categories, key = { it.id.value }) { category ->
+                            Text(text = category.name)
+                        }
+                    }
                 }
             }
         }
@@ -49,12 +63,22 @@ private fun CategoryListScreenContent(categories: List<Category>) {
 
 @Preview
 @Composable
+private fun CategoryListScreenLoadingPreview() {
+    PreviewThemed {
+        CategoryListScreenContent(state = CategoryListUiState.Loading)
+    }
+}
+
+@Preview
+@Composable
 private fun CategoryListScreenWithCategoriesPreview() {
     PreviewThemed {
         CategoryListScreenContent(
-            categories = listOf(
-                Category(name = "Groceries", type = previewCategoryType),
-                Category(name = "Rent", type = previewCategoryType),
+            state = CategoryListUiState.Content(
+                categories = listOf(
+                    Category(name = "Groceries", type = previewCategoryType),
+                    Category(name = "Rent", type = previewCategoryType),
+                )
             )
         )
     }
@@ -64,7 +88,7 @@ private fun CategoryListScreenWithCategoriesPreview() {
 @Composable
 private fun CategoryListScreenEmptyPreview() {
     PreviewThemed {
-        CategoryListScreenContent(categories = emptyList())
+        CategoryListScreenContent(state = CategoryListUiState.Content(categories = emptyList()))
     }
 }
 

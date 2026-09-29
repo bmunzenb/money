@@ -11,5 +11,5 @@ class CategoryListViewModel(
 ) : ViewModel() {
 
     val state: Flow<CategoryListUiState> = repositoryController.flow { it.categories }
-        .map { categories -> CategoryListUiState(categories = categories) }
+        .map { categories -> CategoryListUiState.Content(categories = categories) }
 }
