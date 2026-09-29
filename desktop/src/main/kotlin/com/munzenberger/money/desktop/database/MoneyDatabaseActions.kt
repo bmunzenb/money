@@ -6,27 +6,21 @@ import com.munzenberger.money.data.api.MoneyRepositoryConnectionStatus
 import com.munzenberger.money.data.sql.SqlMoneyRepositoryConnector
 import java.io.File
 
-suspend fun MoneyRepositoryController.createDatabase(file: File) {
+suspend fun MoneyRepositoryController.createDatabase(file: File): MoneyRepositoryConnectionStatus {
     close()
     if (file.exists()) {
         file.delete()
     }
-    handleConnectionStatus(SqlMoneyRepositoryConnector(file).create())
+    return SqlMoneyRepositoryConnector(file).create().also { applyConnectionStatus(it) }
 }
 
-suspend fun MoneyRepositoryController.openDatabase(file: File) {
+suspend fun MoneyRepositoryController.openDatabase(file: File): MoneyRepositoryConnectionStatus {
     close()
-    handleConnectionStatus(SqlMoneyRepositoryConnector(file).connect())
+    return SqlMoneyRepositoryConnector(file).connect().also { applyConnectionStatus(it) }
 }
 
-private fun MoneyRepositoryController.handleConnectionStatus(status: MoneyRepositoryConnectionStatus) {
-    when (status) {
-        is MoneyRepositoryConnectionStatus.Ready -> update(status.moneyRepository)
-        is MoneyRepositoryConnectionStatus.Failed -> {
-            status.error.printStackTrace()
-            TODO("Handle open database error gracefully")
-        }
-        is MoneyRepositoryConnectionStatus.RequiresMigration -> TODO("Database migrations not yet implemented.")
-        MoneyRepositoryConnectionStatus.UnsupportedVersion -> TODO("Database versioning not yet implemented.")
+private fun MoneyRepositoryController.applyConnectionStatus(status: MoneyRepositoryConnectionStatus) {
+    if (status is MoneyRepositoryConnectionStatus.Ready) {
+        update(status.moneyRepository)
     }
 }

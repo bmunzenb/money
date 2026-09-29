@@ -8,6 +8,8 @@ import com.munzenberger.money.data.sql.SqlMoneyRepositoryConnector
 import io.mockk.mockk
 import io.mockk.verify
 import kotlinx.coroutines.test.runTest
+import money.shared.generated.resources.Res
+import money.shared.generated.resources.create_database_error_message
 import java.io.File
 import kotlin.test.AfterTest
 import kotlin.test.Test
@@ -19,10 +21,12 @@ class WelcomeViewModelTest {
 
     private val controller = MoneyRepositoryController()
     private val tempFiles = mutableListOf<File>()
+    private val tempDirs = mutableListOf<File>()
 
     @AfterTest
     fun cleanup() {
         tempFiles.forEach { it.delete() }
+        tempDirs.forEach { it.deleteRecursively() }
     }
 
     private fun createTempFile(): File =
@@ -30,6 +34,70 @@ class WelcomeViewModelTest {
             it.deleteOnExit()
             tempFiles.add(it)
         }
+
+    // Not a valid SQLite database: opening/creating a database at this path fails.
+    private fun createUnusableDatabasePath(): File =
+        File.createTempFile("money-test-dir", "").apply {
+            delete()
+            mkdirs()
+            File(this, "placeholder").createNewFile()
+        }.also { tempDirs.add(it) }
+
+    @Test
+    fun `state starts as idle`() = runTest {
+        val viewModel = WelcomeViewModel(controller)
+
+        assertEquals(WelcomeUiState.Idle, viewModel.state.value)
+    }
+
+    @Test
+    fun `state moves to loading then back to idle while a database is created successfully`() = runTest {
+        val file = createTempFile()
+        val viewModel = WelcomeViewModel(controller)
+
+        viewModel.state.test {
+            assertEquals(WelcomeUiState.Idle, awaitItem())
+
+            viewModel.createDatabase(file)
+
+            assertEquals(WelcomeUiState.Loading, awaitItem())
+            assertEquals(WelcomeUiState.Idle, awaitItem())
+        }
+    }
+
+    @Test
+    fun `state moves to loading then back to idle while a database is opened successfully`() = runTest {
+        val file = createTempFile()
+        val created = SqlMoneyRepositoryConnector(file).create()
+        check(created is MoneyRepositoryConnectionStatus.Ready)
+        created.moneyRepository.close()
+
+        val viewModel = WelcomeViewModel(controller)
+
+        viewModel.state.test {
+            assertEquals(WelcomeUiState.Idle, awaitItem())
+
+            viewModel.openDatabase(file)
+
+            assertEquals(WelcomeUiState.Loading, awaitItem())
+            assertEquals(WelcomeUiState.Idle, awaitItem())
+        }
+    }
+
+    @Test
+    fun `state shows an error when creating a database fails`() = runTest {
+        val path = createUnusableDatabasePath()
+        val viewModel = WelcomeViewModel(controller)
+
+        viewModel.state.test {
+            assertEquals(WelcomeUiState.Idle, awaitItem())
+
+            viewModel.createDatabase(path)
+
+            assertEquals(WelcomeUiState.Loading, awaitItem())
+            assertEquals(WelcomeUiState.Error(Res.string.create_database_error_message), awaitItem())
+        }
+    }
 
     @Test
     fun `connects to a newly created database when a database is created`() = runTest {
