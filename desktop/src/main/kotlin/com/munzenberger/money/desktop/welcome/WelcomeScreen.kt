@@ -3,8 +3,8 @@ package com.munzenberger.money.desktop.welcome
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.Button
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -39,11 +39,11 @@ private fun WelcomeScreenContent(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier.fillMaxSize()
     ) {
-        Button(onClick = onCreateDatabaseClick) {
+        TextButton(onClick = onCreateDatabaseClick) {
             Text(text = stringResource(Res.string.create_database_button_title))
         }
 
-        Button(onClick = onOpenDatabaseClick) {
+        TextButton(onClick = onOpenDatabaseClick) {
             Text(text = stringResource(Res.string.open_database_button_title))
         }
     }
