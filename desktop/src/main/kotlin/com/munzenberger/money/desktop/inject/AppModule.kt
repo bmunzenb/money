@@ -5,6 +5,7 @@ import com.munzenberger.money.desktop.AppViewModel
 import com.munzenberger.money.desktop.accounts.AccountListViewModel
 import com.munzenberger.money.desktop.menu.MenuBarViewModel
 import com.munzenberger.money.desktop.navigation.Navigator
+import com.munzenberger.money.desktop.toolbar.AppToolBarViewModel
 import com.munzenberger.money.desktop.welcome.WelcomeViewModel
 import org.koin.core.module.dsl.viewModel
 import org.koin.dsl.module
@@ -17,4 +18,5 @@ val appModule = module {
     viewModel { WelcomeViewModel(get()) }
     viewModel { AccountListViewModel(get()) }
     viewModel { MenuBarViewModel(get()) }
+    viewModel { AppToolBarViewModel(get()) }
 }

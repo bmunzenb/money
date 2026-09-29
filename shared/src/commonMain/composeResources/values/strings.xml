@@ -13,4 +13,5 @@
     <string name="open_database_menu_item_title">Open…</string>
     <string name="close_database_menu_item_title">Close Database</string>
     <string name="exit_menu_item_title">Exit</string>
+    <string name="navigate_back_button_description">Back</string>
 </resources>
