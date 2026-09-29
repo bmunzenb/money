@@ -3,6 +3,7 @@ package com.munzenberger.money.desktop.toolbar
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.munzenberger.money.desktop.navigation.Navigator
+import com.munzenberger.money.desktop.navigation.Route
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
@@ -23,6 +24,24 @@ class AppToolBarViewModel(
     fun onBackClick() {
         if (navigator.backStack.size > 1) {
             navigator.navigate { removeLast() }
+        }
+    }
+
+    fun onAccountsClick() {
+        if (navigator.backStack.lastOrNull() != Route.AccountList) {
+            navigator.navigate { add(Route.AccountList) }
+        }
+    }
+
+    fun onCategoriesClick() {
+        if (navigator.backStack.lastOrNull() != Route.CategoryList) {
+            navigator.navigate { add(Route.CategoryList) }
+        }
+    }
+
+    fun onPayeesClick() {
+        if (navigator.backStack.lastOrNull() != Route.PayeeList) {
+            navigator.navigate { add(Route.PayeeList) }
         }
     }
 }

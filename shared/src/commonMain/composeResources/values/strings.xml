@@ -8,10 +8,17 @@
     <string name="default_file_name">My Money</string>
     <string name="account_list_title">Accounts</string>
     <string name="account_list_empty_message">No accounts</string>
+    <string name="category_list_title">Categories</string>
+    <string name="category_list_empty_message">No categories</string>
+    <string name="payee_list_title">Payees</string>
+    <string name="payee_list_empty_message">No payees</string>
     <string name="file_menu_title">File</string>
     <string name="new_database_menu_item_title">New…</string>
     <string name="open_database_menu_item_title">Open…</string>
     <string name="close_database_menu_item_title">Close Database</string>
     <string name="exit_menu_item_title">Exit</string>
     <string name="navigate_back_button_description">Back</string>
+    <string name="accounts_button_title">Accounts</string>
+    <string name="categories_button_title">Categories</string>
+    <string name="payees_button_title">Payees</string>
 </resources>
