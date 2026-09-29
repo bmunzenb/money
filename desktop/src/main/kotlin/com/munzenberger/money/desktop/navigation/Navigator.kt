@@ -1,16 +1,20 @@
 package com.munzenberger.money.desktop.navigation
 
 import androidx.navigation3.runtime.NavBackStack
-import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 
 typealias NavigationEvent = NavBackStack<Route>.() -> Unit
 
 class Navigator {
-    private val eventsFlow = MutableSharedFlow<NavigationEvent>()
-    val events = eventsFlow.asSharedFlow()
+    val backStack = NavBackStack<Route>(Route.Welcome)
 
-    suspend fun navigate(event: NavigationEvent) {
-        eventsFlow.emit(event)
+    private val canNavigateBackFlow = MutableStateFlow(backStack.size > 1)
+    val canNavigateBack: StateFlow<Boolean> = canNavigateBackFlow.asStateFlow()
+
+    fun navigate(event: NavigationEvent) {
+        event(backStack)
+        canNavigateBackFlow.value = backStack.size > 1
     }
 }
