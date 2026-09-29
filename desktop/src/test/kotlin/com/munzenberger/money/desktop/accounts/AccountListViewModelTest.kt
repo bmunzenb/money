@@ -53,7 +53,7 @@ class AccountListViewModelTest {
         viewModel.state.test {
             controller.update(repositoryWithAccounts(flowOf(accounts)))
 
-            assertEquals(AccountListUiState(accounts = accounts), awaitItem())
+            assertEquals(AccountListUiState.Content(accounts = accounts), awaitItem())
         }
     }
 
@@ -67,10 +67,10 @@ class AccountListViewModelTest {
 
         viewModel.state.test {
             controller.update(repositoryWithAccounts(accountsFlow))
-            assertEquals(AccountListUiState(accounts = listOf(checking)), awaitItem())
+            assertEquals(AccountListUiState.Content(accounts = listOf(checking)), awaitItem())
 
             accountsFlow.value = listOf(checking, savings)
-            assertEquals(AccountListUiState(accounts = listOf(checking, savings)), awaitItem())
+            assertEquals(AccountListUiState.Content(accounts = listOf(checking, savings)), awaitItem())
         }
     }
 
@@ -83,10 +83,10 @@ class AccountListViewModelTest {
 
         viewModel.state.test {
             controller.update(repositoryWithAccounts(flowOf(firstAccounts)))
-            assertEquals(AccountListUiState(accounts = firstAccounts), awaitItem())
+            assertEquals(AccountListUiState.Content(accounts = firstAccounts), awaitItem())
 
             controller.update(repositoryWithAccounts(flowOf(secondAccounts)))
-            assertEquals(AccountListUiState(accounts = secondAccounts), awaitItem())
+            assertEquals(AccountListUiState.Content(accounts = secondAccounts), awaitItem())
         }
     }
 }

@@ -49,7 +49,7 @@ class CategoryListViewModelTest {
         viewModel.state.test {
             controller.update(repositoryWithCategories(flowOf(categories)))
 
-            assertEquals(CategoryListUiState(categories = categories), awaitItem())
+            assertEquals(CategoryListUiState.Content(categories = categories), awaitItem())
         }
     }
 
@@ -63,10 +63,10 @@ class CategoryListViewModelTest {
 
         viewModel.state.test {
             controller.update(repositoryWithCategories(categoriesFlow))
-            assertEquals(CategoryListUiState(categories = listOf(groceries)), awaitItem())
+            assertEquals(CategoryListUiState.Content(categories = listOf(groceries)), awaitItem())
 
             categoriesFlow.value = listOf(groceries, rent)
-            assertEquals(CategoryListUiState(categories = listOf(groceries, rent)), awaitItem())
+            assertEquals(CategoryListUiState.Content(categories = listOf(groceries, rent)), awaitItem())
         }
     }
 
@@ -79,10 +79,10 @@ class CategoryListViewModelTest {
 
         viewModel.state.test {
             controller.update(repositoryWithCategories(flowOf(firstCategories)))
-            assertEquals(CategoryListUiState(categories = firstCategories), awaitItem())
+            assertEquals(CategoryListUiState.Content(categories = firstCategories), awaitItem())
 
             controller.update(repositoryWithCategories(flowOf(secondCategories)))
-            assertEquals(CategoryListUiState(categories = secondCategories), awaitItem())
+            assertEquals(CategoryListUiState.Content(categories = secondCategories), awaitItem())
         }
     }
 }

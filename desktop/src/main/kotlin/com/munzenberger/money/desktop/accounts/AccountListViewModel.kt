@@ -11,5 +11,5 @@ class AccountListViewModel(
 ) : ViewModel() {
 
     val state: Flow<AccountListUiState> = repositoryController.flow { it.accounts }
-        .map { accounts -> AccountListUiState(accounts = accounts) }
+        .map { accounts -> AccountListUiState.Content(accounts = accounts) }
 }

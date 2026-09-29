@@ -41,7 +41,7 @@ class PayeeListViewModelTest {
         viewModel.state.test {
             controller.update(repositoryWithPayees(flowOf(payees)))
 
-            assertEquals(PayeeListUiState(payees = payees), awaitItem())
+            assertEquals(PayeeListUiState.Content(payees = payees), awaitItem())
         }
     }
 
@@ -55,10 +55,10 @@ class PayeeListViewModelTest {
 
         viewModel.state.test {
             controller.update(repositoryWithPayees(payeesFlow))
-            assertEquals(PayeeListUiState(payees = listOf(groceryStore)), awaitItem())
+            assertEquals(PayeeListUiState.Content(payees = listOf(groceryStore)), awaitItem())
 
             payeesFlow.value = listOf(groceryStore, electricCompany)
-            assertEquals(PayeeListUiState(payees = listOf(groceryStore, electricCompany)), awaitItem())
+            assertEquals(PayeeListUiState.Content(payees = listOf(groceryStore, electricCompany)), awaitItem())
         }
     }
 
@@ -71,10 +71,10 @@ class PayeeListViewModelTest {
 
         viewModel.state.test {
             controller.update(repositoryWithPayees(flowOf(firstPayees)))
-            assertEquals(PayeeListUiState(payees = firstPayees), awaitItem())
+            assertEquals(PayeeListUiState.Content(payees = firstPayees), awaitItem())
 
             controller.update(repositoryWithPayees(flowOf(secondPayees)))
-            assertEquals(PayeeListUiState(payees = secondPayees), awaitItem())
+            assertEquals(PayeeListUiState.Content(payees = secondPayees), awaitItem())
         }
     }
 }
