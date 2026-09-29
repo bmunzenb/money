@@ -86,4 +86,32 @@ class AppToolBarViewModelTest {
 
         assertEquals(listOf(Route.Welcome, Route.AccountList), navigator.backStack.toList())
     }
+
+    @Test
+    fun `onCategoriesClick adds the CategoryList route to the back stack`() {
+        val viewModel = AppToolBarViewModel(navigator)
+
+        viewModel.onCategoriesClick()
+
+        assertEquals(listOf(Route.Welcome, Route.CategoryList), navigator.backStack.toList())
+    }
+
+    @Test
+    fun `onCategoriesClick does nothing when the CategoryList route is already last`() {
+        navigator.navigate { add(Route.CategoryList) }
+        val viewModel = AppToolBarViewModel(navigator)
+
+        viewModel.onCategoriesClick()
+
+        assertEquals(listOf(Route.Welcome, Route.CategoryList), navigator.backStack.toList())
+    }
+
+    @Test
+    fun `onPayeesClick does not change the back stack`() {
+        val viewModel = AppToolBarViewModel(navigator)
+
+        viewModel.onPayeesClick()
+
+        assertEquals(listOf(Route.Welcome), navigator.backStack.toList())
+    }
 }

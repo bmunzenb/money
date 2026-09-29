@@ -34,6 +34,9 @@ class AppToolBarViewModel(
     }
 
     fun onCategoriesClick() {
+        if (navigator.backStack.lastOrNull() != Route.CategoryList) {
+            navigator.navigate { add(Route.CategoryList) }
+        }
     }
 
     fun onPayeesClick() {
