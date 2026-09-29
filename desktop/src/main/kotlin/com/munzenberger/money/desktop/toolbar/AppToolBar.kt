@@ -34,9 +34,9 @@ fun AppToolBar(viewModel: AppToolBarViewModel = koinViewModel()) {
     AppToolBarContent(
         isBackEnabled = state.isBackEnabled,
         onBackClick = viewModel::onBackClick,
-        onAccountsClick = {},
-        onCategoriesClick = {},
-        onPayeesClick = {},
+        onAccountsClick = viewModel::onAccountsClick,
+        onCategoriesClick = viewModel::onCategoriesClick,
+        onPayeesClick = viewModel::onPayeesClick,
     )
 }
 

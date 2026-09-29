@@ -25,4 +25,13 @@ class AppToolBarViewModel(
             navigator.navigate { removeLast() }
         }
     }
+
+    fun onAccountsClick() {
+    }
+
+    fun onCategoriesClick() {
+    }
+
+    fun onPayeesClick() {
+    }
 }
