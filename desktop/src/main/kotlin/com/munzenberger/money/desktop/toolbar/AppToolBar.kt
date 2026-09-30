@@ -2,6 +2,7 @@ package com.munzenberger.money.desktop.toolbar
 
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -11,6 +12,7 @@ import androidx.compose.material.icons.filled.People
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -18,6 +20,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import com.munzenberger.money.shared.theme.MoneyTheme
 import com.munzenberger.money.shared.theme.PreviewThemed
 import money.shared.generated.resources.Res
 import money.shared.generated.resources.accounts_button_title
@@ -48,39 +51,44 @@ private fun AppToolBarContent(
     onCategoriesClick: () -> Unit,
     onPayeesClick: () -> Unit,
 ) {
-    Row {
-        IconButton(onClick = onBackClick, enabled = isBackEnabled) {
-            Icon(
-                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                contentDescription = stringResource(Res.string.navigate_back_button_description),
-            )
-        }
-        TextButton(onClick = onAccountsClick) {
-            Icon(
-                imageVector = Icons.Filled.AccountBalanceWallet,
-                contentDescription = null,
-                modifier = Modifier.size(ButtonDefaults.IconSize),
-            )
-            Spacer(modifier = Modifier.size(ButtonDefaults.IconSpacing))
-            Text(text = stringResource(Res.string.accounts_button_title))
-        }
-        TextButton(onClick = onCategoriesClick) {
-            Icon(
-                imageVector = Icons.Filled.Category,
-                contentDescription = null,
-                modifier = Modifier.size(ButtonDefaults.IconSize),
-            )
-            Spacer(modifier = Modifier.size(ButtonDefaults.IconSpacing))
-            Text(text = stringResource(Res.string.categories_button_title))
-        }
-        TextButton(onClick = onPayeesClick) {
-            Icon(
-                imageVector = Icons.Filled.People,
-                contentDescription = null,
-                modifier = Modifier.size(ButtonDefaults.IconSize),
-            )
-            Spacer(modifier = Modifier.size(ButtonDefaults.IconSpacing))
-            Text(text = stringResource(Res.string.payees_button_title))
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        color = MoneyTheme.colorScheme.surfaceVariant,
+    ) {
+        Row {
+            IconButton(onClick = onBackClick, enabled = isBackEnabled) {
+                Icon(
+                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                    contentDescription = stringResource(Res.string.navigate_back_button_description),
+                )
+            }
+            TextButton(onClick = onAccountsClick) {
+                Icon(
+                    imageVector = Icons.Filled.AccountBalanceWallet,
+                    contentDescription = null,
+                    modifier = Modifier.size(ButtonDefaults.IconSize),
+                )
+                Spacer(modifier = Modifier.size(ButtonDefaults.IconSpacing))
+                Text(text = stringResource(Res.string.accounts_button_title))
+            }
+            TextButton(onClick = onCategoriesClick) {
+                Icon(
+                    imageVector = Icons.Filled.Category,
+                    contentDescription = null,
+                    modifier = Modifier.size(ButtonDefaults.IconSize),
+                )
+                Spacer(modifier = Modifier.size(ButtonDefaults.IconSpacing))
+                Text(text = stringResource(Res.string.categories_button_title))
+            }
+            TextButton(onClick = onPayeesClick) {
+                Icon(
+                    imageVector = Icons.Filled.People,
+                    contentDescription = null,
+                    modifier = Modifier.size(ButtonDefaults.IconSize),
+                )
+                Spacer(modifier = Modifier.size(ButtonDefaults.IconSpacing))
+                Text(text = stringResource(Res.string.payees_button_title))
+            }
         }
     }
 }
