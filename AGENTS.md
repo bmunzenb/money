@@ -30,22 +30,31 @@ val navigationRouter = entryProvider<Route> {
   `desktop/src/main/kotlin/com/munzenberger/money/desktop/<screenName>/`, e.g. `welcome/WelcomeScreen.kt`,
   `accounts/AccountListScreen.kt`.
 
-Navigation is triggered via the `Navigator` singleton
-(`desktop/src/main/kotlin/com/munzenberger/money/desktop/navigation/Navigator.kt`), not by directly
-mutating the back stack from a screen/ViewModel:
+The back stack is owned by the `Navigator` singleton
+(`desktop/src/main/kotlin/com/munzenberger/money/desktop/navigation/Navigator.kt`, registered with
+`single { Navigator() }` in `AppModule`). It holds the `NavBackStack<Route>` (starting at
+`Route.Welcome`) and exposes a `canNavigateBack: StateFlow<Boolean>`. ViewModels take `Navigator` as a
+constructor dependency and navigate through `navigate { ... }`, which applies the change to the back
+stack immediately and updates `canNavigateBack` — don't mutate `navigator.backStack` directly:
 
 ```kotlin
 navigator.navigate { add(Route.AccountList) }
 // or, to replace the stack rather than push onto it:
 navigator.navigate { clear(); add(Route.AccountList) }
+// back:
+navigator.navigate { removeLast() }
 ```
 
-`App.kt` (the root composable) owns the actual `NavBackStack<Route>` and is the one place that
-collects `navigator.events` and applies them to the back stack. It's also the established place to
-observe app-lifetime singleton flows and react with navigation — e.g. it collects
-`MoneyRepositoryController.moneyRepository` and navigates to `AccountList`/`Welcome` based on whether
-a repository is open. Use a `LaunchedEffect(Unit) { someSingleton.someFlow.collect { ... } }` block in
-`App.kt` for this kind of app-wide reactive navigation rather than introducing a dedicated
+Reading `navigator.backStack` is fine, e.g. `AppToolBarViewModel` checks
+`navigator.backStack.lastOrNull()` to avoid pushing the route that's already on top.
+
+`App.kt` (the root composable) injects the `Navigator` with `koinInject()` and hands
+`navigator.backStack` and `navigationRouter` to the single `NavDisplay`; it doesn't apply navigation
+itself. App-wide reactive navigation lives in `AppViewModel` (`desktop/.../desktop/AppViewModel.kt`):
+in `init` it collects `MoneyRepositoryController.moneyRepository` and does
+`navigator.navigate { clear(); add(...) }` to `AccountList`/`Welcome` depending on whether a
+repository is open. It also exposes `state: StateFlow<AppUiState>` (`isRepositoryConnected`), which
+`App.kt` uses to decide whether to show `AppToolBar`. Put new app-lifetime reactive navigation in
 `AppViewModel`.
 
 ## ViewModels
@@ -56,37 +65,45 @@ same package, e.g. `welcome/WelcomeViewModel.kt`, `accounts/AccountListViewModel
 as constructor params:
 
 ```kotlin
-class AccountListViewModel : ViewModel()
-
 class WelcomeViewModel(
     private val repositoryController: MoneyRepositoryController
 ) : ViewModel() { /* ... */ }
 ```
 
+Non-screen UI (e.g. `toolbar/AppToolBarViewModel.kt`, `menu/MenuBarViewModel.kt`) and the root
+`AppViewModel` follow the same pattern.
+
 Register it in `desktop/src/main/kotlin/com/munzenberger/money/desktop/inject/AppModule.kt` with Koin's
-`viewModel { ... }` DSL, passing constructor deps via `get()`:
+`viewModel { ... }` DSL, passing constructor deps via `get()`. Singletons are registered with
+`single { ... }` in the same module:
 
 ```kotlin
 val appModule = module {
+    single { MoneyRepositoryController(/* ... */) }
+    single { Navigator() }
+
+    viewModel { AppViewModel(get(), get()) }
     viewModel { WelcomeViewModel(get()) }
-    viewModel { AccountListViewModel() }
+    viewModel { AccountListViewModel(get()) }
 }
 ```
 
 The public screen composable takes the ViewModel as a default parameter injected with `koinViewModel()`,
-and immediately delegates to the stateless `XScreenContent` composable (see Compose previews below) —
-the ViewModel itself never leaks past the top-level `XScreen` function:
+collects its state, and immediately delegates to the stateless `XScreenContent` composable (see
+Compose previews below) — the ViewModel itself never leaks past the top-level `XScreen` function:
 
 ```kotlin
 @Composable
 fun AccountListScreen(viewModel: AccountListViewModel = koinViewModel()) {
-    AccountListScreenContent()
+    val state by viewModel.state.collectAsState(initial = AccountListUiState.Loading)
+
+    AccountListScreenContent(state = state)
 }
 ```
 
-Requires `org.koin.compose.viewmodel.koinViewModel` import. A screen with no state/behavior yet (like
-`AccountListScreen` today) can still take an empty `ViewModel` — this keeps the wiring in place so
-behavior can be added to the ViewModel later without changing the composable's shape.
+Requires `org.koin.compose.viewmodel.koinViewModel` import. A screen with no state/behavior yet can
+still take an empty `ViewModel` — this keeps the wiring in place so behavior can be added to the
+ViewModel later without changing the composable's shape.
 
 ## Compose previews
 
@@ -103,14 +120,14 @@ private fun XScreenPreview() {
 ```
 
 - `PreviewThemed` (`com.munzenberger.money.shared.theme.PreviewThemed`) wraps the preview content in
-  the app theme.
+  the app theme, on a full-size box filled with the theme's background color.
 - The preview function is `private`, named `<Screen>Preview`, and placed at the bottom of the same
   file as the screen.
 - If the real screen composable takes a Koin-injected ViewModel (e.g.
   `fun WelcomeScreen(viewModel: WelcomeViewModel = koinViewModel())`), extract a stateless
   `private fun XScreenContent(...)` composable that takes plain params/lambdas, and preview that
   instead of the ViewModel-backed entry point.
-- If the screen has no ViewModel/params (e.g. `AccountListScreen`), the preview can call it directly.
+- If the screen has no ViewModel/params, the preview can call it directly.
 
 ## String resources
 
