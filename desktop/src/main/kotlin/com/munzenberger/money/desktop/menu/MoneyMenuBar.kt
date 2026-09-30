@@ -51,6 +51,7 @@ fun FrameWindowScope.MoneyMenuBar(
                 shortcut = primaryShortcut(Key.O),
                 onClick = openDatabase,
             )
+            Separator()
             Item(
                 stringResource(Res.string.close_database_menu_item_title),
                 shortcut = primaryShortcut(Key.W),

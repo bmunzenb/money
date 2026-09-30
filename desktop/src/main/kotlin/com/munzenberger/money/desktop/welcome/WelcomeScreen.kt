@@ -2,8 +2,15 @@ package com.munzenberger.money.desktop.welcome
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.size
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.NoteAdd
+import androidx.compose.material.icons.filled.FolderOpen
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -50,12 +57,26 @@ private fun WelcomeScreenContent(
         if (state is WelcomeUiState.Loading) {
             CircularProgressIndicator()
         } else {
-            TextButton(onClick = onCreateDatabaseClick) {
-                Text(text = stringResource(Res.string.create_database_button_title))
-            }
+            Column(horizontalAlignment = Alignment.Start) {
+                TextButton(onClick = onCreateDatabaseClick) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.NoteAdd,
+                        contentDescription = null,
+                        modifier = Modifier.size(ButtonDefaults.IconSize),
+                    )
+                    Spacer(modifier = Modifier.size(ButtonDefaults.IconSpacing))
+                    Text(text = stringResource(Res.string.create_database_button_title))
+                }
 
-            TextButton(onClick = onOpenDatabaseClick) {
-                Text(text = stringResource(Res.string.open_database_button_title))
+                TextButton(onClick = onOpenDatabaseClick) {
+                    Icon(
+                        imageVector = Icons.Filled.FolderOpen,
+                        contentDescription = null,
+                        modifier = Modifier.size(ButtonDefaults.IconSize),
+                    )
+                    Spacer(modifier = Modifier.size(ButtonDefaults.IconSpacing))
+                    Text(text = stringResource(Res.string.open_database_button_title))
+                }
             }
 
             if (state is WelcomeUiState.Error) {
