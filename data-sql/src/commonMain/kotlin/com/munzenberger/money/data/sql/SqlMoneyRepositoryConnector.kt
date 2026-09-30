@@ -7,6 +7,7 @@ import com.munzenberger.money.data.api.MoneyRepositoryConnector
 import java.io.File
 import java.util.Properties
 import java.util.logging.Level
+import kotlin.coroutines.cancellation.CancellationException
 
 class SqlMoneyRepositoryConnector(private val url: String) : MoneyRepositoryConnector {
 
@@ -29,6 +30,8 @@ class SqlMoneyRepositoryConnector(private val url: String) : MoneyRepositoryConn
             MoneyDatabase.Schema.create(driver)
             logger.info("Created database: $url")
             MoneyRepositoryConnectionStatus.Ready(SqlMoneyRepository(url, driver))
+        } catch (e: CancellationException) {
+            throw e
         } catch (e: Exception) {
             logger.log(Level.WARNING, "Failed to create database: $url", e)
             MoneyRepositoryConnectionStatus.Failed(e)
@@ -40,6 +43,8 @@ class SqlMoneyRepositoryConnector(private val url: String) : MoneyRepositoryConn
             val repository = SqlMoneyRepository(url, driver)
             logger.info("Opened database: $url")
             MoneyRepositoryConnectionStatus.Ready(repository)
+        } catch (e: CancellationException) {
+            throw e
         } catch (e: Exception) {
             logger.log(Level.WARNING, "Failed to open database: $url", e)
             MoneyRepositoryConnectionStatus.Failed(e)
