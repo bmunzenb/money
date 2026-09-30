@@ -17,4 +17,8 @@ class AccountListViewModel(
                 onFailure = { AccountListUiState.Error },
             )
         }
+
+    fun onAddAccountClick() {
+        // Navigation to an add account screen will go here once that route exists.
+    }
 }
