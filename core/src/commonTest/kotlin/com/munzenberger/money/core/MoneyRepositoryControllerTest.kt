@@ -3,15 +3,19 @@ package com.munzenberger.money.core
 import com.munzenberger.money.data.api.MoneyRepository
 import com.munzenberger.money.data.api.MoneyRepositoryConnectionStatus
 import com.munzenberger.money.data.api.MoneyRepositoryConnector
+import app.cash.turbine.test
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk
 import io.mockk.verify
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.runTest
 import java.io.File
 import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.test.AfterTest
 import kotlin.test.Test
+import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertNull
 import kotlin.test.assertSame
@@ -173,5 +177,51 @@ class MoneyRepositoryControllerTest {
         controller.close()
 
         assertNull(controller.moneyRepository.value)
+    }
+
+    @Test
+    fun testResultFlowEmitsSuccessFromSelectedFlow() = runTest {
+        val repository = mockk<MoneyRepository>()
+        val controller = controller(connector(MoneyRepositoryConnectionStatus.Ready(repository)))
+
+        controller.resultFlow { flowOf(1, 2) }.test {
+            controller.openDatabase(file)
+
+            assertEquals(Result.success(1), awaitItem())
+            assertEquals(Result.success(2), awaitItem())
+        }
+    }
+
+    @Test
+    fun testResultFlowEmitsFailureWhenSelectedFlowThrows() = runTest {
+        val error = IllegalStateException("query failed")
+        val controller = controller(connector(MoneyRepositoryConnectionStatus.Ready(mockk())))
+
+        controller.resultFlow<Int> { flow { throw error } }.test {
+            controller.openDatabase(file)
+
+            assertEquals(Result.failure(error), awaitItem())
+        }
+    }
+
+    @Test
+    fun testResultFlowRecoversWhenNewRepositoryIsConnected() = runTest {
+        val failing = mockk<MoneyRepository>(relaxUnitFun = true)
+        val working = mockk<MoneyRepository>()
+        val error = IllegalStateException("query failed")
+        val controller = controller(
+            connector(MoneyRepositoryConnectionStatus.Ready(failing)),
+            connector(MoneyRepositoryConnectionStatus.Ready(working)),
+        )
+
+        controller.resultFlow { repository ->
+            if (repository === failing) flow { throw error } else flowOf(1)
+        }.test {
+            controller.openDatabase(file)
+            assertEquals(Result.failure(error), awaitItem())
+
+            controller.openDatabase(file)
+            assertEquals(Result.success(1), awaitItem())
+        }
     }
 }

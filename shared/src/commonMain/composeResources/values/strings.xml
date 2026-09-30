@@ -10,10 +10,13 @@
     <string name="default_file_name">My Money</string>
     <string name="account_list_title">Accounts</string>
     <string name="account_list_empty_message">No accounts</string>
+    <string name="account_list_error_message">Unable to load accounts.</string>
     <string name="category_list_title">Categories</string>
     <string name="category_list_empty_message">No categories</string>
+    <string name="category_list_error_message">Unable to load categories.</string>
     <string name="payee_list_title">Payees</string>
     <string name="payee_list_empty_message">No payees</string>
+    <string name="payee_list_error_message">Unable to load payees.</string>
     <string name="file_menu_title">File</string>
     <string name="new_database_menu_item_title">New…</string>
     <string name="open_database_menu_item_title">Open…</string>

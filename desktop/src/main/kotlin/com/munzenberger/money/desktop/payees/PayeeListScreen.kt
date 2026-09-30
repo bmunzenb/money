@@ -18,6 +18,7 @@ import com.munzenberger.money.shared.theme.MoneyTheme
 import com.munzenberger.money.shared.theme.PreviewThemed
 import money.shared.generated.resources.Res
 import money.shared.generated.resources.payee_list_empty_message
+import money.shared.generated.resources.payee_list_error_message
 import money.shared.generated.resources.payee_list_title
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
@@ -43,6 +44,9 @@ private fun PayeeListScreenContent(state: PayeeListUiState) {
                     CircularProgressIndicator()
                 }
             }
+            is PayeeListUiState.Error -> {
+                Text(text = stringResource(Res.string.payee_list_error_message))
+            }
             is PayeeListUiState.Content -> {
                 if (state.payees.isEmpty()) {
                     Text(text = stringResource(Res.string.payee_list_empty_message))
@@ -63,6 +67,14 @@ private fun PayeeListScreenContent(state: PayeeListUiState) {
 private fun PayeeListScreenLoadingPreview() {
     PreviewThemed {
         PayeeListScreenContent(state = PayeeListUiState.Loading)
+    }
+}
+
+@Preview
+@Composable
+private fun PayeeListScreenErrorPreview() {
+    PreviewThemed {
+        PayeeListScreenContent(state = PayeeListUiState.Error)
     }
 }
 
