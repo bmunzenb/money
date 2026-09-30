@@ -5,7 +5,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.AccountBalance
+import androidx.compose.material.icons.filled.AccountBalanceWallet
 import androidx.compose.material.icons.filled.Category
 import androidx.compose.material.icons.filled.People
 import androidx.compose.material3.ButtonDefaults
@@ -57,7 +57,7 @@ private fun AppToolBarContent(
         }
         TextButton(onClick = onAccountsClick) {
             Icon(
-                imageVector = Icons.Filled.AccountBalance,
+                imageVector = Icons.Filled.AccountBalanceWallet,
                 contentDescription = null,
                 modifier = Modifier.size(ButtonDefaults.IconSize),
             )
