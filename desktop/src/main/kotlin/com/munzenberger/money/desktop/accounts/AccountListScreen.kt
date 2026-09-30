@@ -2,6 +2,7 @@ package com.munzenberger.money.desktop.accounts
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -33,12 +34,26 @@ import org.koin.compose.viewmodel.koinViewModel
 fun AccountListScreen(viewModel: AccountListViewModel = koinViewModel()) {
     val state by viewModel.state.collectAsState(initial = AccountListUiState.Loading)
 
-    AccountListScreenContent(state = state)
+    AccountListScreenContent(
+        state = state,
+        onAddAccountClick = viewModel::onAddAccountClick,
+    )
 }
 
 @Composable
-private fun AccountListScreenContent(state: AccountListUiState) {
-    Column {
+private fun AccountListScreenContent(
+    state: AccountListUiState,
+    onAddAccountClick: () -> Unit,
+) {
+    Row(modifier = Modifier.fillMaxSize()) {
+        AccountListSidebar(onAddAccountClick = onAddAccountClick)
+        AccountList(state = state, modifier = Modifier.weight(1f))
+    }
+}
+
+@Composable
+private fun AccountList(state: AccountListUiState, modifier: Modifier = Modifier) {
+    Column(modifier = modifier) {
         Text(
             text = stringResource(Res.string.account_list_title),
             style = MoneyTheme.typography.headlineMedium
@@ -72,7 +87,7 @@ private fun AccountListScreenContent(state: AccountListUiState) {
 @Composable
 private fun AccountListScreenLoadingPreview() {
     PreviewThemed {
-        AccountListScreenContent(state = AccountListUiState.Loading)
+        AccountListScreenContent(state = AccountListUiState.Loading, onAddAccountClick = {})
     }
 }
 
@@ -80,7 +95,7 @@ private fun AccountListScreenLoadingPreview() {
 @Composable
 private fun AccountListScreenErrorPreview() {
     PreviewThemed {
-        AccountListScreenContent(state = AccountListUiState.Error)
+        AccountListScreenContent(state = AccountListUiState.Error, onAddAccountClick = {})
     }
 }
 
@@ -94,7 +109,8 @@ private fun AccountListScreenWithAccountsPreview() {
                     Account(name = "Checking", accountType = previewAccountType),
                     Account(name = "Savings", accountType = previewAccountType),
                 )
-            )
+            ),
+            onAddAccountClick = {},
         )
     }
 }
@@ -103,7 +119,10 @@ private fun AccountListScreenWithAccountsPreview() {
 @Composable
 private fun AccountListScreenEmptyPreview() {
     PreviewThemed {
-        AccountListScreenContent(state = AccountListUiState.Content(accounts = emptyList()))
+        AccountListScreenContent(
+            state = AccountListUiState.Content(accounts = emptyList()),
+            onAddAccountClick = {},
+        )
     }
 }
 
