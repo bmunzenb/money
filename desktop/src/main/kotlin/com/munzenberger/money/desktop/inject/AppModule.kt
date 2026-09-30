@@ -1,6 +1,7 @@
 package com.munzenberger.money.desktop.inject
 
 import com.munzenberger.money.core.MoneyRepositoryController
+import com.munzenberger.money.data.sql.SqlMoneyRepositoryConnector
 import com.munzenberger.money.desktop.AppViewModel
 import com.munzenberger.money.desktop.accounts.AccountListViewModel
 import com.munzenberger.money.desktop.categories.CategoryListViewModel
@@ -13,7 +14,7 @@ import org.koin.core.module.dsl.viewModel
 import org.koin.dsl.module
 
 val appModule = module {
-    single { MoneyRepositoryController() }
+    single { MoneyRepositoryController(connectorFactory = { file -> SqlMoneyRepositoryConnector(file) }) }
     single { Navigator() }
 
     viewModel { AppViewModel(get(), get()) }

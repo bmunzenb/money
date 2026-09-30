@@ -14,6 +14,7 @@ kotlin {
         commonTest.dependencies {
             implementation(libs.kotlin.test)
             implementation(libs.mockk)
+            implementation(libs.kotlinx.coroutinesTest)
         }
     }
 }

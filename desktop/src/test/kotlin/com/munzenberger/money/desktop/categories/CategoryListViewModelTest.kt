@@ -1,12 +1,12 @@
 package com.munzenberger.money.desktop.categories
 
 import app.cash.turbine.test
-import com.munzenberger.money.core.MoneyRepositoryController
 import com.munzenberger.money.data.api.MoneyRepository
 import com.munzenberger.money.data.api.category.Category
 import com.munzenberger.money.data.api.category.CategoryType
 import com.munzenberger.money.data.api.category.CategoryTypeConstant
 import com.munzenberger.money.data.api.category.CategoryTypeId
+import com.munzenberger.money.desktop.MoneyRepositoryControllerFixture
 import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.flow.Flow
@@ -26,14 +26,14 @@ class CategoryListViewModelTest {
     private fun category(name: String) = Category(name = name, type = categoryType)
 
     private fun repositoryWithCategories(categories: Flow<List<Category>>) =
-        mockk<MoneyRepository> {
+        mockk<MoneyRepository>(relaxUnitFun = true) {
             every { this@mockk.categories } returns categories
         }
 
     @Test
     fun `state emits nothing when there is no repository`() = runTest {
-        val controller = MoneyRepositoryController()
-        val viewModel = CategoryListViewModel(controller)
+        val fixture = MoneyRepositoryControllerFixture()
+        val viewModel = CategoryListViewModel(fixture.controller)
 
         viewModel.state.test {
             expectNoEvents()
@@ -42,12 +42,12 @@ class CategoryListViewModelTest {
 
     @Test
     fun `state emits categories from the connected repository`() = runTest {
-        val controller = MoneyRepositoryController()
-        val viewModel = CategoryListViewModel(controller)
+        val fixture = MoneyRepositoryControllerFixture()
+        val viewModel = CategoryListViewModel(fixture.controller)
         val categories = listOf(category("Groceries"), category("Rent"))
 
         viewModel.state.test {
-            controller.update(repositoryWithCategories(flowOf(categories)))
+            fixture.connect(repositoryWithCategories(flowOf(categories)))
 
             assertEquals(CategoryListUiState.Content(categories = categories), awaitItem())
         }
@@ -55,14 +55,14 @@ class CategoryListViewModelTest {
 
     @Test
     fun `state reflects subsequent emissions from the repository categories flow`() = runTest {
-        val controller = MoneyRepositoryController()
-        val viewModel = CategoryListViewModel(controller)
+        val fixture = MoneyRepositoryControllerFixture()
+        val viewModel = CategoryListViewModel(fixture.controller)
         val groceries = category("Groceries")
         val rent = category("Rent")
         val categoriesFlow = MutableStateFlow(listOf(groceries))
 
         viewModel.state.test {
-            controller.update(repositoryWithCategories(categoriesFlow))
+            fixture.connect(repositoryWithCategories(categoriesFlow))
             assertEquals(CategoryListUiState.Content(categories = listOf(groceries)), awaitItem())
 
             categoriesFlow.value = listOf(groceries, rent)
@@ -72,16 +72,16 @@ class CategoryListViewModelTest {
 
     @Test
     fun `state switches to the newly connected repository`() = runTest {
-        val controller = MoneyRepositoryController()
-        val viewModel = CategoryListViewModel(controller)
+        val fixture = MoneyRepositoryControllerFixture()
+        val viewModel = CategoryListViewModel(fixture.controller)
         val firstCategories = listOf(category("Groceries"))
         val secondCategories = listOf(category("Rent"))
 
         viewModel.state.test {
-            controller.update(repositoryWithCategories(flowOf(firstCategories)))
+            fixture.connect(repositoryWithCategories(flowOf(firstCategories)))
             assertEquals(CategoryListUiState.Content(categories = firstCategories), awaitItem())
 
-            controller.update(repositoryWithCategories(flowOf(secondCategories)))
+            fixture.connect(repositoryWithCategories(flowOf(secondCategories)))
             assertEquals(CategoryListUiState.Content(categories = secondCategories), awaitItem())
         }
     }

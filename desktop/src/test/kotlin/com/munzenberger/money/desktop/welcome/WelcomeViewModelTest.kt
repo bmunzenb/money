@@ -1,10 +1,10 @@
 package com.munzenberger.money.desktop.welcome
 
 import app.cash.turbine.test
-import com.munzenberger.money.core.MoneyRepositoryController
 import com.munzenberger.money.data.api.MoneyRepository
 import com.munzenberger.money.data.api.MoneyRepositoryConnectionStatus
 import com.munzenberger.money.data.sql.SqlMoneyRepositoryConnector
+import com.munzenberger.money.desktop.MoneyRepositoryControllerFixture
 import io.mockk.mockk
 import io.mockk.verify
 import kotlinx.coroutines.test.runTest
@@ -19,7 +19,8 @@ import kotlin.test.assertNull
 
 class WelcomeViewModelTest {
 
-    private val controller = MoneyRepositoryController()
+    private val fixture = MoneyRepositoryControllerFixture()
+    private val controller = fixture.controller
     private val tempFiles = mutableListOf<File>()
     private val tempDirs = mutableListOf<File>()
 
@@ -116,7 +117,7 @@ class WelcomeViewModelTest {
     @Test
     fun `closes any open repository before creating a new database`() = runTest {
         val repository = mockk<MoneyRepository>(relaxUnitFun = true)
-        controller.update(repository)
+        fixture.connect(repository)
         val viewModel = WelcomeViewModel(controller)
 
         controller.moneyRepository.test {
@@ -157,7 +158,7 @@ class WelcomeViewModelTest {
         created.moneyRepository.close()
 
         val repository = mockk<MoneyRepository>(relaxUnitFun = true)
-        controller.update(repository)
+        fixture.connect(repository)
         val viewModel = WelcomeViewModel(controller)
 
         controller.moneyRepository.test {
