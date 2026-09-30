@@ -1,6 +1,9 @@
 package com.munzenberger.money.shared.theme
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Shapes
@@ -10,6 +13,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.runtime.staticCompositionLocalOf
+import androidx.compose.ui.Modifier
 
 val LocalMoneyTheme = staticCompositionLocalOf { MoneyTheme() }
 
@@ -70,6 +74,11 @@ fun PreviewThemed(
     content: @Composable () -> Unit
 ) {
     MoneyTheme(darkTheme = darkTheme) {
-        content()
+        Box(modifier = Modifier
+            .fillMaxSize()
+            .background(color = MoneyTheme.colorScheme.background)
+        ) {
+            content()
+        }
     }
 }
