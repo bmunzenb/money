@@ -1,7 +1,6 @@
 package com.munzenberger.money.desktop.accounts
 
 import app.cash.turbine.test
-import com.munzenberger.money.core.MoneyRepositoryController
 import com.munzenberger.money.data.api.MoneyRepository
 import com.munzenberger.money.data.api.account.Account
 import com.munzenberger.money.data.api.account.AccountType
@@ -10,6 +9,7 @@ import com.munzenberger.money.data.api.account.AccountTypeGroup
 import com.munzenberger.money.data.api.account.AccountTypeGroupConstant
 import com.munzenberger.money.data.api.account.AccountTypeGroupId
 import com.munzenberger.money.data.api.account.AccountTypeId
+import com.munzenberger.money.desktop.MoneyRepositoryControllerFixture
 import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.flow.Flow
@@ -30,14 +30,14 @@ class AccountListViewModelTest {
     private fun account(name: String) = Account(name = name, accountType = accountType)
 
     private fun repositoryWithAccounts(accounts: Flow<List<Account>>) =
-        mockk<MoneyRepository> {
+        mockk<MoneyRepository>(relaxUnitFun = true) {
             every { this@mockk.accounts } returns accounts
         }
 
     @Test
     fun `state emits nothing when there is no repository`() = runTest {
-        val controller = MoneyRepositoryController()
-        val viewModel = AccountListViewModel(controller)
+        val fixture = MoneyRepositoryControllerFixture()
+        val viewModel = AccountListViewModel(fixture.controller)
 
         viewModel.state.test {
             expectNoEvents()
@@ -46,12 +46,12 @@ class AccountListViewModelTest {
 
     @Test
     fun `state emits accounts from the connected repository`() = runTest {
-        val controller = MoneyRepositoryController()
-        val viewModel = AccountListViewModel(controller)
+        val fixture = MoneyRepositoryControllerFixture()
+        val viewModel = AccountListViewModel(fixture.controller)
         val accounts = listOf(account("Checking"), account("Savings"))
 
         viewModel.state.test {
-            controller.update(repositoryWithAccounts(flowOf(accounts)))
+            fixture.connect(repositoryWithAccounts(flowOf(accounts)))
 
             assertEquals(AccountListUiState.Content(accounts = accounts), awaitItem())
         }
@@ -59,14 +59,14 @@ class AccountListViewModelTest {
 
     @Test
     fun `state reflects subsequent emissions from the repository accounts flow`() = runTest {
-        val controller = MoneyRepositoryController()
-        val viewModel = AccountListViewModel(controller)
+        val fixture = MoneyRepositoryControllerFixture()
+        val viewModel = AccountListViewModel(fixture.controller)
         val checking = account("Checking")
         val savings = account("Savings")
         val accountsFlow = MutableStateFlow(listOf(checking))
 
         viewModel.state.test {
-            controller.update(repositoryWithAccounts(accountsFlow))
+            fixture.connect(repositoryWithAccounts(accountsFlow))
             assertEquals(AccountListUiState.Content(accounts = listOf(checking)), awaitItem())
 
             accountsFlow.value = listOf(checking, savings)
@@ -76,16 +76,16 @@ class AccountListViewModelTest {
 
     @Test
     fun `state switches to the newly connected repository`() = runTest {
-        val controller = MoneyRepositoryController()
-        val viewModel = AccountListViewModel(controller)
+        val fixture = MoneyRepositoryControllerFixture()
+        val viewModel = AccountListViewModel(fixture.controller)
         val firstAccounts = listOf(account("Checking"))
         val secondAccounts = listOf(account("Savings"))
 
         viewModel.state.test {
-            controller.update(repositoryWithAccounts(flowOf(firstAccounts)))
+            fixture.connect(repositoryWithAccounts(flowOf(firstAccounts)))
             assertEquals(AccountListUiState.Content(accounts = firstAccounts), awaitItem())
 
-            controller.update(repositoryWithAccounts(flowOf(secondAccounts)))
+            fixture.connect(repositoryWithAccounts(flowOf(secondAccounts)))
             assertEquals(AccountListUiState.Content(accounts = secondAccounts), awaitItem())
         }
     }

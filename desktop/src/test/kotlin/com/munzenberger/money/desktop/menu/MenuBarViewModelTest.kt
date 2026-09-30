@@ -1,10 +1,10 @@
 package com.munzenberger.money.desktop.menu
 
 import app.cash.turbine.test
-import com.munzenberger.money.core.MoneyRepositoryController
 import com.munzenberger.money.data.api.MoneyRepository
 import com.munzenberger.money.data.api.MoneyRepositoryConnectionStatus
 import com.munzenberger.money.data.sql.SqlMoneyRepositoryConnector
+import com.munzenberger.money.desktop.MoneyRepositoryControllerFixture
 import io.mockk.mockk
 import io.mockk.verify
 import kotlinx.coroutines.test.runTest
@@ -17,7 +17,8 @@ import kotlin.test.assertNull
 
 class MenuBarViewModelTest {
 
-    private val controller = MoneyRepositoryController()
+    private val fixture = MoneyRepositoryControllerFixture()
+    private val controller = fixture.controller
     private val tempFiles = mutableListOf<File>()
 
     @AfterTest
@@ -32,9 +33,9 @@ class MenuBarViewModelTest {
         }
 
     @Test
-    fun `closes the open repository when exit is selected`() {
+    fun `closes the open repository when exit is selected`() = runTest {
         val repository = mockk<MoneyRepository>(relaxUnitFun = true)
-        controller.update(repository)
+        fixture.connect(repository)
 
         MenuBarViewModel(controller).onExitSelected()
 
@@ -47,9 +48,9 @@ class MenuBarViewModelTest {
     }
 
     @Test
-    fun `closes the open repository when close database is selected`() {
+    fun `closes the open repository when close database is selected`() = runTest {
         val repository = mockk<MoneyRepository>(relaxUnitFun = true)
-        controller.update(repository)
+        fixture.connect(repository)
 
         MenuBarViewModel(controller).onCloseDatabaseSelected()
 
@@ -77,7 +78,7 @@ class MenuBarViewModelTest {
         viewModel.state.test {
             assertEquals(MenuBarUiState(closeRepositoryEnabled = false), awaitItem())
 
-            controller.update(mockk<MoneyRepository>())
+            fixture.connect(mockk<MoneyRepository>(relaxUnitFun = true))
 
             assertEquals(MenuBarUiState(closeRepositoryEnabled = true), awaitItem())
         }
@@ -90,10 +91,10 @@ class MenuBarViewModelTest {
         viewModel.state.test {
             awaitItem()
 
-            controller.update(mockk<MoneyRepository>())
+            fixture.connect(mockk<MoneyRepository>(relaxUnitFun = true))
             awaitItem()
 
-            controller.clear()
+            controller.close()
 
             assertEquals(MenuBarUiState(closeRepositoryEnabled = false), awaitItem())
         }
@@ -116,7 +117,7 @@ class MenuBarViewModelTest {
     @Test
     fun `closes any open repository before creating a new database`() = runTest {
         val repository = mockk<MoneyRepository>(relaxUnitFun = true)
-        controller.update(repository)
+        fixture.connect(repository)
         val viewModel = MenuBarViewModel(controller)
 
         controller.moneyRepository.test {
@@ -157,7 +158,7 @@ class MenuBarViewModelTest {
         created.moneyRepository.close()
 
         val repository = mockk<MoneyRepository>(relaxUnitFun = true)
-        controller.update(repository)
+        fixture.connect(repository)
         val viewModel = MenuBarViewModel(controller)
 
         controller.moneyRepository.test {

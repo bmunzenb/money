@@ -1,7 +1,6 @@
 package com.munzenberger.money.desktop
 
 import app.cash.turbine.test
-import com.munzenberger.money.core.MoneyRepositoryController
 import com.munzenberger.money.data.api.MoneyRepository
 import com.munzenberger.money.desktop.navigation.Navigator
 import com.munzenberger.money.desktop.navigation.Route
@@ -21,7 +20,8 @@ import kotlin.test.assertEquals
 class AppViewModelTest {
 
     private val navigator = Navigator()
-    private val controller = MoneyRepositoryController()
+    private val fixture = MoneyRepositoryControllerFixture()
+    private val controller = fixture.controller
 
     @BeforeTest
     fun setUp() {
@@ -44,7 +44,7 @@ class AppViewModelTest {
     fun `navigates to AccountList when a repository connects`() = runTest {
         AppViewModel(navigator, controller)
 
-        controller.update(mockk<MoneyRepository>())
+        fixture.connect(mockk<MoneyRepository>(relaxUnitFun = true))
 
         assertEquals(listOf(Route.AccountList), navigator.backStack.toList())
     }
@@ -53,8 +53,8 @@ class AppViewModelTest {
     fun `navigates to Welcome when the repository disconnects`() = runTest {
         AppViewModel(navigator, controller)
 
-        controller.update(mockk<MoneyRepository>())
-        controller.clear()
+        fixture.connect(mockk<MoneyRepository>(relaxUnitFun = true))
+        controller.close()
 
         assertEquals(listOf(Route.Welcome), navigator.backStack.toList())
     }
@@ -75,7 +75,7 @@ class AppViewModelTest {
         viewModel.state.test {
             assertEquals(AppUiState(isRepositoryConnected = false), awaitItem())
 
-            controller.update(mockk<MoneyRepository>())
+            fixture.connect(mockk<MoneyRepository>(relaxUnitFun = true))
 
             assertEquals(AppUiState(isRepositoryConnected = true), awaitItem())
         }
@@ -88,10 +88,10 @@ class AppViewModelTest {
         viewModel.state.test {
             awaitItem()
 
-            controller.update(mockk<MoneyRepository>())
+            fixture.connect(mockk<MoneyRepository>(relaxUnitFun = true))
             awaitItem()
 
-            controller.clear()
+            controller.close()
 
             assertEquals(AppUiState(isRepositoryConnected = false), awaitItem())
         }
