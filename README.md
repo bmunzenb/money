@@ -39,7 +39,7 @@ com.munzenberger.money.level = FINEST
 
 java.util.logging.ConsoleHandler.level = FINEST
 java.util.logging.ConsoleHandler.formatter = java.util.logging.SimpleFormatter
-java.util.logging.SimpleFormatter.format = %1$tF %1$tT %4$s %2$s - %5$s%6$n
+java.util.logging.SimpleFormatter.format = %1$tF %1$tT %4$s %2$s - %5$s%6$s%n
 ```
 
 Note that `java.util.logging.ConsoleHandler.level` must be at least as verbose as the most detailed logger you want to see — it's a second filter applied after each logger's own level.

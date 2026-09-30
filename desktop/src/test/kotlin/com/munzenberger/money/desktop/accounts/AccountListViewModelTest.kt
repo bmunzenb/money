@@ -14,6 +14,7 @@ import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
@@ -87,6 +88,33 @@ class AccountListViewModelTest {
 
             fixture.connect(repositoryWithAccounts(flowOf(secondAccounts)))
             assertEquals(AccountListUiState.Content(accounts = secondAccounts), awaitItem())
+        }
+    }
+
+    @Test
+    fun `state emits error when the repository accounts flow throws`() = runTest {
+        val fixture = MoneyRepositoryControllerFixture()
+        val viewModel = AccountListViewModel(fixture.controller)
+
+        viewModel.state.test {
+            fixture.connect(repositoryWithAccounts(flow { throw IllegalStateException("query failed") }))
+
+            assertEquals(AccountListUiState.Error, awaitItem())
+        }
+    }
+
+    @Test
+    fun `state recovers from an error when a new repository is connected`() = runTest {
+        val fixture = MoneyRepositoryControllerFixture()
+        val viewModel = AccountListViewModel(fixture.controller)
+        val accounts = listOf(account("Checking"))
+
+        viewModel.state.test {
+            fixture.connect(repositoryWithAccounts(flow { throw IllegalStateException("query failed") }))
+            assertEquals(AccountListUiState.Error, awaitItem())
+
+            fixture.connect(repositoryWithAccounts(flowOf(accounts)))
+            assertEquals(AccountListUiState.Content(accounts = accounts), awaitItem())
         }
     }
 }

@@ -21,6 +21,7 @@ import com.munzenberger.money.shared.theme.MoneyTheme
 import com.munzenberger.money.shared.theme.PreviewThemed
 import money.shared.generated.resources.Res
 import money.shared.generated.resources.category_list_empty_message
+import money.shared.generated.resources.category_list_error_message
 import money.shared.generated.resources.category_list_title
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
@@ -46,6 +47,9 @@ private fun CategoryListScreenContent(state: CategoryListUiState) {
                     CircularProgressIndicator()
                 }
             }
+            is CategoryListUiState.Error -> {
+                Text(text = stringResource(Res.string.category_list_error_message))
+            }
             is CategoryListUiState.Content -> {
                 if (state.categories.isEmpty()) {
                     Text(text = stringResource(Res.string.category_list_empty_message))
@@ -66,6 +70,14 @@ private fun CategoryListScreenContent(state: CategoryListUiState) {
 private fun CategoryListScreenLoadingPreview() {
     PreviewThemed {
         CategoryListScreenContent(state = CategoryListUiState.Loading)
+    }
+}
+
+@Preview
+@Composable
+private fun CategoryListScreenErrorPreview() {
+    PreviewThemed {
+        CategoryListScreenContent(state = CategoryListUiState.Error)
     }
 }
 

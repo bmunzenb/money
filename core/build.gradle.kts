@@ -15,6 +15,7 @@ kotlin {
             implementation(libs.kotlin.test)
             implementation(libs.mockk)
             implementation(libs.kotlinx.coroutinesTest)
+            implementation(libs.turbine)
         }
     }
 }

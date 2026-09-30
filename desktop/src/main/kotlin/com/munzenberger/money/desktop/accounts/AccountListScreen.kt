@@ -24,6 +24,7 @@ import com.munzenberger.money.shared.theme.MoneyTheme
 import com.munzenberger.money.shared.theme.PreviewThemed
 import money.shared.generated.resources.Res
 import money.shared.generated.resources.account_list_empty_message
+import money.shared.generated.resources.account_list_error_message
 import money.shared.generated.resources.account_list_title
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
@@ -49,6 +50,9 @@ private fun AccountListScreenContent(state: AccountListUiState) {
                     CircularProgressIndicator()
                 }
             }
+            is AccountListUiState.Error -> {
+                Text(text = stringResource(Res.string.account_list_error_message))
+            }
             is AccountListUiState.Content -> {
                 if (state.accounts.isEmpty()) {
                     Text(text = stringResource(Res.string.account_list_empty_message))
@@ -69,6 +73,14 @@ private fun AccountListScreenContent(state: AccountListUiState) {
 private fun AccountListScreenLoadingPreview() {
     PreviewThemed {
         AccountListScreenContent(state = AccountListUiState.Loading)
+    }
+}
+
+@Preview
+@Composable
+private fun AccountListScreenErrorPreview() {
+    PreviewThemed {
+        AccountListScreenContent(state = AccountListUiState.Error)
     }
 }
 

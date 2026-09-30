@@ -11,6 +11,7 @@ import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
@@ -83,6 +84,33 @@ class CategoryListViewModelTest {
 
             fixture.connect(repositoryWithCategories(flowOf(secondCategories)))
             assertEquals(CategoryListUiState.Content(categories = secondCategories), awaitItem())
+        }
+    }
+
+    @Test
+    fun `state emits error when the repository categories flow throws`() = runTest {
+        val fixture = MoneyRepositoryControllerFixture()
+        val viewModel = CategoryListViewModel(fixture.controller)
+
+        viewModel.state.test {
+            fixture.connect(repositoryWithCategories(flow { throw IllegalStateException("query failed") }))
+
+            assertEquals(CategoryListUiState.Error, awaitItem())
+        }
+    }
+
+    @Test
+    fun `state recovers from an error when a new repository is connected`() = runTest {
+        val fixture = MoneyRepositoryControllerFixture()
+        val viewModel = CategoryListViewModel(fixture.controller)
+        val categories = listOf(category("Groceries"))
+
+        viewModel.state.test {
+            fixture.connect(repositoryWithCategories(flow { throw IllegalStateException("query failed") }))
+            assertEquals(CategoryListUiState.Error, awaitItem())
+
+            fixture.connect(repositoryWithCategories(flowOf(categories)))
+            assertEquals(CategoryListUiState.Content(categories = categories), awaitItem())
         }
     }
 }

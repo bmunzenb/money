@@ -8,10 +8,13 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 import java.io.File
+import java.util.logging.Level
 import kotlin.coroutines.CoroutineContext
 
 class MoneyRepositoryController(
@@ -46,6 +49,26 @@ class MoneyRepositoryController(
     }
 }
 
+/**
+ * Returns a flow of values selected from the currently open [MoneyRepository], each wrapped in a
+ * [Result].
+ *
+ * The [selector] is applied to each repository as it's opened, and the flow switches to the new
+ * repository's flow whenever the open repository changes. Nothing is emitted while no repository
+ * is open.
+ *
+ * An exception thrown by the selected flow is logged and emitted as a [Result.failure]. It ends
+ * only that repository's flow, so opening a different repository resumes emitting values.
+ */
 @OptIn(ExperimentalCoroutinesApi::class)
-fun <T> MoneyRepositoryController.flow(selector: (MoneyRepository) -> Flow<T>): Flow<T> =
-    moneyRepository.flatMapLatest { repository -> repository?.let(selector) ?: emptyFlow() }
+fun <T> MoneyRepositoryController.resultFlow(selector: (MoneyRepository) -> Flow<T>): Flow<Result<T>> =
+    moneyRepository.flatMapLatest { repository ->
+        repository?.let {
+            selector(it)
+                .map { value -> Result.success(value) }
+                .catch { e ->
+                    this@resultFlow.logger.log(Level.WARNING, "Failed to read from the money repository", e)
+                    emit(Result.failure(e))
+                }
+        } ?: emptyFlow()
+    }
