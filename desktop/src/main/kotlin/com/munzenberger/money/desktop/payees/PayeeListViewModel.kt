@@ -17,4 +17,8 @@ class PayeeListViewModel(
                 onFailure = { PayeeListUiState.Error },
             )
         }
+
+    fun onAddPayeeClick() {
+        // Navigation to an add payee screen will go here once that route exists.
+    }
 }

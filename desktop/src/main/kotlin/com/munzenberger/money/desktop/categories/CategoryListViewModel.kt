@@ -17,4 +17,8 @@ class CategoryListViewModel(
                 onFailure = { CategoryListUiState.Error },
             )
         }
+
+    fun onAddCategoryClick() {
+        // Navigation to an add category screen will go here once that route exists.
+    }
 }
