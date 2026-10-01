@@ -2,8 +2,6 @@ package com.munzenberger.money.desktop.navigation
 
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertFalse
-import kotlin.test.assertTrue
 
 class NavigatorTest {
 
@@ -25,22 +23,16 @@ class NavigatorTest {
     }
 
     @Test
-    fun `canNavigateBack is false with a single back stack entry`() {
-        assertFalse(navigator.canNavigateBack.value)
+    fun `currentRoute starts as the Welcome route`() {
+        assertEquals(Route.Welcome, navigator.currentRoute.value)
     }
 
     @Test
-    fun `canNavigateBack is true once the back stack has more than one entry`() {
+    fun `currentRoute tracks the last route on the back stack`() {
         navigator.navigate { add(Route.AccountList) }
+        assertEquals(Route.AccountList, navigator.currentRoute.value)
 
-        assertTrue(navigator.canNavigateBack.value)
-    }
-
-    @Test
-    fun `canNavigateBack is false again once the back stack shrinks to one entry`() {
-        navigator.navigate { add(Route.AccountList) }
         navigator.navigate { removeAt(lastIndex) }
-
-        assertFalse(navigator.canNavigateBack.value)
+        assertEquals(Route.Welcome, navigator.currentRoute.value)
     }
 }

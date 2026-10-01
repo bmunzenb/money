@@ -5,7 +5,8 @@ import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.ColorScheme
-import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.MaterialExpressiveTheme
+import androidx.compose.material3.MotionScheme
 import androidx.compose.material3.Shapes
 import androidx.compose.material3.Typography
 import androidx.compose.material3.lightColorScheme
@@ -30,8 +31,9 @@ fun MoneyTheme(
     )
 
     CompositionLocalProvider(LocalMoneyTheme provides moneyTheme) {
-        MaterialTheme(
+        MaterialExpressiveTheme(
             colorScheme = moneyTheme.colorScheme,
+            motionScheme = MotionScheme.expressive(),
             shapes = moneyTheme.shapes,
             typography = moneyTheme.typography,
             content = content

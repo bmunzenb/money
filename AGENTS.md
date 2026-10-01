@@ -33,9 +33,10 @@ val navigationRouter = entryProvider<Route> {
 The back stack is owned by the `Navigator` singleton
 (`desktop/src/main/kotlin/com/munzenberger/money/desktop/navigation/Navigator.kt`, registered with
 `single { Navigator() }` in `AppModule`). It holds the `NavBackStack<Route>` (starting at
-`Route.Welcome`) and exposes a `canNavigateBack: StateFlow<Boolean>`. ViewModels take `Navigator` as a
-constructor dependency and navigate through `navigate { ... }`, which applies the change to the back
-stack immediately and updates `canNavigateBack` — don't mutate `navigator.backStack` directly:
+`Route.Welcome`) and exposes `currentRoute: StateFlow<Route?>` (the top of the stack). ViewModels take
+`Navigator` as a constructor dependency and navigate through `navigate { ... }`, which applies the
+change to the back stack immediately and updates `currentRoute` — don't mutate `navigator.backStack`
+directly:
 
 ```kotlin
 navigator.navigate { add(Route.AccountList) }
@@ -45,8 +46,14 @@ navigator.navigate { clear(); add(Route.AccountList) }
 navigator.navigate { removeLast() }
 ```
 
-Reading `navigator.backStack` is fine, e.g. `AppToolBarViewModel` checks
-`navigator.backStack.lastOrNull()` to avoid pushing the route that's already on top.
+Reading `navigator.backStack` is fine, but prefer `currentRoute` when you only need the top route.
+
+Top-level destinations are listed in the `TopLevelDestination` enum
+(`desktop/.../desktop/rail/TopLevelDestination.kt`: route, icon, label) and shown in the Material 3
+Expressive `WideNavigationRail` in `rail/AppNavigationRail.kt`, which the user can collapse or expand.
+`AppNavigationRailViewModel` derives the selected item from `currentRoute` and switches destinations by
+replacing the stack (`clear(); add(route)`), not pushing onto it, so peers don't build up back history. To
+add a top-level screen, add a `Route`, its `entry`, and a `TopLevelDestination` entry.
 
 `App.kt` (the root composable) injects the `Navigator` with `koinInject()` and hands
 `navigator.backStack` and `navigationRouter` to the single `NavDisplay`; it doesn't apply navigation
@@ -54,7 +61,7 @@ itself. App-wide reactive navigation lives in `AppViewModel` (`desktop/.../deskt
 in `init` it collects `MoneyRepositoryController.moneyRepository` and does
 `navigator.navigate { clear(); add(...) }` to `AccountList`/`Welcome` depending on whether a
 repository is open. It also exposes `state: StateFlow<AppUiState>` (`isRepositoryConnected`), which
-`App.kt` uses to decide whether to show `AppToolBar`. Put new app-lifetime reactive navigation in
+`App.kt` uses to decide whether to show `AppNavigationRail` beside the `NavDisplay`. Put new app-lifetime reactive navigation in
 `AppViewModel`.
 
 ## ViewModels
@@ -70,7 +77,7 @@ class WelcomeViewModel(
 ) : ViewModel() { /* ... */ }
 ```
 
-Non-screen UI (e.g. `toolbar/AppToolBarViewModel.kt`, `menu/MenuBarViewModel.kt`) and the root
+Non-screen UI (e.g. `rail/AppNavigationRailViewModel.kt`, `menu/MenuBarViewModel.kt`) and the root
 `AppViewModel` follow the same pattern.
 
 Register it in `desktop/src/main/kotlin/com/munzenberger/money/desktop/inject/AppModule.kt` with Koin's
