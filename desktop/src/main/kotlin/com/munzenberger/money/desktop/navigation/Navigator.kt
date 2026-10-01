@@ -10,11 +10,11 @@ typealias NavigationEvent = NavBackStack<Route>.() -> Unit
 class Navigator {
     val backStack = NavBackStack<Route>(Route.Welcome)
 
-    private val canNavigateBackFlow = MutableStateFlow(backStack.size > 1)
-    val canNavigateBack: StateFlow<Boolean> = canNavigateBackFlow.asStateFlow()
+    private val currentRouteFlow = MutableStateFlow(backStack.lastOrNull())
+    val currentRoute: StateFlow<Route?> = currentRouteFlow.asStateFlow()
 
     fun navigate(event: NavigationEvent) {
         event(backStack)
-        canNavigateBackFlow.value = backStack.size > 1
+        currentRouteFlow.value = backStack.lastOrNull()
     }
 }
