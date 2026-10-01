@@ -13,14 +13,17 @@ class AppNavigationRailViewModel(
 ) : ViewModel() {
 
     val state: StateFlow<AppNavigationRailUiState> = navigator.currentRoute
-        .map { route -> AppNavigationRailUiState(selected = TopLevelDestination.of(route)) }
+        .map { AppNavigationRailUiState(selected = selectedDestination()) }
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(),
-            initialValue = AppNavigationRailUiState(
-                selected = TopLevelDestination.of(navigator.currentRoute.value)
-            ),
+            initialValue = AppNavigationRailUiState(selected = selectedDestination()),
         )
+
+    // Screens pushed on top of a top-level destination (e.g. NewAccount over AccountList) keep that
+    // destination selected.
+    private fun selectedDestination(): TopLevelDestination? =
+        navigator.backStack.asReversed().firstNotNullOfOrNull { TopLevelDestination.of(it) }
 
     fun onDestinationClick(destination: TopLevelDestination) {
         if (navigator.currentRoute.value != destination.route) {

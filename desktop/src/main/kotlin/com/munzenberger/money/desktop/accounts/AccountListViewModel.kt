@@ -3,11 +3,14 @@ package com.munzenberger.money.desktop.accounts
 import androidx.lifecycle.ViewModel
 import com.munzenberger.money.core.MoneyRepositoryController
 import com.munzenberger.money.core.resultFlow
+import com.munzenberger.money.desktop.navigation.Navigator
+import com.munzenberger.money.desktop.navigation.Route
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
 class AccountListViewModel(
-    repositoryController: MoneyRepositoryController
+    repositoryController: MoneyRepositoryController,
+    private val navigator: Navigator,
 ) : ViewModel() {
 
     val state: Flow<AccountListUiState> = repositoryController.resultFlow { it.accounts }
@@ -19,6 +22,6 @@ class AccountListViewModel(
         }
 
     fun onAddAccountClick() {
-        // Navigation to an add account screen will go here once that route exists.
+        navigator.navigate { add(Route.NewAccount) }
     }
 }

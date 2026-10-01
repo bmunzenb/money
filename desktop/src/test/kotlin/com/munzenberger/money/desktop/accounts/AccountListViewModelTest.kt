@@ -10,6 +10,8 @@ import com.munzenberger.money.data.api.account.AccountTypeGroupConstant
 import com.munzenberger.money.data.api.account.AccountTypeGroupId
 import com.munzenberger.money.data.api.account.AccountTypeId
 import com.munzenberger.money.desktop.MoneyRepositoryControllerFixture
+import com.munzenberger.money.desktop.navigation.Navigator
+import com.munzenberger.money.desktop.navigation.Route
 import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.flow.Flow
@@ -21,6 +23,8 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 
 class AccountListViewModelTest {
+
+    private val navigator = Navigator()
 
     private val accountType = AccountType(
         id = AccountTypeId(1),
@@ -38,7 +42,7 @@ class AccountListViewModelTest {
     @Test
     fun `state emits nothing when there is no repository`() = runTest {
         val fixture = MoneyRepositoryControllerFixture()
-        val viewModel = AccountListViewModel(fixture.controller)
+        val viewModel = AccountListViewModel(fixture.controller, navigator)
 
         viewModel.state.test {
             expectNoEvents()
@@ -48,7 +52,7 @@ class AccountListViewModelTest {
     @Test
     fun `state emits accounts from the connected repository`() = runTest {
         val fixture = MoneyRepositoryControllerFixture()
-        val viewModel = AccountListViewModel(fixture.controller)
+        val viewModel = AccountListViewModel(fixture.controller, navigator)
         val accounts = listOf(account("Checking"), account("Savings"))
 
         viewModel.state.test {
@@ -61,7 +65,7 @@ class AccountListViewModelTest {
     @Test
     fun `state reflects subsequent emissions from the repository accounts flow`() = runTest {
         val fixture = MoneyRepositoryControllerFixture()
-        val viewModel = AccountListViewModel(fixture.controller)
+        val viewModel = AccountListViewModel(fixture.controller, navigator)
         val checking = account("Checking")
         val savings = account("Savings")
         val accountsFlow = MutableStateFlow(listOf(checking))
@@ -78,7 +82,7 @@ class AccountListViewModelTest {
     @Test
     fun `state switches to the newly connected repository`() = runTest {
         val fixture = MoneyRepositoryControllerFixture()
-        val viewModel = AccountListViewModel(fixture.controller)
+        val viewModel = AccountListViewModel(fixture.controller, navigator)
         val firstAccounts = listOf(account("Checking"))
         val secondAccounts = listOf(account("Savings"))
 
@@ -94,7 +98,7 @@ class AccountListViewModelTest {
     @Test
     fun `state emits error when the repository accounts flow throws`() = runTest {
         val fixture = MoneyRepositoryControllerFixture()
-        val viewModel = AccountListViewModel(fixture.controller)
+        val viewModel = AccountListViewModel(fixture.controller, navigator)
 
         viewModel.state.test {
             fixture.connect(repositoryWithAccounts(flow { throw IllegalStateException("query failed") }))
@@ -106,7 +110,7 @@ class AccountListViewModelTest {
     @Test
     fun `state recovers from an error when a new repository is connected`() = runTest {
         val fixture = MoneyRepositoryControllerFixture()
-        val viewModel = AccountListViewModel(fixture.controller)
+        val viewModel = AccountListViewModel(fixture.controller, navigator)
         val accounts = listOf(account("Checking"))
 
         viewModel.state.test {
@@ -116,5 +120,15 @@ class AccountListViewModelTest {
             fixture.connect(repositoryWithAccounts(flowOf(accounts)))
             assertEquals(AccountListUiState.Content(accounts = accounts), awaitItem())
         }
+    }
+
+    @Test
+    fun `onAddAccountClick pushes the new account route`() {
+        navigator.navigate { clear(); add(Route.AccountList) }
+        val viewModel = AccountListViewModel(MoneyRepositoryControllerFixture().controller, navigator)
+
+        viewModel.onAddAccountClick()
+
+        assertEquals(listOf(Route.AccountList, Route.NewAccount), navigator.backStack.toList())
     }
 }
