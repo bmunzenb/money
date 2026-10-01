@@ -136,6 +136,28 @@ private fun XScreenPreview() {
   instead of the ViewModel-backed entry point.
 - If the screen has no ViewModel/params, the preview can call it directly.
 
+## List screens
+
+List screens put their title and primary action (e.g. "New account") in `ListScreenHeader`
+(`desktop/.../desktop/components/ListScreenHeader.kt`), fixed above the list. The list goes in a
+`weight(1f)` container below it, so only the list scrolls and the action stays visible:
+
+```kotlin
+Column(modifier = Modifier.fillMaxSize()) {
+    ListScreenHeader(
+        title = stringResource(Res.string.account_list_title),
+        actionLabel = stringResource(Res.string.add_account_button_title),
+        onActionClick = onAddAccountClick,
+    )
+
+    Box(modifier = Modifier.weight(1f)) {
+        AccountListBody(state = state)
+    }
+}
+```
+
+`AccountListScreen` is the reference implementation; the Categories and Payees screens don't use it yet.
+
 ## String resources
 
 Strings live in `shared/src/commonMain/composeResources/values/strings.xml` (standard Android-style

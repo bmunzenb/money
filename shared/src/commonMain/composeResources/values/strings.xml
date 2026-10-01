@@ -11,6 +11,7 @@
     <string name="account_list_title">Accounts</string>
     <string name="account_list_empty_message">No accounts</string>
     <string name="account_list_error_message">Unable to load accounts.</string>
+    <string name="add_account_button_title">New account</string>
     <string name="category_list_title">Categories</string>
     <string name="category_list_empty_message">No categories</string>
     <string name="category_list_error_message">Unable to load categories.</string>
