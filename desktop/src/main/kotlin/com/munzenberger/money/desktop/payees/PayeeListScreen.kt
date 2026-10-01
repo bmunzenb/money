@@ -14,9 +14,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import com.munzenberger.money.data.api.payee.Payee
-import com.munzenberger.money.shared.theme.MoneyTheme
+import com.munzenberger.money.desktop.components.ListScreenHeader
 import com.munzenberger.money.shared.theme.PreviewThemed
 import money.shared.generated.resources.Res
+import money.shared.generated.resources.add_payee_button_title
 import money.shared.generated.resources.payee_list_empty_message
 import money.shared.generated.resources.payee_list_error_message
 import money.shared.generated.resources.payee_list_title
@@ -27,34 +28,48 @@ import org.koin.compose.viewmodel.koinViewModel
 fun PayeeListScreen(viewModel: PayeeListViewModel = koinViewModel()) {
     val state by viewModel.state.collectAsState(initial = PayeeListUiState.Loading)
 
-    PayeeListScreenContent(state = state)
+    PayeeListScreenContent(
+        state = state,
+        onAddPayeeClick = viewModel::onAddPayeeClick,
+    )
 }
 
 @Composable
-private fun PayeeListScreenContent(state: PayeeListUiState) {
-    Column {
-        Text(
-            text = stringResource(Res.string.payee_list_title),
-            style = MoneyTheme.typography.headlineMedium
+private fun PayeeListScreenContent(
+    state: PayeeListUiState,
+    onAddPayeeClick: () -> Unit,
+) {
+    Column(modifier = Modifier.fillMaxSize()) {
+        ListScreenHeader(
+            title = stringResource(Res.string.payee_list_title),
+            actionLabel = stringResource(Res.string.add_payee_button_title),
+            onActionClick = onAddPayeeClick,
         )
 
-        when (state) {
-            is PayeeListUiState.Loading -> {
-                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    CircularProgressIndicator()
-                }
+        Box(modifier = Modifier.weight(1f)) {
+            PayeeListBody(state = state)
+        }
+    }
+}
+
+@Composable
+private fun PayeeListBody(state: PayeeListUiState) {
+    when (state) {
+        is PayeeListUiState.Loading -> {
+            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                CircularProgressIndicator()
             }
-            is PayeeListUiState.Error -> {
-                Text(text = stringResource(Res.string.payee_list_error_message))
-            }
-            is PayeeListUiState.Content -> {
-                if (state.payees.isEmpty()) {
-                    Text(text = stringResource(Res.string.payee_list_empty_message))
-                } else {
-                    LazyColumn {
-                        items(state.payees, key = { it.id.value }) { payee ->
-                            Text(text = payee.name)
-                        }
+        }
+        is PayeeListUiState.Error -> {
+            Text(text = stringResource(Res.string.payee_list_error_message))
+        }
+        is PayeeListUiState.Content -> {
+            if (state.payees.isEmpty()) {
+                Text(text = stringResource(Res.string.payee_list_empty_message))
+            } else {
+                LazyColumn {
+                    items(state.payees, key = { it.id.value }) { payee ->
+                        Text(text = payee.name)
                     }
                 }
             }
@@ -66,7 +81,7 @@ private fun PayeeListScreenContent(state: PayeeListUiState) {
 @Composable
 private fun PayeeListScreenLoadingPreview() {
     PreviewThemed {
-        PayeeListScreenContent(state = PayeeListUiState.Loading)
+        PayeeListScreenContent(state = PayeeListUiState.Loading, onAddPayeeClick = {})
     }
 }
 
@@ -74,7 +89,7 @@ private fun PayeeListScreenLoadingPreview() {
 @Composable
 private fun PayeeListScreenErrorPreview() {
     PreviewThemed {
-        PayeeListScreenContent(state = PayeeListUiState.Error)
+        PayeeListScreenContent(state = PayeeListUiState.Error, onAddPayeeClick = {})
     }
 }
 
@@ -88,7 +103,8 @@ private fun PayeeListScreenWithPayeesPreview() {
                     Payee(name = "Grocery Store"),
                     Payee(name = "Electric Company"),
                 )
-            )
+            ),
+            onAddPayeeClick = {},
         )
     }
 }
@@ -97,6 +113,9 @@ private fun PayeeListScreenWithPayeesPreview() {
 @Composable
 private fun PayeeListScreenEmptyPreview() {
     PreviewThemed {
-        PayeeListScreenContent(state = PayeeListUiState.Content(payees = emptyList()))
+        PayeeListScreenContent(
+            state = PayeeListUiState.Content(payees = emptyList()),
+            onAddPayeeClick = {},
+        )
     }
 }

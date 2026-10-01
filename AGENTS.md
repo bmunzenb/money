@@ -156,7 +156,7 @@ Column(modifier = Modifier.fillMaxSize()) {
 }
 ```
 
-`AccountListScreen` is the reference implementation; the Categories and Payees screens don't use it yet.
+The Accounts, Categories, and Payees screens all follow this pattern.
 
 ## String resources
 

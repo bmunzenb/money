@@ -17,9 +17,10 @@ import com.munzenberger.money.data.api.category.Category
 import com.munzenberger.money.data.api.category.CategoryType
 import com.munzenberger.money.data.api.category.CategoryTypeConstant
 import com.munzenberger.money.data.api.category.CategoryTypeId
-import com.munzenberger.money.shared.theme.MoneyTheme
+import com.munzenberger.money.desktop.components.ListScreenHeader
 import com.munzenberger.money.shared.theme.PreviewThemed
 import money.shared.generated.resources.Res
+import money.shared.generated.resources.add_category_button_title
 import money.shared.generated.resources.category_list_empty_message
 import money.shared.generated.resources.category_list_error_message
 import money.shared.generated.resources.category_list_title
@@ -30,34 +31,48 @@ import org.koin.compose.viewmodel.koinViewModel
 fun CategoryListScreen(viewModel: CategoryListViewModel = koinViewModel()) {
     val state by viewModel.state.collectAsState(initial = CategoryListUiState.Loading)
 
-    CategoryListScreenContent(state = state)
+    CategoryListScreenContent(
+        state = state,
+        onAddCategoryClick = viewModel::onAddCategoryClick,
+    )
 }
 
 @Composable
-private fun CategoryListScreenContent(state: CategoryListUiState) {
-    Column {
-        Text(
-            text = stringResource(Res.string.category_list_title),
-            style = MoneyTheme.typography.headlineMedium
+private fun CategoryListScreenContent(
+    state: CategoryListUiState,
+    onAddCategoryClick: () -> Unit,
+) {
+    Column(modifier = Modifier.fillMaxSize()) {
+        ListScreenHeader(
+            title = stringResource(Res.string.category_list_title),
+            actionLabel = stringResource(Res.string.add_category_button_title),
+            onActionClick = onAddCategoryClick,
         )
 
-        when (state) {
-            is CategoryListUiState.Loading -> {
-                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    CircularProgressIndicator()
-                }
+        Box(modifier = Modifier.weight(1f)) {
+            CategoryListBody(state = state)
+        }
+    }
+}
+
+@Composable
+private fun CategoryListBody(state: CategoryListUiState) {
+    when (state) {
+        is CategoryListUiState.Loading -> {
+            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                CircularProgressIndicator()
             }
-            is CategoryListUiState.Error -> {
-                Text(text = stringResource(Res.string.category_list_error_message))
-            }
-            is CategoryListUiState.Content -> {
-                if (state.categories.isEmpty()) {
-                    Text(text = stringResource(Res.string.category_list_empty_message))
-                } else {
-                    LazyColumn {
-                        items(state.categories, key = { it.id.value }) { category ->
-                            Text(text = category.name)
-                        }
+        }
+        is CategoryListUiState.Error -> {
+            Text(text = stringResource(Res.string.category_list_error_message))
+        }
+        is CategoryListUiState.Content -> {
+            if (state.categories.isEmpty()) {
+                Text(text = stringResource(Res.string.category_list_empty_message))
+            } else {
+                LazyColumn {
+                    items(state.categories, key = { it.id.value }) { category ->
+                        Text(text = category.name)
                     }
                 }
             }
@@ -69,7 +84,7 @@ private fun CategoryListScreenContent(state: CategoryListUiState) {
 @Composable
 private fun CategoryListScreenLoadingPreview() {
     PreviewThemed {
-        CategoryListScreenContent(state = CategoryListUiState.Loading)
+        CategoryListScreenContent(state = CategoryListUiState.Loading, onAddCategoryClick = {})
     }
 }
 
@@ -77,7 +92,7 @@ private fun CategoryListScreenLoadingPreview() {
 @Composable
 private fun CategoryListScreenErrorPreview() {
     PreviewThemed {
-        CategoryListScreenContent(state = CategoryListUiState.Error)
+        CategoryListScreenContent(state = CategoryListUiState.Error, onAddCategoryClick = {})
     }
 }
 
@@ -91,7 +106,8 @@ private fun CategoryListScreenWithCategoriesPreview() {
                     Category(name = "Groceries", type = previewCategoryType),
                     Category(name = "Rent", type = previewCategoryType),
                 )
-            )
+            ),
+            onAddCategoryClick = {},
         )
     }
 }
@@ -100,7 +116,10 @@ private fun CategoryListScreenWithCategoriesPreview() {
 @Composable
 private fun CategoryListScreenEmptyPreview() {
     PreviewThemed {
-        CategoryListScreenContent(state = CategoryListUiState.Content(categories = emptyList()))
+        CategoryListScreenContent(
+            state = CategoryListUiState.Content(categories = emptyList()),
+            onAddCategoryClick = {},
+        )
     }
 }
 
