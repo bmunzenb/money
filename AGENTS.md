@@ -51,7 +51,8 @@ Reading `navigator.backStack` is fine, but prefer `currentRoute` when you only n
 Top-level destinations are listed in the `TopLevelDestination` enum
 (`desktop/.../desktop/rail/TopLevelDestination.kt`: route, icon, label) and shown in the Material 3
 Expressive `WideNavigationRail` in `rail/AppNavigationRail.kt`, which the user can collapse or expand.
-`AppNavigationRailViewModel` derives the selected item from `currentRoute` and switches destinations by
+`AppNavigationRailViewModel` selects the top-most top-level destination in the back stack (so a
+screen pushed on top, like `NewAccount` over `AccountList`, keeps its parent selected) and switches destinations by
 replacing the stack (`clear(); add(route)`), not pushing onto it, so peers don't build up back history. To
 add a top-level screen, add a `Route`, its `entry`, and a `TopLevelDestination` entry.
 
@@ -157,6 +158,24 @@ Column(modifier = Modifier.fillMaxSize()) {
 ```
 
 The Accounts, Categories, and Payees screens all follow this pattern.
+
+## Detail screens
+
+Screens pushed on top of another screen (e.g. `NewAccount` over `AccountList`) start with
+`DetailScreenHeader` (`desktop/.../desktop/components/DetailScreenHeader.kt`): a back button followed by
+the title. Its back arrow lines up with `ListScreenHeader`'s title. Wire `onBackClick` to a ViewModel
+function that does `navigator.navigate { removeLast() }`:
+
+```kotlin
+Column(modifier = Modifier.fillMaxSize()) {
+    DetailScreenHeader(
+        title = stringResource(Res.string.new_account_title),
+        onBackClick = onBackClick,
+    )
+
+    // screen content
+}
+```
 
 ## String resources
 

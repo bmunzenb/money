@@ -46,6 +46,19 @@ class AppNavigationRailViewModelTest {
     }
 
     @Test
+    fun `state keeps the underlying destination selected when a screen is pushed on top of it`() = runTest {
+        navigator.navigate { add(Route.AccountList) }
+        val viewModel = AppNavigationRailViewModel(navigator)
+
+        viewModel.state.test {
+            assertEquals(AppNavigationRailUiState(selected = TopLevelDestination.Accounts), awaitItem())
+
+            navigator.navigate { add(Route.NewAccount) }
+            expectNoEvents()
+        }
+    }
+
+    @Test
     fun `onDestinationClick replaces the back stack with the destination route`() {
         navigator.navigate { add(Route.AccountList) }
         val viewModel = AppNavigationRailViewModel(navigator)
