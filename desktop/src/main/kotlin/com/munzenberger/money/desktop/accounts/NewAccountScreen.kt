@@ -25,6 +25,7 @@ import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.tooling.preview.Preview
 import com.munzenberger.money.data.api.account.AccountType
 import com.munzenberger.money.data.api.account.AccountTypeConstant
+import com.munzenberger.money.data.api.bank.Bank
 import com.munzenberger.money.desktop.components.DetailScreenHeader
 import com.munzenberger.money.shared.theme.MoneyTheme
 import com.munzenberger.money.shared.theme.PreviewThemed
@@ -37,6 +38,7 @@ import money.shared.generated.resources.account_type_credit
 import money.shared.generated.resources.account_type_label
 import money.shared.generated.resources.account_type_loan
 import money.shared.generated.resources.account_type_savings
+import money.shared.generated.resources.financial_institution_label
 import money.shared.generated.resources.new_account_title
 import money.shared.generated.resources.required_field_label
 import money.shared.generated.resources.required_field_supporting_text
@@ -51,6 +53,8 @@ fun NewAccountScreen(viewModel: NewAccountViewModel = koinViewModel()) {
         state = state,
         onNameChange = viewModel::onNameChange,
         onAccountTypeChange = viewModel::onAccountTypeChange,
+        onBankNameChange = viewModel::onBankNameChange,
+        onBankChange = viewModel::onBankChange,
         onBackClick = viewModel::onBackClick,
     )
 }
@@ -60,6 +64,8 @@ private fun NewAccountScreenContent(
     state: NewAccountUiState,
     onNameChange: (String) -> Unit,
     onAccountTypeChange: (AccountType) -> Unit,
+    onBankNameChange: (String) -> Unit,
+    onBankChange: (Bank) -> Unit,
     onBackClick: () -> Unit,
 ) {
     Column(modifier = Modifier.fillMaxSize()) {
@@ -93,6 +99,14 @@ private fun NewAccountScreenContent(
                 accountTypes = state.accountTypes,
                 accountType = state.accountType,
                 onAccountTypeChange = onAccountTypeChange,
+            )
+
+            FinancialInstitutionField(
+                banks = state.banks,
+                bankName = state.bankName,
+                bank = state.bank,
+                onBankNameChange = onBankNameChange,
+                onBankChange = onBankChange,
             )
         }
     }
@@ -153,6 +167,66 @@ private fun AccountTypeField(
     }
 }
 
+/**
+ * Optional editable dropdown for the account's financial institution. The user can pick an existing
+ * bank from the menu or type the name of a new one. As they type, the menu narrows to the banks whose
+ * names contain the text; once the text names an existing bank, the menu lists every bank again so the
+ * user can switch to another one.
+ */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun FinancialInstitutionField(
+    banks: List<Bank>,
+    bankName: String,
+    bank: Bank?,
+    onBankNameChange: (String) -> Unit,
+    onBankChange: (Bank) -> Unit,
+) {
+    var expanded by remember { mutableStateOf(false) }
+    val options = if (bank != null) banks else banks.filter { it.name.contains(bankName.trim(), ignoreCase = true) }
+
+    ExposedDropdownMenuBox(
+        expanded = expanded && options.isNotEmpty(),
+        onExpandedChange = { expanded = it },
+    ) {
+        OutlinedTextField(
+            value = bankName,
+            onValueChange = {
+                onBankNameChange(it)
+                expanded = true
+            },
+            label = { Text(stringResource(Res.string.financial_institution_label)) },
+            trailingIcon = {
+                ExposedDropdownMenuDefaults.TrailingIcon(
+                    expanded = expanded && options.isNotEmpty(),
+                    modifier = Modifier.menuAnchor(ExposedDropdownMenuAnchorType.SecondaryEditable),
+                )
+            },
+            singleLine = true,
+            keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Words),
+            modifier = Modifier
+                .menuAnchor(ExposedDropdownMenuAnchorType.PrimaryEditable)
+                .fillMaxWidth(),
+        )
+
+        ExposedDropdownMenu(
+            expanded = expanded && options.isNotEmpty(),
+            onDismissRequest = { expanded = false },
+        ) {
+            options.forEach { option ->
+                DropdownMenuItem(
+                    text = { Text(option.name) },
+                    onClick = {
+                        onBankChange(option)
+                        expanded = false
+                    },
+                    contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding,
+                )
+            }
+        }
+    }
+}
+
 @Composable
 private fun AccountTypeConstant.label(): String = stringResource(
     when (this) {
@@ -173,6 +247,8 @@ private fun NewAccountScreenPreview() {
             state = NewAccountUiState(),
             onNameChange = {},
             onAccountTypeChange = {},
+            onBankNameChange = {},
+            onBankChange = {},
             onBackClick = {},
         )
     }

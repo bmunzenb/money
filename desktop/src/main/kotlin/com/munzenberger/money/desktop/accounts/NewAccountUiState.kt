@@ -1,9 +1,15 @@
 package com.munzenberger.money.desktop.accounts
 
 import com.munzenberger.money.data.api.account.AccountType
+import com.munzenberger.money.data.api.bank.Bank
 
 data class NewAccountUiState(
     val name: String = "",
     val accountTypes: List<AccountType> = emptyList(),
     val accountType: AccountType? = null,
+    val banks: List<Bank> = emptyList(),
+    /** The text in the financial institution field: an existing bank's name, or a new one typed in. */
+    val bankName: String = "",
+    /** The existing bank matching [bankName], or null if the name is blank or for a new bank. */
+    val bank: Bank? = null,
 )

@@ -15,6 +15,7 @@
     <string name="new_account_title">New account</string>
     <string name="account_name_label">Name</string>
     <string name="account_type_label">Account type</string>
+    <string name="financial_institution_label">Financial institution</string>
     <string name="account_type_savings">Savings</string>
     <string name="account_type_checking">Checking</string>
     <string name="account_type_asset">Asset</string>

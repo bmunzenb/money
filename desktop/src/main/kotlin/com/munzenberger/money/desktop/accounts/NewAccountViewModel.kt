@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.munzenberger.money.core.MoneyRepositoryController
 import com.munzenberger.money.core.resultFlow
 import com.munzenberger.money.data.api.account.AccountType
+import com.munzenberger.money.data.api.bank.Bank
 import com.munzenberger.money.desktop.navigation.Navigator
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -27,6 +28,12 @@ class NewAccountViewModel(
                 _state.update { it.copy(accountTypes = accountTypes) }
             }
         }
+        viewModelScope.launch {
+            repositoryController.resultFlow { it.banks }.collect { result ->
+                val banks = result.getOrDefault(emptyList()).sortedBy { it.name.lowercase() }
+                _state.update { it.copy(banks = banks, bank = banks.matching(it.bankName)) }
+            }
+        }
     }
 
     fun onNameChange(name: String) {
@@ -37,7 +44,24 @@ class NewAccountViewModel(
         _state.update { it.copy(accountType = accountType) }
     }
 
+    fun onBankNameChange(bankName: String) {
+        _state.update { it.copy(bankName = bankName, bank = it.banks.matching(bankName)) }
+    }
+
+    fun onBankChange(bank: Bank) {
+        _state.update { it.copy(bankName = bank.name, bank = bank) }
+    }
+
     fun onBackClick() {
         navigator.navigate { removeLast() }
     }
+}
+
+/**
+ * Typing an existing bank's name selects that bank rather than starting a new one, so the user doesn't
+ * end up with a duplicate just because they typed instead of picking from the list.
+ */
+private fun List<Bank>.matching(bankName: String): Bank? {
+    val name = bankName.trim()
+    return if (name.isEmpty()) null else firstOrNull { it.name.equals(name, ignoreCase = true) }
 }
