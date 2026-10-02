@@ -3,7 +3,10 @@ package com.munzenberger.money.desktop.accounts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -56,8 +59,17 @@ private fun NewAccountScreenContent(
             onBackClick = onBackClick,
         )
 
+        // Only the fields scroll, so the header and its back button stay visible.
         Column(
-            modifier = Modifier.padding(horizontal = MoneyTheme.spacing.medium),
+            modifier = Modifier
+                .weight(1f)
+                .fillMaxWidth()
+                .verticalScroll(rememberScrollState())
+                .padding(
+                    start = MoneyTheme.spacing.medium,
+                    end = MoneyTheme.spacing.medium,
+                    bottom = MoneyTheme.spacing.medium,
+                ),
             verticalArrangement = Arrangement.spacedBy(MoneyTheme.spacing.small),
         ) {
             NameField(name = state.name, onNameChange = onNameChange)
