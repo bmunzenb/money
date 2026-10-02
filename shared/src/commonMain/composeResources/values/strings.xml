@@ -22,11 +22,6 @@
     <string name="payee_list_empty_message">No payees</string>
     <string name="payee_list_error_message">Unable to load payees.</string>
     <string name="add_payee_button_title">New payee</string>
-    <string name="file_menu_title">File</string>
-    <string name="new_database_menu_item_title">New…</string>
-    <string name="open_database_menu_item_title">Open…</string>
-    <string name="close_database_menu_item_title">Close Database</string>
-    <string name="exit_menu_item_title">Exit</string>
     <string name="expand_navigation_rail_button_description">Expand navigation</string>
     <string name="collapse_navigation_rail_button_description">Collapse navigation</string>
     <string name="accounts_button_title">Accounts</string>

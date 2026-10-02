@@ -6,7 +6,6 @@ import com.munzenberger.money.desktop.AppViewModel
 import com.munzenberger.money.desktop.accounts.AccountListViewModel
 import com.munzenberger.money.desktop.accounts.NewAccountViewModel
 import com.munzenberger.money.desktop.categories.CategoryListViewModel
-import com.munzenberger.money.desktop.menu.MenuBarViewModel
 import com.munzenberger.money.desktop.navigation.Navigator
 import com.munzenberger.money.desktop.payees.PayeeListViewModel
 import com.munzenberger.money.desktop.rail.AppNavigationRailViewModel
@@ -24,6 +23,5 @@ val appModule = module {
     viewModel { NewAccountViewModel(get()) }
     viewModel { CategoryListViewModel(get()) }
     viewModel { PayeeListViewModel(get()) }
-    viewModel { MenuBarViewModel(get()) }
     viewModel { AppNavigationRailViewModel(get()) }
 }

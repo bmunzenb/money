@@ -78,7 +78,7 @@ class WelcomeViewModel(
 ) : ViewModel() { /* ... */ }
 ```
 
-Non-screen UI (e.g. `rail/AppNavigationRailViewModel.kt`, `menu/MenuBarViewModel.kt`) and the root
+Non-screen UI (e.g. `rail/AppNavigationRailViewModel.kt`) and the root
 `AppViewModel` follow the same pattern.
 
 Register it in `desktop/src/main/kotlin/com/munzenberger/money/desktop/inject/AppModule.kt` with Koin's
