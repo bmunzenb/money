@@ -13,4 +13,10 @@ data class NewAccountUiState(
     /** The existing bank matching [bankName], or null if the name is blank or for a new bank. */
     val bank: Bank? = null,
     val number: String = "",
+    /** The text in the initial balance field. Blank means a zero balance. */
+    val initialBalance: String = "",
+    /** The symbol of the initial balance's currency, shown before the amount (e.g. "$"). */
+    val currencySymbol: String,
+    /** Whether [initialBalance] should be shown as invalid; only set once the user leaves the field. */
+    val isInitialBalanceError: Boolean = false,
 )

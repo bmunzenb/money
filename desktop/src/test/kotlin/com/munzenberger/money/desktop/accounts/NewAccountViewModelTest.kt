@@ -22,11 +22,14 @@ import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
+import java.util.Locale
 import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertNull
+import kotlin.test.assertTrue
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class NewAccountViewModelTest {
@@ -51,14 +54,19 @@ class NewAccountViewModelTest {
 
     private fun <T> failingFlow(): Flow<T> = flow { error("query failed") }
 
+    // The initial balance is parsed and formatted for the default locale.
+    private val defaultLocale = Locale.getDefault()
+
     @BeforeTest
     fun setUp() {
         Dispatchers.setMain(UnconfinedTestDispatcher())
+        Locale.setDefault(Locale.US)
     }
 
     @AfterTest
     fun tearDown() {
         Dispatchers.resetMain()
+        Locale.setDefault(defaultLocale)
     }
 
     @Test
@@ -199,6 +207,86 @@ class NewAccountViewModelTest {
         viewModel.onNumberChange("1234-5678")
 
         assertEquals("1234-5678", viewModel.state.value.number)
+    }
+
+    @Test
+    fun `initial balance is initially blank without an error`() {
+        val viewModel = NewAccountViewModel(fixture.controller, navigator)
+
+        assertEquals("", viewModel.state.value.initialBalance)
+        assertFalse(viewModel.state.value.isInitialBalanceError)
+    }
+
+    @Test
+    fun `currency symbol is the default currency's symbol`() {
+        val viewModel = NewAccountViewModel(fixture.controller, navigator)
+
+        assertEquals("$", viewModel.state.value.currencySymbol)
+    }
+
+    @Test
+    fun `an invalid initial balance isn't an error while still typing`() {
+        val viewModel = NewAccountViewModel(fixture.controller, navigator)
+
+        viewModel.onInitialBalanceChange("-")
+
+        assertEquals("-", viewModel.state.value.initialBalance)
+        assertFalse(viewModel.state.value.isInitialBalanceError)
+    }
+
+    @Test
+    fun `an invalid initial balance is an error once focus is lost`() {
+        val viewModel = NewAccountViewModel(fixture.controller, navigator)
+        viewModel.onInitialBalanceChange("12abc")
+
+        viewModel.onInitialBalanceFocusLost()
+
+        assertEquals("12abc", viewModel.state.value.initialBalance)
+        assertTrue(viewModel.state.value.isInitialBalanceError)
+    }
+
+    @Test
+    fun `correcting an invalid initial balance clears the error`() {
+        val viewModel = NewAccountViewModel(fixture.controller, navigator)
+        viewModel.onInitialBalanceChange("12abc")
+        viewModel.onInitialBalanceFocusLost()
+
+        viewModel.onInitialBalanceChange("12")
+
+        assertFalse(viewModel.state.value.isInitialBalanceError)
+    }
+
+    @Test
+    fun `a valid initial balance is reformatted once focus is lost`() {
+        val viewModel = NewAccountViewModel(fixture.controller, navigator)
+        viewModel.onInitialBalanceChange("1234.5")
+
+        viewModel.onInitialBalanceFocusLost()
+
+        assertEquals("1,234.50", viewModel.state.value.initialBalance)
+        assertFalse(viewModel.state.value.isInitialBalanceError)
+    }
+
+    @Test
+    fun `a negative initial balance is valid`() {
+        val viewModel = NewAccountViewModel(fixture.controller, navigator)
+        viewModel.onInitialBalanceChange("-250")
+
+        viewModel.onInitialBalanceFocusLost()
+
+        assertEquals("-250.00", viewModel.state.value.initialBalance)
+        assertFalse(viewModel.state.value.isInitialBalanceError)
+    }
+
+    @Test
+    fun `a blank initial balance is valid and cleared once focus is lost`() {
+        val viewModel = NewAccountViewModel(fixture.controller, navigator)
+        viewModel.onInitialBalanceChange("  ")
+
+        viewModel.onInitialBalanceFocusLost()
+
+        assertEquals("", viewModel.state.value.initialBalance)
+        assertFalse(viewModel.state.value.isInitialBalanceError)
     }
 
     @Test

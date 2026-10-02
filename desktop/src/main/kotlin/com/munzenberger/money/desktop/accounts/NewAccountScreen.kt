@@ -21,8 +21,11 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.text.input.KeyboardCapitalization
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
+import com.munzenberger.money.data.api.Money
 import com.munzenberger.money.data.api.account.AccountType
 import com.munzenberger.money.data.api.account.AccountTypeConstant
 import com.munzenberger.money.data.api.bank.Bank
@@ -42,6 +45,8 @@ import money.shared.generated.resources.account_type_loan
 import money.shared.generated.resources.account_type_savings
 import money.shared.generated.resources.financial_institution_label
 import money.shared.generated.resources.financial_institution_load_error_message
+import money.shared.generated.resources.initial_balance_error_message
+import money.shared.generated.resources.initial_balance_label
 import money.shared.generated.resources.new_account_title
 import money.shared.generated.resources.required_field_label
 import money.shared.generated.resources.required_field_supporting_text
@@ -59,6 +64,8 @@ fun NewAccountScreen(viewModel: NewAccountViewModel = koinViewModel()) {
         onBankNameChange = viewModel::onBankNameChange,
         onBankChange = viewModel::onBankChange,
         onNumberChange = viewModel::onNumberChange,
+        onInitialBalanceChange = viewModel::onInitialBalanceChange,
+        onInitialBalanceFocusLost = viewModel::onInitialBalanceFocusLost,
         onBackClick = viewModel::onBackClick,
     )
 }
@@ -71,6 +78,8 @@ private fun NewAccountScreenContent(
     onBankNameChange: (String) -> Unit,
     onBankChange: (Bank) -> Unit,
     onNumberChange: (String) -> Unit,
+    onInitialBalanceChange: (String) -> Unit,
+    onInitialBalanceFocusLost: () -> Unit,
     onBackClick: () -> Unit,
 ) {
     Column(modifier = Modifier.fillMaxSize()) {
@@ -120,6 +129,14 @@ private fun NewAccountScreenContent(
                 label = { Text(stringResource(Res.string.account_number_label)) },
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth(),
+            )
+
+            InitialBalanceField(
+                initialBalance = state.initialBalance,
+                currencySymbol = state.currencySymbol,
+                isError = state.isInitialBalanceError,
+                onInitialBalanceChange = onInitialBalanceChange,
+                onFocusLost = onInitialBalanceFocusLost,
             )
         }
     }
@@ -267,6 +284,44 @@ private fun FinancialInstitutionField(
     }
 }
 
+/**
+ * Optional amount field for the account's opening balance; blank means zero. The amount is checked when
+ * the user leaves the field, so a half-typed amount like "-" isn't flagged while they're still typing.
+ */
+@Composable
+private fun InitialBalanceField(
+    initialBalance: String,
+    currencySymbol: String,
+    isError: Boolean,
+    onInitialBalanceChange: (String) -> Unit,
+    onFocusLost: () -> Unit,
+) {
+    // onFocusChanged also reports the initial unfocused state, which isn't the user leaving the field.
+    var hasFocus by remember { mutableStateOf(false) }
+
+    OutlinedTextField(
+        value = initialBalance,
+        onValueChange = onInitialBalanceChange,
+        label = { Text(stringResource(Res.string.initial_balance_label)) },
+        placeholder = { Text(Money(0).toString(asCurrency = false)) },
+        prefix = { Text(currencySymbol) },
+        supportingText = if (isError) {
+            { Text(stringResource(Res.string.initial_balance_error_message)) }
+        } else {
+            null
+        },
+        isError = isError,
+        singleLine = true,
+        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+        modifier = Modifier
+            .fillMaxWidth()
+            .onFocusChanged {
+                if (hasFocus && !it.isFocused) onFocusLost()
+                hasFocus = it.isFocused
+            },
+    )
+}
+
 @Composable
 private fun AccountTypeConstant.label(): String = stringResource(
     when (this) {
@@ -285,6 +340,7 @@ private fun NewAccountScreenPreview() {
     PreviewThemed {
         NewAccountScreenPreviewContent(
             state = NewAccountUiState(
+                currencySymbol = "$",
                 accountTypes = LoadState.Loaded(emptyList()),
                 banks = LoadState.Loaded(emptyList()),
             )
@@ -296,7 +352,7 @@ private fun NewAccountScreenPreview() {
 @Composable
 private fun NewAccountScreenLoadingPreview() {
     PreviewThemed {
-        NewAccountScreenPreviewContent(state = NewAccountUiState())
+        NewAccountScreenPreviewContent(state = NewAccountUiState(currencySymbol = "$"))
     }
 }
 
@@ -305,7 +361,11 @@ private fun NewAccountScreenLoadingPreview() {
 private fun NewAccountScreenErrorPreview() {
     PreviewThemed {
         NewAccountScreenPreviewContent(
-            state = NewAccountUiState(accountTypes = LoadState.Error, banks = LoadState.Error)
+            state = NewAccountUiState(
+                accountTypes = LoadState.Error,
+                banks = LoadState.Error,
+                currencySymbol = "$",
+            )
         )
     }
 }
@@ -319,6 +379,8 @@ private fun NewAccountScreenPreviewContent(state: NewAccountUiState) {
         onBankNameChange = {},
         onBankChange = {},
         onNumberChange = {},
+        onInitialBalanceChange = {},
+        onInitialBalanceFocusLost = {},
         onBackClick = {},
     )
 }

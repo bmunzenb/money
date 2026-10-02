@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.munzenberger.money.core.MoneyRepositoryController
 import com.munzenberger.money.core.resultFlow
+import com.munzenberger.money.data.api.Money
 import com.munzenberger.money.data.api.account.AccountType
 import com.munzenberger.money.data.api.bank.Bank
 import com.munzenberger.money.desktop.navigation.Navigator
@@ -18,7 +19,9 @@ class NewAccountViewModel(
     private val navigator: Navigator,
 ) : ViewModel() {
 
-    private val _state = MutableStateFlow(NewAccountUiState())
+    private val _state = MutableStateFlow(
+        NewAccountUiState(currencySymbol = Money.DEFAULT_CURRENCY.symbol)
+    )
     val state: StateFlow<NewAccountUiState> = _state.asStateFlow()
 
     init {
@@ -56,6 +59,27 @@ class NewAccountViewModel(
         _state.update { it.copy(number = number) }
     }
 
+    fun onInitialBalanceChange(initialBalance: String) {
+        _state.update {
+            // Clear the error as soon as the text becomes valid, but don't show one while still typing.
+            it.copy(
+                initialBalance = initialBalance,
+                isInitialBalanceError = it.isInitialBalanceError && parseInitialBalance(initialBalance) == null,
+            )
+        }
+    }
+
+    fun onInitialBalanceFocusLost() {
+        _state.update {
+            val money = parseInitialBalance(it.initialBalance)
+            when {
+                it.initialBalance.isBlank() -> it.copy(initialBalance = "", isInitialBalanceError = false)
+                money == null -> it.copy(isInitialBalanceError = true)
+                else -> it.copy(initialBalance = money.toString(asCurrency = false), isInitialBalanceError = false)
+            }
+        }
+    }
+
     fun onBackClick() {
         navigator.navigate { removeLast() }
     }
@@ -69,3 +93,15 @@ private fun List<Bank>.matching(bankName: String): Bank? {
     val name = bankName.trim()
     return if (name.isEmpty()) null else firstOrNull { it.name.equals(name, ignoreCase = true) }
 }
+
+/** The amount in [initialBalance], zero if it's blank, or null if it isn't a valid amount. */
+private fun parseInitialBalance(initialBalance: String): Money? =
+    if (initialBalance.isBlank()) {
+        Money(0)
+    } else {
+        try {
+            Money.parse(initialBalance)
+        } catch (_: NumberFormatException) {
+            null
+        }
+    }
