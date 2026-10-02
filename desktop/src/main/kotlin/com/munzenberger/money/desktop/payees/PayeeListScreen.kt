@@ -3,7 +3,6 @@ package com.munzenberger.money.desktop.payees
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
@@ -15,6 +14,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import com.munzenberger.money.data.api.payee.Payee
 import com.munzenberger.money.desktop.components.ListScreenHeader
+import com.munzenberger.money.desktop.components.ScrollableLazyColumn
 import com.munzenberger.money.shared.theme.PreviewThemed
 import money.shared.generated.resources.Res
 import money.shared.generated.resources.add_payee_button_title
@@ -67,7 +67,7 @@ private fun PayeeListBody(state: PayeeListUiState) {
             if (state.payees.isEmpty()) {
                 Text(text = stringResource(Res.string.payee_list_empty_message))
             } else {
-                LazyColumn {
+                ScrollableLazyColumn(modifier = Modifier.fillMaxSize()) {
                     items(state.payees, key = { it.id.value }) { payee ->
                         Text(text = payee.name)
                     }
