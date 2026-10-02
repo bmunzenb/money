@@ -8,6 +8,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
+import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
 import com.munzenberger.money.desktop.navigation.Navigator
 import com.munzenberger.money.desktop.navigation.navigationRouter
@@ -31,6 +33,10 @@ fun App(viewModel: AppViewModel = koinViewModel()) {
 
             NavDisplay(
                 backStack = navigator.backStack,
+                entryDecorators = listOf(
+                    rememberSaveableStateHolderNavEntryDecorator(),
+                    rememberViewModelStoreNavEntryDecorator(),
+                ),
                 entryProvider = navigationRouter,
                 modifier = Modifier
                     .weight(1f)

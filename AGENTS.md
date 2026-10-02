@@ -58,7 +58,10 @@ add a top-level screen, add a `Route`, its `entry`, and a `TopLevelDestination` 
 
 `App.kt` (the root composable) injects the `Navigator` with `koinInject()` and hands
 `navigator.backStack` and `navigationRouter` to the single `NavDisplay`; it doesn't apply navigation
-itself. App-wide reactive navigation lives in `AppViewModel` (`desktop/.../desktop/AppViewModel.kt`):
+itself. `NavDisplay` is given `rememberSaveableStateHolderNavEntryDecorator()` and
+`rememberViewModelStoreNavEntryDecorator()` (in that order), so each back stack entry has its own
+`ViewModelStoreOwner`: a screen's `koinViewModel()` is scoped to its entry and cleared when the entry is
+popped, and navigating to the screen again starts with a fresh ViewModel. App-wide reactive navigation lives in `AppViewModel` (`desktop/.../desktop/AppViewModel.kt`):
 in `init` it collects `MoneyRepositoryController.moneyRepository` and does
 `navigator.navigate { clear(); add(...) }` to `AccountList`/`Welcome` depending on whether a
 repository is open. It also exposes `state: StateFlow<AppUiState>` (`isRepositoryConnected`), which
