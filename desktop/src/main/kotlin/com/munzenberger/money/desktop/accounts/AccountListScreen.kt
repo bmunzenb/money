@@ -3,7 +3,6 @@ package com.munzenberger.money.desktop.accounts
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
@@ -21,6 +20,7 @@ import com.munzenberger.money.data.api.account.AccountTypeGroupConstant
 import com.munzenberger.money.data.api.account.AccountTypeGroupId
 import com.munzenberger.money.data.api.account.AccountTypeId
 import com.munzenberger.money.desktop.components.ListScreenHeader
+import com.munzenberger.money.desktop.components.ScrollableLazyColumn
 import com.munzenberger.money.shared.theme.PreviewThemed
 import money.shared.generated.resources.Res
 import money.shared.generated.resources.account_list_empty_message
@@ -73,7 +73,7 @@ private fun AccountListBody(state: AccountListUiState) {
             if (state.accounts.isEmpty()) {
                 Text(text = stringResource(Res.string.account_list_empty_message))
             } else {
-                LazyColumn {
+                ScrollableLazyColumn(modifier = Modifier.fillMaxSize()) {
                     items(state.accounts, key = { it.id.value }) { account ->
                         Text(text = account.name)
                     }

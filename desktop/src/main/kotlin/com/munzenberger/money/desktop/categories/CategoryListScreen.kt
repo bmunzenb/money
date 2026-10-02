@@ -3,7 +3,6 @@ package com.munzenberger.money.desktop.categories
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
@@ -18,6 +17,7 @@ import com.munzenberger.money.data.api.category.CategoryType
 import com.munzenberger.money.data.api.category.CategoryTypeConstant
 import com.munzenberger.money.data.api.category.CategoryTypeId
 import com.munzenberger.money.desktop.components.ListScreenHeader
+import com.munzenberger.money.desktop.components.ScrollableLazyColumn
 import com.munzenberger.money.shared.theme.PreviewThemed
 import money.shared.generated.resources.Res
 import money.shared.generated.resources.add_category_button_title
@@ -70,7 +70,7 @@ private fun CategoryListBody(state: CategoryListUiState) {
             if (state.categories.isEmpty()) {
                 Text(text = stringResource(Res.string.category_list_empty_message))
             } else {
-                LazyColumn {
+                ScrollableLazyColumn(modifier = Modifier.fillMaxSize()) {
                     items(state.categories, key = { it.id.value }) { category ->
                         Text(text = category.name)
                     }

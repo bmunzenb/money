@@ -162,6 +162,14 @@ Column(modifier = Modifier.fillMaxSize()) {
 
 The Accounts, Categories, and Payees screens all follow this pattern.
 
+## Scrolling
+
+Every scrollable area shows a scrollbar. Instead of a bare `LazyColumn` or
+`Column(Modifier.verticalScroll(...))`, use `ScrollableLazyColumn` or `ScrollableColumn`
+(`desktop/.../desktop/components/Scrollables.kt`). They overlay a theme-tinted `VerticalScrollbar` on the
+end edge. Pass the padding to `ScrollableColumn`'s `contentPadding` so the scrollbar sits in the end
+gutter instead of over the content.
+
 ## Detail screens
 
 Screens pushed on top of another screen (e.g. `NewAccount` over `AccountList`) start with
