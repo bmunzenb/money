@@ -26,7 +26,7 @@ class SqlAccountRepository(
 ) : AccountRepository {
 
     override val accounts: Flow<List<Account>> = database.accountQueries
-        .selectAll { id, name, number, bankId, initialBalance, typeId, typeValue, typeGroupId, typeGroupValue ->
+        .selectAll { id, name, number, bankId, initialBalance, memo, typeId, typeValue, typeGroupId, typeGroupValue ->
             Account(
                 id = AccountId(Uuid.parse(id)),
                 name = name,
@@ -41,6 +41,7 @@ class SqlAccountRepository(
                 ),
                 bankId = bankId?.let { BankId(Uuid.parse(it)) },
                 initialBalance = initialBalance?.let { Money(it) },
+                memo = memo,
             )
         }
         .asFlow()
@@ -55,6 +56,7 @@ class SqlAccountRepository(
                 account_type_id = account.accountType.id.value,
                 bank_id = account.bankId?.value?.toString(),
                 initial_balance = account.initialBalance?.value,
+                memo = account.memo,
             )
         }
     }
@@ -67,6 +69,7 @@ class SqlAccountRepository(
                 account_type_id = account.accountType.id.value,
                 bank_id = account.bankId?.value?.toString(),
                 initial_balance = account.initialBalance?.value,
+                memo = account.memo,
                 id = account.id.value.toString(),
             )
         }

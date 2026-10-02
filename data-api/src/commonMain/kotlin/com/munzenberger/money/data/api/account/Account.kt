@@ -14,4 +14,5 @@ data class Account(
     val accountType: AccountType,
     val bankId: BankId? = null,
     val initialBalance: Money? = null,
+    val memo: String? = null,
 )
