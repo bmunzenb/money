@@ -4,7 +4,7 @@ CREATE TABLE Account (
     number TEXT,
     account_type_id INTEGER NOT NULL,
     bank_id TEXT,
-    initial_balance INTEGER,
+    initial_balance INTEGER NOT NULL,
     memo TEXT,
     FOREIGN KEY (account_type_id) REFERENCES AccountType (id),
     FOREIGN KEY (bank_id) REFERENCES Bank (id)

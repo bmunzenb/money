@@ -40,7 +40,7 @@ class SqlAccountRepository(
                     value = AccountTypeConstant.valueOf(typeValue),
                 ),
                 bankId = bankId?.let { BankId(Uuid.parse(it)) },
-                initialBalance = initialBalance?.let { Money(it) },
+                initialBalance = Money(initialBalance),
                 memo = memo,
             )
         }
@@ -55,7 +55,7 @@ class SqlAccountRepository(
                 number = account.number,
                 account_type_id = account.accountType.id.value,
                 bank_id = account.bankId?.value?.toString(),
-                initial_balance = account.initialBalance?.value,
+                initial_balance = account.initialBalance.value,
                 memo = account.memo,
             )
         }
@@ -68,7 +68,7 @@ class SqlAccountRepository(
                 number = account.number,
                 account_type_id = account.accountType.id.value,
                 bank_id = account.bankId?.value?.toString(),
-                initial_balance = account.initialBalance?.value,
+                initial_balance = account.initialBalance.value,
                 memo = account.memo,
                 id = account.id.value.toString(),
             )
