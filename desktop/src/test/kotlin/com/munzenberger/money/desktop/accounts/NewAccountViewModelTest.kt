@@ -290,6 +290,22 @@ class NewAccountViewModelTest {
     }
 
     @Test
+    fun `comments are initially blank`() {
+        val viewModel = NewAccountViewModel(fixture.controller, navigator)
+
+        assertEquals("", viewModel.state.value.memo)
+    }
+
+    @Test
+    fun `onMemoChange updates the comments, keeping line breaks`() {
+        val viewModel = NewAccountViewModel(fixture.controller, navigator)
+
+        viewModel.onMemoChange("Joint account.\nOpened in 2020.")
+
+        assertEquals("Joint account.\nOpened in 2020.", viewModel.state.value.memo)
+    }
+
+    @Test
     fun `onBackClick pops the new account route from the back stack`() {
         navigator.navigate { clear(); add(Route.AccountList); add(Route.NewAccount) }
         val viewModel = NewAccountViewModel(fixture.controller, navigator)

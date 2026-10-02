@@ -80,6 +80,10 @@ class NewAccountViewModel(
         }
     }
 
+    fun onMemoChange(memo: String) {
+        _state.update { it.copy(memo = memo) }
+    }
+
     fun onBackClick() {
         navigator.navigate { removeLast() }
     }

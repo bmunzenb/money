@@ -17,6 +17,7 @@ data class NewAccountUiState(
     val initialBalance: String = "",
     /** The symbol of the initial balance's currency, shown before the amount (e.g. "$"). */
     val currencySymbol: String,
+    val memo: String = "",
     /** Whether [initialBalance] should be shown as invalid; only set once the user leaves the field. */
     val isInitialBalanceError: Boolean = false,
 )
