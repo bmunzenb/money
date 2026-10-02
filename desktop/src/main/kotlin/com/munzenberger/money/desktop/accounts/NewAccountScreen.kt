@@ -31,6 +31,7 @@ import com.munzenberger.money.shared.theme.MoneyTheme
 import com.munzenberger.money.shared.theme.PreviewThemed
 import money.shared.generated.resources.Res
 import money.shared.generated.resources.account_name_label
+import money.shared.generated.resources.account_number_label
 import money.shared.generated.resources.account_type_asset
 import money.shared.generated.resources.account_type_cash
 import money.shared.generated.resources.account_type_checking
@@ -57,6 +58,7 @@ fun NewAccountScreen(viewModel: NewAccountViewModel = koinViewModel()) {
         onAccountTypeChange = viewModel::onAccountTypeChange,
         onBankNameChange = viewModel::onBankNameChange,
         onBankChange = viewModel::onBankChange,
+        onNumberChange = viewModel::onNumberChange,
         onBackClick = viewModel::onBackClick,
     )
 }
@@ -68,6 +70,7 @@ private fun NewAccountScreenContent(
     onAccountTypeChange: (AccountType) -> Unit,
     onBankNameChange: (String) -> Unit,
     onBankChange: (Bank) -> Unit,
+    onNumberChange: (String) -> Unit,
     onBackClick: () -> Unit,
 ) {
     Column(modifier = Modifier.fillMaxSize()) {
@@ -109,6 +112,14 @@ private fun NewAccountScreenContent(
                 bank = state.bank,
                 onBankNameChange = onBankNameChange,
                 onBankChange = onBankChange,
+            )
+
+            OutlinedTextField(
+                value = state.number,
+                onValueChange = onNumberChange,
+                label = { Text(stringResource(Res.string.account_number_label)) },
+                singleLine = true,
+                modifier = Modifier.fillMaxWidth(),
             )
         }
     }
@@ -307,6 +318,7 @@ private fun NewAccountScreenPreviewContent(state: NewAccountUiState) {
         onAccountTypeChange = {},
         onBankNameChange = {},
         onBankChange = {},
+        onNumberChange = {},
         onBackClick = {},
     )
 }

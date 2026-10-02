@@ -12,4 +12,5 @@ data class NewAccountUiState(
     val bankName: String = "",
     /** The existing bank matching [bankName], or null if the name is blank or for a new bank. */
     val bank: Bank? = null,
+    val number: String = "",
 )

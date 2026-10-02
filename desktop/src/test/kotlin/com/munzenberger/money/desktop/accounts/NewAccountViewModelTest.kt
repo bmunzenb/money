@@ -186,6 +186,22 @@ class NewAccountViewModelTest {
     }
 
     @Test
+    fun `account number is initially blank`() {
+        val viewModel = NewAccountViewModel(fixture.controller, navigator)
+
+        assertEquals("", viewModel.state.value.number)
+    }
+
+    @Test
+    fun `onNumberChange updates the account number`() {
+        val viewModel = NewAccountViewModel(fixture.controller, navigator)
+
+        viewModel.onNumberChange("1234-5678")
+
+        assertEquals("1234-5678", viewModel.state.value.number)
+    }
+
+    @Test
     fun `onBackClick pops the new account route from the back stack`() {
         navigator.navigate { clear(); add(Route.AccountList); add(Route.NewAccount) }
         val viewModel = NewAccountViewModel(fixture.controller, navigator)

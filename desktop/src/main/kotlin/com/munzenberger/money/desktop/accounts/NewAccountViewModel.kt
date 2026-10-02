@@ -52,6 +52,10 @@ class NewAccountViewModel(
         _state.update { it.copy(bankName = bank.name, bank = bank) }
     }
 
+    fun onNumberChange(number: String) {
+        _state.update { it.copy(number = number) }
+    }
+
     fun onBackClick() {
         navigator.navigate { removeLast() }
     }

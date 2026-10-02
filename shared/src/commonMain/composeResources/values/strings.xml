@@ -18,6 +18,7 @@
     <string name="account_type_load_error_message">Unable to load account types.</string>
     <string name="financial_institution_label">Financial institution</string>
     <string name="financial_institution_load_error_message">Unable to load existing financial institutions.</string>
+    <string name="account_number_label">Account number</string>
     <string name="account_type_savings">Savings</string>
     <string name="account_type_checking">Checking</string>
     <string name="account_type_asset">Asset</string>
