@@ -36,9 +36,11 @@ import money.shared.generated.resources.account_type_cash
 import money.shared.generated.resources.account_type_checking
 import money.shared.generated.resources.account_type_credit
 import money.shared.generated.resources.account_type_label
+import money.shared.generated.resources.account_type_load_error_message
 import money.shared.generated.resources.account_type_loan
 import money.shared.generated.resources.account_type_savings
 import money.shared.generated.resources.financial_institution_label
+import money.shared.generated.resources.financial_institution_load_error_message
 import money.shared.generated.resources.new_account_title
 import money.shared.generated.resources.required_field_label
 import money.shared.generated.resources.required_field_supporting_text
@@ -114,20 +116,24 @@ private fun NewAccountScreenContent(
 
 /**
  * Required dropdown for picking the account type. It starts out empty, but there's no empty option in
- * the menu, so once a type is picked it can only be changed to another type.
+ * the menu, so once a type is picked it can only be changed to another type. The field is disabled until
+ * the account types load, and shows an error if they can't be loaded, since the form can't be completed
+ * without one.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun AccountTypeField(
-    accountTypes: List<AccountType>,
+    accountTypes: LoadState<List<AccountType>>,
     accountType: AccountType?,
     onAccountTypeChange: (AccountType) -> Unit,
 ) {
     var expanded by remember { mutableStateOf(false) }
+    val enabled = accountTypes is LoadState.Loaded
+    val isError = accountTypes is LoadState.Error
 
     ExposedDropdownMenuBox(
-        expanded = expanded,
-        onExpandedChange = { expanded = it },
+        expanded = expanded && enabled,
+        onExpandedChange = { expanded = it && enabled },
     ) {
         OutlinedTextField(
             value = accountType?.value?.label().orEmpty(),
@@ -141,19 +147,31 @@ private fun AccountTypeField(
                     )
                 )
             },
-            supportingText = { Text(stringResource(Res.string.required_field_supporting_text)) },
-            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
+            supportingText = {
+                Text(
+                    stringResource(
+                        if (isError) {
+                            Res.string.account_type_load_error_message
+                        } else {
+                            Res.string.required_field_supporting_text
+                        }
+                    )
+                )
+            },
+            isError = isError,
+            enabled = enabled,
+            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded && enabled) },
             singleLine = true,
             modifier = Modifier
-                .menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable)
+                .menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable, enabled = enabled)
                 .fillMaxWidth(),
         )
 
         ExposedDropdownMenu(
-            expanded = expanded,
+            expanded = expanded && enabled,
             onDismissRequest = { expanded = false },
         ) {
-            accountTypes.forEach { option ->
+            accountTypes.loadedOrEmpty.forEach { option ->
                 DropdownMenuItem(
                     text = { Text(option.value.label()) },
                     onClick = {
@@ -171,19 +189,25 @@ private fun AccountTypeField(
  * Optional editable dropdown for the account's financial institution. The user can pick an existing
  * bank from the menu or type the name of a new one. As they type, the menu narrows to the banks whose
  * names contain the text; once the text names an existing bank, the menu lists every bank again so the
- * user can switch to another one.
+ * user can switch to another one. If the banks can't be loaded, the field still takes a typed name, and
+ * says that existing banks aren't available.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun FinancialInstitutionField(
-    banks: List<Bank>,
+    banks: LoadState<List<Bank>>,
     bankName: String,
     bank: Bank?,
     onBankNameChange: (String) -> Unit,
     onBankChange: (Bank) -> Unit,
 ) {
     var expanded by remember { mutableStateOf(false) }
-    val options = if (bank != null) banks else banks.filter { it.name.contains(bankName.trim(), ignoreCase = true) }
+    val allBanks = banks.loadedOrEmpty
+    val options = if (bank != null) {
+        allBanks
+    } else {
+        allBanks.filter { it.name.contains(bankName.trim(), ignoreCase = true) }
+    }
 
     ExposedDropdownMenuBox(
         expanded = expanded && options.isNotEmpty(),
@@ -196,6 +220,11 @@ private fun FinancialInstitutionField(
                 expanded = true
             },
             label = { Text(stringResource(Res.string.financial_institution_label)) },
+            supportingText = if (banks is LoadState.Error) {
+                { Text(stringResource(Res.string.financial_institution_load_error_message)) }
+            } else {
+                null
+            },
             trailingIcon = {
                 ExposedDropdownMenuDefaults.TrailingIcon(
                     expanded = expanded && options.isNotEmpty(),
@@ -243,13 +272,41 @@ private fun AccountTypeConstant.label(): String = stringResource(
 @Composable
 private fun NewAccountScreenPreview() {
     PreviewThemed {
-        NewAccountScreenContent(
-            state = NewAccountUiState(),
-            onNameChange = {},
-            onAccountTypeChange = {},
-            onBankNameChange = {},
-            onBankChange = {},
-            onBackClick = {},
+        NewAccountScreenPreviewContent(
+            state = NewAccountUiState(
+                accountTypes = LoadState.Loaded(emptyList()),
+                banks = LoadState.Loaded(emptyList()),
+            )
         )
     }
+}
+
+@Preview
+@Composable
+private fun NewAccountScreenLoadingPreview() {
+    PreviewThemed {
+        NewAccountScreenPreviewContent(state = NewAccountUiState())
+    }
+}
+
+@Preview
+@Composable
+private fun NewAccountScreenErrorPreview() {
+    PreviewThemed {
+        NewAccountScreenPreviewContent(
+            state = NewAccountUiState(accountTypes = LoadState.Error, banks = LoadState.Error)
+        )
+    }
+}
+
+@Composable
+private fun NewAccountScreenPreviewContent(state: NewAccountUiState) {
+    NewAccountScreenContent(
+        state = state,
+        onNameChange = {},
+        onAccountTypeChange = {},
+        onBankNameChange = {},
+        onBankChange = {},
+        onBackClick = {},
+    )
 }

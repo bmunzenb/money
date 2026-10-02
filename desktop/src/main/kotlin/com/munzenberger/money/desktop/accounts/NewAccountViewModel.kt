@@ -24,14 +24,14 @@ class NewAccountViewModel(
     init {
         viewModelScope.launch {
             repositoryController.resultFlow { it.accountTypes }.collect { result ->
-                val accountTypes = result.getOrDefault(emptyList()).sortedBy { it.value.ordinal }
+                val accountTypes = result.map { types -> types.sortedBy { it.value.ordinal } }.toLoadState()
                 _state.update { it.copy(accountTypes = accountTypes) }
             }
         }
         viewModelScope.launch {
             repositoryController.resultFlow { it.banks }.collect { result ->
-                val banks = result.getOrDefault(emptyList()).sortedBy { it.name.lowercase() }
-                _state.update { it.copy(banks = banks, bank = banks.matching(it.bankName)) }
+                val banks = result.map { banks -> banks.sortedBy { it.name.lowercase() } }.toLoadState()
+                _state.update { it.copy(banks = banks, bank = banks.loadedOrEmpty.matching(it.bankName)) }
             }
         }
     }
@@ -45,7 +45,7 @@ class NewAccountViewModel(
     }
 
     fun onBankNameChange(bankName: String) {
-        _state.update { it.copy(bankName = bankName, bank = it.banks.matching(bankName)) }
+        _state.update { it.copy(bankName = bankName, bank = it.banks.loadedOrEmpty.matching(bankName)) }
     }
 
     fun onBankChange(bank: Bank) {

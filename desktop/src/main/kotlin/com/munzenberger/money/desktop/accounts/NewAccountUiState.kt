@@ -5,9 +5,9 @@ import com.munzenberger.money.data.api.bank.Bank
 
 data class NewAccountUiState(
     val name: String = "",
-    val accountTypes: List<AccountType> = emptyList(),
+    val accountTypes: LoadState<List<AccountType>> = LoadState.Loading,
     val accountType: AccountType? = null,
-    val banks: List<Bank> = emptyList(),
+    val banks: LoadState<List<Bank>> = LoadState.Loading,
     /** The text in the financial institution field: an existing bank's name, or a new one typed in. */
     val bankName: String = "",
     /** The existing bank matching [bankName], or null if the name is blank or for a new bank. */

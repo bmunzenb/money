@@ -15,6 +15,8 @@ import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.resetMain
@@ -40,12 +42,14 @@ class NewAccountViewModelTest {
     private val creditUnion = Bank(name = "credit union")
 
     private fun repository(
-        accountTypes: List<AccountType> = emptyList(),
-        banks: List<Bank> = emptyList(),
+        accountTypes: Flow<List<AccountType>> = flowOf(emptyList()),
+        banks: Flow<List<Bank>> = flowOf(emptyList()),
     ) = mockk<MoneyRepository>(relaxUnitFun = true) {
-        every { this@mockk.accountTypes } returns flowOf(accountTypes)
-        every { this@mockk.banks } returns flowOf(banks)
+        every { this@mockk.accountTypes } returns accountTypes
+        every { this@mockk.banks } returns banks
     }
+
+    private fun <T> failingFlow(): Flow<T> = flow { error("query failed") }
 
     @BeforeTest
     fun setUp() {
@@ -68,9 +72,38 @@ class NewAccountViewModelTest {
     fun `account types are loaded from the connected repository in constant order`() = runTest {
         val viewModel = NewAccountViewModel(fixture.controller, navigator)
 
-        fixture.connect(repository(accountTypes = listOf(checking, savings)))
+        fixture.connect(repository(accountTypes = flowOf(listOf(checking, savings))))
 
-        assertEquals(listOf(savings, checking), viewModel.state.value.accountTypes)
+        assertEquals(LoadState.Loaded(listOf(savings, checking)), viewModel.state.value.accountTypes)
+    }
+
+    @Test
+    fun `account types and banks are loading until a repository is connected`() {
+        val viewModel = NewAccountViewModel(fixture.controller, navigator)
+
+        assertEquals(LoadState.Loading, viewModel.state.value.accountTypes)
+        assertEquals(LoadState.Loading, viewModel.state.value.banks)
+    }
+
+    @Test
+    fun `account types are an error when they can't be loaded`() = runTest {
+        val viewModel = NewAccountViewModel(fixture.controller, navigator)
+
+        fixture.connect(repository(accountTypes = failingFlow()))
+
+        assertEquals(LoadState.Error, viewModel.state.value.accountTypes)
+    }
+
+    @Test
+    fun `banks are an error when they can't be loaded, and a typed name is still remembered`() = runTest {
+        val viewModel = NewAccountViewModel(fixture.controller, navigator)
+        fixture.connect(repository(banks = failingFlow()))
+
+        viewModel.onBankNameChange("New Bank")
+
+        assertEquals(LoadState.Error, viewModel.state.value.banks)
+        assertEquals("New Bank", viewModel.state.value.bankName)
+        assertNull(viewModel.state.value.bank)
     }
 
     @Test
@@ -95,9 +128,9 @@ class NewAccountViewModelTest {
     fun `banks are loaded from the connected repository sorted by name`() = runTest {
         val viewModel = NewAccountViewModel(fixture.controller, navigator)
 
-        fixture.connect(repository(banks = listOf(firstBank, creditUnion)))
+        fixture.connect(repository(banks = flowOf(listOf(firstBank, creditUnion))))
 
-        assertEquals(listOf(creditUnion, firstBank), viewModel.state.value.banks)
+        assertEquals(LoadState.Loaded(listOf(creditUnion, firstBank)), viewModel.state.value.banks)
     }
 
     @Test
@@ -111,7 +144,7 @@ class NewAccountViewModelTest {
     @Test
     fun `onBankChange selects the existing bank`() = runTest {
         val viewModel = NewAccountViewModel(fixture.controller, navigator)
-        fixture.connect(repository(banks = listOf(firstBank, creditUnion)))
+        fixture.connect(repository(banks = flowOf(listOf(firstBank, creditUnion))))
 
         viewModel.onBankChange(firstBank)
 
@@ -122,7 +155,7 @@ class NewAccountViewModelTest {
     @Test
     fun `onBankNameChange with a new name remembers the name without a bank`() = runTest {
         val viewModel = NewAccountViewModel(fixture.controller, navigator)
-        fixture.connect(repository(banks = listOf(firstBank)))
+        fixture.connect(repository(banks = flowOf(listOf(firstBank))))
 
         viewModel.onBankNameChange("New Bank")
 
@@ -133,7 +166,7 @@ class NewAccountViewModelTest {
     @Test
     fun `onBankNameChange with an existing bank's name selects that bank`() = runTest {
         val viewModel = NewAccountViewModel(fixture.controller, navigator)
-        fixture.connect(repository(banks = listOf(firstBank)))
+        fixture.connect(repository(banks = flowOf(listOf(firstBank))))
 
         viewModel.onBankNameChange(" first bank ")
 
@@ -144,7 +177,7 @@ class NewAccountViewModelTest {
     @Test
     fun `editing a selected bank's name clears the selection`() = runTest {
         val viewModel = NewAccountViewModel(fixture.controller, navigator)
-        fixture.connect(repository(banks = listOf(firstBank)))
+        fixture.connect(repository(banks = flowOf(listOf(firstBank))))
         viewModel.onBankChange(firstBank)
 
         viewModel.onBankNameChange("First Bank of Detroit")
