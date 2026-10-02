@@ -9,9 +9,9 @@ value class CategoryEntryId(val value: Uuid = Uuid.random())
 
 data class CategoryEntry(
     val id: CategoryEntryId = CategoryEntryId(),
-    val transactionId: TransactionId,
+    override val transactionId: TransactionId,
     val categoryId: CategoryId,
-    val amount: Money,
-    val memo: String? = null,
-    val orderInTransaction: Int,
-)
+    override val amount: Money,
+    override val memo: String? = null,
+    override val orderInTransaction: Int,
+) : TransactionEntry

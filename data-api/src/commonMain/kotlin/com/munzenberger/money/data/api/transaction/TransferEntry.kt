@@ -9,11 +9,11 @@ value class TransferEntryId(val id: Uuid = Uuid.random())
 
 data class TransferEntry(
     val id: TransferEntryId = TransferEntryId(),
-    val transactionId: TransactionId,
+    override val transactionId: TransactionId,
     val accountId: AccountId,
-    val amount: Money,
+    override val amount: Money,
     val number: String? = null,
-    val memo: String? = null,
+    override val memo: String? = null,
     val status: TransactionStatus,
-    val orderInTransaction: Int,
-)
+    override val orderInTransaction: Int,
+) : TransactionEntry
