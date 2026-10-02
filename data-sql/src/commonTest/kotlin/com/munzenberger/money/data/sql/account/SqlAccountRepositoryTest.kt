@@ -70,6 +70,14 @@ class SqlAccountRepositoryTest {
     }
 
     @Test
+    fun `add inserts an account with a memo`() = runTest {
+        val repository = createRepository(UnconfinedTestDispatcher(testScheduler))
+        val account = Account(name = "Checking", accountType = checking, memo = "A memo")
+        repository.add(account)
+        assertEquals(listOf(account), repository.accounts.first())
+    }
+
+    @Test
     fun `add inserts an account with a liability type`() = runTest {
         val repository = createRepository(UnconfinedTestDispatcher(testScheduler))
         val account = Account(name = "Credit Card", accountType = credit)
@@ -130,6 +138,16 @@ class SqlAccountRepositoryTest {
         val original = Account(name = "Checking", accountType = checking)
         repository.add(original)
         val updated = original.copy(initialBalance = Money(500))
+        repository.update(updated)
+        assertEquals(listOf(updated), repository.accounts.first())
+    }
+
+    @Test
+    fun `update modifies the memo of an existing account`() = runTest {
+        val repository = createRepository(UnconfinedTestDispatcher(testScheduler))
+        val original = Account(name = "Checking", accountType = checking)
+        repository.add(original)
+        val updated = original.copy(memo = "new memo")
         repository.update(updated)
         assertEquals(listOf(updated), repository.accounts.first())
     }
