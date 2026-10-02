@@ -20,7 +20,7 @@ val appModule = module {
     viewModel { AppViewModel(get(), get()) }
     viewModel { WelcomeViewModel(get()) }
     viewModel { AccountListViewModel(get(), get()) }
-    viewModel { NewAccountViewModel(get()) }
+    viewModel { NewAccountViewModel(get(), get()) }
     viewModel { CategoryListViewModel(get()) }
     viewModel { PayeeListViewModel(get()) }
     viewModel { AppNavigationRailViewModel(get()) }

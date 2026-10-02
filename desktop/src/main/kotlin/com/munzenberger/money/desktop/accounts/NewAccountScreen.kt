@@ -1,36 +1,179 @@
 package com.munzenberger.money.desktop.accounts
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenu
+import androidx.compose.material3.ExposedDropdownMenuAnchorType
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.tooling.preview.Preview
+import com.munzenberger.money.data.api.account.AccountType
+import com.munzenberger.money.data.api.account.AccountTypeConstant
 import com.munzenberger.money.desktop.components.DetailScreenHeader
+import com.munzenberger.money.shared.theme.MoneyTheme
 import com.munzenberger.money.shared.theme.PreviewThemed
 import money.shared.generated.resources.Res
+import money.shared.generated.resources.account_name_label
+import money.shared.generated.resources.account_type_asset
+import money.shared.generated.resources.account_type_cash
+import money.shared.generated.resources.account_type_checking
+import money.shared.generated.resources.account_type_credit
+import money.shared.generated.resources.account_type_label
+import money.shared.generated.resources.account_type_loan
+import money.shared.generated.resources.account_type_savings
 import money.shared.generated.resources.new_account_title
+import money.shared.generated.resources.required_field_label
+import money.shared.generated.resources.required_field_supporting_text
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
 fun NewAccountScreen(viewModel: NewAccountViewModel = koinViewModel()) {
-    NewAccountScreenContent(onBackClick = viewModel::onBackClick)
+    val state by viewModel.state.collectAsState()
+
+    NewAccountScreenContent(
+        state = state,
+        onNameChange = viewModel::onNameChange,
+        onAccountTypeChange = viewModel::onAccountTypeChange,
+        onBackClick = viewModel::onBackClick,
+    )
 }
 
 @Composable
-private fun NewAccountScreenContent(onBackClick: () -> Unit) {
+private fun NewAccountScreenContent(
+    state: NewAccountUiState,
+    onNameChange: (String) -> Unit,
+    onAccountTypeChange: (AccountType) -> Unit,
+    onBackClick: () -> Unit,
+) {
     Column(modifier = Modifier.fillMaxSize()) {
         DetailScreenHeader(
             title = stringResource(Res.string.new_account_title),
             onBackClick = onBackClick,
         )
+
+        Column(
+            modifier = Modifier.padding(horizontal = MoneyTheme.spacing.medium),
+            verticalArrangement = Arrangement.spacedBy(MoneyTheme.spacing.small),
+        ) {
+            OutlinedTextField(
+                value = state.name,
+                onValueChange = onNameChange,
+                label = {
+                    Text(
+                        stringResource(
+                            Res.string.required_field_label,
+                            stringResource(Res.string.account_name_label),
+                        )
+                    )
+                },
+                supportingText = { Text(stringResource(Res.string.required_field_supporting_text)) },
+                singleLine = true,
+                keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Words),
+                modifier = Modifier.fillMaxWidth(),
+            )
+
+            AccountTypeField(
+                accountTypes = state.accountTypes,
+                accountType = state.accountType,
+                onAccountTypeChange = onAccountTypeChange,
+            )
+        }
     }
 }
+
+/**
+ * Required dropdown for picking the account type. It starts out empty, but there's no empty option in
+ * the menu, so once a type is picked it can only be changed to another type.
+ */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun AccountTypeField(
+    accountTypes: List<AccountType>,
+    accountType: AccountType?,
+    onAccountTypeChange: (AccountType) -> Unit,
+) {
+    var expanded by remember { mutableStateOf(false) }
+
+    ExposedDropdownMenuBox(
+        expanded = expanded,
+        onExpandedChange = { expanded = it },
+    ) {
+        OutlinedTextField(
+            value = accountType?.value?.label().orEmpty(),
+            onValueChange = {},
+            readOnly = true,
+            label = {
+                Text(
+                    stringResource(
+                        Res.string.required_field_label,
+                        stringResource(Res.string.account_type_label),
+                    )
+                )
+            },
+            supportingText = { Text(stringResource(Res.string.required_field_supporting_text)) },
+            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
+            singleLine = true,
+            modifier = Modifier
+                .menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable)
+                .fillMaxWidth(),
+        )
+
+        ExposedDropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { expanded = false },
+        ) {
+            accountTypes.forEach { option ->
+                DropdownMenuItem(
+                    text = { Text(option.value.label()) },
+                    onClick = {
+                        onAccountTypeChange(option)
+                        expanded = false
+                    },
+                    contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding,
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun AccountTypeConstant.label(): String = stringResource(
+    when (this) {
+        AccountTypeConstant.Savings -> Res.string.account_type_savings
+        AccountTypeConstant.Checking -> Res.string.account_type_checking
+        AccountTypeConstant.Asset -> Res.string.account_type_asset
+        AccountTypeConstant.Cash -> Res.string.account_type_cash
+        AccountTypeConstant.Credit -> Res.string.account_type_credit
+        AccountTypeConstant.Loan -> Res.string.account_type_loan
+    }
+)
 
 @Preview
 @Composable
 private fun NewAccountScreenPreview() {
     PreviewThemed {
-        NewAccountScreenContent(onBackClick = {})
+        NewAccountScreenContent(
+            state = NewAccountUiState(),
+            onNameChange = {},
+            onAccountTypeChange = {},
+            onBackClick = {},
+        )
     }
 }
