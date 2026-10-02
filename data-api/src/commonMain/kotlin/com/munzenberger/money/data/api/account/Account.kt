@@ -13,6 +13,6 @@ data class Account(
     val number: String? = null,
     val accountType: AccountType,
     val bankId: BankId? = null,
-    val initialBalance: Money? = null,
+    val initialBalance: Money = Money(0),
     val memo: String? = null,
 )
