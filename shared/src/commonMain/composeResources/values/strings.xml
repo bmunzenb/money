@@ -44,4 +44,5 @@
     <string name="accounts_button_title">Accounts</string>
     <string name="categories_button_title">Categories</string>
     <string name="payees_button_title">Payees</string>
+    <string name="invalid_input_error_description">Invalid input</string>
 </resources>
