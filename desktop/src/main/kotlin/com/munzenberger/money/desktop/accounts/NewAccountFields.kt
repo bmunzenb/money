@@ -2,13 +2,11 @@ package com.munzenberger.money.desktop.accounts
 
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenu
 import androidx.compose.material3.ExposedDropdownMenuAnchorType
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -23,6 +21,8 @@ import com.munzenberger.money.data.api.Money
 import com.munzenberger.money.data.api.account.AccountType
 import com.munzenberger.money.data.api.account.AccountTypeConstant
 import com.munzenberger.money.data.api.bank.Bank
+import com.munzenberger.money.desktop.components.DesktopDropdownMenuItem
+import com.munzenberger.money.desktop.components.DesktopOutlinedTextField
 import money.shared.generated.resources.Res
 import money.shared.generated.resources.account_name_label
 import money.shared.generated.resources.account_number_label
@@ -49,7 +49,7 @@ internal fun NameField(
     name: String,
     onNameChange: (String) -> Unit,
 ) {
-    OutlinedTextField(
+    DesktopOutlinedTextField(
         value = name,
         onValueChange = onNameChange,
         label = {
@@ -88,7 +88,7 @@ internal fun AccountTypeField(
         expanded = expanded && enabled,
         onExpandedChange = { expanded = it && enabled },
     ) {
-        OutlinedTextField(
+        DesktopOutlinedTextField(
             value = accountType?.value?.label().orEmpty(),
             onValueChange = {},
             readOnly = true,
@@ -125,13 +125,12 @@ internal fun AccountTypeField(
             onDismissRequest = { expanded = false },
         ) {
             accountTypes.loadedOrEmpty.forEach { option ->
-                DropdownMenuItem(
-                    text = { Text(option.value.label()) },
+                DesktopDropdownMenuItem(
+                    text = option.value.label(),
                     onClick = {
                         onAccountTypeChange(option)
                         expanded = false
                     },
-                    contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding,
                 )
             }
         }
@@ -166,7 +165,7 @@ internal fun FinancialInstitutionField(
         expanded = expanded && options.isNotEmpty(),
         onExpandedChange = { expanded = it },
     ) {
-        OutlinedTextField(
+        DesktopOutlinedTextField(
             value = bankName,
             onValueChange = {
                 onBankNameChange(it)
@@ -196,13 +195,12 @@ internal fun FinancialInstitutionField(
             onDismissRequest = { expanded = false },
         ) {
             options.forEach { option ->
-                DropdownMenuItem(
-                    text = { Text(option.name) },
+                DesktopDropdownMenuItem(
+                    text = option.name,
                     onClick = {
                         onBankChange(option)
                         expanded = false
                     },
-                    contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding,
                 )
             }
         }
@@ -218,7 +216,7 @@ internal fun AccountNumberField(
     number: String,
     onNumberChange: (String) -> Unit,
 ) {
-    OutlinedTextField(
+    DesktopOutlinedTextField(
         value = number,
         onValueChange = onNumberChange,
         label = { Text(stringResource(Res.string.account_number_label)) },
@@ -242,7 +240,7 @@ internal fun InitialBalanceField(
     // onFocusChanged also reports the initial unfocused state, which isn't the user leaving the field.
     var hasFocus by remember { mutableStateOf(false) }
 
-    OutlinedTextField(
+    DesktopOutlinedTextField(
         value = initialBalance,
         onValueChange = onInitialBalanceChange,
         label = { Text(stringResource(Res.string.initial_balance_label)) },
@@ -274,7 +272,7 @@ internal fun CommentsField(
     memo: String,
     onMemoChange: (String) -> Unit,
 ) {
-    OutlinedTextField(
+    DesktopOutlinedTextField(
         value = memo,
         onValueChange = onMemoChange,
         label = { Text(stringResource(Res.string.comments_label)) },
