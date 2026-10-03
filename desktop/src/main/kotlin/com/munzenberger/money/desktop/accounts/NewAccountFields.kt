@@ -2,7 +2,6 @@ package com.munzenberger.money.desktop.accounts
 
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenu
 import androidx.compose.material3.ExposedDropdownMenuAnchorType
@@ -22,6 +21,7 @@ import com.munzenberger.money.data.api.Money
 import com.munzenberger.money.data.api.account.AccountType
 import com.munzenberger.money.data.api.account.AccountTypeConstant
 import com.munzenberger.money.data.api.bank.Bank
+import com.munzenberger.money.desktop.components.DesktopDropdownMenuItem
 import com.munzenberger.money.desktop.components.DesktopOutlinedTextField
 import money.shared.generated.resources.Res
 import money.shared.generated.resources.account_name_label
@@ -125,13 +125,12 @@ internal fun AccountTypeField(
             onDismissRequest = { expanded = false },
         ) {
             accountTypes.loadedOrEmpty.forEach { option ->
-                DropdownMenuItem(
-                    text = { Text(option.value.label()) },
+                DesktopDropdownMenuItem(
+                    text = option.value.label(),
                     onClick = {
                         onAccountTypeChange(option)
                         expanded = false
                     },
-                    contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding,
                 )
             }
         }
@@ -196,13 +195,12 @@ internal fun FinancialInstitutionField(
             onDismissRequest = { expanded = false },
         ) {
             options.forEach { option ->
-                DropdownMenuItem(
-                    text = { Text(option.name) },
+                DesktopDropdownMenuItem(
+                    text = option.name,
                     onClick = {
                         onBankChange(option)
                         expanded = false
                     },
-                    contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding,
                 )
             }
         }

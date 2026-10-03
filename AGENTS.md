@@ -177,6 +177,11 @@ Material's `OutlinedTextField`. It takes the same parameters, but is sized for m
 instead of 56dp, with tighter content padding and 40dp icon targets (see
 `DesktopOutlinedTextFieldDefaults`). It works as the anchor of an `ExposedDropdownMenuBox` too.
 
+For the options in those menus, use `DesktopDropdownMenuItem` (`desktop/.../desktop/components/DesktopDropdownMenuItem.kt`)
+instead of `DropdownMenuItem`. Its rows are 32dp tall instead of 48dp, its text is a single line that ends
+with an ellipsis, and its padding lines the option text up with the field's text, so don't pass
+`ExposedDropdownMenuDefaults.ItemContentPadding`.
+
 ## Detail screens
 
 Screens pushed on top of another screen (e.g. `NewAccount` over `AccountList`) start with
