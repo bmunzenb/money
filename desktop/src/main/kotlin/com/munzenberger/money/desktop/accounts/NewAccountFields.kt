@@ -2,11 +2,13 @@ package com.munzenberger.money.desktop.accounts
 
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenu
 import androidx.compose.material3.ExposedDropdownMenuAnchorType
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -17,12 +19,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextOverflow
 import com.munzenberger.money.data.api.Money
 import com.munzenberger.money.data.api.account.AccountType
 import com.munzenberger.money.data.api.account.AccountTypeConstant
 import com.munzenberger.money.data.api.bank.Bank
-import com.munzenberger.money.desktop.components.DesktopDropdownMenuItem
-import com.munzenberger.money.desktop.components.DesktopOutlinedTextField
 import money.shared.generated.resources.Res
 import money.shared.generated.resources.account_name_label
 import money.shared.generated.resources.account_number_label
@@ -40,7 +41,6 @@ import money.shared.generated.resources.financial_institution_load_error_message
 import money.shared.generated.resources.initial_balance_error_message
 import money.shared.generated.resources.initial_balance_label
 import money.shared.generated.resources.required_field_label
-import money.shared.generated.resources.required_field_supporting_text
 import org.jetbrains.compose.resources.stringResource
 
 /** Required field for the account's name. */
@@ -49,7 +49,7 @@ internal fun NameField(
     name: String,
     onNameChange: (String) -> Unit,
 ) {
-    DesktopOutlinedTextField(
+    OutlinedTextField(
         value = name,
         onValueChange = onNameChange,
         label = {
@@ -60,7 +60,6 @@ internal fun NameField(
                 )
             )
         },
-        supportingText = { Text(stringResource(Res.string.required_field_supporting_text)) },
         singleLine = true,
         keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Words),
         modifier = Modifier.fillMaxWidth(),
@@ -88,7 +87,7 @@ internal fun AccountTypeField(
         expanded = expanded && enabled,
         onExpandedChange = { expanded = it && enabled },
     ) {
-        DesktopOutlinedTextField(
+        OutlinedTextField(
             value = accountType?.value?.label().orEmpty(),
             onValueChange = {},
             readOnly = true,
@@ -100,24 +99,17 @@ internal fun AccountTypeField(
                     )
                 )
             },
-            supportingText = {
-                Text(
-                    stringResource(
-                        if (isError) {
-                            Res.string.account_type_load_error_message
-                        } else {
-                            Res.string.required_field_supporting_text
-                        }
-                    )
-                )
+            supportingText = if (isError) {
+                { Text(stringResource(Res.string.account_type_load_error_message)) }
+            } else {
+                null
             },
             isError = isError,
             enabled = enabled,
             trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded && enabled) },
             singleLine = true,
             modifier = Modifier
-                .menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable, enabled = enabled)
-                .fillMaxWidth(),
+                .menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable, enabled = enabled),
         )
 
         ExposedDropdownMenu(
@@ -125,12 +117,13 @@ internal fun AccountTypeField(
             onDismissRequest = { expanded = false },
         ) {
             accountTypes.loadedOrEmpty.forEach { option ->
-                DesktopDropdownMenuItem(
-                    text = option.value.label(),
+                DropdownMenuItem(
+                    text = { Text(text = option.value.label(), maxLines = 1, overflow = TextOverflow.Ellipsis) },
                     onClick = {
                         onAccountTypeChange(option)
                         expanded = false
                     },
+                    contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding,
                 )
             }
         }
@@ -165,7 +158,7 @@ internal fun FinancialInstitutionField(
         expanded = expanded && options.isNotEmpty(),
         onExpandedChange = { expanded = it },
     ) {
-        DesktopOutlinedTextField(
+        OutlinedTextField(
             value = bankName,
             onValueChange = {
                 onBankNameChange(it)
@@ -195,12 +188,13 @@ internal fun FinancialInstitutionField(
             onDismissRequest = { expanded = false },
         ) {
             options.forEach { option ->
-                DesktopDropdownMenuItem(
-                    text = option.name,
+                DropdownMenuItem(
+                    text = { Text(text = option.name, maxLines = 1, overflow = TextOverflow.Ellipsis) },
                     onClick = {
                         onBankChange(option)
                         expanded = false
                     },
+                    contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding,
                 )
             }
         }
@@ -216,7 +210,7 @@ internal fun AccountNumberField(
     number: String,
     onNumberChange: (String) -> Unit,
 ) {
-    DesktopOutlinedTextField(
+    OutlinedTextField(
         value = number,
         onValueChange = onNumberChange,
         label = { Text(stringResource(Res.string.account_number_label)) },
@@ -240,7 +234,7 @@ internal fun InitialBalanceField(
     // onFocusChanged also reports the initial unfocused state, which isn't the user leaving the field.
     var hasFocus by remember { mutableStateOf(false) }
 
-    DesktopOutlinedTextField(
+    OutlinedTextField(
         value = initialBalance,
         onValueChange = onInitialBalanceChange,
         label = { Text(stringResource(Res.string.initial_balance_label)) },
@@ -272,7 +266,7 @@ internal fun CommentsField(
     memo: String,
     onMemoChange: (String) -> Unit,
 ) {
-    DesktopOutlinedTextField(
+    OutlinedTextField(
         value = memo,
         onValueChange = onMemoChange,
         label = { Text(stringResource(Res.string.comments_label)) },

@@ -84,6 +84,10 @@ class NewAccountViewModel(
         _state.update { it.copy(memo = memo) }
     }
 
+    fun onSaveClick() {
+        // Saving isn't implemented yet.
+    }
+
     fun onBackClick() {
         navigator.navigate { removeLast() }
     }

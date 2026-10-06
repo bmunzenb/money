@@ -13,7 +13,13 @@
     <string name="account_list_error_message">Unable to load accounts.</string>
     <string name="add_account_button_title">New account</string>
     <string name="new_account_title">New account</string>
-    <string name="account_name_label">Name</string>
+    <string name="new_account_description">Add an account to track its balance and transactions.</string>
+    <string name="account_section_title">Account</string>
+    <string name="balance_and_reference_section_title">Balance and reference</string>
+    <string name="additional_information_section_title">Additional information</string>
+    <string name="save_button_title">Save</string>
+    <string name="cancel_button_title">Cancel</string>
+    <string name="account_name_label">Account name</string>
     <string name="account_type_label">Account type</string>
     <string name="account_type_load_error_message">Unable to load account types.</string>
     <string name="financial_institution_label">Financial institution</string>
@@ -29,7 +35,7 @@
     <string name="account_type_credit">Credit</string>
     <string name="account_type_loan">Loan</string>
     <string name="required_field_label">%1$s *</string>
-    <string name="required_field_supporting_text">* Required</string>
+    <string name="required_field_legend">* Required</string>
     <string name="back_button_description">Back</string>
     <string name="category_list_title">Categories</string>
     <string name="category_list_empty_message">No categories</string>

@@ -3,21 +3,37 @@ package com.munzenberger.money.desktop.accounts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.widthIn
+import androidx.compose.material3.Button
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import com.munzenberger.money.data.api.account.AccountType
 import com.munzenberger.money.data.api.bank.Bank
 import com.munzenberger.money.desktop.components.DetailScreenHeader
+import com.munzenberger.money.desktop.components.FormDefaults
+import com.munzenberger.money.desktop.components.FormSectionCard
 import com.munzenberger.money.desktop.components.ScrollableColumn
 import com.munzenberger.money.shared.theme.MoneyTheme
 import com.munzenberger.money.shared.theme.PreviewThemed
 import money.shared.generated.resources.Res
+import money.shared.generated.resources.account_section_title
+import money.shared.generated.resources.additional_information_section_title
+import money.shared.generated.resources.balance_and_reference_section_title
+import money.shared.generated.resources.cancel_button_title
+import money.shared.generated.resources.new_account_description
 import money.shared.generated.resources.new_account_title
+import money.shared.generated.resources.required_field_legend
+import money.shared.generated.resources.save_button_title
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 
@@ -36,6 +52,7 @@ fun NewAccountScreen(viewModel: NewAccountViewModel = koinViewModel()) {
         onInitialBalanceFocusLost = viewModel::onInitialBalanceFocusLost,
         onMemoChange = viewModel::onMemoChange,
         onBackClick = viewModel::onBackClick,
+        onSaveClick = viewModel::onSaveClick,
     )
 }
 
@@ -51,6 +68,7 @@ private fun NewAccountScreenContent(
     onInitialBalanceFocusLost: () -> Unit,
     onMemoChange: (String) -> Unit,
     onBackClick: () -> Unit,
+    onSaveClick: () -> Unit,
 ) {
     Column(modifier = Modifier.fillMaxSize()) {
         DetailScreenHeader(
@@ -68,35 +86,86 @@ private fun NewAccountScreenContent(
                 end = MoneyTheme.spacing.medium,
                 bottom = MoneyTheme.spacing.medium,
             ),
-            verticalArrangement = Arrangement.spacedBy(MoneyTheme.spacing.small),
         ) {
-            NameField(name = state.name, onNameChange = onNameChange)
+            // The scroll area stays full width, so its scrollbar sits at the window edge, but the form
+            // itself is capped so its fields don't stretch across wide windows.
+            Column(
+                modifier = Modifier.widthIn(max = FormDefaults.MaxWidth),
+                verticalArrangement = Arrangement.spacedBy(MoneyTheme.spacing.medium),
+            ) {
+                NewAccountIntro()
 
-            AccountTypeField(
-                accountTypes = state.accountTypes,
-                accountType = state.accountType,
-                onAccountTypeChange = onAccountTypeChange,
-            )
+                FormSectionCard(title = stringResource(Res.string.account_section_title)) {
+                    NameField(name = state.name, onNameChange = onNameChange)
 
-            FinancialInstitutionField(
-                banks = state.banks,
-                bankName = state.bankName,
-                bank = state.bank,
-                onBankNameChange = onBankNameChange,
-                onBankChange = onBankChange,
-            )
+                    AccountTypeField(
+                        accountTypes = state.accountTypes,
+                        accountType = state.accountType,
+                        onAccountTypeChange = onAccountTypeChange,
+                    )
 
-            AccountNumberField(number = state.number, onNumberChange = onNumberChange)
+                    FinancialInstitutionField(
+                        banks = state.banks,
+                        bankName = state.bankName,
+                        bank = state.bank,
+                        onBankNameChange = onBankNameChange,
+                        onBankChange = onBankChange,
+                    )
+                }
 
-            InitialBalanceField(
-                initialBalance = state.initialBalance,
-                currencySymbol = state.currencySymbol,
-                isError = state.isInitialBalanceError,
-                onInitialBalanceChange = onInitialBalanceChange,
-                onFocusLost = onInitialBalanceFocusLost,
-            )
+                FormSectionCard(title = stringResource(Res.string.balance_and_reference_section_title)) {
+                    AccountNumberField(number = state.number, onNumberChange = onNumberChange)
 
-            CommentsField(memo = state.memo, onMemoChange = onMemoChange)
+                    InitialBalanceField(
+                        initialBalance = state.initialBalance,
+                        currencySymbol = state.currencySymbol,
+                        isError = state.isInitialBalanceError,
+                        onInitialBalanceChange = onInitialBalanceChange,
+                        onFocusLost = onInitialBalanceFocusLost,
+                    )
+                }
+
+                FormSectionCard(title = stringResource(Res.string.additional_information_section_title)) {
+                    CommentsField(memo = state.memo, onMemoChange = onMemoChange)
+                }
+
+                NewAccountButtons(onCancelClick = onBackClick, onSaveClick = onSaveClick)
+            }
+        }
+    }
+}
+
+/** What the form is for, and what the asterisk on required field labels means. */
+@Composable
+private fun NewAccountIntro() {
+    Column(verticalArrangement = Arrangement.spacedBy(MoneyTheme.spacing.small)) {
+        Text(
+            text = stringResource(Res.string.new_account_description),
+            style = MaterialTheme.typography.bodyMedium,
+        )
+
+        Text(
+            text = stringResource(Res.string.required_field_legend),
+            style = MaterialTheme.typography.bodySmall,
+        )
+    }
+}
+
+@Composable
+private fun NewAccountButtons(
+    onCancelClick: () -> Unit,
+    onSaveClick: () -> Unit,
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(MoneyTheme.spacing.small, Alignment.End),
+    ) {
+        TextButton(onClick = onCancelClick) {
+            Text(text = stringResource(Res.string.cancel_button_title))
+        }
+
+        Button(onClick = onSaveClick) {
+            Text(text = stringResource(Res.string.save_button_title))
         }
     }
 }
@@ -150,5 +219,6 @@ private fun NewAccountScreenPreviewContent(state: NewAccountUiState) {
         onInitialBalanceFocusLost = {},
         onMemoChange = {},
         onBackClick = {},
+        onSaveClick = {},
     )
 }
