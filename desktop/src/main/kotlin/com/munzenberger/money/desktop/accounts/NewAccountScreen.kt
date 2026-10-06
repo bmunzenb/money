@@ -91,17 +91,21 @@ private fun NewAccountScreenContent(
             // itself is capped so its fields don't stretch across wide windows.
             Column(
                 modifier = Modifier.widthIn(max = FormDefaults.MaxWidth),
-                verticalArrangement = Arrangement.spacedBy(MoneyTheme.spacing.small),
+                verticalArrangement = Arrangement.spacedBy(MoneyTheme.spacing.medium),
             ) {
-                Text(
-                    text = stringResource(Res.string.new_account_description),
-                    style = MaterialTheme.typography.bodyMedium,
-                )
+                Column(
+                    verticalArrangement = Arrangement.spacedBy(MoneyTheme.spacing.small),
+                ) {
+                    Text(
+                        text = stringResource(Res.string.new_account_description),
+                        style = MaterialTheme.typography.bodyMedium,
+                    )
 
-                Text(
-                    text = stringResource(Res.string.required_field_legend),
-                    style = MaterialTheme.typography.bodySmall,
-                )
+                    Text(
+                        text = stringResource(Res.string.required_field_legend),
+                        style = MaterialTheme.typography.bodySmall,
+                    )
+                }
 
                 FormSectionCard(title = stringResource(Res.string.account_section_title)) {
                     NameField(name = state.name, onNameChange = onNameChange)

@@ -172,15 +172,10 @@ gutter instead of over the content.
 
 ## Text fields
 
-Use `DesktopOutlinedTextField` (`desktop/.../desktop/components/DesktopOutlinedTextField.kt`) instead of
-Material's `OutlinedTextField`. It takes the same parameters, but is sized for mouse and keyboard: 40dp tall
-instead of 56dp, with tighter content padding and 40dp icon targets (see
-`DesktopOutlinedTextFieldDefaults`). It works as the anchor of an `ExposedDropdownMenuBox` too.
-
-For the options in those menus, use `DesktopDropdownMenuItem` (`desktop/.../desktop/components/DesktopDropdownMenuItem.kt`)
-instead of `DropdownMenuItem`. Its rows are 32dp tall instead of 48dp, its text is a single line that ends
-with an ellipsis, and its padding lines the option text up with the field's text, so don't pass
-`ExposedDropdownMenuDefaults.ItemContentPadding`.
+Use Material's `OutlinedTextField`, which also works as the anchor of an `ExposedDropdownMenuBox`. For
+the options in those menus, use Material's `DropdownMenuItem` with
+`contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding`, so the option text lines up with the
+field's text.
 
 ## Form sections
 
