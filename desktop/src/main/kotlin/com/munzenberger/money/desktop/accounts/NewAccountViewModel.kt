@@ -85,7 +85,7 @@ class NewAccountViewModel(
     }
 
     fun onSaveClick() {
-        // TODO: Validate the form and create the account.
+        // Saving isn't implemented yet.
     }
 
     fun onBackClick() {

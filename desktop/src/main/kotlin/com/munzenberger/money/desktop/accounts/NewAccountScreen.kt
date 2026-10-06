@@ -93,19 +93,7 @@ private fun NewAccountScreenContent(
                 modifier = Modifier.widthIn(max = FormDefaults.MaxWidth),
                 verticalArrangement = Arrangement.spacedBy(MoneyTheme.spacing.medium),
             ) {
-                Column(
-                    verticalArrangement = Arrangement.spacedBy(MoneyTheme.spacing.small),
-                ) {
-                    Text(
-                        text = stringResource(Res.string.new_account_description),
-                        style = MaterialTheme.typography.bodyMedium,
-                    )
-
-                    Text(
-                        text = stringResource(Res.string.required_field_legend),
-                        style = MaterialTheme.typography.bodySmall,
-                    )
-                }
+                NewAccountIntro()
 
                 FormSectionCard(title = stringResource(Res.string.account_section_title)) {
                     NameField(name = state.name, onNameChange = onNameChange)
@@ -141,19 +129,43 @@ private fun NewAccountScreenContent(
                     CommentsField(memo = state.memo, onMemoChange = onMemoChange)
                 }
 
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(MoneyTheme.spacing.small, Alignment.End),
-                ) {
-                    TextButton(onClick = onBackClick) {
-                        Text(text = stringResource(Res.string.cancel_button_title))
-                    }
-
-                    Button(onClick = onSaveClick) {
-                        Text(text = stringResource(Res.string.save_button_title))
-                    }
-                }
+                NewAccountButtons(onCancelClick = onBackClick, onSaveClick = onSaveClick)
             }
+        }
+    }
+}
+
+/** What the form is for, and what the asterisk on required field labels means. */
+@Composable
+private fun NewAccountIntro() {
+    Column(verticalArrangement = Arrangement.spacedBy(MoneyTheme.spacing.small)) {
+        Text(
+            text = stringResource(Res.string.new_account_description),
+            style = MaterialTheme.typography.bodyMedium,
+        )
+
+        Text(
+            text = stringResource(Res.string.required_field_legend),
+            style = MaterialTheme.typography.bodySmall,
+        )
+    }
+}
+
+@Composable
+private fun NewAccountButtons(
+    onCancelClick: () -> Unit,
+    onSaveClick: () -> Unit,
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(MoneyTheme.spacing.small, Alignment.End),
+    ) {
+        TextButton(onClick = onCancelClick) {
+            Text(text = stringResource(Res.string.cancel_button_title))
+        }
+
+        Button(onClick = onSaveClick) {
+            Text(text = stringResource(Res.string.save_button_title))
         }
     }
 }
