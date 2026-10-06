@@ -194,8 +194,7 @@ FormSectionCard(title = stringResource(Res.string.account_section_title)) {
 
 Screens pushed on top of another screen (e.g. `NewAccount` over `AccountList`) start with
 `DetailScreenHeader` (`desktop/.../desktop/components/DetailScreenHeader.kt`): a back button followed by
-the title, with an optional `actions` slot at the end for buttons like Save. Its back arrow lines up with
-`ListScreenHeader`'s title. Wire `onBackClick` to a ViewModel
+the title. Its back arrow lines up with `ListScreenHeader`'s title. Wire `onBackClick` to a ViewModel
 function that does `navigator.navigate { removeLast() }`:
 
 ```kotlin

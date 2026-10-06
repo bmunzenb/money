@@ -1,12 +1,10 @@
 package com.munzenberger.money.desktop.components
 
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
@@ -24,16 +22,15 @@ import money.shared.generated.resources.back_button_description
 import org.jetbrains.compose.resources.stringResource
 
 /**
- * Header for screens pushed on top of another screen: a back button followed by the screen title, with
- * any [actions] (e.g. a Save button) at the end. The back arrow lines up with [ListScreenHeader]'s title,
- * so the content edge stays put when navigating between the two.
+ * Header for screens pushed on top of another screen: a back button followed by the screen title. The
+ * back arrow lines up with [ListScreenHeader]'s title, so the content edge stays put when navigating
+ * between the two.
  */
 @Composable
 fun DetailScreenHeader(
     title: String,
     onBackClick: () -> Unit,
     modifier: Modifier = Modifier,
-    actions: @Composable RowScope.() -> Unit = {},
 ) {
     Row(
         modifier = modifier
@@ -55,11 +52,8 @@ fun DetailScreenHeader(
         Text(
             text = title,
             style = MoneyTheme.typography.headlineMedium,
-            modifier = Modifier
-                .weight(1f)
-                .semantics { heading() },
+            modifier = Modifier.semantics { heading() },
         )
-        actions()
     }
 }
 
@@ -74,10 +68,6 @@ private fun DetailScreenHeaderPreview() {
         DetailScreenHeader(
             title = "New account",
             onBackClick = {},
-        ) {
-            Button(onClick = {}) {
-                Text("Save")
-            }
-        }
+        )
     }
 }

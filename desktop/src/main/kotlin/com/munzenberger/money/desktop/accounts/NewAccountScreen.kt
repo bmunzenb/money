@@ -3,15 +3,18 @@ package com.munzenberger.money.desktop.accounts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import com.munzenberger.money.data.api.account.AccountType
@@ -26,6 +29,7 @@ import money.shared.generated.resources.Res
 import money.shared.generated.resources.account_section_title
 import money.shared.generated.resources.additional_information_section_title
 import money.shared.generated.resources.balance_and_reference_section_title
+import money.shared.generated.resources.cancel_button_title
 import money.shared.generated.resources.new_account_description
 import money.shared.generated.resources.new_account_title
 import money.shared.generated.resources.required_field_legend
@@ -70,11 +74,7 @@ private fun NewAccountScreenContent(
         DetailScreenHeader(
             title = stringResource(Res.string.new_account_title),
             onBackClick = onBackClick,
-        ) {
-            Button(onClick = onSaveClick) {
-                Text(text = stringResource(Res.string.save_button_title))
-            }
-        }
+        )
 
         // Only the fields scroll, so the header and its back button stay visible.
         ScrollableColumn(
@@ -139,6 +139,19 @@ private fun NewAccountScreenContent(
 
                 FormSectionCard(title = stringResource(Res.string.additional_information_section_title)) {
                     CommentsField(memo = state.memo, onMemoChange = onMemoChange)
+                }
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(MoneyTheme.spacing.small, Alignment.End),
+                ) {
+                    TextButton(onClick = onBackClick) {
+                        Text(text = stringResource(Res.string.cancel_button_title))
+                    }
+
+                    Button(onClick = onSaveClick) {
+                        Text(text = stringResource(Res.string.save_button_title))
+                    }
                 }
             }
         }
