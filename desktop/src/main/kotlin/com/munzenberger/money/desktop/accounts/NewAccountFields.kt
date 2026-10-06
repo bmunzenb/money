@@ -40,7 +40,6 @@ import money.shared.generated.resources.financial_institution_load_error_message
 import money.shared.generated.resources.initial_balance_error_message
 import money.shared.generated.resources.initial_balance_label
 import money.shared.generated.resources.required_field_label
-import money.shared.generated.resources.required_field_supporting_text
 import org.jetbrains.compose.resources.stringResource
 
 /** Required field for the account's name. */
@@ -60,7 +59,6 @@ internal fun NameField(
                 )
             )
         },
-        supportingText = { Text(stringResource(Res.string.required_field_supporting_text)) },
         singleLine = true,
         keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Words),
         modifier = Modifier.fillMaxWidth(),
@@ -100,24 +98,17 @@ internal fun AccountTypeField(
                     )
                 )
             },
-            supportingText = {
-                Text(
-                    stringResource(
-                        if (isError) {
-                            Res.string.account_type_load_error_message
-                        } else {
-                            Res.string.required_field_supporting_text
-                        }
-                    )
-                )
+            supportingText = if (isError) {
+                { Text(stringResource(Res.string.account_type_load_error_message)) }
+            } else {
+                null
             },
             isError = isError,
             enabled = enabled,
             trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded && enabled) },
             singleLine = true,
             modifier = Modifier
-                .menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable, enabled = enabled)
-                .fillMaxWidth(),
+                .menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable, enabled = enabled),
         )
 
         ExposedDropdownMenu(

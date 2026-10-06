@@ -182,11 +182,25 @@ instead of `DropdownMenuItem`. Its rows are 32dp tall instead of 48dp, its text 
 with an ellipsis, and its padding lines the option text up with the field's text, so don't pass
 `ExposedDropdownMenuDefaults.ItemContentPadding`.
 
+## Form sections
+
+Group related fields of a form in a `FormSectionCard`
+(`desktop/.../desktop/components/FormSectionCard.kt`): an outlined card on `surfaceContainerLowest` with a `titleMedium` heading. Its
+content is a `Column` that spaces the fields `MoneyTheme.spacing.small` apart:
+
+```kotlin
+FormSectionCard(title = stringResource(Res.string.account_section_title)) {
+    NameField(name = state.name, onNameChange = onNameChange)
+    AccountTypeField(/* ... */)
+}
+```
+
 ## Detail screens
 
 Screens pushed on top of another screen (e.g. `NewAccount` over `AccountList`) start with
 `DetailScreenHeader` (`desktop/.../desktop/components/DetailScreenHeader.kt`): a back button followed by
-the title. Its back arrow lines up with `ListScreenHeader`'s title. Wire `onBackClick` to a ViewModel
+the title, with an optional `actions` slot at the end for buttons like Save. Its back arrow lines up with
+`ListScreenHeader`'s title. Wire `onBackClick` to a ViewModel
 function that does `navigator.navigate { removeLast() }`:
 
 ```kotlin

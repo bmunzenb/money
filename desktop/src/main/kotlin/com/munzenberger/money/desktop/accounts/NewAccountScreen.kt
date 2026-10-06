@@ -5,6 +5,9 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.material3.Button
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -13,11 +16,18 @@ import androidx.compose.ui.tooling.preview.Preview
 import com.munzenberger.money.data.api.account.AccountType
 import com.munzenberger.money.data.api.bank.Bank
 import com.munzenberger.money.desktop.components.DetailScreenHeader
+import com.munzenberger.money.desktop.components.FormSectionCard
 import com.munzenberger.money.desktop.components.ScrollableColumn
 import com.munzenberger.money.shared.theme.MoneyTheme
 import com.munzenberger.money.shared.theme.PreviewThemed
 import money.shared.generated.resources.Res
+import money.shared.generated.resources.account_section_title
+import money.shared.generated.resources.additional_information_section_title
+import money.shared.generated.resources.balance_and_reference_section_title
+import money.shared.generated.resources.new_account_description
 import money.shared.generated.resources.new_account_title
+import money.shared.generated.resources.required_field_legend
+import money.shared.generated.resources.save_button_title
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 
@@ -36,6 +46,7 @@ fun NewAccountScreen(viewModel: NewAccountViewModel = koinViewModel()) {
         onInitialBalanceFocusLost = viewModel::onInitialBalanceFocusLost,
         onMemoChange = viewModel::onMemoChange,
         onBackClick = viewModel::onBackClick,
+        onSaveClick = viewModel::onSaveClick,
     )
 }
 
@@ -51,12 +62,17 @@ private fun NewAccountScreenContent(
     onInitialBalanceFocusLost: () -> Unit,
     onMemoChange: (String) -> Unit,
     onBackClick: () -> Unit,
+    onSaveClick: () -> Unit,
 ) {
     Column(modifier = Modifier.fillMaxSize()) {
         DetailScreenHeader(
             title = stringResource(Res.string.new_account_title),
             onBackClick = onBackClick,
-        )
+        ) {
+            Button(onClick = onSaveClick) {
+                Text(text = stringResource(Res.string.save_button_title))
+            }
+        }
 
         // Only the fields scroll, so the header and its back button stay visible.
         ScrollableColumn(
@@ -70,33 +86,49 @@ private fun NewAccountScreenContent(
             ),
             verticalArrangement = Arrangement.spacedBy(MoneyTheme.spacing.small),
         ) {
-            NameField(name = state.name, onNameChange = onNameChange)
-
-            AccountTypeField(
-                accountTypes = state.accountTypes,
-                accountType = state.accountType,
-                onAccountTypeChange = onAccountTypeChange,
+            Text(
+                text = stringResource(Res.string.new_account_description),
+                style = MaterialTheme.typography.bodyMedium,
             )
 
-            FinancialInstitutionField(
-                banks = state.banks,
-                bankName = state.bankName,
-                bank = state.bank,
-                onBankNameChange = onBankNameChange,
-                onBankChange = onBankChange,
+            Text(
+                text = stringResource(Res.string.required_field_legend),
+                style = MaterialTheme.typography.bodySmall,
             )
 
-            AccountNumberField(number = state.number, onNumberChange = onNumberChange)
+            FormSectionCard(title = stringResource(Res.string.account_section_title)) {
+                NameField(name = state.name, onNameChange = onNameChange)
 
-            InitialBalanceField(
-                initialBalance = state.initialBalance,
-                currencySymbol = state.currencySymbol,
-                isError = state.isInitialBalanceError,
-                onInitialBalanceChange = onInitialBalanceChange,
-                onFocusLost = onInitialBalanceFocusLost,
-            )
+                AccountTypeField(
+                    accountTypes = state.accountTypes,
+                    accountType = state.accountType,
+                    onAccountTypeChange = onAccountTypeChange,
+                )
 
-            CommentsField(memo = state.memo, onMemoChange = onMemoChange)
+                FinancialInstitutionField(
+                    banks = state.banks,
+                    bankName = state.bankName,
+                    bank = state.bank,
+                    onBankNameChange = onBankNameChange,
+                    onBankChange = onBankChange,
+                )
+            }
+
+            FormSectionCard(title = stringResource(Res.string.balance_and_reference_section_title)) {
+                AccountNumberField(number = state.number, onNumberChange = onNumberChange)
+
+                InitialBalanceField(
+                    initialBalance = state.initialBalance,
+                    currencySymbol = state.currencySymbol,
+                    isError = state.isInitialBalanceError,
+                    onInitialBalanceChange = onInitialBalanceChange,
+                    onFocusLost = onInitialBalanceFocusLost,
+                )
+            }
+
+            FormSectionCard(title = stringResource(Res.string.additional_information_section_title)) {
+                CommentsField(memo = state.memo, onMemoChange = onMemoChange)
+            }
         }
     }
 }
@@ -150,5 +182,6 @@ private fun NewAccountScreenPreviewContent(state: NewAccountUiState) {
         onInitialBalanceFocusLost = {},
         onMemoChange = {},
         onBackClick = {},
+        onSaveClick = {},
     )
 }

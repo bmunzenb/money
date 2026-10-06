@@ -84,6 +84,10 @@ class NewAccountViewModel(
         _state.update { it.copy(memo = memo) }
     }
 
+    fun onSaveClick() {
+        // TODO: Validate the form and create the account.
+    }
+
     fun onBackClick() {
         navigator.navigate { removeLast() }
     }
