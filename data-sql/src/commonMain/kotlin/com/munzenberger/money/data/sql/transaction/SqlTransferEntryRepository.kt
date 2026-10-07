@@ -11,17 +11,17 @@ import com.munzenberger.money.data.api.transaction.TransactionStatusId
 import com.munzenberger.money.data.api.transaction.TransferEntry
 import com.munzenberger.money.data.api.transaction.TransferEntryId
 import com.munzenberger.money.data.api.transaction.TransferEntryRepository
+import com.munzenberger.money.data.api.transaction.TransferEntryWriter
 import com.munzenberger.money.data.sql.MoneyDatabase
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.withContext
 import kotlin.coroutines.CoroutineContext
 import kotlin.uuid.Uuid
 
 class SqlTransferEntryRepository(
     private val database: MoneyDatabase,
     private val context: CoroutineContext = Dispatchers.IO,
-) : TransferEntryRepository {
+) : TransferEntryRepository, TransferEntryWriter {
 
     override suspend fun transferEntriesByTransactionId(transactionId: TransactionId): Flow<List<TransferEntry>> =
         database.transferEntryQueries
@@ -35,40 +35,34 @@ class SqlTransferEntryRepository(
             .asFlow()
             .mapToList(context)
 
-    override suspend fun add(transferEntry: TransferEntry) {
-        withContext(context) {
-            database.transferEntryQueries.insert(
-                id = transferEntry.id.id.toString(),
-                transaction_id = transferEntry.transactionId.value.toString(),
-                account_id = transferEntry.accountId.value.toString(),
-                amount = transferEntry.amount.value,
-                number = transferEntry.number,
-                memo = transferEntry.memo,
-                status_id = transferEntry.status.id.value,
-                order_in_transaction = transferEntry.orderInTransaction.toLong(),
-            )
-        }
+    override fun add(transferEntry: TransferEntry) {
+        database.transferEntryQueries.insert(
+            id = transferEntry.id.id.toString(),
+            transaction_id = transferEntry.transactionId.value.toString(),
+            account_id = transferEntry.accountId.value.toString(),
+            amount = transferEntry.amount.value,
+            number = transferEntry.number,
+            memo = transferEntry.memo,
+            status_id = transferEntry.status.id.value,
+            order_in_transaction = transferEntry.orderInTransaction.toLong(),
+        )
     }
 
-    override suspend fun update(transferEntry: TransferEntry) {
-        withContext(context) {
-            database.transferEntryQueries.update(
-                transaction_id = transferEntry.transactionId.value.toString(),
-                account_id = transferEntry.accountId.value.toString(),
-                amount = transferEntry.amount.value,
-                number = transferEntry.number,
-                memo = transferEntry.memo,
-                status_id = transferEntry.status.id.value,
-                order_in_transaction = transferEntry.orderInTransaction.toLong(),
-                id = transferEntry.id.id.toString(),
-            )
-        }
+    override fun update(transferEntry: TransferEntry) {
+        database.transferEntryQueries.update(
+            transaction_id = transferEntry.transactionId.value.toString(),
+            account_id = transferEntry.accountId.value.toString(),
+            amount = transferEntry.amount.value,
+            number = transferEntry.number,
+            memo = transferEntry.memo,
+            status_id = transferEntry.status.id.value,
+            order_in_transaction = transferEntry.orderInTransaction.toLong(),
+            id = transferEntry.id.id.toString(),
+        )
     }
 
-    override suspend fun removeById(transferEntryId: TransferEntryId) {
-        withContext(context) {
-            database.transferEntryQueries.deleteById(transferEntryId.id.toString())
-        }
+    override fun removeById(transferEntryId: TransferEntryId) {
+        database.transferEntryQueries.deleteById(transferEntryId.id.toString())
     }
 
     private fun mapTransferEntry(

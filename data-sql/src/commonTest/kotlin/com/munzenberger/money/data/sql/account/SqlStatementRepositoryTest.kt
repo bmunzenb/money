@@ -34,7 +34,7 @@ class SqlStatementRepositoryTest {
         value = AccountTypeConstant.Checking,
     )
 
-    private suspend fun createAccount(database: MoneyDatabase, dispatcher: CoroutineDispatcher): AccountId {
+    private fun createAccount(database: MoneyDatabase, dispatcher: CoroutineDispatcher): AccountId {
         val account = Account(name = "Checking", accountType = checking)
         SqlAccountRepository(database, dispatcher).add(account)
         return account.id

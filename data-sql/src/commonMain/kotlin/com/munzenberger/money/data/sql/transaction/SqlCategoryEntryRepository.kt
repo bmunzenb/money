@@ -7,18 +7,18 @@ import com.munzenberger.money.data.api.category.CategoryId
 import com.munzenberger.money.data.api.transaction.CategoryEntry
 import com.munzenberger.money.data.api.transaction.CategoryEntryId
 import com.munzenberger.money.data.api.transaction.CategoryEntryRepository
+import com.munzenberger.money.data.api.transaction.CategoryEntryWriter
 import com.munzenberger.money.data.api.transaction.TransactionId
 import com.munzenberger.money.data.sql.MoneyDatabase
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.withContext
 import kotlin.coroutines.CoroutineContext
 import kotlin.uuid.Uuid
 
 class SqlCategoryEntryRepository(
     private val database: MoneyDatabase,
     private val context: CoroutineContext = Dispatchers.IO,
-) : CategoryEntryRepository {
+) : CategoryEntryRepository, CategoryEntryWriter {
 
     override suspend fun categoryEntriesByTransactionId(transactionId: TransactionId): Flow<List<CategoryEntry>> =
         database.categoryEntryQueries
@@ -32,36 +32,30 @@ class SqlCategoryEntryRepository(
             .asFlow()
             .mapToList(context)
 
-    override suspend fun add(categoryEntry: CategoryEntry) {
-        withContext(context) {
-            database.categoryEntryQueries.insert(
-                id = categoryEntry.id.value.toString(),
-                transaction_id = categoryEntry.transactionId.value.toString(),
-                category_id = categoryEntry.categoryId.value.toString(),
-                amount = categoryEntry.amount.value,
-                memo = categoryEntry.memo,
-                order_in_transaction = categoryEntry.orderInTransaction.toLong(),
-            )
-        }
+    override fun add(categoryEntry: CategoryEntry) {
+        database.categoryEntryQueries.insert(
+            id = categoryEntry.id.value.toString(),
+            transaction_id = categoryEntry.transactionId.value.toString(),
+            category_id = categoryEntry.categoryId.value.toString(),
+            amount = categoryEntry.amount.value,
+            memo = categoryEntry.memo,
+            order_in_transaction = categoryEntry.orderInTransaction.toLong(),
+        )
     }
 
-    override suspend fun update(categoryEntry: CategoryEntry) {
-        withContext(context) {
-            database.categoryEntryQueries.update(
-                transaction_id = categoryEntry.transactionId.value.toString(),
-                category_id = categoryEntry.categoryId.value.toString(),
-                amount = categoryEntry.amount.value,
-                memo = categoryEntry.memo,
-                order_in_transaction = categoryEntry.orderInTransaction.toLong(),
-                id = categoryEntry.id.value.toString(),
-            )
-        }
+    override fun update(categoryEntry: CategoryEntry) {
+        database.categoryEntryQueries.update(
+            transaction_id = categoryEntry.transactionId.value.toString(),
+            category_id = categoryEntry.categoryId.value.toString(),
+            amount = categoryEntry.amount.value,
+            memo = categoryEntry.memo,
+            order_in_transaction = categoryEntry.orderInTransaction.toLong(),
+            id = categoryEntry.id.value.toString(),
+        )
     }
 
-    override suspend fun removeById(categoryEntryId: CategoryEntryId) {
-        withContext(context) {
-            database.categoryEntryQueries.deleteById(categoryEntryId.value.toString())
-        }
+    override fun removeById(categoryEntryId: CategoryEntryId) {
+        database.categoryEntryQueries.deleteById(categoryEntryId.value.toString())
     }
 
     private fun mapCategoryEntry(

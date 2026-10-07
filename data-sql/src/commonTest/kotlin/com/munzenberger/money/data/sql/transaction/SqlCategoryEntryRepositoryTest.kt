@@ -50,13 +50,13 @@ class SqlCategoryEntryRepositoryTest {
 
     private val expense = CategoryType(id = CategoryTypeId(2), value = CategoryTypeConstant.Expense)
 
-    private suspend fun createAccount(database: MoneyDatabase, dispatcher: CoroutineDispatcher): AccountId {
+    private fun createAccount(database: MoneyDatabase, dispatcher: CoroutineDispatcher): AccountId {
         val account = Account(name = "Checking", accountType = checking)
         SqlAccountRepository(database, dispatcher).add(account)
         return account.id
     }
 
-    private suspend fun createTransaction(
+    private fun createTransaction(
         database: MoneyDatabase,
         dispatcher: CoroutineDispatcher,
         accountId: AccountId,
@@ -66,7 +66,7 @@ class SqlCategoryEntryRepositoryTest {
         return transaction.id
     }
 
-    private suspend fun createCategory(database: MoneyDatabase, dispatcher: CoroutineDispatcher, name: String = "Groceries"): CategoryId {
+    private fun createCategory(database: MoneyDatabase, dispatcher: CoroutineDispatcher, name: String = "Groceries"): CategoryId {
         val category = Category(name = name, type = expense)
         SqlCategoryRepository(database, dispatcher).add(category)
         return category.id

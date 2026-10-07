@@ -5,17 +5,17 @@ import app.cash.sqldelight.coroutines.mapToList
 import com.munzenberger.money.data.api.payee.Payee
 import com.munzenberger.money.data.api.payee.PayeeId
 import com.munzenberger.money.data.api.payee.PayeeRepository
+import com.munzenberger.money.data.api.payee.PayeeWriter
 import com.munzenberger.money.data.sql.MoneyDatabase
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.withContext
 import kotlin.coroutines.CoroutineContext
 import kotlin.uuid.Uuid
 
 class SqlPayeeRepository(
     private val database: MoneyDatabase,
     private val context: CoroutineContext = Dispatchers.IO,
-) : PayeeRepository {
+) : PayeeRepository, PayeeWriter {
 
     override val payees: Flow<List<Payee>> = database.payeeQueries
         .selectAll { id, name, memo ->
@@ -28,29 +28,23 @@ class SqlPayeeRepository(
         .asFlow()
         .mapToList(context)
 
-    override suspend fun add(payee: Payee) {
-        withContext(context) {
-            database.payeeQueries.insert(
-                id = payee.id.value.toString(),
-                name = payee.name,
-                memo = payee.memo,
-            )
-        }
+    override fun add(payee: Payee) {
+        database.payeeQueries.insert(
+            id = payee.id.value.toString(),
+            name = payee.name,
+            memo = payee.memo,
+        )
     }
 
-    override suspend fun update(payee: Payee) {
-        withContext(context) {
-            database.payeeQueries.update(
-                name = payee.name,
-                memo = payee.memo,
-                id = payee.id.value.toString(),
-            )
-        }
+    override fun update(payee: Payee) {
+        database.payeeQueries.update(
+            name = payee.name,
+            memo = payee.memo,
+            id = payee.id.value.toString(),
+        )
     }
 
-    override suspend fun removeById(payeeId: PayeeId) {
-        withContext(context) {
-            database.payeeQueries.deleteById(payeeId.value.toString())
-        }
+    override fun removeById(payeeId: PayeeId) {
+        database.payeeQueries.deleteById(payeeId.value.toString())
     }
 }
