@@ -16,4 +16,12 @@ import java.io.Closeable
 interface MoneyRepository : AccountRepository, AccountTypeRepository, StatementRepository, BankRepository,
     CategoryRepository, CategoryTypeRepository,
     PayeeRepository, CategoryEntryRepository, TransactionRepository, TransactionStatusRepository,
-    TransferEntryRepository, Closeable
+    TransferEntryRepository, Closeable {
+
+    /**
+     * Runs [block] in a single database transaction, off the calling thread, and returns its result.
+     * The writes in [block] are committed together when it returns, or rolled back together if it
+     * throws.
+     */
+    suspend fun <R> transaction(block: MoneyWriter.() -> R): R
+}

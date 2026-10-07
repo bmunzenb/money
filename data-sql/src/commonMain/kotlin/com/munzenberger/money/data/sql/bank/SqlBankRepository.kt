@@ -5,17 +5,17 @@ import app.cash.sqldelight.coroutines.mapToList
 import com.munzenberger.money.data.api.bank.Bank
 import com.munzenberger.money.data.api.bank.BankId
 import com.munzenberger.money.data.api.bank.BankRepository
+import com.munzenberger.money.data.api.bank.BankWriter
 import com.munzenberger.money.data.sql.MoneyDatabase
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.withContext
 import kotlin.coroutines.CoroutineContext
 import kotlin.uuid.Uuid
 
 class SqlBankRepository(
     private val database: MoneyDatabase,
     private val context: CoroutineContext = Dispatchers.IO,
-) : BankRepository {
+) : BankRepository, BankWriter {
 
     override val banks: Flow<List<Bank>> = database.bankQueries
         .selectAll { id, name, memo ->
@@ -28,29 +28,23 @@ class SqlBankRepository(
         .asFlow()
         .mapToList(context)
 
-    override suspend fun add(bank: Bank) {
-        withContext(context) {
-            database.bankQueries.insert(
-                id = bank.id.value.toString(),
-                name = bank.name,
-                memo = bank.memo,
-            )
-        }
+    override fun add(bank: Bank) {
+        database.bankQueries.insert(
+            id = bank.id.value.toString(),
+            name = bank.name,
+            memo = bank.memo,
+        )
     }
 
-    override suspend fun update(bank: Bank) {
-        withContext(context) {
-            database.bankQueries.update(
-                name = bank.name,
-                memo = bank.memo,
-                id = bank.id.value.toString(),
-            )
-        }
+    override fun update(bank: Bank) {
+        database.bankQueries.update(
+            name = bank.name,
+            memo = bank.memo,
+            id = bank.id.value.toString(),
+        )
     }
 
-    override suspend fun removeById(bankId: BankId) {
-        withContext(context) {
-            database.bankQueries.deleteById(bankId.value.toString())
-        }
+    override fun removeById(bankId: BankId) {
+        database.bankQueries.deleteById(bankId.value.toString())
     }
 }

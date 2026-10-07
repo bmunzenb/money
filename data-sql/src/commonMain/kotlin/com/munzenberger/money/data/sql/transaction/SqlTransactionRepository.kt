@@ -10,10 +10,10 @@ import com.munzenberger.money.data.api.transaction.TransactionRepository
 import com.munzenberger.money.data.api.transaction.TransactionStatus
 import com.munzenberger.money.data.api.transaction.TransactionStatusConstant
 import com.munzenberger.money.data.api.transaction.TransactionStatusId
+import com.munzenberger.money.data.api.transaction.TransactionWriter
 import com.munzenberger.money.data.sql.MoneyDatabase
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.withContext
 import kotlinx.datetime.LocalDate
 import kotlin.coroutines.CoroutineContext
 import kotlin.uuid.Uuid
@@ -21,7 +21,7 @@ import kotlin.uuid.Uuid
 class SqlTransactionRepository(
     private val database: MoneyDatabase,
     private val context: CoroutineContext = Dispatchers.IO,
-) : TransactionRepository {
+) : TransactionRepository, TransactionWriter {
 
     override suspend fun transactionsByAccountId(accountId: AccountId): Flow<List<Transaction>> =
         database.transactionQueries
@@ -42,37 +42,31 @@ class SqlTransactionRepository(
             .asFlow()
             .mapToList(context)
 
-    override suspend fun add(transaction: Transaction) {
-        withContext(context) {
-            database.transactionQueries.insert(
-                id = transaction.id.value.toString(),
-                account_id = transaction.accountId.value.toString(),
-                payee_id = transaction.payeeId?.value?.toString(),
-                date = transaction.date.toEpochDays(),
-                number = transaction.number,
-                memo = transaction.memo,
-                status_id = transaction.status.id.value,
-            )
-        }
+    override fun add(transaction: Transaction) {
+        database.transactionQueries.insert(
+            id = transaction.id.value.toString(),
+            account_id = transaction.accountId.value.toString(),
+            payee_id = transaction.payeeId?.value?.toString(),
+            date = transaction.date.toEpochDays(),
+            number = transaction.number,
+            memo = transaction.memo,
+            status_id = transaction.status.id.value,
+        )
     }
 
-    override suspend fun update(transaction: Transaction) {
-        withContext(context) {
-            database.transactionQueries.update(
-                account_id = transaction.accountId.value.toString(),
-                payee_id = transaction.payeeId?.value?.toString(),
-                date = transaction.date.toEpochDays(),
-                number = transaction.number,
-                memo = transaction.memo,
-                status_id = transaction.status.id.value,
-                id = transaction.id.value.toString(),
-            )
-        }
+    override fun update(transaction: Transaction) {
+        database.transactionQueries.update(
+            account_id = transaction.accountId.value.toString(),
+            payee_id = transaction.payeeId?.value?.toString(),
+            date = transaction.date.toEpochDays(),
+            number = transaction.number,
+            memo = transaction.memo,
+            status_id = transaction.status.id.value,
+            id = transaction.id.value.toString(),
+        )
     }
 
-    override suspend fun removeById(transactionId: TransactionId) {
-        withContext(context) {
-            database.transactionQueries.deleteById(transactionId.value.toString())
-        }
+    override fun removeById(transactionId: TransactionId) {
+        database.transactionQueries.deleteById(transactionId.value.toString())
     }
 }

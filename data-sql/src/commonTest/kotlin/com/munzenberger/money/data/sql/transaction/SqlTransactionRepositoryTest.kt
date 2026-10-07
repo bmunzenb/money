@@ -43,7 +43,7 @@ class SqlTransactionRepositoryTest {
     private val cleared = TransactionStatus(id = TransactionStatusId(2), value = TransactionStatusConstant.Cleared)
     private val reconciled = TransactionStatus(id = TransactionStatusId(3), value = TransactionStatusConstant.Reconciled)
 
-    private suspend fun createAccount(database: MoneyDatabase, dispatcher: CoroutineDispatcher): AccountId {
+    private fun createAccount(database: MoneyDatabase, dispatcher: CoroutineDispatcher): AccountId {
         val account = Account(name = "Checking", accountType = checking)
         SqlAccountRepository(database, dispatcher).add(account)
         return account.id

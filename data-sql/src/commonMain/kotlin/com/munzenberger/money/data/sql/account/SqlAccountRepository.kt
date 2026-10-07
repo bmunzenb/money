@@ -12,18 +12,18 @@ import com.munzenberger.money.data.api.account.AccountTypeGroup
 import com.munzenberger.money.data.api.account.AccountTypeGroupConstant
 import com.munzenberger.money.data.api.account.AccountTypeGroupId
 import com.munzenberger.money.data.api.account.AccountTypeId
+import com.munzenberger.money.data.api.account.AccountWriter
 import com.munzenberger.money.data.api.bank.BankId
 import com.munzenberger.money.data.sql.MoneyDatabase
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.withContext
 import kotlin.coroutines.CoroutineContext
 import kotlin.uuid.Uuid
 
 class SqlAccountRepository(
     private val database: MoneyDatabase,
     private val context: CoroutineContext = Dispatchers.IO,
-) : AccountRepository {
+) : AccountRepository, AccountWriter {
 
     override val accounts: Flow<List<Account>> = database.accountQueries
         .selectAll { id, name, number, bankId, initialBalance, memo, typeId, typeValue, typeGroupId, typeGroupValue ->
@@ -47,37 +47,31 @@ class SqlAccountRepository(
         .asFlow()
         .mapToList(context)
 
-    override suspend fun add(account: Account) {
-        withContext(context) {
-            database.accountQueries.insert(
-                id = account.id.value.toString(),
-                name = account.name,
-                number = account.number,
-                account_type_id = account.accountType.id.value,
-                bank_id = account.bankId?.value?.toString(),
-                initial_balance = account.initialBalance.value,
-                memo = account.memo,
-            )
-        }
+    override fun add(account: Account) {
+        database.accountQueries.insert(
+            id = account.id.value.toString(),
+            name = account.name,
+            number = account.number,
+            account_type_id = account.accountType.id.value,
+            bank_id = account.bankId?.value?.toString(),
+            initial_balance = account.initialBalance.value,
+            memo = account.memo,
+        )
     }
 
-    override suspend fun update(account: Account) {
-        withContext(context) {
-            database.accountQueries.update(
-                name = account.name,
-                number = account.number,
-                account_type_id = account.accountType.id.value,
-                bank_id = account.bankId?.value?.toString(),
-                initial_balance = account.initialBalance.value,
-                memo = account.memo,
-                id = account.id.value.toString(),
-            )
-        }
+    override fun update(account: Account) {
+        database.accountQueries.update(
+            name = account.name,
+            number = account.number,
+            account_type_id = account.accountType.id.value,
+            bank_id = account.bankId?.value?.toString(),
+            initial_balance = account.initialBalance.value,
+            memo = account.memo,
+            id = account.id.value.toString(),
+        )
     }
 
-    override suspend fun removeById(accountId: AccountId) {
-        withContext(context) {
-            database.accountQueries.deleteById(accountId.value.toString())
-        }
+    override fun removeById(accountId: AccountId) {
+        database.accountQueries.deleteById(accountId.value.toString())
     }
 }
