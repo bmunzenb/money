@@ -3,6 +3,11 @@ package com.munzenberger.money.desktop.accounts
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.munzenberger.money.core.MoneyRepositoryController
+import com.munzenberger.money.core.account.CreateAccountResult
+import com.munzenberger.money.core.account.CreateAccountUseCase
+import com.munzenberger.money.core.account.NewAccount
+import com.munzenberger.money.core.account.NewAccountError
+import com.munzenberger.money.core.account.parseInitialBalance
 import com.munzenberger.money.core.resultFlow
 import com.munzenberger.money.data.api.Money
 import com.munzenberger.money.data.api.account.AccountType
@@ -17,6 +22,7 @@ import kotlinx.coroutines.launch
 class NewAccountViewModel(
     repositoryController: MoneyRepositoryController,
     private val navigator: Navigator,
+    private val createAccount: CreateAccountUseCase,
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(
@@ -40,11 +46,12 @@ class NewAccountViewModel(
     }
 
     fun onNameChange(name: String) {
-        _state.update { it.copy(name = name) }
+        // Clear the error as soon as the name is filled in.
+        _state.update { it.copy(name = name, isNameError = it.isNameError && name.isBlank()) }
     }
 
     fun onAccountTypeChange(accountType: AccountType) {
-        _state.update { it.copy(accountType = accountType) }
+        _state.update { it.copy(accountType = accountType, isAccountTypeError = false) }
     }
 
     fun onBankNameChange(bankName: String) {
@@ -85,7 +92,25 @@ class NewAccountViewModel(
     }
 
     fun onSaveClick() {
-        // Saving isn't implemented yet.
+        val current = _state.value
+        if (current.saveState == SaveState.Saving) return
+
+        _state.update { it.copy(saveState = SaveState.Saving) }
+
+        viewModelScope.launch {
+            when (val result = createAccount(current.toNewAccount())) {
+                is CreateAccountResult.Success -> navigator.navigate { removeLast() }
+                is CreateAccountResult.Invalid -> _state.update {
+                    it.copy(
+                        isNameError = NewAccountError.BlankName in result.errors,
+                        isAccountTypeError = NewAccountError.MissingAccountType in result.errors,
+                        isInitialBalanceError = NewAccountError.InvalidInitialBalance in result.errors,
+                        saveState = SaveState.Idle,
+                    )
+                }
+                is CreateAccountResult.Failure -> _state.update { it.copy(saveState = SaveState.Failed) }
+            }
+        }
     }
 
     fun onBackClick() {
@@ -102,14 +127,12 @@ private fun List<Bank>.matching(bankName: String): Bank? {
     return if (name.isEmpty()) null else firstOrNull { it.name.equals(name, ignoreCase = true) }
 }
 
-/** The amount in [initialBalance], zero if it's blank, or null if it isn't a valid amount. */
-private fun parseInitialBalance(initialBalance: String): Money? =
-    if (initialBalance.isBlank()) {
-        Money(0)
-    } else {
-        try {
-            Money.parse(initialBalance)
-        } catch (_: NumberFormatException) {
-            null
-        }
-    }
+private fun NewAccountUiState.toNewAccount() = NewAccount(
+    name = name,
+    accountType = accountType,
+    bankName = bankName,
+    bank = bank,
+    number = number,
+    initialBalance = initialBalance,
+    memo = memo,
+)

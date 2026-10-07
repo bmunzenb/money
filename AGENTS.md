@@ -254,3 +254,30 @@ the thread holding the transaction or do slow work while holding the write lock.
 to an `XWriter` and to `MoneyWriter`, not to its repository. In `data-sql`, each `SqlXRepository`
 implements both interfaces, and `SqlMoneyRepository` wires the same instances into its reads and its
 writer.
+
+## Use cases
+
+Business logic that a ViewModel shouldn't own, such as validating input and writing it to the
+repository, goes in a use case class in the `core` module, grouped by feature package (e.g.
+`core/.../core/account/CreateAccountUseCase.kt`). A use case:
+
+- takes its dependencies (e.g. `MoneyRepositoryController`) as constructor params;
+- exposes a single `operator fun invoke(...)` (`suspend` if it does I/O), and nothing else public;
+- validates all of its input before any database operation, and writes through
+  `repository.transaction { ... }` (see Data writes);
+- returns a sealed result rather than throwing, e.g. `Success`, `Invalid(errors)` with one error per
+  invalid field, and `Failure(cause)` for a write that failed or no open repository. It rethrows
+  `CancellationException`.
+
+```kotlin
+class CreateAccountUseCase(
+    private val repositoryController: MoneyRepositoryController,
+) {
+    suspend operator fun invoke(newAccount: NewAccount): CreateAccountResult { /* ... */ }
+}
+```
+
+Register it in `AppModule` with `factory { ... }` and pass it to the ViewModel's constructor, which
+calls it like a function (`createAccount(newAccount)`) and maps the result to UI state. For example,
+each `Invalid` error sets that field's `isError` and its supporting text. In tests, call the use case
+directly in `core`, and mock it with `coEvery { createAccount(any()) }` in ViewModel tests.
