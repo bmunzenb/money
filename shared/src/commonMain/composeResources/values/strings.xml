@@ -20,14 +20,17 @@
     <string name="save_button_title">Save</string>
     <string name="cancel_button_title">Cancel</string>
     <string name="account_name_label">Account name</string>
+    <string name="account_name_error_message">Enter an account name.</string>
     <string name="account_type_label">Account type</string>
     <string name="account_type_load_error_message">Unable to load account types.</string>
+    <string name="account_type_error_message">Choose an account type.</string>
     <string name="financial_institution_label">Financial institution</string>
     <string name="financial_institution_load_error_message">Unable to load existing financial institutions.</string>
     <string name="account_number_label">Account number</string>
     <string name="initial_balance_label">Initial balance</string>
     <string name="initial_balance_error_message">Enter a valid amount.</string>
     <string name="comments_label">Comments</string>
+    <string name="save_account_error_message">Unable to save the account. Please try again.</string>
     <string name="account_type_savings">Savings</string>
     <string name="account_type_checking">Checking</string>
     <string name="account_type_asset">Asset</string>

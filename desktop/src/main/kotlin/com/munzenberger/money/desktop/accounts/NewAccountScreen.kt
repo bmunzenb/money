@@ -3,18 +3,14 @@ package com.munzenberger.money.desktop.accounts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.widthIn
-import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import com.munzenberger.money.data.api.account.AccountType
@@ -29,11 +25,9 @@ import money.shared.generated.resources.Res
 import money.shared.generated.resources.account_section_title
 import money.shared.generated.resources.additional_information_section_title
 import money.shared.generated.resources.balance_and_reference_section_title
-import money.shared.generated.resources.cancel_button_title
 import money.shared.generated.resources.new_account_description
 import money.shared.generated.resources.new_account_title
 import money.shared.generated.resources.required_field_legend
-import money.shared.generated.resources.save_button_title
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 
@@ -70,10 +64,14 @@ private fun NewAccountScreenContent(
     onBackClick: () -> Unit,
     onSaveClick: () -> Unit,
 ) {
+    // The form is locked while saving, so what's saved is what's on screen.
+    val enabled = state.saveState != SaveState.Saving
+
     Column(modifier = Modifier.fillMaxSize()) {
         DetailScreenHeader(
             title = stringResource(Res.string.new_account_title),
             onBackClick = onBackClick,
+            backEnabled = enabled,
         )
 
         // Only the fields scroll, so the header and its back button stay visible.
@@ -95,43 +93,76 @@ private fun NewAccountScreenContent(
             ) {
                 NewAccountIntro()
 
-                FormSectionCard(title = stringResource(Res.string.account_section_title)) {
-                    NameField(name = state.name, onNameChange = onNameChange)
-
-                    AccountTypeField(
-                        accountTypes = state.accountTypes,
-                        accountType = state.accountType,
-                        onAccountTypeChange = onAccountTypeChange,
-                    )
-
-                    FinancialInstitutionField(
-                        banks = state.banks,
-                        bankName = state.bankName,
-                        bank = state.bank,
-                        onBankNameChange = onBankNameChange,
-                        onBankChange = onBankChange,
-                    )
-                }
+                AccountSection(
+                    state = state,
+                    enabled = enabled,
+                    onNameChange = onNameChange,
+                    onAccountTypeChange = onAccountTypeChange,
+                    onBankNameChange = onBankNameChange,
+                    onBankChange = onBankChange,
+                )
 
                 FormSectionCard(title = stringResource(Res.string.balance_and_reference_section_title)) {
-                    AccountNumberField(number = state.number, onNumberChange = onNumberChange)
+                    AccountNumberField(number = state.number, enabled = enabled, onNumberChange = onNumberChange)
 
                     InitialBalanceField(
                         initialBalance = state.initialBalance,
                         currencySymbol = state.currencySymbol,
                         isError = state.isInitialBalanceError,
+                        enabled = enabled,
                         onInitialBalanceChange = onInitialBalanceChange,
                         onFocusLost = onInitialBalanceFocusLost,
                     )
                 }
 
                 FormSectionCard(title = stringResource(Res.string.additional_information_section_title)) {
-                    CommentsField(memo = state.memo, onMemoChange = onMemoChange)
+                    CommentsField(memo = state.memo, enabled = enabled, onMemoChange = onMemoChange)
                 }
 
-                NewAccountButtons(onCancelClick = onBackClick, onSaveClick = onSaveClick)
+                NewAccountButtons(
+                    saveState = state.saveState,
+                    onCancelClick = onBackClick,
+                    onSaveClick = onSaveClick,
+                )
             }
         }
+    }
+}
+
+/** The account's name, type, and financial institution. */
+@Composable
+private fun AccountSection(
+    state: NewAccountUiState,
+    enabled: Boolean,
+    onNameChange: (String) -> Unit,
+    onAccountTypeChange: (AccountType) -> Unit,
+    onBankNameChange: (String) -> Unit,
+    onBankChange: (Bank) -> Unit,
+) {
+    FormSectionCard(title = stringResource(Res.string.account_section_title)) {
+        NameField(
+            name = state.name,
+            isError = state.isNameError,
+            enabled = enabled,
+            onNameChange = onNameChange,
+        )
+
+        AccountTypeField(
+            accountTypes = state.accountTypes,
+            accountType = state.accountType,
+            isMissing = state.isAccountTypeError,
+            enabled = enabled,
+            onAccountTypeChange = onAccountTypeChange,
+        )
+
+        FinancialInstitutionField(
+            banks = state.banks,
+            bankName = state.bankName,
+            bank = state.bank,
+            enabled = enabled,
+            onBankNameChange = onBankNameChange,
+            onBankChange = onBankChange,
+        )
     }
 }
 
@@ -148,25 +179,6 @@ private fun NewAccountIntro() {
             text = stringResource(Res.string.required_field_legend),
             style = MaterialTheme.typography.bodySmall,
         )
-    }
-}
-
-@Composable
-private fun NewAccountButtons(
-    onCancelClick: () -> Unit,
-    onSaveClick: () -> Unit,
-) {
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(MoneyTheme.spacing.small, Alignment.End),
-    ) {
-        TextButton(onClick = onCancelClick) {
-            Text(text = stringResource(Res.string.cancel_button_title))
-        }
-
-        Button(onClick = onSaveClick) {
-            Text(text = stringResource(Res.string.save_button_title))
-        }
     }
 }
 
@@ -201,6 +213,56 @@ private fun NewAccountScreenErrorPreview() {
                 accountTypes = LoadState.Error,
                 banks = LoadState.Error,
                 currencySymbol = "$",
+            )
+        )
+    }
+}
+
+@Preview
+@Composable
+private fun NewAccountScreenValidationErrorPreview() {
+    PreviewThemed {
+        NewAccountScreenPreviewContent(
+            state = NewAccountUiState(
+                currencySymbol = "$",
+                accountTypes = LoadState.Loaded(emptyList()),
+                banks = LoadState.Loaded(emptyList()),
+                initialBalance = "12abc",
+                isNameError = true,
+                isAccountTypeError = true,
+                isInitialBalanceError = true,
+            )
+        )
+    }
+}
+
+@Preview
+@Composable
+private fun NewAccountScreenSavingPreview() {
+    PreviewThemed {
+        NewAccountScreenPreviewContent(
+            state = NewAccountUiState(
+                name = "Checking",
+                currencySymbol = "$",
+                accountTypes = LoadState.Loaded(emptyList()),
+                banks = LoadState.Loaded(emptyList()),
+                saveState = SaveState.Saving,
+            )
+        )
+    }
+}
+
+@Preview
+@Composable
+private fun NewAccountScreenSaveFailedPreview() {
+    PreviewThemed {
+        NewAccountScreenPreviewContent(
+            state = NewAccountUiState(
+                name = "Checking",
+                currencySymbol = "$",
+                accountTypes = LoadState.Loaded(emptyList()),
+                banks = LoadState.Loaded(emptyList()),
+                saveState = SaveState.Failed,
             )
         )
     }

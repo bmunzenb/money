@@ -31,6 +31,7 @@ fun DetailScreenHeader(
     title: String,
     onBackClick: () -> Unit,
     modifier: Modifier = Modifier,
+    backEnabled: Boolean = true,
 ) {
     Row(
         modifier = modifier
@@ -43,7 +44,7 @@ fun DetailScreenHeader(
             ),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        IconButton(onClick = onBackClick) {
+        IconButton(onClick = onBackClick, enabled = backEnabled) {
             Icon(
                 imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                 contentDescription = stringResource(Res.string.back_button_description),

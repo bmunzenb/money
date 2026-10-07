@@ -5,8 +5,12 @@ import com.munzenberger.money.data.api.bank.Bank
 
 data class NewAccountUiState(
     val name: String = "",
+    /** Whether [name] should be shown as invalid; only set once the user tries to save. */
+    val isNameError: Boolean = false,
     val accountTypes: LoadState<List<AccountType>> = LoadState.Loading,
     val accountType: AccountType? = null,
+    /** Whether the account type should be shown as missing; only set once the user tries to save. */
+    val isAccountTypeError: Boolean = false,
     val banks: LoadState<List<Bank>> = LoadState.Loading,
     /** The text in the financial institution field: an existing bank's name, or a new one typed in. */
     val bankName: String = "",
@@ -18,6 +22,20 @@ data class NewAccountUiState(
     /** The symbol of the initial balance's currency, shown before the amount (e.g. "$"). */
     val currencySymbol: String,
     val memo: String = "",
-    /** Whether [initialBalance] should be shown as invalid; only set once the user leaves the field. */
+    /**
+     * Whether [initialBalance] should be shown as invalid; only set once the user leaves the field or
+     * tries to save.
+     */
     val isInitialBalanceError: Boolean = false,
+    val saveState: SaveState = SaveState.Idle,
 )
+
+enum class SaveState {
+    Idle,
+
+    /** The account is being written to the repository; the form can't be edited until it's done. */
+    Saving,
+
+    /** The account was valid, but couldn't be written. The form can be edited and saved again. */
+    Failed,
+}

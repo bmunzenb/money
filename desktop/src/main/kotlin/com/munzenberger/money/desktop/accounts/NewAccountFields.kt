@@ -25,9 +25,11 @@ import com.munzenberger.money.data.api.account.AccountType
 import com.munzenberger.money.data.api.account.AccountTypeConstant
 import com.munzenberger.money.data.api.bank.Bank
 import money.shared.generated.resources.Res
+import money.shared.generated.resources.account_name_error_message
 import money.shared.generated.resources.account_name_label
 import money.shared.generated.resources.account_number_label
 import money.shared.generated.resources.account_type_asset
+import money.shared.generated.resources.account_type_error_message
 import money.shared.generated.resources.account_type_cash
 import money.shared.generated.resources.account_type_checking
 import money.shared.generated.resources.account_type_credit
@@ -47,11 +49,14 @@ import org.jetbrains.compose.resources.stringResource
 @Composable
 internal fun NameField(
     name: String,
+    isError: Boolean,
+    enabled: Boolean,
     onNameChange: (String) -> Unit,
 ) {
     OutlinedTextField(
         value = name,
         onValueChange = onNameChange,
+        enabled = enabled,
         label = {
             Text(
                 stringResource(
@@ -60,6 +65,12 @@ internal fun NameField(
                 )
             )
         },
+        supportingText = if (isError) {
+            { Text(stringResource(Res.string.account_name_error_message)) }
+        } else {
+            null
+        },
+        isError = isError,
         singleLine = true,
         keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Words),
         modifier = Modifier.fillMaxWidth(),
@@ -70,22 +81,25 @@ internal fun NameField(
  * Required dropdown for picking the account type. It starts out empty, but there's no empty option in
  * the menu, so once a type is picked it can only be changed to another type. The field is disabled until
  * the account types load, and shows an error if they can't be loaded, since the form can't be completed
- * without one.
+ * without one, or if the user tries to save without picking one.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 internal fun AccountTypeField(
     accountTypes: LoadState<List<AccountType>>,
     accountType: AccountType?,
+    isMissing: Boolean,
+    enabled: Boolean,
     onAccountTypeChange: (AccountType) -> Unit,
 ) {
     var expanded by remember { mutableStateOf(false) }
-    val enabled = accountTypes is LoadState.Loaded
-    val isError = accountTypes is LoadState.Error
+    val isLoadError = accountTypes is LoadState.Error
+    val isError = isLoadError || isMissing
+    val isEnabled = enabled && accountTypes is LoadState.Loaded
 
     ExposedDropdownMenuBox(
-        expanded = expanded && enabled,
-        onExpandedChange = { expanded = it && enabled },
+        expanded = expanded && isEnabled,
+        onExpandedChange = { expanded = it && isEnabled },
     ) {
         OutlinedTextField(
             value = accountType?.value?.label().orEmpty(),
@@ -99,21 +113,25 @@ internal fun AccountTypeField(
                     )
                 )
             },
-            supportingText = if (isError) {
-                { Text(stringResource(Res.string.account_type_load_error_message)) }
-            } else {
-                null
+            supportingText = when {
+                isLoadError -> {
+                    { Text(stringResource(Res.string.account_type_load_error_message)) }
+                }
+                isMissing -> {
+                    { Text(stringResource(Res.string.account_type_error_message)) }
+                }
+                else -> null
             },
             isError = isError,
-            enabled = enabled,
-            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded && enabled) },
+            enabled = isEnabled,
+            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded && isEnabled) },
             singleLine = true,
             modifier = Modifier
-                .menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable, enabled = enabled),
+                .menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable, enabled = isEnabled),
         )
 
         ExposedDropdownMenu(
-            expanded = expanded && enabled,
+            expanded = expanded && isEnabled,
             onDismissRequest = { expanded = false },
         ) {
             accountTypes.loadedOrEmpty.forEach { option ->
@@ -143,6 +161,7 @@ internal fun FinancialInstitutionField(
     banks: LoadState<List<Bank>>,
     bankName: String,
     bank: Bank?,
+    enabled: Boolean,
     onBankNameChange: (String) -> Unit,
     onBankChange: (Bank) -> Unit,
 ) {
@@ -155,11 +174,12 @@ internal fun FinancialInstitutionField(
     }
 
     ExposedDropdownMenuBox(
-        expanded = expanded && options.isNotEmpty(),
-        onExpandedChange = { expanded = it },
+        expanded = expanded && enabled && options.isNotEmpty(),
+        onExpandedChange = { expanded = it && enabled },
     ) {
         OutlinedTextField(
             value = bankName,
+            enabled = enabled,
             onValueChange = {
                 onBankNameChange(it)
                 expanded = true
@@ -172,19 +192,19 @@ internal fun FinancialInstitutionField(
             },
             trailingIcon = {
                 ExposedDropdownMenuDefaults.TrailingIcon(
-                    expanded = expanded && options.isNotEmpty(),
-                    modifier = Modifier.menuAnchor(ExposedDropdownMenuAnchorType.SecondaryEditable),
+                    expanded = expanded && enabled && options.isNotEmpty(),
+                    modifier = Modifier.menuAnchor(ExposedDropdownMenuAnchorType.SecondaryEditable, enabled = enabled),
                 )
             },
             singleLine = true,
             keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Words),
             modifier = Modifier
-                .menuAnchor(ExposedDropdownMenuAnchorType.PrimaryEditable)
+                .menuAnchor(ExposedDropdownMenuAnchorType.PrimaryEditable, enabled = enabled)
                 .fillMaxWidth(),
         )
 
         ExposedDropdownMenu(
-            expanded = expanded && options.isNotEmpty(),
+            expanded = expanded && enabled && options.isNotEmpty(),
             onDismissRequest = { expanded = false },
         ) {
             options.forEach { option ->
@@ -208,11 +228,13 @@ internal fun FinancialInstitutionField(
 @Composable
 internal fun AccountNumberField(
     number: String,
+    enabled: Boolean,
     onNumberChange: (String) -> Unit,
 ) {
     OutlinedTextField(
         value = number,
         onValueChange = onNumberChange,
+        enabled = enabled,
         label = { Text(stringResource(Res.string.account_number_label)) },
         singleLine = true,
         modifier = Modifier.fillMaxWidth(),
@@ -228,6 +250,7 @@ internal fun InitialBalanceField(
     initialBalance: String,
     currencySymbol: String,
     isError: Boolean,
+    enabled: Boolean,
     onInitialBalanceChange: (String) -> Unit,
     onFocusLost: () -> Unit,
 ) {
@@ -237,6 +260,7 @@ internal fun InitialBalanceField(
     OutlinedTextField(
         value = initialBalance,
         onValueChange = onInitialBalanceChange,
+        enabled = enabled,
         label = { Text(stringResource(Res.string.initial_balance_label)) },
         placeholder = { Text(Money(0).toString(asCurrency = false)) },
         prefix = { Text(currencySymbol) },
@@ -264,11 +288,13 @@ internal fun InitialBalanceField(
 @Composable
 internal fun CommentsField(
     memo: String,
+    enabled: Boolean,
     onMemoChange: (String) -> Unit,
 ) {
     OutlinedTextField(
         value = memo,
         onValueChange = onMemoChange,
+        enabled = enabled,
         label = { Text(stringResource(Res.string.comments_label)) },
         minLines = 3,
         maxLines = 6,
