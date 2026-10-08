@@ -64,4 +64,9 @@
     <string name="expand_account_group_action">Show accounts</string>
     <string name="collapse_account_group_action">Hide accounts</string>
     <string name="total_balance_row_title">Total</string>
+    <string name="account_grouping_label">Group by</string>
+    <string name="account_grouping_none">None</string>
+    <string name="account_grouping_account_type">Account type</string>
+    <string name="account_grouping_account_class">Assets and liabilities</string>
+    <string name="account_grouping_bank">Financial institution</string>
 </resources>

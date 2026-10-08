@@ -1,11 +1,16 @@
 package com.munzenberger.money.desktop.accounts
 
 import androidx.compose.runtime.Composable
+import com.munzenberger.money.core.account.AccountGrouping
 import com.munzenberger.money.data.api.account.AccountClassConstant
 import com.munzenberger.money.data.api.account.AccountTypeConstant
 import money.shared.generated.resources.Res
 import money.shared.generated.resources.account_class_assets
 import money.shared.generated.resources.account_class_liabilities
+import money.shared.generated.resources.account_grouping_account_class
+import money.shared.generated.resources.account_grouping_account_type
+import money.shared.generated.resources.account_grouping_bank
+import money.shared.generated.resources.account_grouping_none
 import money.shared.generated.resources.account_type_asset
 import money.shared.generated.resources.account_type_cash
 import money.shared.generated.resources.account_type_checking
@@ -31,6 +36,16 @@ internal fun AccountClassConstant.label(): String = stringResource(
     when (this) {
         AccountClassConstant.Assets -> Res.string.account_class_assets
         AccountClassConstant.Liabilities -> Res.string.account_class_liabilities
+    }
+)
+
+@Composable
+internal fun AccountGrouping.label(): String = stringResource(
+    when (this) {
+        AccountGrouping.None -> Res.string.account_grouping_none
+        AccountGrouping.AccountType -> Res.string.account_grouping_account_type
+        AccountGrouping.AccountClass -> Res.string.account_grouping_account_class
+        AccountGrouping.Bank -> Res.string.account_grouping_bank
     }
 )
 

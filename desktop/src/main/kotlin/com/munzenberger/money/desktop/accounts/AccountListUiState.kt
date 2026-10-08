@@ -1,9 +1,9 @@
 package com.munzenberger.money.desktop.accounts
 
 import com.munzenberger.money.core.account.AccountGroup
+import com.munzenberger.money.core.account.AccountGrouping
 
-sealed interface AccountListUiState {
-    data object Loading : AccountListUiState
-    data object Error : AccountListUiState
-    data class Content(val groups: List<AccountGroup> = emptyList()) : AccountListUiState
-}
+data class AccountListUiState(
+    val grouping: AccountGrouping = AccountGrouping.None,
+    val groups: LoadState<List<AccountGroup>> = LoadState.Loading,
+)

@@ -39,11 +39,11 @@ class AccountListViewModelTest {
     private fun viewModel() = AccountListViewModel(getAccountGroups, navigator)
 
     @Test
-    fun `state gets the account groups with no grouping`() = runTest {
+    fun `state starts loading the account groups with no grouping`() = runTest {
         every { getAccountGroups(any()) } returns emptyFlow()
 
         viewModel().state.test {
-            awaitComplete()
+            assertEquals(AccountListUiState(grouping = AccountGrouping.None, groups = LoadState.Loading), awaitItem())
         }
 
         verify { getAccountGroups(AccountGrouping.None) }
@@ -55,8 +55,8 @@ class AccountListViewModelTest {
         every { getAccountGroups(AccountGrouping.None) } returns flowOf(Result.success(groups))
 
         viewModel().state.test {
-            assertEquals(AccountListUiState.Content(groups = groups), awaitItem())
-            awaitComplete()
+            assertEquals(AccountListUiState(groups = LoadState.Loading), awaitItem())
+            assertEquals(AccountListUiState(groups = LoadState.Loaded(groups)), awaitItem())
         }
     }
 
@@ -68,10 +68,11 @@ class AccountListViewModelTest {
         every { getAccountGroups(AccountGrouping.None) } returns groupsFlow
 
         viewModel().state.test {
-            assertEquals(AccountListUiState.Content(groups = first), awaitItem())
+            assertEquals(AccountListUiState(groups = LoadState.Loading), awaitItem())
+            assertEquals(AccountListUiState(groups = LoadState.Loaded(first)), awaitItem())
 
             groupsFlow.value = Result.success(second)
-            assertEquals(AccountListUiState.Content(groups = second), awaitItem())
+            assertEquals(AccountListUiState(groups = LoadState.Loaded(second)), awaitItem())
         }
     }
 
@@ -81,8 +82,37 @@ class AccountListViewModelTest {
             flowOf(Result.failure(IllegalStateException("query failed")))
 
         viewModel().state.test {
-            assertEquals(AccountListUiState.Error, awaitItem())
-            awaitComplete()
+            assertEquals(AccountListUiState(groups = LoadState.Loading), awaitItem())
+            assertEquals(AccountListUiState(groups = LoadState.Error), awaitItem())
+        }
+    }
+
+    @Test
+    fun `onGroupingChange switches to the groups for the new grouping`() = runTest {
+        val all = listOf(AccountGroup.All(listOf(account("Checking"))))
+        val byType = listOf(AccountGroup.ByAccountType(accountType, listOf(account("Checking"))))
+        val allFlow = MutableStateFlow(Result.success<List<AccountGroup>>(all))
+        every { getAccountGroups(AccountGrouping.None) } returns allFlow
+        every { getAccountGroups(AccountGrouping.AccountType) } returns flowOf(Result.success(byType))
+        val viewModel = viewModel()
+
+        viewModel.state.test {
+            assertEquals(AccountListUiState(groups = LoadState.Loading), awaitItem())
+            assertEquals(AccountListUiState(groups = LoadState.Loaded(all)), awaitItem())
+
+            viewModel.onGroupingChange(AccountGrouping.AccountType)
+            assertEquals(
+                AccountListUiState(grouping = AccountGrouping.AccountType, groups = LoadState.Loading),
+                awaitItem(),
+            )
+            assertEquals(
+                AccountListUiState(grouping = AccountGrouping.AccountType, groups = LoadState.Loaded(byType)),
+                awaitItem(),
+            )
+
+            // The previous grouping's groups are no longer collected.
+            allFlow.value = Result.success(emptyList())
+            expectNoEvents()
         }
     }
 
