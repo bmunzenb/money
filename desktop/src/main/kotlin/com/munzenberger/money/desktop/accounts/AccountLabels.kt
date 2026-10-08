@@ -36,12 +36,16 @@ internal fun AccountClassConstant.label(): String = stringResource(
 
 /**
  * The account number with all but its last [VISIBLE_ACCOUNT_NUMBER_DIGITS] characters hidden, e.g.
- * "••••1234", or an empty string if there's no number. A number no longer than that still gets the
- * mask prefix, so every number in a list has the same form.
+ * "••••1234", or an empty string if there's no number. A number no longer than that is hidden
+ * entirely and shows just the mask, so revealing its last characters wouldn't reveal all of it.
  */
 internal fun maskAccountNumber(number: String?): String {
     val trimmed = number?.trim().orEmpty()
-    return if (trimmed.isEmpty()) "" else ACCOUNT_NUMBER_MASK + trimmed.takeLast(VISIBLE_ACCOUNT_NUMBER_DIGITS)
+    return when {
+        trimmed.isEmpty() -> ""
+        trimmed.length <= VISIBLE_ACCOUNT_NUMBER_DIGITS -> ACCOUNT_NUMBER_MASK
+        else -> ACCOUNT_NUMBER_MASK + trimmed.takeLast(VISIBLE_ACCOUNT_NUMBER_DIGITS)
+    }
 }
 
 private const val VISIBLE_ACCOUNT_NUMBER_DIGITS = 4

@@ -11,8 +11,14 @@ class AccountLabelsTest {
     }
 
     @Test
-    fun `masks a number of four or fewer characters`() {
-        assertEquals("••••12", maskAccountNumber("12"))
+    fun `shows only the mask for a number of four or fewer characters`() {
+        assertEquals("••••", maskAccountNumber("12"))
+        assertEquals("••••", maskAccountNumber("1234"))
+    }
+
+    @Test
+    fun `masks a number of five characters`() {
+        assertEquals("••••2345", maskAccountNumber("12345"))
     }
 
     @Test
