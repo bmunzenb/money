@@ -6,11 +6,11 @@ import com.munzenberger.money.core.account.NewAccount
 import com.munzenberger.money.core.account.NewAccountError
 import com.munzenberger.money.data.api.MoneyRepository
 import com.munzenberger.money.data.api.account.Account
+import com.munzenberger.money.data.api.account.AccountClass
+import com.munzenberger.money.data.api.account.AccountClassConstant
+import com.munzenberger.money.data.api.account.AccountClassId
 import com.munzenberger.money.data.api.account.AccountType
 import com.munzenberger.money.data.api.account.AccountTypeConstant
-import com.munzenberger.money.data.api.account.AccountTypeGroup
-import com.munzenberger.money.data.api.account.AccountTypeGroupConstant
-import com.munzenberger.money.data.api.account.AccountTypeGroupId
 import com.munzenberger.money.data.api.account.AccountTypeId
 import com.munzenberger.money.data.api.bank.Bank
 import com.munzenberger.money.desktop.MoneyRepositoryControllerFixture
@@ -48,9 +48,13 @@ class NewAccountViewModelTest {
 
     private fun viewModel() = NewAccountViewModel(fixture.controller, navigator, createAccount)
 
-    private val assets = AccountTypeGroup(id = AccountTypeGroupId(1), value = AccountTypeGroupConstant.Assets)
-    private val savings = AccountType(id = AccountTypeId(1), group = assets, value = AccountTypeConstant.Savings)
-    private val checking = AccountType(id = AccountTypeId(2), group = assets, value = AccountTypeConstant.Checking)
+    private val assets = AccountClass(id = AccountClassId(1), value = AccountClassConstant.Assets)
+    private val savings = AccountType(id = AccountTypeId(1), accountClass = assets, value = AccountTypeConstant.Savings)
+    private val checking = AccountType(
+        id = AccountTypeId(2),
+        accountClass = assets,
+        value = AccountTypeConstant.Checking,
+    )
 
     private val firstBank = Bank(name = "First Bank")
     private val creditUnion = Bank(name = "credit union")

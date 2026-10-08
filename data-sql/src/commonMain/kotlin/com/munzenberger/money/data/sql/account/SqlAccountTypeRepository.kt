@@ -2,11 +2,11 @@ package com.munzenberger.money.data.sql.account
 
 import app.cash.sqldelight.coroutines.asFlow
 import app.cash.sqldelight.coroutines.mapToList
+import com.munzenberger.money.data.api.account.AccountClass
+import com.munzenberger.money.data.api.account.AccountClassConstant
+import com.munzenberger.money.data.api.account.AccountClassId
 import com.munzenberger.money.data.api.account.AccountType
 import com.munzenberger.money.data.api.account.AccountTypeConstant
-import com.munzenberger.money.data.api.account.AccountTypeGroup
-import com.munzenberger.money.data.api.account.AccountTypeGroupConstant
-import com.munzenberger.money.data.api.account.AccountTypeGroupId
 import com.munzenberger.money.data.api.account.AccountTypeId
 import com.munzenberger.money.data.api.account.AccountTypeRepository
 import com.munzenberger.money.data.sql.MoneyDatabase
@@ -20,12 +20,12 @@ class SqlAccountTypeRepository(
 ) : AccountTypeRepository {
 
     override val accountTypes: Flow<List<AccountType>> = database.accountTypeQueries
-        .selectAll { id, value, groupId, groupValue ->
+        .selectAll { id, value, classId, classValue ->
             AccountType(
                 id = AccountTypeId(id),
-                group = AccountTypeGroup(
-                    id = AccountTypeGroupId(groupId),
-                    value = AccountTypeGroupConstant.valueOf(groupValue),
+                accountClass = AccountClass(
+                    id = AccountClassId(classId),
+                    value = AccountClassConstant.valueOf(classValue),
                 ),
                 value = AccountTypeConstant.valueOf(value),
             )

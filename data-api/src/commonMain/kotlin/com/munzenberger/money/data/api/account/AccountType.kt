@@ -9,6 +9,6 @@ enum class AccountTypeConstant {
 
 data class AccountType(
     val id: AccountTypeId,
-    val group: AccountTypeGroup,
+    val accountClass: AccountClass,
     val value: AccountTypeConstant
 )

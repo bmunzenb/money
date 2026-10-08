@@ -13,11 +13,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import com.munzenberger.money.data.api.account.Account
+import com.munzenberger.money.data.api.account.AccountClass
+import com.munzenberger.money.data.api.account.AccountClassConstant
+import com.munzenberger.money.data.api.account.AccountClassId
 import com.munzenberger.money.data.api.account.AccountType
 import com.munzenberger.money.data.api.account.AccountTypeConstant
-import com.munzenberger.money.data.api.account.AccountTypeGroup
-import com.munzenberger.money.data.api.account.AccountTypeGroupConstant
-import com.munzenberger.money.data.api.account.AccountTypeGroupId
 import com.munzenberger.money.data.api.account.AccountTypeId
 import com.munzenberger.money.desktop.components.ListScreenHeader
 import com.munzenberger.money.desktop.components.ScrollableLazyColumn
@@ -128,6 +128,6 @@ private fun AccountListScreenEmptyPreview() {
 
 private val previewAccountType = AccountType(
     id = AccountTypeId(1),
-    group = AccountTypeGroup(id = AccountTypeGroupId(1), value = AccountTypeGroupConstant.Assets),
+    accountClass = AccountClass(id = AccountClassId(1), value = AccountClassConstant.Assets),
     value = AccountTypeConstant.Checking,
 )

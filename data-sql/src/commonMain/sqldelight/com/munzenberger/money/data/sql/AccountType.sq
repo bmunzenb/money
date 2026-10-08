@@ -1,30 +1,30 @@
-CREATE TABLE AccountTypeGroup (
+CREATE TABLE AccountClass (
     id INTEGER NOT NULL PRIMARY KEY,
     value TEXT NOT NULL
 );
 
 CREATE TABLE AccountType (
     id INTEGER NOT NULL PRIMARY KEY,
-    group_id INTEGER NOT NULL,
+    class_id INTEGER NOT NULL,
     value TEXT NOT NULL,
-    FOREIGN KEY (group_id) REFERENCES AccountTypeGroup (id)
+    FOREIGN KEY (class_id) REFERENCES AccountClass (id)
 );
 
-INSERT INTO AccountTypeGroup (id, value) VALUES (1, 'Assets');
-INSERT INTO AccountTypeGroup (id, value) VALUES (2, 'Liabilities');
+INSERT INTO AccountClass (id, value) VALUES (1, 'Assets');
+INSERT INTO AccountClass (id, value) VALUES (2, 'Liabilities');
 
-INSERT INTO AccountType (id, group_id, value) VALUES (1, 1, 'Savings');
-INSERT INTO AccountType (id, group_id, value) VALUES (2, 1, 'Checking');
-INSERT INTO AccountType (id, group_id, value) VALUES (3, 1, 'Asset');
-INSERT INTO AccountType (id, group_id, value) VALUES (4, 1, 'Cash');
-INSERT INTO AccountType (id, group_id, value) VALUES (5, 2, 'Credit');
-INSERT INTO AccountType (id, group_id, value) VALUES (6, 2, 'Loan');
+INSERT INTO AccountType (id, class_id, value) VALUES (1, 1, 'Savings');
+INSERT INTO AccountType (id, class_id, value) VALUES (2, 1, 'Checking');
+INSERT INTO AccountType (id, class_id, value) VALUES (3, 1, 'Asset');
+INSERT INTO AccountType (id, class_id, value) VALUES (4, 1, 'Cash');
+INSERT INTO AccountType (id, class_id, value) VALUES (5, 2, 'Credit');
+INSERT INTO AccountType (id, class_id, value) VALUES (6, 2, 'Loan');
 
 selectAll:
 SELECT
     AccountType.id AS id,
     AccountType.value AS value,
-    AccountTypeGroup.id AS group_id,
-    AccountTypeGroup.value AS group_value
+    AccountClass.id AS class_id,
+    AccountClass.value AS class_value
 FROM AccountType
-JOIN AccountTypeGroup ON AccountType.group_id = AccountTypeGroup.id;
+JOIN AccountClass ON AccountType.class_id = AccountClass.id;
