@@ -4,13 +4,13 @@ import app.cash.sqldelight.coroutines.asFlow
 import app.cash.sqldelight.coroutines.mapToList
 import com.munzenberger.money.data.api.Money
 import com.munzenberger.money.data.api.account.Account
+import com.munzenberger.money.data.api.account.AccountClass
+import com.munzenberger.money.data.api.account.AccountClassConstant
+import com.munzenberger.money.data.api.account.AccountClassId
 import com.munzenberger.money.data.api.account.AccountId
 import com.munzenberger.money.data.api.account.AccountRepository
 import com.munzenberger.money.data.api.account.AccountType
 import com.munzenberger.money.data.api.account.AccountTypeConstant
-import com.munzenberger.money.data.api.account.AccountTypeGroup
-import com.munzenberger.money.data.api.account.AccountTypeGroupConstant
-import com.munzenberger.money.data.api.account.AccountTypeGroupId
 import com.munzenberger.money.data.api.account.AccountTypeId
 import com.munzenberger.money.data.api.account.AccountWriter
 import com.munzenberger.money.data.api.bank.BankId
@@ -26,16 +26,16 @@ class SqlAccountRepository(
 ) : AccountRepository, AccountWriter {
 
     override val accounts: Flow<List<Account>> = database.accountQueries
-        .selectAll { id, name, number, bankId, initialBalance, memo, typeId, typeValue, typeGroupId, typeGroupValue ->
+        .selectAll { id, name, number, bankId, initialBalance, memo, typeId, typeValue, typeClassId, typeClassValue ->
             Account(
                 id = AccountId(Uuid.parse(id)),
                 name = name,
                 number = number,
                 accountType = AccountType(
                     id = AccountTypeId(typeId),
-                    group = AccountTypeGroup(
-                        id = AccountTypeGroupId(typeGroupId),
-                        value = AccountTypeGroupConstant.valueOf(typeGroupValue),
+                    accountClass = AccountClass(
+                        id = AccountClassId(typeClassId),
+                        value = AccountClassConstant.valueOf(typeClassValue),
                     ),
                     value = AccountTypeConstant.valueOf(typeValue),
                 ),

@@ -1,7 +1,7 @@
 package com.munzenberger.money.data.sql.account
 
+import com.munzenberger.money.data.api.account.AccountClassConstant
 import com.munzenberger.money.data.api.account.AccountTypeConstant
-import com.munzenberger.money.data.api.account.AccountTypeGroupConstant
 import com.munzenberger.money.data.sql.createTestDatabase
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -26,21 +26,21 @@ class SqlAccountTypeRepositoryTest {
     }
 
     @Test
-    fun `accountTypes joins each variant to its group`() = runTest {
+    fun `accountTypes joins each variant to its class`() = runTest {
         val repository = createRepository(UnconfinedTestDispatcher(testScheduler))
-        val groupsByType = repository.accountTypes.first()
-            .associate { it.value to it.group.value }
+        val classesByType = repository.accountTypes.first()
+            .associate { it.value to it.accountClass.value }
 
         assertEquals(
             mapOf(
-                AccountTypeConstant.Savings to AccountTypeGroupConstant.Assets,
-                AccountTypeConstant.Checking to AccountTypeGroupConstant.Assets,
-                AccountTypeConstant.Asset to AccountTypeGroupConstant.Assets,
-                AccountTypeConstant.Cash to AccountTypeGroupConstant.Assets,
-                AccountTypeConstant.Credit to AccountTypeGroupConstant.Liabilities,
-                AccountTypeConstant.Loan to AccountTypeGroupConstant.Liabilities,
+                AccountTypeConstant.Savings to AccountClassConstant.Assets,
+                AccountTypeConstant.Checking to AccountClassConstant.Assets,
+                AccountTypeConstant.Asset to AccountClassConstant.Assets,
+                AccountTypeConstant.Cash to AccountClassConstant.Assets,
+                AccountTypeConstant.Credit to AccountClassConstant.Liabilities,
+                AccountTypeConstant.Loan to AccountClassConstant.Liabilities,
             ),
-            groupsByType,
+            classesByType,
         )
     }
 }

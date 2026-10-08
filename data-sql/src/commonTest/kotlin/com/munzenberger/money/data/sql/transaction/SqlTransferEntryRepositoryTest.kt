@@ -2,12 +2,12 @@ package com.munzenberger.money.data.sql.transaction
 
 import com.munzenberger.money.data.api.Money
 import com.munzenberger.money.data.api.account.Account
+import com.munzenberger.money.data.api.account.AccountClass
+import com.munzenberger.money.data.api.account.AccountClassConstant
+import com.munzenberger.money.data.api.account.AccountClassId
 import com.munzenberger.money.data.api.account.AccountId
 import com.munzenberger.money.data.api.account.AccountType
 import com.munzenberger.money.data.api.account.AccountTypeConstant
-import com.munzenberger.money.data.api.account.AccountTypeGroup
-import com.munzenberger.money.data.api.account.AccountTypeGroupConstant
-import com.munzenberger.money.data.api.account.AccountTypeGroupId
 import com.munzenberger.money.data.api.account.AccountTypeId
 import com.munzenberger.money.data.api.transaction.Transaction
 import com.munzenberger.money.data.api.transaction.TransactionId
@@ -36,7 +36,7 @@ class SqlTransferEntryRepositoryTest {
 
     private val checking = AccountType(
         id = AccountTypeId(2),
-        group = AccountTypeGroup(id = AccountTypeGroupId(1), value = AccountTypeGroupConstant.Assets),
+        accountClass = AccountClass(id = AccountClassId(1), value = AccountClassConstant.Assets),
         value = AccountTypeConstant.Checking,
     )
 

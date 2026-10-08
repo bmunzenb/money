@@ -18,11 +18,11 @@ import kotlin.test.assertTrue
 @OptIn(ExperimentalCoroutinesApi::class)
 class SqlAccountRepositoryTest {
 
-    private val assets = AccountTypeGroup(id = AccountTypeGroupId(1), value = AccountTypeGroupConstant.Assets)
-    private val liabilities = AccountTypeGroup(id = AccountTypeGroupId(2), value = AccountTypeGroupConstant.Liabilities)
+    private val assets = AccountClass(id = AccountClassId(1), value = AccountClassConstant.Assets)
+    private val liabilities = AccountClass(id = AccountClassId(2), value = AccountClassConstant.Liabilities)
 
-    private val checking = AccountType(id = AccountTypeId(2), group = assets, value = AccountTypeConstant.Checking)
-    private val credit = AccountType(id = AccountTypeId(5), group = liabilities, value = AccountTypeConstant.Credit)
+    private val checking = AccountType(id = AccountTypeId(2), accountClass = assets, value = AccountTypeConstant.Checking)
+    private val credit = AccountType(id = AccountTypeId(5), accountClass = liabilities, value = AccountTypeConstant.Credit)
 
     private fun createRepository(context: CoroutineDispatcher): SqlAccountRepository =
         SqlAccountRepository(createTestDatabase(), context)
