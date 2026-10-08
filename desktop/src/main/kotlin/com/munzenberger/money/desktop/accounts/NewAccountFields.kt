@@ -22,21 +22,14 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextOverflow
 import com.munzenberger.money.data.api.Money
 import com.munzenberger.money.data.api.account.AccountType
-import com.munzenberger.money.data.api.account.AccountTypeConstant
 import com.munzenberger.money.data.api.bank.Bank
 import money.shared.generated.resources.Res
 import money.shared.generated.resources.account_name_error_message
 import money.shared.generated.resources.account_name_label
 import money.shared.generated.resources.account_number_label
-import money.shared.generated.resources.account_type_asset
 import money.shared.generated.resources.account_type_error_message
-import money.shared.generated.resources.account_type_cash
-import money.shared.generated.resources.account_type_checking
-import money.shared.generated.resources.account_type_credit
 import money.shared.generated.resources.account_type_label
 import money.shared.generated.resources.account_type_load_error_message
-import money.shared.generated.resources.account_type_loan
-import money.shared.generated.resources.account_type_savings
 import money.shared.generated.resources.comments_label
 import money.shared.generated.resources.financial_institution_label
 import money.shared.generated.resources.financial_institution_load_error_message
@@ -302,15 +295,3 @@ internal fun CommentsField(
         modifier = Modifier.fillMaxWidth(),
     )
 }
-
-@Composable
-private fun AccountTypeConstant.label(): String = stringResource(
-    when (this) {
-        AccountTypeConstant.Savings -> Res.string.account_type_savings
-        AccountTypeConstant.Checking -> Res.string.account_type_checking
-        AccountTypeConstant.Asset -> Res.string.account_type_asset
-        AccountTypeConstant.Cash -> Res.string.account_type_cash
-        AccountTypeConstant.Credit -> Res.string.account_type_credit
-        AccountTypeConstant.Loan -> Res.string.account_type_loan
-    }
-)

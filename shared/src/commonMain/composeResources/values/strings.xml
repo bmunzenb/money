@@ -54,4 +54,14 @@
     <string name="categories_button_title">Categories</string>
     <string name="payees_button_title">Payees</string>
     <string name="invalid_input_error_description">Invalid input</string>
+    <string name="account_class_assets">Assets</string>
+    <string name="account_class_liabilities">Liabilities</string>
+    <string name="account_group_all_title">All accounts</string>
+    <string name="account_group_no_bank_title">No financial institution</string>
+    <string name="account_name_column_title">Name</string>
+    <string name="account_number_column_title">Account number</string>
+    <string name="balance_column_title">Balance</string>
+    <string name="expand_account_group_action">Show accounts</string>
+    <string name="collapse_account_group_action">Hide accounts</string>
+    <string name="total_balance_row_title">Total</string>
 </resources>
