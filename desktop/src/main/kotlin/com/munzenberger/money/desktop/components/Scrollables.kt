@@ -27,16 +27,24 @@ import androidx.compose.ui.Modifier
 import com.munzenberger.money.shared.theme.MoneyTheme
 
 /**
- * A [LazyColumn] with a [VerticalScrollbar] along its end edge.
+ * A [LazyColumn] with a [VerticalScrollbar] along its end edge. [contentPadding] is applied inside the
+ * scrolling area, so the scrollbar sits in the end padding rather than over the content.
  */
 @Composable
 fun ScrollableLazyColumn(
     modifier: Modifier = Modifier,
     state: LazyListState = rememberLazyListState(),
+    contentPadding: PaddingValues = PaddingValues(),
+    verticalArrangement: Arrangement.Vertical = Arrangement.Top,
     content: LazyListScope.() -> Unit,
 ) {
     Box(modifier = modifier) {
-        LazyColumn(state = state, content = content)
+        LazyColumn(
+            state = state,
+            contentPadding = contentPadding,
+            verticalArrangement = verticalArrangement,
+            content = content,
+        )
 
         ThemedVerticalScrollbar(adapter = rememberScrollbarAdapter(state))
     }
