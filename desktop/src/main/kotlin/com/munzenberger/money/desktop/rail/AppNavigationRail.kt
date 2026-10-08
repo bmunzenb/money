@@ -6,8 +6,10 @@ import androidx.compose.material.icons.automirrored.filled.MenuOpen
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.WideNavigationRail
+import androidx.compose.material3.WideNavigationRailDefaults
 import androidx.compose.material3.WideNavigationRailItem
 import androidx.compose.material3.WideNavigationRailState
 import androidx.compose.material3.WideNavigationRailValue
@@ -48,6 +50,9 @@ private fun AppNavigationRailContent(
 
     WideNavigationRail(
         state = railState,
+        colors = WideNavigationRailDefaults.colors(
+            containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
+        ),
         header = {
             IconButton(
                 onClick = { scope.launch { railState.toggle() } },
