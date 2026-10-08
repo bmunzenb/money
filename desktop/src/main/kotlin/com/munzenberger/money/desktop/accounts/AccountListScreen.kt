@@ -4,7 +4,10 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.CircularProgressIndicator
@@ -36,6 +39,7 @@ import com.munzenberger.money.data.api.account.AccountClassId
 import com.munzenberger.money.data.api.account.AccountType
 import com.munzenberger.money.data.api.account.AccountTypeConstant
 import com.munzenberger.money.data.api.account.AccountTypeId
+import com.munzenberger.money.desktop.components.ListScreenActionButton
 import com.munzenberger.money.desktop.components.ListScreenHeader
 import com.munzenberger.money.desktop.components.ScrollableLazyColumn
 import com.munzenberger.money.shared.theme.MoneyTheme
@@ -70,21 +74,30 @@ private fun AccountListScreenContent(
     onAccountClick: (Account) -> Unit,
 ) {
     Column(modifier = Modifier.fillMaxSize()) {
-        ListScreenHeader(
-            title = stringResource(Res.string.account_list_title),
-            actionLabel = stringResource(Res.string.add_account_button_title),
-            onActionClick = onAddAccountClick,
-        )
+        ListScreenHeader(title = stringResource(Res.string.account_list_title))
 
-        AccountGroupingField(
-            grouping = state.grouping,
-            onGroupingChange = onGroupingChange,
-            modifier = Modifier.padding(
-                start = MoneyTheme.spacing.medium,
-                end = MoneyTheme.spacing.medium,
-                bottom = MoneyTheme.spacing.medium,
-            ),
-        )
+        // The new account action sits with the grouping, in a row of controls above the list.
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(
+                    start = MoneyTheme.spacing.medium,
+                    end = MoneyTheme.spacing.medium,
+                    bottom = MoneyTheme.spacing.medium,
+                ),
+            verticalAlignment = Alignment.Bottom,
+            horizontalArrangement = Arrangement.spacedBy(MoneyTheme.spacing.medium),
+        ) {
+            AccountGroupingField(
+                grouping = state.grouping,
+                onGroupingChange = onGroupingChange,
+            )
+            Spacer(modifier = Modifier.weight(1f))
+            ListScreenActionButton(
+                label = stringResource(Res.string.add_account_button_title),
+                onClick = onAddAccountClick,
+            )
+        }
 
         Box(modifier = Modifier.weight(1f)) {
             AccountListBody(groups = state.groups, onAccountClick = onAccountClick)

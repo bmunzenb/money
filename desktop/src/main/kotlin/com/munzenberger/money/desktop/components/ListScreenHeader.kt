@@ -33,6 +33,48 @@ fun ListScreenHeader(
     modifier: Modifier = Modifier,
     actionIcon: ImageVector = Icons.Filled.Add,
 ) {
+    ListScreenHeaderRow(title = title, modifier = modifier) {
+        ListScreenActionButton(label = actionLabel, onClick = onActionClick, icon = actionIcon)
+    }
+}
+
+/**
+ * Header for list screens that place their primary action elsewhere, such as in a row of controls
+ * above the list: just the screen title.
+ */
+@Composable
+fun ListScreenHeader(
+    title: String,
+    modifier: Modifier = Modifier,
+) {
+    ListScreenHeaderRow(title = title, modifier = modifier, action = null)
+}
+
+/** A list screen's primary action, e.g. "New account": a button with a leading icon. */
+@Composable
+fun ListScreenActionButton(
+    label: String,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    icon: ImageVector = Icons.Filled.Add,
+) {
+    Button(onClick = onClick, modifier = modifier) {
+        Icon(
+            imageVector = icon,
+            contentDescription = null,
+            modifier = Modifier.size(ButtonDefaults.IconSize),
+        )
+        Spacer(modifier = Modifier.size(ButtonDefaults.IconSpacing))
+        Text(text = label)
+    }
+}
+
+@Composable
+private fun ListScreenHeaderRow(
+    title: String,
+    modifier: Modifier,
+    action: (@Composable () -> Unit)?,
+) {
     Row(
         modifier = modifier
             .fillMaxWidth()
@@ -46,15 +88,7 @@ fun ListScreenHeader(
                 .weight(1f)
                 .semantics { heading() },
         )
-        Button(onClick = onActionClick) {
-            Icon(
-                imageVector = actionIcon,
-                contentDescription = null,
-                modifier = Modifier.size(ButtonDefaults.IconSize),
-            )
-            Spacer(modifier = Modifier.size(ButtonDefaults.IconSpacing))
-            Text(text = actionLabel)
-        }
+        action?.invoke()
     }
 }
 
