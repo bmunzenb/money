@@ -19,6 +19,7 @@ import io.mockk.mockk
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.test.runTest
 import java.io.File
 import kotlin.coroutines.EmptyCoroutineContext
@@ -66,7 +67,7 @@ class GetAccountGroupsUseCaseTest {
 
     @Test
     fun testNoGroupingHasOneGroupWithAllAccountsSortedByName() = runTest {
-        getAccountGroups(AccountGrouping.None).test {
+        getAccountGroups(flowOf(AccountGrouping.None)).test {
             controller.connect()
 
             assertEquals(
@@ -80,7 +81,7 @@ class GetAccountGroupsUseCaseTest {
     fun testNoGroupingHasOneGroupWhenThereAreNoAccounts() = runTest {
         accounts.value = emptyList()
 
-        getAccountGroups(AccountGrouping.None).test {
+        getAccountGroups(flowOf(AccountGrouping.None)).test {
             controller.connect()
 
             assertEquals(Result.success(listOf(AccountGroup.All(emptyList()))), awaitItem())
@@ -89,7 +90,7 @@ class GetAccountGroupsUseCaseTest {
 
     @Test
     fun testGroupsByAccountTypeInConstantOrder() = runTest {
-        getAccountGroups(AccountGrouping.AccountType).test {
+        getAccountGroups(flowOf(AccountGrouping.AccountType)).test {
             controller.connect()
 
             assertEquals(
@@ -107,7 +108,7 @@ class GetAccountGroupsUseCaseTest {
 
     @Test
     fun testGroupsByAccountClassInConstantOrder() = runTest {
-        getAccountGroups(AccountGrouping.AccountClass).test {
+        getAccountGroups(flowOf(AccountGrouping.AccountClass)).test {
             controller.connect()
 
             assertEquals(
@@ -126,7 +127,7 @@ class GetAccountGroupsUseCaseTest {
     fun testGroupsByBankSortedByNameWithNoBankLast() = runTest {
         accounts.value += orphan
 
-        getAccountGroups(AccountGrouping.Bank).test {
+        getAccountGroups(flowOf(AccountGrouping.Bank)).test {
             controller.connect()
 
             assertEquals(
@@ -146,7 +147,7 @@ class GetAccountGroupsUseCaseTest {
     fun testGroupingWithNoAccountsHasNoGroups() = runTest {
         accounts.value = emptyList()
 
-        getAccountGroups(AccountGrouping.Bank).test {
+        getAccountGroups(flowOf(AccountGrouping.Bank)).test {
             controller.connect()
 
             assertEquals(Result.success(emptyList()), awaitItem())
@@ -155,7 +156,7 @@ class GetAccountGroupsUseCaseTest {
 
     @Test
     fun testEmitsNewGroupsWhenAccountsChange() = runTest {
-        getAccountGroups(AccountGrouping.AccountClass).test {
+        getAccountGroups(flowOf(AccountGrouping.AccountClass)).test {
             controller.connect()
             awaitItem()
 
@@ -166,10 +167,39 @@ class GetAccountGroupsUseCaseTest {
     }
 
     @Test
+    fun testRegroupsWithoutReadingAccountsAgainWhenGroupingChanges() = runTest {
+        var accountReads = 0
+        val counting = mockk<MoneyRepository> {
+            every { accounts } returns this@GetAccountGroupsUseCaseTest.accounts.onStart { accountReads++ }
+            every { banks } returns this@GetAccountGroupsUseCaseTest.banks
+        }
+        val controller = controller(counting)
+        val grouping = MutableStateFlow(AccountGrouping.None)
+
+        GetAccountGroupsUseCase(controller)(grouping).test {
+            controller.connect()
+            awaitItem()
+
+            grouping.value = AccountGrouping.AccountClass
+
+            assertEquals(
+                Result.success(
+                    listOf(
+                        AccountGroup.ByAccountClass(assets, listOf(bills, everyday, rainyDay)),
+                        AccountGroup.ByAccountClass(liabilities, listOf(visa)),
+                    )
+                ),
+                awaitItem(),
+            )
+            assertEquals(1, accountReads)
+        }
+    }
+
+    @Test
     fun testEmitsNewGroupsWhenBanksChange() = runTest {
         val renamed = acme.copy(name = "Zzz Bank")
 
-        getAccountGroups(AccountGrouping.Bank).test {
+        getAccountGroups(flowOf(AccountGrouping.Bank)).test {
             controller.connect()
             awaitItem()
 
@@ -197,7 +227,7 @@ class GetAccountGroupsUseCaseTest {
         }
         val controller = controller(failing)
 
-        GetAccountGroupsUseCase(controller)(AccountGrouping.Bank).test {
+        GetAccountGroupsUseCase(controller)(flowOf(AccountGrouping.Bank)).test {
             controller.connect()
 
             // Coroutines' stack trace recovery may copy the exception as it crosses combine.

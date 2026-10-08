@@ -8,7 +8,6 @@ import com.munzenberger.money.data.api.account.AccountType
 import com.munzenberger.money.data.api.bank.Bank
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.map
 
 /** How [GetAccountGroupsUseCase] groups the accounts. */
 enum class AccountGrouping {
@@ -34,8 +33,10 @@ sealed interface AccountGroup {
 }
 
 /**
- * Returns a flow of the open repository's accounts, grouped by an [AccountGrouping], each wrapped in a
- * [Result] (see [resultFlow]).
+ * Returns a flow of the open repository's accounts, grouped by the latest [AccountGrouping], each
+ * wrapped in a [Result] (see [resultFlow]).
+ *
+ * A new grouping regroups the accounts already read, without reading them from the repository again.
  *
  * The accounts in each group are sorted by name. Account type and account class groups are in the
  * order of their constants, and bank groups are sorted by name, followed by the group of accounts
@@ -45,13 +46,15 @@ sealed interface AccountGroup {
 class GetAccountGroupsUseCase(
     private val repositoryController: MoneyRepositoryController,
 ) {
-    operator fun invoke(grouping: AccountGrouping): Flow<Result<List<AccountGroup>>> =
+    operator fun invoke(grouping: Flow<AccountGrouping>): Flow<Result<List<AccountGroup>>> =
         repositoryController.resultFlow { repository ->
-            when (grouping) {
-                AccountGrouping.None -> repository.accounts.map { listOf(AccountGroup.All(it.sortedByName())) }
-                AccountGrouping.AccountType -> repository.accounts.map(::groupByAccountType)
-                AccountGrouping.AccountClass -> repository.accounts.map(::groupByAccountClass)
-                AccountGrouping.Bank -> repository.accounts.combine(repository.banks, ::groupByBank)
+            combine(repository.accounts, repository.banks, grouping) { accounts, banks, grouping ->
+                when (grouping) {
+                    AccountGrouping.None -> listOf(AccountGroup.All(accounts.sortedByName()))
+                    AccountGrouping.AccountType -> groupByAccountType(accounts)
+                    AccountGrouping.AccountClass -> groupByAccountClass(accounts)
+                    AccountGrouping.Bank -> groupByBank(accounts, banks)
+                }
             }
         }
 }
