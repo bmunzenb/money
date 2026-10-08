@@ -157,7 +157,7 @@ private fun AccountTable(
 
         accounts.forEachIndexed { index, account ->
             if (index > 0) {
-                HorizontalDivider(color = MoneyTheme.colorScheme.outlineVariant)
+                HorizontalDivider(color = MoneyTheme.colorScheme.surfaceContainer)
             }
             AccountTableRow(
                 name = account.name,

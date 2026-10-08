@@ -160,7 +160,10 @@ Column(modifier = Modifier.fillMaxSize()) {
 }
 ```
 
-The Accounts, Categories, and Payees screens all follow this pattern.
+The Categories and Payees screens follow this pattern. A screen with other controls above its list, like
+the Accounts screen's "Group by" dropdown, can instead use the title-only `ListScreenHeader(title)` and
+put the action in a row with those controls, using `ListScreenActionButton` (from the same file) so it
+looks the same.
 
 ## Scrolling
 
