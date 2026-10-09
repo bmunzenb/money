@@ -40,8 +40,8 @@ sealed interface AccountGroup {
  *
  * The accounts in each group are sorted by name. Account type and account class groups are in the
  * order of their constants, and bank groups are sorted by name, followed by the group of accounts
- * with no financial institution. [AccountGrouping.None] always has a single group, even if there are
- * no accounts; the other groupings only have groups that have accounts.
+ * with no financial institution. [AccountGrouping.None] has a single group of all the accounts. Every
+ * grouping only has groups that have accounts, so there are no groups when there are no accounts.
  */
 class GetAccountGroupsUseCase(
     private val repositoryController: MoneyRepositoryController,
@@ -50,7 +50,7 @@ class GetAccountGroupsUseCase(
         repositoryController.resultFlow { repository ->
             combine(repository.accounts, repository.banks, grouping) { accounts, banks, grouping ->
                 when (grouping) {
-                    AccountGrouping.None -> listOf(AccountGroup.All(accounts.sortedByName()))
+                    AccountGrouping.None -> if (accounts.isEmpty()) emptyList() else listOf(AccountGroup.All(accounts.sortedByName()))
                     AccountGrouping.AccountType -> groupByAccountType(accounts)
                     AccountGrouping.AccountClass -> groupByAccountClass(accounts)
                     AccountGrouping.Bank -> groupByBank(accounts, banks)

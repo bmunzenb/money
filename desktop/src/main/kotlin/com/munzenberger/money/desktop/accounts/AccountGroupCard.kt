@@ -46,7 +46,6 @@ import com.munzenberger.money.shared.theme.PreviewThemed
 import money.shared.generated.resources.Res
 import money.shared.generated.resources.account_group_all_title
 import money.shared.generated.resources.account_group_no_bank_title
-import money.shared.generated.resources.account_list_empty_message
 import money.shared.generated.resources.account_name_column_title
 import money.shared.generated.resources.account_number_column_title
 import money.shared.generated.resources.balance_column_title
@@ -131,20 +130,6 @@ private fun AccountTable(
     onAccountClick: (Account) -> Unit,
 ) {
     Column(modifier = Modifier.fillMaxWidth()) {
-        if (accounts.isEmpty()) {
-            Text(
-                text = stringResource(Res.string.account_list_empty_message),
-                style = MoneyTheme.typography.bodyMedium,
-                color = MoneyTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.padding(
-                    start = MoneyTheme.spacing.medium,
-                    end = MoneyTheme.spacing.medium,
-                    bottom = MoneyTheme.spacing.small,
-                ),
-            )
-            return@Column
-        }
-
         val headerStyle = MoneyTheme.typography.labelMedium.copy(color = MoneyTheme.colorScheme.onSurfaceVariant)
         AccountTableRow(
             name = stringResource(Res.string.account_name_column_title),
@@ -265,20 +250,6 @@ private fun AccountGroupCardCollapsedPreview() {
                 accounts = listOf(Account(name = "Wallet", accountType = previewAccountType)),
             ),
             expanded = false,
-            onExpandedChange = {},
-            onAccountClick = {},
-            modifier = Modifier.padding(MoneyTheme.spacing.medium),
-        )
-    }
-}
-
-@Preview
-@Composable
-private fun AccountGroupCardEmptyPreview() {
-    PreviewThemed {
-        AccountGroupCard(
-            group = AccountGroup.All(accounts = emptyList()),
-            expanded = true,
             onExpandedChange = {},
             onAccountClick = {},
             modifier = Modifier.padding(MoneyTheme.spacing.medium),
