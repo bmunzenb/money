@@ -1,10 +1,7 @@
 package com.munzenberger.money.core.account
 
 import com.munzenberger.money.core.MoneyRepositoryController
-import com.munzenberger.money.core.logger
 import com.munzenberger.money.data.api.account.AccountId
-import java.util.logging.Level
-import kotlin.coroutines.cancellation.CancellationException
 
 /**
  * Validates an [AccountInput] and, if it's valid, adds it to the open repository as a new account. A new
@@ -13,26 +10,6 @@ import kotlin.coroutines.cancellation.CancellationException
 class CreateAccountUseCase(
     private val repositoryController: MoneyRepositoryController,
 ) {
-    suspend operator fun invoke(input: AccountInput): SaveAccountResult {
-        val (account, newBank) = when (val validated = input.validate(AccountId())) {
-            is ValidatedAccountInput.Invalid -> return SaveAccountResult.Invalid(validated.errors)
-            is ValidatedAccountInput.Valid -> validated
-        }
-
-        val repository = repositoryController.moneyRepository.value
-            ?: return SaveAccountResult.Failure(IllegalStateException("No money repository is open"))
-
-        return try {
-            repository.transaction {
-                newBank?.let { add(it) }
-                add(account)
-            }
-            SaveAccountResult.Success(account)
-        } catch (e: CancellationException) {
-            throw e
-        } catch (@Suppress("TooGenericExceptionCaught") e: Exception) {
-            logger.log(Level.WARNING, "Failed to save the new account", e)
-            SaveAccountResult.Failure(e)
-        }
-    }
+    suspend operator fun invoke(input: AccountInput): SaveAccountResult =
+        repositoryController.saveAccount(input, AccountId()) { add(it) }
 }
