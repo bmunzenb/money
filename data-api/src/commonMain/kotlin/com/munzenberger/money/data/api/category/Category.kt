@@ -1,7 +1,9 @@
 package com.munzenberger.money.data.api.category
 
+import kotlinx.serialization.Serializable
 import kotlin.uuid.Uuid
 
+@Serializable
 @JvmInline
 value class CategoryId(val value: Uuid = Uuid.random())
 

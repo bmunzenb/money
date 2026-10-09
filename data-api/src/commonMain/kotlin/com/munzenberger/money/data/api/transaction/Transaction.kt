@@ -4,8 +4,10 @@ import com.munzenberger.money.data.api.account.AccountId
 import com.munzenberger.money.data.api.payee.PayeeId
 import com.munzenberger.money.data.api.today
 import kotlinx.datetime.LocalDate
+import kotlinx.serialization.Serializable
 import kotlin.uuid.Uuid
 
+@Serializable
 @JvmInline
 value class TransactionId(val value: Uuid = Uuid.random())
 
