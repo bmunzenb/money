@@ -9,6 +9,16 @@ import com.munzenberger.money.data.api.bank.Bank
 import java.util.logging.Level
 import kotlin.coroutines.cancellation.CancellationException
 
+sealed interface SaveAccountResult {
+    data class Success(val account: Account) : SaveAccountResult
+
+    /** The input failed validation, so nothing was written. */
+    data class Invalid(val errors: Set<AccountInputError>) : SaveAccountResult
+
+    /** The input was valid, but the account couldn't be written, or no repository is open. */
+    data class Failure(val cause: Throwable) : SaveAccountResult
+}
+
 /**
  * Validates [input] and, if it's valid, writes it to the open repository as the account with [accountId].
  * [write] writes the account; a new financial institution named in [input] is added before it, in the
