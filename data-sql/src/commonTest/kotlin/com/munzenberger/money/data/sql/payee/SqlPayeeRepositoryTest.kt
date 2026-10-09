@@ -1,5 +1,6 @@
 package com.munzenberger.money.data.sql.payee
 
+import com.munzenberger.money.data.api.EntityNotFoundException
 import com.munzenberger.money.data.api.payee.Payee
 import com.munzenberger.money.data.api.payee.PayeeId
 import com.munzenberger.money.data.api.payee.remove
@@ -12,6 +13,7 @@ import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertContains
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 import kotlin.test.assertTrue
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -78,6 +80,16 @@ class SqlPayeeRepositoryTest {
         val payees = repository.payees.first()
         assertContains(payees, updatedPayee1)
         assertContains(payees, payee2)
+    }
+
+    @Test
+    fun `update of unknown ID throws and leaves payees unchanged`() = runTest {
+        val repository = createRepository(UnconfinedTestDispatcher(testScheduler))
+        val original = Payee(name = "Original Name", memo = null)
+        repository.add(original)
+        val updated = original.copy(id = PayeeId(), name = "Updated Name", memo = "new memo")
+        assertFailsWith<EntityNotFoundException> { repository.update(updated) }
+        assertEquals(listOf(original), repository.payees.first())
     }
 
     @Test

@@ -13,6 +13,7 @@ import com.munzenberger.money.data.api.transaction.TransferEntryId
 import com.munzenberger.money.data.api.transaction.TransferEntryRepository
 import com.munzenberger.money.data.api.transaction.TransferEntryWriter
 import com.munzenberger.money.data.sql.MoneyDatabase
+import com.munzenberger.money.data.sql.requireOneRow
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlin.coroutines.CoroutineContext
@@ -58,7 +59,7 @@ class SqlTransferEntryRepository(
             status_id = transferEntry.status.id.value,
             order_in_transaction = transferEntry.orderInTransaction.toLong(),
             id = transferEntry.id.id.toString(),
-        )
+        ).requireOneRow { "No transfer entry with id ${transferEntry.id.id}" }
     }
 
     override fun removeById(transferEntryId: TransferEntryId) {

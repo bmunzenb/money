@@ -1,5 +1,6 @@
 package com.munzenberger.money.data.sql.bank
 
+import com.munzenberger.money.data.api.EntityNotFoundException
 import com.munzenberger.money.data.api.bank.Bank
 import com.munzenberger.money.data.api.bank.BankId
 import com.munzenberger.money.data.api.bank.remove
@@ -12,6 +13,7 @@ import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertContains
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 import kotlin.test.assertTrue
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -78,6 +80,16 @@ class SqlBankRepositoryTest {
         val banks = repository.banks.first()
         assertContains(banks, updatedBank1)
         assertContains(banks, bank2)
+    }
+
+    @Test
+    fun `update of unknown ID throws and leaves banks unchanged`() = runTest {
+        val repository = createRepository(UnconfinedTestDispatcher(testScheduler))
+        val original = Bank(name = "Original Name", memo = null)
+        repository.add(original)
+        val updated = original.copy(id = BankId(), name = "Updated Name", memo = "new memo")
+        assertFailsWith<EntityNotFoundException> { repository.update(updated) }
+        assertEquals(listOf(original), repository.banks.first())
     }
 
     @Test

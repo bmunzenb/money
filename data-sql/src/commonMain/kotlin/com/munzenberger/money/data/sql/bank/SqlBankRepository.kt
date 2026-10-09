@@ -7,6 +7,7 @@ import com.munzenberger.money.data.api.bank.BankId
 import com.munzenberger.money.data.api.bank.BankRepository
 import com.munzenberger.money.data.api.bank.BankWriter
 import com.munzenberger.money.data.sql.MoneyDatabase
+import com.munzenberger.money.data.sql.requireOneRow
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlin.coroutines.CoroutineContext
@@ -41,7 +42,7 @@ class SqlBankRepository(
             name = bank.name,
             memo = bank.memo,
             id = bank.id.value.toString(),
-        )
+        ).requireOneRow { "No bank with id ${bank.id.value}" }
     }
 
     override fun removeById(bankId: BankId) {

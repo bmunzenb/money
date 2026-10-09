@@ -1,5 +1,6 @@
 package com.munzenberger.money.data.sql.transaction
 
+import com.munzenberger.money.data.api.EntityNotFoundException
 import com.munzenberger.money.data.api.Money
 import com.munzenberger.money.data.api.account.Account
 import com.munzenberger.money.data.api.account.AccountClass
@@ -29,6 +30,7 @@ import kotlinx.datetime.LocalDate
 import kotlin.test.Test
 import kotlin.test.assertContains
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 import kotlin.test.assertTrue
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -268,6 +270,26 @@ class SqlTransferEntryRepositoryTest {
         val entries = repository.transferEntriesByTransactionId(transactionId).first()
         assertContains(entries, updatedEntry1)
         assertContains(entries, entry2)
+    }
+
+    @Test
+    fun `update of unknown ID throws and leaves transfer entries unchanged`() = runTest {
+        val dispatcher = UnconfinedTestDispatcher(testScheduler)
+        val database = createTestDatabase()
+        val accountId = createAccount(database, dispatcher)
+        val transactionId = createTransaction(database, dispatcher, accountId)
+        val repository = createRepository(database, dispatcher)
+        val original = TransferEntry(
+            transactionId = transactionId,
+            accountId = accountId,
+            amount = Money(1000),
+            status = unreconciled,
+            orderInTransaction = 0,
+        )
+        repository.add(original)
+        val updated = original.copy(id = TransferEntryId(), amount = Money(2000), status = cleared)
+        assertFailsWith<EntityNotFoundException> { repository.update(updated) }
+        assertEquals(listOf(original), repository.transferEntriesByTransactionId(transactionId).first())
     }
 
     @Test

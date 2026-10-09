@@ -1,5 +1,6 @@
 package com.munzenberger.money.data.sql.transaction
 
+import com.munzenberger.money.data.api.EntityNotFoundException
 import com.munzenberger.money.data.api.account.Account
 import com.munzenberger.money.data.api.account.AccountClass
 import com.munzenberger.money.data.api.account.AccountClassConstant
@@ -28,6 +29,7 @@ import kotlinx.datetime.LocalDate
 import kotlin.test.Test
 import kotlin.test.assertContains
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 import kotlin.test.assertTrue
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -237,6 +239,24 @@ class SqlTransactionRepositoryTest {
         val transactions = repository.transactionsByAccountId(accountId).first()
         assertContains(transactions, updatedTransaction1)
         assertContains(transactions, transaction2)
+    }
+
+    @Test
+    fun `update of unknown ID throws and leaves transactions unchanged`() = runTest {
+        val dispatcher = UnconfinedTestDispatcher(testScheduler)
+        val database = createTestDatabase()
+        val accountId = createAccount(database, dispatcher)
+        val repository = createRepository(database, dispatcher)
+        val original = Transaction(
+            accountId = accountId,
+            date = LocalDate(2024, 1, 15),
+            memo = "Original",
+            status = unreconciled,
+        )
+        repository.add(original)
+        val updated = original.copy(id = TransactionId(), memo = "Updated", number = "1002")
+        assertFailsWith<EntityNotFoundException> { repository.update(updated) }
+        assertEquals(listOf(original), repository.transactionsByAccountId(accountId).first())
     }
 
     @Test

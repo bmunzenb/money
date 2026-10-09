@@ -1,5 +1,6 @@
 package com.munzenberger.money.data.sql
 
+import com.munzenberger.money.data.api.EntityNotFoundException
 import com.munzenberger.money.data.api.account.Account
 import com.munzenberger.money.data.api.account.AccountClass
 import com.munzenberger.money.data.api.account.AccountClassConstant
@@ -85,5 +86,17 @@ class SqlMoneyRepositoryTest {
         }
         assertTrue(repository.banks.first().isEmpty())
         assertTrue(repository.accounts.first().isEmpty())
+    }
+
+    @Test
+    fun `transaction rolls back earlier writes when an update finds no row`() = runTest {
+        val repository = createRepository(UnconfinedTestDispatcher(testScheduler))
+        assertFailsWith<EntityNotFoundException> {
+            repository.transaction {
+                add(Bank(name = "First Bank"))
+                update(Payee(name = "Never added"))
+            }
+        }
+        assertTrue(repository.banks.first().isEmpty())
     }
 }

@@ -9,6 +9,7 @@ import com.munzenberger.money.data.api.account.StatementId
 import com.munzenberger.money.data.api.account.StatementRepository
 import com.munzenberger.money.data.api.account.StatementWriter
 import com.munzenberger.money.data.sql.MoneyDatabase
+import com.munzenberger.money.data.sql.requireOneRow
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.datetime.LocalDate
@@ -54,7 +55,7 @@ class SqlStatementRepository(
             ending_balance = statement.endingBalance.value,
             is_reconciled = statement.isReconciled,
             id = statement.id.id.toString(),
-        )
+        ).requireOneRow { "No statement with id ${statement.id.id}" }
     }
 
     override fun removeById(statementId: StatementId) {
