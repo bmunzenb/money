@@ -39,7 +39,7 @@ class CreateAccountUseCaseTest {
         value = AccountTypeConstant.Checking,
     )
 
-    private val validAccount = NewAccount(
+    private val validAccount = AccountInput(
         name = "Checking",
         accountType = checking,
         bankName = "",
@@ -93,11 +93,11 @@ class CreateAccountUseCaseTest {
         )
 
         assertEquals(
-            CreateAccountResult.Invalid(
+            SaveAccountResult.Invalid(
                 setOf(
-                    NewAccountError.BlankName,
-                    NewAccountError.MissingAccountType,
-                    NewAccountError.InvalidInitialBalance,
+                    AccountInputError.BlankName,
+                    AccountInputError.MissingAccountType,
+                    AccountInputError.InvalidInitialBalance,
                 )
             ),
             result,
@@ -109,7 +109,7 @@ class CreateAccountUseCaseTest {
     fun testInvalidInputIsReportedEvenWithoutAnOpenRepository() = runTest {
         val result = createAccount(validAccount.copy(name = ""))
 
-        assertEquals(CreateAccountResult.Invalid(setOf(NewAccountError.BlankName)), result)
+        assertEquals(SaveAccountResult.Invalid(setOf(AccountInputError.BlankName)), result)
     }
 
     @Test
@@ -118,14 +118,14 @@ class CreateAccountUseCaseTest {
 
         val result = createAccount(validAccount.copy(initialBalance = "999999999999999999999"))
 
-        assertEquals(CreateAccountResult.Invalid(setOf(NewAccountError.InvalidInitialBalance)), result)
+        assertEquals(SaveAccountResult.Invalid(setOf(AccountInputError.InvalidInitialBalance)), result)
     }
 
     @Test
     fun testFailsWithoutAnOpenRepository() = runTest {
         val result = createAccount(validAccount)
 
-        assertIs<CreateAccountResult.Failure>(result)
+        assertIs<SaveAccountResult.Failure>(result)
     }
 
     @Test
@@ -135,7 +135,7 @@ class CreateAccountUseCaseTest {
         val result = createAccount(validAccount.copy(name = "  Checking  ", number = "  ", memo = " \n "))
 
         val account = addedAccount()
-        assertEquals(CreateAccountResult.Success(account), result)
+        assertEquals(SaveAccountResult.Success(account), result)
         assertEquals("Checking", account.name)
         assertEquals(checking, account.accountType)
         assertNull(account.number)
@@ -194,7 +194,7 @@ class CreateAccountUseCaseTest {
 
         val result = createAccount(validAccount)
 
-        assertIs<CreateAccountResult.Failure>(result)
+        assertIs<SaveAccountResult.Failure>(result)
         assertSame(error, result.cause)
     }
 }

@@ -1,9 +1,9 @@
 package com.munzenberger.money.desktop.accounts
 
-import com.munzenberger.money.core.account.CreateAccountResult
+import com.munzenberger.money.core.account.AccountInput
+import com.munzenberger.money.core.account.AccountInputError
 import com.munzenberger.money.core.account.CreateAccountUseCase
-import com.munzenberger.money.core.account.NewAccount
-import com.munzenberger.money.core.account.NewAccountError
+import com.munzenberger.money.core.account.SaveAccountResult
 import com.munzenberger.money.data.api.MoneyRepository
 import com.munzenberger.money.data.api.account.Account
 import com.munzenberger.money.data.api.account.AccountClass
@@ -333,7 +333,7 @@ class NewAccountViewModelTest {
 
     @Test
     fun `onSaveClick passes the form's values to the use case`() = runTest {
-        coEvery { createAccount(any()) } returns CreateAccountResult.Invalid(emptySet())
+        coEvery { createAccount(any()) } returns SaveAccountResult.Invalid(emptySet())
         fixture.connect(repository(accountTypes = flowOf(listOf(checking)), banks = flowOf(listOf(firstBank))))
         val viewModel = viewModel()
         viewModel.onNameChange("Checking")
@@ -347,7 +347,7 @@ class NewAccountViewModelTest {
 
         coVerify {
             createAccount(
-                NewAccount(
+                AccountInput(
                     name = "Checking",
                     accountType = checking,
                     bankName = "First Bank",
@@ -362,8 +362,12 @@ class NewAccountViewModelTest {
 
     @Test
     fun `invalid fields are marked as errors when saving`() {
-        coEvery { createAccount(any()) } returns CreateAccountResult.Invalid(
-            setOf(NewAccountError.BlankName, NewAccountError.MissingAccountType, NewAccountError.InvalidInitialBalance)
+        coEvery { createAccount(any()) } returns SaveAccountResult.Invalid(
+            setOf(
+                AccountInputError.BlankName,
+                AccountInputError.MissingAccountType,
+                AccountInputError.InvalidInitialBalance,
+            )
         )
         val viewModel = viewModel()
 
@@ -378,7 +382,7 @@ class NewAccountViewModelTest {
 
     @Test
     fun `valid fields are not marked as errors when saving`() {
-        coEvery { createAccount(any()) } returns CreateAccountResult.Invalid(setOf(NewAccountError.BlankName))
+        coEvery { createAccount(any()) } returns SaveAccountResult.Invalid(setOf(AccountInputError.BlankName))
         val viewModel = viewModel()
 
         viewModel.onSaveClick()
@@ -390,7 +394,7 @@ class NewAccountViewModelTest {
 
     @Test
     fun `entering a name clears the name error`() {
-        coEvery { createAccount(any()) } returns CreateAccountResult.Invalid(setOf(NewAccountError.BlankName))
+        coEvery { createAccount(any()) } returns SaveAccountResult.Invalid(setOf(AccountInputError.BlankName))
         val viewModel = viewModel()
         viewModel.onSaveClick()
 
@@ -403,7 +407,7 @@ class NewAccountViewModelTest {
 
     @Test
     fun `picking an account type clears the account type error`() {
-        coEvery { createAccount(any()) } returns CreateAccountResult.Invalid(setOf(NewAccountError.MissingAccountType))
+        coEvery { createAccount(any()) } returns SaveAccountResult.Invalid(setOf(AccountInputError.MissingAccountType))
         val viewModel = viewModel()
         viewModel.onSaveClick()
 
@@ -414,20 +418,20 @@ class NewAccountViewModelTest {
 
     @Test
     fun `the form is saving until the use case returns`() {
-        val result = CompletableDeferred<CreateAccountResult>()
+        val result = CompletableDeferred<SaveAccountResult>()
         coEvery { createAccount(any()) } coAnswers { result.await() }
         val viewModel = viewModel()
 
         viewModel.onSaveClick()
         assertEquals(SaveState.Saving, viewModel.state.value.saveState)
 
-        result.complete(CreateAccountResult.Failure(IllegalStateException("write failed")))
+        result.complete(SaveAccountResult.Failure(IllegalStateException("write failed")))
         assertEquals(SaveState.Failed, viewModel.state.value.saveState)
     }
 
     @Test
     fun `onSaveClick is ignored while already saving`() {
-        coEvery { createAccount(any()) } coAnswers { CompletableDeferred<CreateAccountResult>().await() }
+        coEvery { createAccount(any()) } coAnswers { CompletableDeferred<SaveAccountResult>().await() }
         val viewModel = viewModel()
 
         viewModel.onSaveClick()
@@ -439,7 +443,7 @@ class NewAccountViewModelTest {
     @Test
     fun `saving successfully pops the new account route from the back stack`() {
         val account = Account(name = "Checking", accountType = checking)
-        coEvery { createAccount(any()) } returns CreateAccountResult.Success(account)
+        coEvery { createAccount(any()) } returns SaveAccountResult.Success(account)
         navigator.navigate { clear(); add(Route.AccountList); add(Route.NewAccount) }
         val viewModel = viewModel()
 
@@ -450,7 +454,7 @@ class NewAccountViewModelTest {
 
     @Test
     fun `a failed save can be retried`() {
-        coEvery { createAccount(any()) } returns CreateAccountResult.Failure(IllegalStateException("write failed"))
+        coEvery { createAccount(any()) } returns SaveAccountResult.Failure(IllegalStateException("write failed"))
         val viewModel = viewModel()
         viewModel.onSaveClick()
         assertEquals(SaveState.Failed, viewModel.state.value.saveState)
