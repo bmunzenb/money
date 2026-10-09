@@ -153,4 +153,15 @@ class AccountListViewModelTest {
 
         assertEquals(listOf(Route.AccountList, Route.NewAccount), navigator.backStack.toList())
     }
+
+    @Test
+    fun `onAccountClick pushes the edit account route for the account`() {
+        every { getAccountGroups(any()) } returns emptyFlow()
+        navigator.navigate { clear(); add(Route.AccountList) }
+        val account = account("Checking")
+
+        viewModel().onAccountClick(account)
+
+        assertEquals(listOf(Route.AccountList, Route.EditAccount(account.id)), navigator.backStack.toList())
+    }
 }

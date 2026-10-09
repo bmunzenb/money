@@ -61,8 +61,7 @@ fun AccountListScreen(viewModel: AccountListViewModel = koinViewModel()) {
         state = state,
         onGroupingChange = viewModel::onGroupingChange,
         onAddAccountClick = viewModel::onAddAccountClick,
-        // There's no account screen to open yet.
-        onAccountClick = {},
+        onAccountClick = viewModel::onAccountClick,
     )
 }
 
