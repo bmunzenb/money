@@ -78,13 +78,13 @@ class GetAccountGroupsUseCaseTest {
     }
 
     @Test
-    fun testNoGroupingHasOneGroupWhenThereAreNoAccounts() = runTest {
+    fun testNoGroupingWithNoAccountsHasNoGroups() = runTest {
         accounts.value = emptyList()
 
         getAccountGroups(flowOf(AccountGrouping.None)).test {
             controller.connect()
 
-            assertEquals(Result.success(listOf(AccountGroup.All(emptyList()))), awaitItem())
+            assertEquals(Result.success(emptyList()), awaitItem())
         }
     }
 
