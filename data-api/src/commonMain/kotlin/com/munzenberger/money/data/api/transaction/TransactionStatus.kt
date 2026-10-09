@@ -1,5 +1,8 @@
 package com.munzenberger.money.data.api.transaction
 
+import kotlinx.serialization.Serializable
+
+@Serializable
 @JvmInline
 value class TransactionStatusId(val value: Long)
 

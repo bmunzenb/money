@@ -1,5 +1,8 @@
 package com.munzenberger.money.data.api.account
 
+import kotlinx.serialization.Serializable
+
+@Serializable
 @JvmInline
 value class AccountTypeId(val value: Long)
 
