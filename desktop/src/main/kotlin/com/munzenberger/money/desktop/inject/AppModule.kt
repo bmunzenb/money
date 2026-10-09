@@ -3,10 +3,11 @@ package com.munzenberger.money.desktop.inject
 import com.munzenberger.money.core.MoneyRepositoryController
 import com.munzenberger.money.core.account.CreateAccountUseCase
 import com.munzenberger.money.core.account.GetAccountGroupsUseCase
+import com.munzenberger.money.core.account.UpdateAccountUseCase
 import com.munzenberger.money.data.sql.SqlMoneyRepositoryConnector
 import com.munzenberger.money.desktop.AppViewModel
 import com.munzenberger.money.desktop.accounts.AccountListViewModel
-import com.munzenberger.money.desktop.accounts.NewAccountViewModel
+import com.munzenberger.money.desktop.accounts.AccountFormViewModel
 import com.munzenberger.money.desktop.categories.CategoryListViewModel
 import com.munzenberger.money.desktop.navigation.Navigator
 import com.munzenberger.money.desktop.payees.PayeeListViewModel
@@ -21,11 +22,12 @@ val appModule = module {
 
     factory { CreateAccountUseCase(get()) }
     factory { GetAccountGroupsUseCase(get()) }
+    factory { UpdateAccountUseCase(get()) }
 
     viewModel { AppViewModel(get(), get()) }
     viewModel { WelcomeViewModel(get()) }
     viewModel { AccountListViewModel(get(), get()) }
-    viewModel { NewAccountViewModel(get(), get(), get()) }
+    viewModel { params -> AccountFormViewModel(params.getOrNull(), get(), get(), get(), get()) }
     viewModel { CategoryListViewModel(get()) }
     viewModel { PayeeListViewModel(get()) }
     viewModel { AppNavigationRailViewModel(get()) }

@@ -14,6 +14,9 @@
     <string name="add_account_button_title">New account</string>
     <string name="new_account_title">New account</string>
     <string name="new_account_description">Add an account to track its balance and transactions.</string>
+    <string name="edit_account_title">Edit account</string>
+    <string name="edit_account_description">Update the details of this account.</string>
+    <string name="account_load_error_message">Unable to load the account.</string>
     <string name="account_section_title">Account</string>
     <string name="balance_and_reference_section_title">Balance and reference</string>
     <string name="additional_information_section_title">Additional information</string>

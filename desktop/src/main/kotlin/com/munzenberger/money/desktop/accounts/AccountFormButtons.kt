@@ -32,7 +32,7 @@ import org.jetbrains.compose.resources.stringResource
  * saving fails, the reason is shown beside them.
  */
 @Composable
-internal fun NewAccountButtons(
+internal fun AccountFormButtons(
     saveState: SaveState,
     onCancelClick: () -> Unit,
     onSaveClick: () -> Unit,

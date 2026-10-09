@@ -8,6 +8,7 @@ import com.munzenberger.money.data.api.account.Account
 import com.munzenberger.money.data.api.account.AccountClass
 import com.munzenberger.money.data.api.account.AccountClassConstant
 import com.munzenberger.money.data.api.account.AccountClassId
+import com.munzenberger.money.data.api.account.AccountId
 import com.munzenberger.money.data.api.account.AccountType
 import com.munzenberger.money.data.api.account.AccountTypeConstant
 import com.munzenberger.money.data.api.account.AccountTypeId
@@ -20,16 +21,17 @@ import java.io.File
 import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertNotEquals
 
 /** Validating and writing the account is covered by [ValidatedAccountInputTest] and [SaveAccountTest]. */
-class CreateAccountUseCaseTest {
+class UpdateAccountUseCaseTest {
 
     private val checking = AccountType(
         id = AccountTypeId(2),
         accountClass = AccountClass(id = AccountClassId(1), value = AccountClassConstant.Assets),
         value = AccountTypeConstant.Checking,
     )
+
+    private val accountId = AccountId()
 
     private val validInput = AccountInput(
         name = "Checking",
@@ -51,33 +53,22 @@ class CreateAccountUseCaseTest {
         context = EmptyCoroutineContext,
     )
 
-    private val createAccount = CreateAccountUseCase(controller)
+    private val updateAccount = UpdateAccountUseCase(controller)
 
     private suspend fun connect() {
         controller.openDatabase(File("money-test.db"))
     }
 
     @Test
-    fun testAddsTheAccount() = runTest {
+    fun testUpdatesTheAccountWithTheGivenId() = runTest {
         connect()
 
-        val result = createAccount(validInput)
+        val result = updateAccount(accountId, validInput)
 
         val account = slot<Account>()
-        verify { writer.add(capture(account)) }
-        verify(exactly = 0) { writer.update(any<Account>()) }
+        verify { writer.update(capture(account)) }
+        verify(exactly = 0) { writer.add(any<Account>()) }
+        assertEquals(accountId, account.captured.id)
         assertEquals(SaveAccountResult.Success(account.captured), result)
-    }
-
-    @Test
-    fun testEachAccountGetsANewId() = runTest {
-        connect()
-
-        createAccount(validInput)
-        createAccount(validInput)
-
-        val accounts = mutableListOf<Account>()
-        verify(exactly = 2) { writer.add(capture(accounts)) }
-        assertNotEquals(accounts[0].id, accounts[1].id)
     }
 }

@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import com.munzenberger.money.core.account.AccountGroup
 import com.munzenberger.money.core.account.AccountGrouping
 import com.munzenberger.money.core.account.GetAccountGroupsUseCase
+import com.munzenberger.money.data.api.account.Account
 import com.munzenberger.money.desktop.navigation.Navigator
 import com.munzenberger.money.desktop.navigation.Route
 import kotlinx.coroutines.flow.Flow
@@ -36,5 +37,9 @@ class AccountListViewModel(
 
     fun onAddAccountClick() {
         navigator.navigate { add(Route.NewAccount) }
+    }
+
+    fun onAccountClick(account: Account) {
+        navigator.navigate { add(Route.EditAccount(account.id)) }
     }
 }

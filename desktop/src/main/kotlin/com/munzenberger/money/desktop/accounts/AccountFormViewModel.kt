@@ -3,32 +3,45 @@ package com.munzenberger.money.desktop.accounts
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.munzenberger.money.core.MoneyRepositoryController
-import com.munzenberger.money.core.account.CreateAccountResult
+import com.munzenberger.money.core.account.AccountInput
+import com.munzenberger.money.core.account.AccountInputError
 import com.munzenberger.money.core.account.CreateAccountUseCase
-import com.munzenberger.money.core.account.NewAccount
-import com.munzenberger.money.core.account.NewAccountError
+import com.munzenberger.money.core.account.SaveAccountResult
+import com.munzenberger.money.core.account.UpdateAccountUseCase
 import com.munzenberger.money.core.account.parseInitialBalance
 import com.munzenberger.money.core.resultFlow
 import com.munzenberger.money.data.api.Money
+import com.munzenberger.money.data.api.account.Account
+import com.munzenberger.money.data.api.account.AccountId
 import com.munzenberger.money.data.api.account.AccountType
 import com.munzenberger.money.data.api.bank.Bank
 import com.munzenberger.money.desktop.navigation.Navigator
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-class NewAccountViewModel(
-    repositoryController: MoneyRepositoryController,
+/**
+ * The account form. With an [accountId], it edits that account, starting from its saved values; without
+ * one, it adds a new account.
+ */
+class AccountFormViewModel(
+    private val accountId: AccountId?,
+    private val repositoryController: MoneyRepositoryController,
     private val navigator: Navigator,
     private val createAccount: CreateAccountUseCase,
+    private val updateAccount: UpdateAccountUseCase,
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(
-        NewAccountUiState(currencySymbol = Money.DEFAULT_CURRENCY.symbol)
+        AccountFormUiState(
+            existingAccount = accountId?.let { LoadState.Loading },
+            currencySymbol = Money.DEFAULT_CURRENCY.symbol,
+        )
     )
-    val state: StateFlow<NewAccountUiState> = _state.asStateFlow()
+    val state: StateFlow<AccountFormUiState> = _state.asStateFlow()
 
     init {
         viewModelScope.launch {
@@ -43,6 +56,29 @@ class NewAccountViewModel(
                 _state.update { it.copy(banks = banks, bank = banks.loadedOrEmpty.matching(it.bankName)) }
             }
         }
+        if (accountId != null) {
+            viewModelScope.launch { loadExistingAccount(accountId) }
+        }
+    }
+
+    /**
+     * Fills in the form from the saved account. It's read only once, so a later change to the account
+     * doesn't overwrite what the user has typed. The banks are needed too, to show the account's bank by
+     * name; without them, saving would drop the bank, so the account counts as not loaded.
+     */
+    private suspend fun loadExistingAccount(accountId: AccountId) {
+        val account = repositoryController.resultFlow { it.accounts }.first()
+            .map { accounts -> accounts.firstOrNull { it.id == accountId } }
+            .getOrNull()
+        val banks = repositoryController.resultFlow { it.banks }.first().getOrNull()
+
+        if (account == null || banks == null) {
+            _state.update { it.copy(existingAccount = LoadState.Error) }
+            return
+        }
+
+        val bank = banks.firstOrNull { it.id == account.bankId }
+        _state.update { it.filledInFrom(account, bank) }
     }
 
     fun onNameChange(name: String) {
@@ -93,22 +129,24 @@ class NewAccountViewModel(
 
     fun onSaveClick() {
         val current = _state.value
-        if (current.saveState == SaveState.Saving) return
+        if (!current.isFormReady || current.saveState == SaveState.Saving) return
 
         _state.update { it.copy(saveState = SaveState.Saving) }
 
         viewModelScope.launch {
-            when (val result = createAccount(current.toNewAccount())) {
-                is CreateAccountResult.Success -> navigator.navigate { removeLast() }
-                is CreateAccountResult.Invalid -> _state.update {
+            val input = current.toAccountInput()
+            val result = if (accountId == null) createAccount(input) else updateAccount(accountId, input)
+            when (result) {
+                is SaveAccountResult.Success -> navigator.navigate { removeLast() }
+                is SaveAccountResult.Invalid -> _state.update {
                     it.copy(
-                        isNameError = NewAccountError.BlankName in result.errors,
-                        isAccountTypeError = NewAccountError.MissingAccountType in result.errors,
-                        isInitialBalanceError = NewAccountError.InvalidInitialBalance in result.errors,
+                        isNameError = AccountInputError.BlankName in result.errors,
+                        isAccountTypeError = AccountInputError.MissingAccountType in result.errors,
+                        isInitialBalanceError = AccountInputError.InvalidInitialBalance in result.errors,
                         saveState = SaveState.Idle,
                     )
                 }
-                is CreateAccountResult.Failure -> _state.update { it.copy(saveState = SaveState.Failed) }
+                is SaveAccountResult.Failure -> _state.update { it.copy(saveState = SaveState.Failed) }
             }
         }
     }
@@ -127,7 +165,18 @@ private fun List<Bank>.matching(bankName: String): Bank? {
     return if (name.isEmpty()) null else firstOrNull { it.name.equals(name, ignoreCase = true) }
 }
 
-private fun NewAccountUiState.toNewAccount() = NewAccount(
+private fun AccountFormUiState.filledInFrom(account: Account, bank: Bank?) = copy(
+    existingAccount = LoadState.Loaded(account),
+    name = account.name,
+    accountType = account.accountType,
+    bankName = bank?.name.orEmpty(),
+    bank = bank,
+    number = account.number.orEmpty(),
+    initialBalance = account.initialBalance.toString(asCurrency = false),
+    memo = account.memo.orEmpty(),
+)
+
+private fun AccountFormUiState.toAccountInput() = AccountInput(
     name = name,
     accountType = accountType,
     bankName = bankName,
