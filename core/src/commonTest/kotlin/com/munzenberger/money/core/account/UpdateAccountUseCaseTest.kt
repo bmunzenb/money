@@ -1,7 +1,6 @@
 package com.munzenberger.money.core.account
 
 import com.munzenberger.money.core.MoneyRepositoryController
-import com.munzenberger.money.data.api.Money
 import com.munzenberger.money.data.api.MoneyRepository
 import com.munzenberger.money.data.api.MoneyRepositoryConnectionStatus
 import com.munzenberger.money.data.api.MoneyWriter
@@ -13,25 +12,17 @@ import com.munzenberger.money.data.api.account.AccountId
 import com.munzenberger.money.data.api.account.AccountType
 import com.munzenberger.money.data.api.account.AccountTypeConstant
 import com.munzenberger.money.data.api.account.AccountTypeId
-import com.munzenberger.money.data.api.bank.Bank
 import io.mockk.coEvery
-import io.mockk.coVerify
 import io.mockk.mockk
 import io.mockk.slot
 import io.mockk.verify
-import io.mockk.verifyOrder
 import kotlinx.coroutines.test.runTest
 import java.io.File
-import java.util.Locale
 import kotlin.coroutines.EmptyCoroutineContext
-import kotlin.test.AfterTest
-import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertIs
-import kotlin.test.assertNull
-import kotlin.test.assertSame
 
+/** Validating and writing the account is covered by [ValidatedAccountInputTest] and [SaveAccountTest]. */
 class UpdateAccountUseCaseTest {
 
     private val checking = AccountType(
@@ -42,7 +33,7 @@ class UpdateAccountUseCaseTest {
 
     private val accountId = AccountId()
 
-    private val validAccount = AccountInput(
+    private val validInput = AccountInput(
         name = "Checking",
         accountType = checking,
         bankName = "",
@@ -64,144 +55,20 @@ class UpdateAccountUseCaseTest {
 
     private val updateAccount = UpdateAccountUseCase(controller)
 
-    // The initial balance is parsed for the default locale.
-    private val defaultLocale = Locale.getDefault()
-
-    @BeforeTest
-    fun setUp() {
-        Locale.setDefault(Locale.US)
-    }
-
-    @AfterTest
-    fun tearDown() {
-        Locale.setDefault(defaultLocale)
-    }
-
     private suspend fun connect() {
         controller.openDatabase(File("money-test.db"))
-    }
-
-    private fun updatedAccount(): Account {
-        val account = slot<Account>()
-        verify { writer.update(capture(account)) }
-        return account.captured
-    }
-
-    @Test
-    fun testInvalidInputReportsEveryErrorWithoutWriting() = runTest {
-        connect()
-
-        val result = updateAccount(
-            accountId,
-            validAccount.copy(name = "  ", accountType = null, initialBalance = "12abc"),
-        )
-
-        assertEquals(
-            SaveAccountResult.Invalid(
-                setOf(
-                    AccountInputError.BlankName,
-                    AccountInputError.MissingAccountType,
-                    AccountInputError.InvalidInitialBalance,
-                )
-            ),
-            result,
-        )
-        coVerify(exactly = 0) { repository.transaction<Any?>(any()) }
-    }
-
-    @Test
-    fun testInvalidInputIsReportedEvenWithoutAnOpenRepository() = runTest {
-        val result = updateAccount(accountId, validAccount.copy(name = ""))
-
-        assertEquals(SaveAccountResult.Invalid(setOf(AccountInputError.BlankName)), result)
-    }
-
-    @Test
-    fun testFailsWithoutAnOpenRepository() = runTest {
-        val result = updateAccount(accountId, validAccount)
-
-        assertIs<SaveAccountResult.Failure>(result)
     }
 
     @Test
     fun testUpdatesTheAccountWithTheGivenId() = runTest {
         connect()
 
-        val result = updateAccount(accountId, validAccount)
+        val result = updateAccount(accountId, validInput)
 
-        val account = updatedAccount()
-        assertEquals(SaveAccountResult.Success(account), result)
-        assertEquals(accountId, account.id)
-        verify(exactly = 0) { writer.add(any<Account>()) }
-    }
-
-    @Test
-    fun testUpdatesAccountWithTrimmedValuesAndBlankOptionalsOmitted() = runTest {
-        connect()
-
-        updateAccount(accountId, validAccount.copy(name = "  Checking  ", number = "  ", memo = " \n "))
-
-        val account = updatedAccount()
-        assertEquals("Checking", account.name)
-        assertEquals(checking, account.accountType)
-        assertNull(account.number)
-        assertNull(account.memo)
-        assertNull(account.bankId)
-        assertEquals(Money(0), account.initialBalance)
-        verify(exactly = 0) { writer.add(any<Bank>()) }
-    }
-
-    @Test
-    fun testUpdatesAccountWithOptionalValues() = runTest {
-        connect()
-
-        updateAccount(
-            accountId,
-            validAccount.copy(number = " 1234-5678 ", initialBalance = "-1,234.5", memo = "Joint account.\nOpened 2020."),
-        )
-
-        val account = updatedAccount()
-        assertEquals("1234-5678", account.number)
-        assertEquals(Money(-123450), account.initialBalance)
-        assertEquals("Joint account.\nOpened 2020.", account.memo)
-    }
-
-    @Test
-    fun testUsesTheExistingBank() = runTest {
-        connect()
-        val bank = Bank(name = "First Bank")
-
-        updateAccount(accountId, validAccount.copy(bankName = "First Bank", bank = bank))
-
-        assertEquals(bank.id, updatedAccount().bankId)
-        verify(exactly = 0) { writer.add(any<Bank>()) }
-    }
-
-    @Test
-    fun testAddsANewBankBeforeUpdatingTheAccount() = runTest {
-        connect()
-
-        updateAccount(accountId, validAccount.copy(bankName = "  New Bank  "))
-
-        val bank = slot<Bank>()
         val account = slot<Account>()
-        verifyOrder {
-            writer.add(capture(bank))
-            writer.update(capture(account))
-        }
-        assertEquals("New Bank", bank.captured.name)
-        assertEquals(bank.captured.id, account.captured.bankId)
-    }
-
-    @Test
-    fun testFailsWhenTheTransactionThrows() = runTest {
-        val error = IllegalStateException("write failed")
-        coEvery { repository.transaction<Unit>(any()) } throws error
-        connect()
-
-        val result = updateAccount(accountId, validAccount)
-
-        assertIs<SaveAccountResult.Failure>(result)
-        assertSame(error, result.cause)
+        verify { writer.update(capture(account)) }
+        verify(exactly = 0) { writer.add(any<Account>()) }
+        assertEquals(accountId, account.captured.id)
+        assertEquals(SaveAccountResult.Success(account.captured), result)
     }
 }
