@@ -15,6 +15,7 @@ import com.munzenberger.money.data.api.account.AccountTypeId
 import com.munzenberger.money.data.api.account.AccountWriter
 import com.munzenberger.money.data.api.bank.BankId
 import com.munzenberger.money.data.sql.MoneyDatabase
+import com.munzenberger.money.data.sql.requireOneRow
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlin.coroutines.CoroutineContext
@@ -68,7 +69,7 @@ class SqlAccountRepository(
             initial_balance = account.initialBalance.value,
             memo = account.memo,
             id = account.id.value.toString(),
-        )
+        ).requireOneRow { "No account with id ${account.id.value}" }
     }
 
     override fun removeById(accountId: AccountId) {

@@ -1,5 +1,6 @@
 package com.munzenberger.money.data.sql.transaction
 
+import com.munzenberger.money.data.api.EntityNotFoundException
 import com.munzenberger.money.data.api.Money
 import com.munzenberger.money.data.api.account.Account
 import com.munzenberger.money.data.api.account.AccountClass
@@ -35,6 +36,7 @@ import kotlinx.datetime.LocalDate
 import kotlin.test.Test
 import kotlin.test.assertContains
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 import kotlin.test.assertTrue
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -276,6 +278,26 @@ class SqlCategoryEntryRepositoryTest {
         val entries = repository.categoryEntriesByTransactionId(transactionId).first()
         assertContains(entries, updatedEntry1)
         assertContains(entries, entry2)
+    }
+
+    @Test
+    fun `update of unknown ID throws and leaves category entries unchanged`() = runTest {
+        val dispatcher = UnconfinedTestDispatcher(testScheduler)
+        val database = createTestDatabase()
+        val accountId = createAccount(database, dispatcher)
+        val transactionId = createTransaction(database, dispatcher, accountId)
+        val categoryId = createCategory(database, dispatcher)
+        val repository = createRepository(database, dispatcher)
+        val original = CategoryEntry(
+            transactionId = transactionId,
+            categoryId = categoryId,
+            amount = Money(1000),
+            orderInTransaction = 0,
+        )
+        repository.add(original)
+        val updated = original.copy(id = CategoryEntryId(), amount = Money(2000), memo = "Updated")
+        assertFailsWith<EntityNotFoundException> { repository.update(updated) }
+        assertEquals(listOf(original), repository.categoryEntriesByTransactionId(transactionId).first())
     }
 
     @Test

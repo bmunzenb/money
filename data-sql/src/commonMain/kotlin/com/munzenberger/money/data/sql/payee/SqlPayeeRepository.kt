@@ -7,6 +7,7 @@ import com.munzenberger.money.data.api.payee.PayeeId
 import com.munzenberger.money.data.api.payee.PayeeRepository
 import com.munzenberger.money.data.api.payee.PayeeWriter
 import com.munzenberger.money.data.sql.MoneyDatabase
+import com.munzenberger.money.data.sql.requireOneRow
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlin.coroutines.CoroutineContext
@@ -41,7 +42,7 @@ class SqlPayeeRepository(
             name = payee.name,
             memo = payee.memo,
             id = payee.id.value.toString(),
-        )
+        ).requireOneRow { "No payee with id ${payee.id.value}" }
     }
 
     override fun removeById(payeeId: PayeeId) {

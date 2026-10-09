@@ -1,5 +1,6 @@
 package com.munzenberger.money.data.sql.category
 
+import com.munzenberger.money.data.api.EntityNotFoundException
 import com.munzenberger.money.data.api.category.*
 import com.munzenberger.money.data.sql.createTestDatabase
 import kotlinx.coroutines.CoroutineDispatcher
@@ -10,6 +11,7 @@ import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertContains
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 import kotlin.test.assertTrue
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -121,6 +123,16 @@ class SqlCategoryRepositoryTest {
         val categories = repository.categories.first()
         assertContains(categories, updatedCategory1)
         assertContains(categories, category2)
+    }
+
+    @Test
+    fun `update of unknown ID throws and leaves categories unchanged`() = runTest {
+        val repository = createRepository(UnconfinedTestDispatcher(testScheduler))
+        val original = Category(name = "Original Name", type = expense, memo = null)
+        repository.add(original)
+        val updated = original.copy(id = CategoryId(), name = "Updated Name", memo = "new memo")
+        assertFailsWith<EntityNotFoundException> { repository.update(updated) }
+        assertEquals(listOf(original), repository.categories.first())
     }
 
     @Test

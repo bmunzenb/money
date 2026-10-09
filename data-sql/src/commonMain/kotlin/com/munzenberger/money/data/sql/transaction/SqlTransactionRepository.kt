@@ -12,6 +12,7 @@ import com.munzenberger.money.data.api.transaction.TransactionStatusConstant
 import com.munzenberger.money.data.api.transaction.TransactionStatusId
 import com.munzenberger.money.data.api.transaction.TransactionWriter
 import com.munzenberger.money.data.sql.MoneyDatabase
+import com.munzenberger.money.data.sql.requireOneRow
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.datetime.LocalDate
@@ -63,7 +64,7 @@ class SqlTransactionRepository(
             memo = transaction.memo,
             status_id = transaction.status.id.value,
             id = transaction.id.value.toString(),
-        )
+        ).requireOneRow { "No transaction with id ${transaction.id.value}" }
     }
 
     override fun removeById(transactionId: TransactionId) {

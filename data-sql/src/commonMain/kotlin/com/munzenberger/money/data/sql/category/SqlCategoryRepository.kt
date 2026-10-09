@@ -10,6 +10,7 @@ import com.munzenberger.money.data.api.category.CategoryTypeConstant
 import com.munzenberger.money.data.api.category.CategoryTypeId
 import com.munzenberger.money.data.api.category.CategoryWriter
 import com.munzenberger.money.data.sql.MoneyDatabase
+import com.munzenberger.money.data.sql.requireOneRow
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlin.coroutines.CoroutineContext
@@ -53,7 +54,7 @@ class SqlCategoryRepository(
             type_id = category.type.id.value,
             memo = category.memo,
             id = category.id.value.toString(),
-        )
+        ).requireOneRow { "No category with id ${category.id.value}" }
     }
 
     override fun removeById(categoryId: CategoryId) {
