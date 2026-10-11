@@ -1,9 +1,7 @@
 package com.munzenberger.money.core.account
 
 import app.cash.turbine.test
-import com.munzenberger.money.core.MoneyRepositoryController
 import com.munzenberger.money.data.api.MoneyRepository
-import com.munzenberger.money.data.api.MoneyRepositoryConnectionStatus
 import com.munzenberger.money.data.api.account.Account
 import com.munzenberger.money.data.api.account.AccountClass
 import com.munzenberger.money.data.api.account.AccountClassConstant
@@ -13,7 +11,6 @@ import com.munzenberger.money.data.api.account.AccountTypeConstant
 import com.munzenberger.money.data.api.account.AccountTypeId
 import com.munzenberger.money.data.api.bank.Bank
 import com.munzenberger.money.data.api.bank.BankId
-import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -21,8 +18,6 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.test.runTest
-import java.io.File
-import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -52,24 +47,11 @@ class GetAccountGroupsUseCaseTest {
         every { banks } returns this@GetAccountGroupsUseCaseTest.banks
     }
 
-    private val controller = controller(repository)
-
-    private val getAccountGroups = GetAccountGroupsUseCase(controller)
-
-    private fun controller(repository: MoneyRepository) = MoneyRepositoryController(
-        connectorFactory = { mockk { coEvery { connect() } returns MoneyRepositoryConnectionStatus.Ready(repository) } },
-        context = EmptyCoroutineContext,
-    )
-
-    private suspend fun MoneyRepositoryController.connect() {
-        openDatabase(File("money-test.db"))
-    }
+    private val getAccountGroups = GetAccountGroupsUseCase()
 
     @Test
     fun testNoGroupingHasOneGroupWithAllAccountsSortedByName() = runTest {
-        getAccountGroups(flowOf(AccountGrouping.None)).test {
-            controller.connect()
-
+        getAccountGroups(repository, flowOf(AccountGrouping.None)).test {
             assertEquals(
                 Result.success(listOf(AccountGroup.All(listOf(bills, everyday, rainyDay, visa)))),
                 awaitItem(),
@@ -81,18 +63,14 @@ class GetAccountGroupsUseCaseTest {
     fun testNoGroupingWithNoAccountsHasNoGroups() = runTest {
         accounts.value = emptyList()
 
-        getAccountGroups(flowOf(AccountGrouping.None)).test {
-            controller.connect()
-
+        getAccountGroups(repository, flowOf(AccountGrouping.None)).test {
             assertEquals(Result.success(emptyList()), awaitItem())
         }
     }
 
     @Test
     fun testGroupsByAccountTypeInConstantOrder() = runTest {
-        getAccountGroups(flowOf(AccountGrouping.AccountType)).test {
-            controller.connect()
-
+        getAccountGroups(repository, flowOf(AccountGrouping.AccountType)).test {
             assertEquals(
                 Result.success(
                     listOf(
@@ -108,9 +86,7 @@ class GetAccountGroupsUseCaseTest {
 
     @Test
     fun testGroupsByAccountClassInConstantOrder() = runTest {
-        getAccountGroups(flowOf(AccountGrouping.AccountClass)).test {
-            controller.connect()
-
+        getAccountGroups(repository, flowOf(AccountGrouping.AccountClass)).test {
             assertEquals(
                 Result.success(
                     listOf(
@@ -127,9 +103,7 @@ class GetAccountGroupsUseCaseTest {
     fun testGroupsByBankSortedByNameWithNoBankLast() = runTest {
         accounts.value += orphan
 
-        getAccountGroups(flowOf(AccountGrouping.Bank)).test {
-            controller.connect()
-
+        getAccountGroups(repository, flowOf(AccountGrouping.Bank)).test {
             assertEquals(
                 Result.success(
                     listOf(
@@ -147,17 +121,14 @@ class GetAccountGroupsUseCaseTest {
     fun testGroupingWithNoAccountsHasNoGroups() = runTest {
         accounts.value = emptyList()
 
-        getAccountGroups(flowOf(AccountGrouping.Bank)).test {
-            controller.connect()
-
+        getAccountGroups(repository, flowOf(AccountGrouping.Bank)).test {
             assertEquals(Result.success(emptyList()), awaitItem())
         }
     }
 
     @Test
     fun testEmitsNewGroupsWhenAccountsChange() = runTest {
-        getAccountGroups(flowOf(AccountGrouping.AccountClass)).test {
-            controller.connect()
+        getAccountGroups(repository, flowOf(AccountGrouping.AccountClass)).test {
             awaitItem()
 
             accounts.value = listOf(visa)
@@ -173,11 +144,9 @@ class GetAccountGroupsUseCaseTest {
             every { accounts } returns this@GetAccountGroupsUseCaseTest.accounts.onStart { accountReads++ }
             every { banks } returns this@GetAccountGroupsUseCaseTest.banks
         }
-        val controller = controller(counting)
         val grouping = MutableStateFlow(AccountGrouping.None)
 
-        GetAccountGroupsUseCase(controller)(grouping).test {
-            controller.connect()
+        getAccountGroups(counting, grouping).test {
             awaitItem()
 
             grouping.value = AccountGrouping.AccountClass
@@ -199,8 +168,7 @@ class GetAccountGroupsUseCaseTest {
     fun testEmitsNewGroupsWhenBanksChange() = runTest {
         val renamed = acme.copy(name = "Zzz Bank")
 
-        getAccountGroups(flowOf(AccountGrouping.Bank)).test {
-            controller.connect()
+        getAccountGroups(repository, flowOf(AccountGrouping.Bank)).test {
             awaitItem()
 
             banks.value = listOf(zephyr, renamed)
@@ -225,13 +193,11 @@ class GetAccountGroupsUseCaseTest {
             every { accounts } returns flow { throw error }
             every { banks } returns flowOf(emptyList())
         }
-        val controller = controller(failing)
 
-        GetAccountGroupsUseCase(controller)(flowOf(AccountGrouping.Bank)).test {
-            controller.connect()
-
+        getAccountGroups(failing, flowOf(AccountGrouping.Bank)).test {
             // Coroutines' stack trace recovery may copy the exception as it crosses combine.
             assertEquals(error.message, awaitItem().exceptionOrNull()?.message)
+            awaitComplete()
         }
     }
 }

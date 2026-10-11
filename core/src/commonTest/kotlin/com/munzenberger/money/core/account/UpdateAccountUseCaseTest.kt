@@ -1,8 +1,6 @@
 package com.munzenberger.money.core.account
 
-import com.munzenberger.money.core.MoneyRepositoryController
 import com.munzenberger.money.data.api.MoneyRepository
-import com.munzenberger.money.data.api.MoneyRepositoryConnectionStatus
 import com.munzenberger.money.data.api.MoneyWriter
 import com.munzenberger.money.data.api.account.Account
 import com.munzenberger.money.data.api.account.AccountClass
@@ -17,8 +15,6 @@ import io.mockk.mockk
 import io.mockk.slot
 import io.mockk.verify
 import kotlinx.coroutines.test.runTest
-import java.io.File
-import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -48,22 +44,11 @@ class UpdateAccountUseCaseTest {
         coEvery { transaction<Unit>(any()) } answers { firstArg<MoneyWriter.() -> Unit>().invoke(writer) }
     }
 
-    private val controller = MoneyRepositoryController(
-        connectorFactory = { mockk { coEvery { connect() } returns MoneyRepositoryConnectionStatus.Ready(repository) } },
-        context = EmptyCoroutineContext,
-    )
-
-    private val updateAccount = UpdateAccountUseCase(controller)
-
-    private suspend fun connect() {
-        controller.openDatabase(File("money-test.db"))
-    }
+    private val updateAccount = UpdateAccountUseCase()
 
     @Test
     fun testUpdatesTheAccountWithTheGivenId() = runTest {
-        connect()
-
-        val result = updateAccount(accountId, validInput)
+        val result = updateAccount(repository, accountId, validInput)
 
         val account = slot<Account>()
         verify { writer.update(capture(account)) }

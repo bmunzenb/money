@@ -350,7 +350,7 @@ class AccountFormViewModelTest {
 
     @Test
     fun `onSaveClick passes the form's values to the use case`() = runTest {
-        coEvery { createAccount(any()) } returns SaveAccountResult.Invalid(emptySet())
+        coEvery { createAccount(any(), any()) } returns SaveAccountResult.Invalid(emptySet())
         fixture.connect(repository(accountTypes = flowOf(listOf(checking)), banks = flowOf(listOf(firstBank))))
         val viewModel = viewModel()
         viewModel.onNameChange("Checking")
@@ -364,6 +364,7 @@ class AccountFormViewModelTest {
 
         coVerify {
             createAccount(
+                any(),
                 AccountInput(
                     name = "Checking",
                     accountType = checking,
@@ -378,14 +379,37 @@ class AccountFormViewModelTest {
     }
 
     @Test
-    fun `invalid fields are marked as errors when saving`() {
-        coEvery { createAccount(any()) } returns SaveAccountResult.Invalid(
+    fun `onSaveClick saves to the open repository`() = runTest {
+        coEvery { createAccount(any(), any()) } returns SaveAccountResult.Invalid(emptySet())
+        val repository = repository()
+        fixture.connect(repository)
+        val viewModel = viewModel()
+
+        viewModel.onSaveClick()
+
+        coVerify { createAccount(repository, any()) }
+    }
+
+    @Test
+    fun `saving fails without an open repository`() {
+        val viewModel = viewModel()
+
+        viewModel.onSaveClick()
+
+        assertEquals(SaveState.Failed, viewModel.state.value.saveState)
+        coVerify(exactly = 0) { createAccount(any(), any()) }
+    }
+
+    @Test
+    fun `invalid fields are marked as errors when saving`() = runTest {
+        coEvery { createAccount(any(), any()) } returns SaveAccountResult.Invalid(
             setOf(
                 AccountInputError.BlankName,
                 AccountInputError.MissingAccountType,
                 AccountInputError.InvalidInitialBalance,
             )
         )
+        fixture.connect(repository())
         val viewModel = viewModel()
 
         viewModel.onSaveClick()
@@ -398,8 +422,9 @@ class AccountFormViewModelTest {
     }
 
     @Test
-    fun `valid fields are not marked as errors when saving`() {
-        coEvery { createAccount(any()) } returns SaveAccountResult.Invalid(setOf(AccountInputError.BlankName))
+    fun `valid fields are not marked as errors when saving`() = runTest {
+        coEvery { createAccount(any(), any()) } returns SaveAccountResult.Invalid(setOf(AccountInputError.BlankName))
+        fixture.connect(repository())
         val viewModel = viewModel()
 
         viewModel.onSaveClick()
@@ -410,8 +435,9 @@ class AccountFormViewModelTest {
     }
 
     @Test
-    fun `entering a name clears the name error`() {
-        coEvery { createAccount(any()) } returns SaveAccountResult.Invalid(setOf(AccountInputError.BlankName))
+    fun `entering a name clears the name error`() = runTest {
+        coEvery { createAccount(any(), any()) } returns SaveAccountResult.Invalid(setOf(AccountInputError.BlankName))
+        fixture.connect(repository())
         val viewModel = viewModel()
         viewModel.onSaveClick()
 
@@ -423,8 +449,10 @@ class AccountFormViewModelTest {
     }
 
     @Test
-    fun `picking an account type clears the account type error`() {
-        coEvery { createAccount(any()) } returns SaveAccountResult.Invalid(setOf(AccountInputError.MissingAccountType))
+    fun `picking an account type clears the account type error`() = runTest {
+        coEvery { createAccount(any(), any()) } returns
+            SaveAccountResult.Invalid(setOf(AccountInputError.MissingAccountType))
+        fixture.connect(repository())
         val viewModel = viewModel()
         viewModel.onSaveClick()
 
@@ -434,9 +462,10 @@ class AccountFormViewModelTest {
     }
 
     @Test
-    fun `the form is saving until the use case returns`() {
+    fun `the form is saving until the use case returns`() = runTest {
         val result = CompletableDeferred<SaveAccountResult>()
-        coEvery { createAccount(any()) } coAnswers { result.await() }
+        coEvery { createAccount(any(), any()) } coAnswers { result.await() }
+        fixture.connect(repository())
         val viewModel = viewModel()
 
         viewModel.onSaveClick()
@@ -447,21 +476,23 @@ class AccountFormViewModelTest {
     }
 
     @Test
-    fun `onSaveClick is ignored while already saving`() {
-        coEvery { createAccount(any()) } coAnswers { CompletableDeferred<SaveAccountResult>().await() }
+    fun `onSaveClick is ignored while already saving`() = runTest {
+        coEvery { createAccount(any(), any()) } coAnswers { CompletableDeferred<SaveAccountResult>().await() }
+        fixture.connect(repository())
         val viewModel = viewModel()
 
         viewModel.onSaveClick()
         viewModel.onSaveClick()
 
-        coVerify(exactly = 1) { createAccount(any()) }
+        coVerify(exactly = 1) { createAccount(any(), any()) }
     }
 
     @Test
-    fun `saving successfully pops the new account route from the back stack`() {
+    fun `saving successfully pops the new account route from the back stack`() = runTest {
         val account = Account(name = "Checking", accountType = checking)
-        coEvery { createAccount(any()) } returns SaveAccountResult.Success(account)
+        coEvery { createAccount(any(), any()) } returns SaveAccountResult.Success(account)
         navigator.navigate { clear(); add(Route.AccountList); add(Route.NewAccount) }
+        fixture.connect(repository())
         val viewModel = viewModel()
 
         viewModel.onSaveClick()
@@ -470,15 +501,16 @@ class AccountFormViewModelTest {
     }
 
     @Test
-    fun `a failed save can be retried`() {
-        coEvery { createAccount(any()) } returns SaveAccountResult.Failure(IllegalStateException("write failed"))
+    fun `a failed save can be retried`() = runTest {
+        coEvery { createAccount(any(), any()) } returns SaveAccountResult.Failure(IllegalStateException("write failed"))
+        fixture.connect(repository())
         val viewModel = viewModel()
         viewModel.onSaveClick()
         assertEquals(SaveState.Failed, viewModel.state.value.saveState)
 
         viewModel.onSaveClick()
 
-        coVerify(exactly = 2) { createAccount(any()) }
+        coVerify(exactly = 2) { createAccount(any(), any()) }
     }
 
     @Test
@@ -585,12 +617,12 @@ class AccountFormViewModelTest {
         viewModel.onSaveClick()
 
         assertEquals(SaveState.Idle, viewModel.state.value.saveState)
-        coVerify(exactly = 0) { updateAccount(any(), any()) }
+        coVerify(exactly = 0) { updateAccount(any(), any(), any()) }
     }
 
     @Test
     fun `saving an existing account updates it with the form's values`() = runTest {
-        coEvery { updateAccount(any(), any()) } returns SaveAccountResult.Success(existingAccount)
+        coEvery { updateAccount(any(), any(), any()) } returns SaveAccountResult.Success(existingAccount)
         navigator.navigate { clear(); add(Route.AccountList); add(Route.EditAccount(existingAccount.id)) }
         val viewModel = viewModel(existingAccount.id)
         fixture.connect(
@@ -606,6 +638,7 @@ class AccountFormViewModelTest {
 
         coVerify {
             updateAccount(
+                any(),
                 existingAccount.id,
                 AccountInput(
                     name = "Household",
@@ -618,13 +651,14 @@ class AccountFormViewModelTest {
                 ),
             )
         }
-        coVerify(exactly = 0) { createAccount(any()) }
+        coVerify(exactly = 0) { createAccount(any(), any()) }
         assertEquals(listOf(Route.AccountList), navigator.backStack.toList())
     }
 
     @Test
     fun `invalid fields are marked as errors when saving an existing account`() = runTest {
-        coEvery { updateAccount(any(), any()) } returns SaveAccountResult.Invalid(setOf(AccountInputError.BlankName))
+        coEvery { updateAccount(any(), any(), any()) } returns
+            SaveAccountResult.Invalid(setOf(AccountInputError.BlankName))
         val viewModel = viewModel(existingAccount.id)
         fixture.connect(repository(banks = flowOf(listOf(firstBank)), accounts = flowOf(listOf(existingAccount))))
         viewModel.onNameChange("")

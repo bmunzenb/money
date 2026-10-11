@@ -5,6 +5,8 @@ import com.munzenberger.money.core.account.AccountGroup
 import com.munzenberger.money.core.account.AccountGrouping
 import com.munzenberger.money.core.account.GetAccountGroupsUseCase
 import com.munzenberger.money.data.api.account.Account
+import com.munzenberger.money.desktop.database.MoneyRepositoryController
+import com.munzenberger.money.desktop.database.flow
 import com.munzenberger.money.desktop.navigation.Navigator
 import com.munzenberger.money.desktop.navigation.Route
 import kotlinx.coroutines.flow.Flow
@@ -14,6 +16,7 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.onStart
 
 class AccountListViewModel(
+    repositoryController: MoneyRepositoryController,
     getAccountGroups: GetAccountGroupsUseCase,
     private val navigator: Navigator,
 ) : ViewModel() {
@@ -24,7 +27,8 @@ class AccountListViewModel(
     // skip it when they arrive at once, so the state also starts with loading.
     val state: Flow<AccountListUiState> = combine(
         grouping,
-        getAccountGroups(grouping).onStart<Result<List<AccountGroup>>?> { emit(null) },
+        repositoryController.flow { getAccountGroups(it, grouping) }
+            .onStart<Result<List<AccountGroup>>?> { emit(null) },
     ) { selected, result ->
         AccountListUiState(grouping = selected, groups = result?.toLoadState() ?: LoadState.Loading)
     }

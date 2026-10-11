@@ -1,8 +1,6 @@
 package com.munzenberger.money.core.account
 
-import com.munzenberger.money.core.MoneyRepositoryController
 import com.munzenberger.money.data.api.MoneyRepository
-import com.munzenberger.money.data.api.MoneyRepositoryConnectionStatus
 import com.munzenberger.money.data.api.MoneyWriter
 import com.munzenberger.money.data.api.account.Account
 import com.munzenberger.money.data.api.account.AccountClass
@@ -16,8 +14,6 @@ import io.mockk.mockk
 import io.mockk.slot
 import io.mockk.verify
 import kotlinx.coroutines.test.runTest
-import java.io.File
-import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotEquals
@@ -46,22 +42,11 @@ class CreateAccountUseCaseTest {
         coEvery { transaction<Unit>(any()) } answers { firstArg<MoneyWriter.() -> Unit>().invoke(writer) }
     }
 
-    private val controller = MoneyRepositoryController(
-        connectorFactory = { mockk { coEvery { connect() } returns MoneyRepositoryConnectionStatus.Ready(repository) } },
-        context = EmptyCoroutineContext,
-    )
-
-    private val createAccount = CreateAccountUseCase(controller)
-
-    private suspend fun connect() {
-        controller.openDatabase(File("money-test.db"))
-    }
+    private val createAccount = CreateAccountUseCase()
 
     @Test
     fun testAddsTheAccount() = runTest {
-        connect()
-
-        val result = createAccount(validInput)
+        val result = createAccount(repository, validInput)
 
         val account = slot<Account>()
         verify { writer.add(capture(account)) }
@@ -71,10 +56,8 @@ class CreateAccountUseCaseTest {
 
     @Test
     fun testEachAccountGetsANewId() = runTest {
-        connect()
-
-        createAccount(validInput)
-        createAccount(validInput)
+        createAccount(repository, validInput)
+        createAccount(repository, validInput)
 
         val accounts = mutableListOf<Account>()
         verify(exactly = 2) { writer.add(capture(accounts)) }

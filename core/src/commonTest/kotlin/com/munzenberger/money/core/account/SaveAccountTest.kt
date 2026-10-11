@@ -1,8 +1,6 @@
 package com.munzenberger.money.core.account
 
-import com.munzenberger.money.core.MoneyRepositoryController
 import com.munzenberger.money.data.api.MoneyRepository
-import com.munzenberger.money.data.api.MoneyRepositoryConnectionStatus
 import com.munzenberger.money.data.api.MoneyWriter
 import com.munzenberger.money.data.api.account.Account
 import com.munzenberger.money.data.api.account.AccountClass
@@ -20,8 +18,6 @@ import io.mockk.slot
 import io.mockk.verify
 import io.mockk.verifyOrder
 import kotlinx.coroutines.test.runTest
-import java.io.File
-import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertIs
@@ -53,28 +49,17 @@ class SaveAccountTest {
         coEvery { transaction<Unit>(any()) } answers { firstArg<MoneyWriter.() -> Unit>().invoke(writer) }
     }
 
-    private val controller = MoneyRepositoryController(
-        connectorFactory = { mockk { coEvery { connect() } returns MoneyRepositoryConnectionStatus.Ready(repository) } },
-        context = EmptyCoroutineContext,
-    )
-
     /** The accounts passed to the `write` block, in order. */
     private val written = mutableListOf<Account>()
 
     private suspend fun saveAccount(input: AccountInput) =
-        controller.saveAccount(input, accountId) { account ->
+        repository.saveAccount(input, accountId) { account ->
             written += account
             update(account)
         }
 
-    private suspend fun connect() {
-        controller.openDatabase(File("money-test.db"))
-    }
-
     @Test
     fun testInvalidInputIsReportedWithoutWriting() = runTest {
-        connect()
-
         val result = saveAccount(validInput.copy(name = ""))
 
         assertEquals(SaveAccountResult.Invalid(setOf(AccountInputError.BlankName)), result)
@@ -83,24 +68,7 @@ class SaveAccountTest {
     }
 
     @Test
-    fun testInvalidInputIsReportedEvenWithoutAnOpenRepository() = runTest {
-        val result = saveAccount(validInput.copy(name = ""))
-
-        assertEquals(SaveAccountResult.Invalid(setOf(AccountInputError.BlankName)), result)
-    }
-
-    @Test
-    fun testFailsWithoutAnOpenRepository() = runTest {
-        val result = saveAccount(validInput)
-
-        assertIs<SaveAccountResult.Failure>(result)
-        assertTrue(written.isEmpty())
-    }
-
-    @Test
     fun testWritesTheValidatedAccount() = runTest {
-        connect()
-
         val result = saveAccount(validInput.copy(name = "  Checking  "))
 
         val account = written.single()
@@ -112,8 +80,6 @@ class SaveAccountTest {
 
     @Test
     fun testAddsANewBankBeforeWritingTheAccount() = runTest {
-        connect()
-
         saveAccount(validInput.copy(bankName = "New Bank"))
 
         val bank = slot<Bank>()
@@ -127,8 +93,6 @@ class SaveAccountTest {
 
     @Test
     fun testDoesNotAddAnExistingBank() = runTest {
-        connect()
-
         saveAccount(validInput.copy(bankName = "First Bank", bank = Bank(name = "First Bank")))
 
         verify(exactly = 0) { writer.add(any<Bank>()) }
@@ -138,8 +102,6 @@ class SaveAccountTest {
     fun testFailsWhenTheTransactionThrows() = runTest {
         val error = IllegalStateException("write failed")
         coEvery { repository.transaction<Unit>(any()) } throws error
-        connect()
-
         val result = saveAccount(validInput)
 
         assertIs<SaveAccountResult.Failure>(result)

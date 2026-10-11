@@ -264,23 +264,34 @@ Business logic that a ViewModel shouldn't own, such as validating input and writ
 repository, goes in a use case class in the `core` module, grouped by feature package (e.g.
 `core/.../core/account/CreateAccountUseCase.kt`). A use case:
 
-- takes its dependencies (e.g. `MoneyRepositoryController`) as constructor params;
+- takes the `MoneyRepository` it works on as the first param of its operator, not a
+  `MoneyRepositoryController` in its constructor, so it doesn't depend on which repository is open;
+  any other dependencies are constructor params;
 - exposes a single `operator fun invoke(...)` (`suspend` if it does I/O), and nothing else public;
 - validates all of its input before any database operation, and writes through
   `repository.transaction { ... }` (see Data writes);
 - returns a sealed result rather than throwing, e.g. `Success`, `Invalid(errors)` with one error per
-  invalid field, and `Failure(cause)` for a write that failed or no open repository. It rethrows
-  `CancellationException`.
+  invalid field, and `Failure(cause)` for a write that failed. It rethrows `CancellationException`.
+- reads by returning a flow of `Result`s from `repository.resultFlow { ... }`, which logs a failed read
+  and emits it as a failure.
 
 ```kotlin
-class CreateAccountUseCase(
-    private val repositoryController: MoneyRepositoryController,
-) {
-    suspend operator fun invoke(newAccount: NewAccount): CreateAccountResult { /* ... */ }
+class CreateAccountUseCase {
+    suspend operator fun invoke(repository: MoneyRepository, input: AccountInput): SaveAccountResult { /* ... */ }
 }
 ```
 
-Register it in `AppModule` with `factory { ... }` and pass it to the ViewModel's constructor, which
-calls it like a function (`createAccount(newAccount)`) and maps the result to UI state. For example,
-each `Invalid` error sets that field's `isError` and its supporting text. In tests, call the use case
-directly in `core`, and mock it with `coEvery { createAccount(any()) }` in ViewModel tests.
+Register it in `AppModule` with `factory { ... }` and pass it to the ViewModel's constructor. The
+ViewModel also takes the `MoneyRepositoryController`
+(`desktop/.../desktop/database/MoneyRepositoryController.kt`), which tracks the open database, and
+supplies the open repository:
+
+- to write, it reads `repositoryController.moneyRepository.value` and calls the use case like a
+  function (`createAccount(repository, input)`), treating no open repository as a failure;
+- to read, it uses `repositoryController.flow { getAccountGroups(it, grouping) }`, which follows the
+  open repository and emits nothing while none is open.
+
+It then maps the result to UI state. For example, each `Invalid` error sets that field's `isError` and
+its supporting text. In tests, call the use case directly in `core` with a mock repository, and mock it
+with `coEvery { createAccount(any(), any()) }` in ViewModel tests, connecting a repository through
+`MoneyRepositoryControllerFixture`.
