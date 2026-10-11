@@ -21,12 +21,12 @@ val appModule = module {
     single { Navigator() }
 
     factory { CreateAccountUseCase(get()) }
-    factory { GetAccountGroupsUseCase(get()) }
+    factory { GetAccountGroupsUseCase() }
     factory { UpdateAccountUseCase(get()) }
 
     viewModel { AppViewModel(get(), get()) }
     viewModel { WelcomeViewModel(get()) }
-    viewModel { AccountListViewModel(get(), get()) }
+    viewModel { AccountListViewModel(get(), get(), get()) }
     viewModel { params -> AccountFormViewModel(params.getOrNull(), get(), get(), get(), get()) }
     viewModel { CategoryListViewModel(get()) }
     viewModel { PayeeListViewModel(get()) }

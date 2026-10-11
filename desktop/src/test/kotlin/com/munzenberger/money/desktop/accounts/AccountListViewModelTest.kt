@@ -4,6 +4,7 @@ import app.cash.turbine.test
 import com.munzenberger.money.core.account.AccountGroup
 import com.munzenberger.money.core.account.AccountGrouping
 import com.munzenberger.money.core.account.GetAccountGroupsUseCase
+import com.munzenberger.money.data.api.MoneyRepository
 import com.munzenberger.money.data.api.account.Account
 import com.munzenberger.money.data.api.account.AccountClass
 import com.munzenberger.money.data.api.account.AccountClassConstant
@@ -11,6 +12,7 @@ import com.munzenberger.money.data.api.account.AccountClassId
 import com.munzenberger.money.data.api.account.AccountType
 import com.munzenberger.money.data.api.account.AccountTypeConstant
 import com.munzenberger.money.data.api.account.AccountTypeId
+import com.munzenberger.money.desktop.MoneyRepositoryControllerFixture
 import com.munzenberger.money.desktop.navigation.Navigator
 import com.munzenberger.money.desktop.navigation.Route
 import io.mockk.every
@@ -27,7 +29,9 @@ import kotlin.test.assertEquals
 
 class AccountListViewModelTest {
 
+    private val fixture = MoneyRepositoryControllerFixture()
     private val navigator = Navigator()
+    private val repository = mockk<MoneyRepository>()
     private val getAccountGroups = mockk<GetAccountGroupsUseCase>()
 
     private val accountType = AccountType(
@@ -38,23 +42,36 @@ class AccountListViewModelTest {
 
     private fun account(name: String) = Account(name = name, accountType = accountType)
 
-    private fun viewModel() = AccountListViewModel(getAccountGroups, navigator)
+    private suspend fun viewModel(): AccountListViewModel {
+        fixture.connect(repository)
+        return AccountListViewModel(fixture.controller, getAccountGroups, navigator)
+    }
+
+    @Test
+    fun `state stays loading while no repository is open`() = runTest {
+        AccountListViewModel(fixture.controller, getAccountGroups, navigator).state.test {
+            assertEquals(AccountListUiState(groups = LoadState.Loading), awaitItem())
+            expectNoEvents()
+        }
+
+        verify(exactly = 0) { getAccountGroups(any(), any()) }
+    }
 
     @Test
     fun `state starts loading the account groups with no grouping`() = runTest {
-        every { getAccountGroups(any()) } returns emptyFlow()
+        every { getAccountGroups(any(), any()) } returns emptyFlow()
 
         viewModel().state.test {
             assertEquals(AccountListUiState(grouping = AccountGrouping.None, groups = LoadState.Loading), awaitItem())
         }
 
-        verify(exactly = 1) { getAccountGroups(any()) }
+        verify(exactly = 1) { getAccountGroups(repository, any()) }
     }
 
     @Test
     fun `state emits the account groups`() = runTest {
         val groups = listOf(AccountGroup.All(listOf(account("Checking"), account("Savings"))))
-        every { getAccountGroups(any()) } returns
+        every { getAccountGroups(any(), any()) } returns
             flowOf(Result.success(groups))
 
         viewModel().state.test {
@@ -68,7 +85,7 @@ class AccountListViewModelTest {
         val first = listOf(AccountGroup.All(listOf(account("Checking"))))
         val second = listOf(AccountGroup.All(listOf(account("Checking"), account("Savings"))))
         val groupsFlow = MutableStateFlow(Result.success<List<AccountGroup>>(first))
-        every { getAccountGroups(any()) } returns groupsFlow
+        every { getAccountGroups(any(), any()) } returns groupsFlow
 
         viewModel().state.test {
             assertEquals(AccountListUiState(groups = LoadState.Loading), awaitItem())
@@ -81,7 +98,7 @@ class AccountListViewModelTest {
 
     @Test
     fun `state emits error when getting the account groups fails`() = runTest {
-        every { getAccountGroups(any()) } returns
+        every { getAccountGroups(any(), any()) } returns
             flowOf(Result.failure(IllegalStateException("query failed")))
 
         viewModel().state.test {
@@ -94,8 +111,8 @@ class AccountListViewModelTest {
     fun `onGroupingChange switches to the groups for the new grouping`() = runTest {
         val all = listOf(AccountGroup.All(listOf(account("Checking"))))
         val byType = listOf(AccountGroup.ByAccountType(accountType, listOf(account("Checking"))))
-        every { getAccountGroups(any()) } answers {
-            firstArg<Flow<AccountGrouping>>().map { grouping ->
+        every { getAccountGroups(any(), any()) } answers {
+            secondArg<Flow<AccountGrouping>>().map { grouping ->
                 Result.success(if (grouping == AccountGrouping.AccountType) byType else all)
             }
         }
@@ -113,12 +130,12 @@ class AccountListViewModelTest {
             )
         }
 
-        verify(exactly = 1) { getAccountGroups(any()) }
+        verify(exactly = 1) { getAccountGroups(repository, any()) }
     }
 
     @Test
     fun `onGroupingChange shows the selected grouping while loading`() = runTest {
-        every { getAccountGroups(any()) } returns emptyFlow()
+        every { getAccountGroups(any(), any()) } returns emptyFlow()
         val viewModel = viewModel()
 
         viewModel.state.test {
@@ -131,7 +148,7 @@ class AccountListViewModelTest {
 
     @Test
     fun `onGroupingChange shows the selected grouping after an error`() = runTest {
-        every { getAccountGroups(any()) } returns
+        every { getAccountGroups(any(), any()) } returns
             flowOf(Result.failure(IllegalStateException("query failed")))
         val viewModel = viewModel()
 
@@ -145,8 +162,8 @@ class AccountListViewModelTest {
     }
 
     @Test
-    fun `onAddAccountClick pushes the new account route`() {
-        every { getAccountGroups(any()) } returns emptyFlow()
+    fun `onAddAccountClick pushes the new account route`() = runTest {
+        every { getAccountGroups(any(), any()) } returns emptyFlow()
         navigator.navigate { clear(); add(Route.AccountList) }
 
         viewModel().onAddAccountClick()
@@ -155,8 +172,8 @@ class AccountListViewModelTest {
     }
 
     @Test
-    fun `onAccountClick pushes the edit account route for the account`() {
-        every { getAccountGroups(any()) } returns emptyFlow()
+    fun `onAccountClick pushes the edit account route for the account`() = runTest {
+        every { getAccountGroups(any(), any()) } returns emptyFlow()
         navigator.navigate { clear(); add(Route.AccountList) }
         val account = account("Checking")
 

@@ -47,18 +47,24 @@ class MoneyRepositoryController(
 }
 
 /**
- * Returns a flow of values selected from the currently open [MoneyRepository], each wrapped in a
- * [Result].
+ * Returns a flow of values selected from the currently open [MoneyRepository].
  *
- * The [selector] is applied to each repository as it's opened (see [MoneyRepository.resultFlow]),
- * and the flow switches to the new repository's flow whenever the open repository changes. Nothing
- * is emitted while no repository is open.
+ * The [selector] is applied to each repository as it's opened, and the flow switches to the new
+ * repository's flow whenever the open repository changes. Nothing is emitted while no repository
+ * is open.
+ */
+@OptIn(ExperimentalCoroutinesApi::class)
+fun <T> MoneyRepositoryController.flow(selector: (MoneyRepository) -> Flow<T>): Flow<T> =
+    moneyRepository.flatMapLatest { repository ->
+        repository?.let(selector) ?: emptyFlow()
+    }
+
+/**
+ * Returns a flow of values selected from the currently open [MoneyRepository], each wrapped in a
+ * [Result] (see [flow] and [MoneyRepository.resultFlow]).
  *
  * A failure ends only that repository's flow, so opening a different repository resumes emitting
  * values.
  */
-@OptIn(ExperimentalCoroutinesApi::class)
 fun <T> MoneyRepositoryController.resultFlow(selector: (MoneyRepository) -> Flow<T>): Flow<Result<T>> =
-    moneyRepository.flatMapLatest { repository ->
-        repository?.resultFlow(selector) ?: emptyFlow()
-    }
+    flow { it.resultFlow(selector) }

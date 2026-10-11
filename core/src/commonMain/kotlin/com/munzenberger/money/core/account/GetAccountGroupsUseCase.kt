@@ -1,7 +1,7 @@
 package com.munzenberger.money.core.account
 
-import com.munzenberger.money.core.MoneyRepositoryController
 import com.munzenberger.money.core.resultFlow
+import com.munzenberger.money.data.api.MoneyRepository
 import com.munzenberger.money.data.api.account.Account
 import com.munzenberger.money.data.api.account.AccountClass
 import com.munzenberger.money.data.api.account.AccountType
@@ -33,8 +33,8 @@ sealed interface AccountGroup {
 }
 
 /**
- * Returns a flow of the open repository's accounts, grouped by the latest [AccountGrouping], each
- * wrapped in a [Result] (see [resultFlow]).
+ * Returns a flow of the repository's accounts, grouped by the latest [AccountGrouping], each wrapped
+ * in a [Result] (see [resultFlow]).
  *
  * A new grouping regroups the accounts already read, without reading them from the repository again.
  *
@@ -43,12 +43,13 @@ sealed interface AccountGroup {
  * with no financial institution. [AccountGrouping.None] has a single group of all the accounts. Every
  * grouping only has groups that have accounts, so there are no groups when there are no accounts.
  */
-class GetAccountGroupsUseCase(
-    private val repositoryController: MoneyRepositoryController,
-) {
-    operator fun invoke(grouping: Flow<AccountGrouping>): Flow<Result<List<AccountGroup>>> =
-        repositoryController.resultFlow { repository ->
-            combine(repository.accounts, repository.banks, grouping) { accounts, banks, grouping ->
+class GetAccountGroupsUseCase {
+    operator fun invoke(
+        repository: MoneyRepository,
+        grouping: Flow<AccountGrouping>,
+    ): Flow<Result<List<AccountGroup>>> =
+        repository.resultFlow {
+            combine(it.accounts, it.banks, grouping) { accounts, banks, grouping ->
                 when (grouping) {
                     AccountGrouping.None -> if (accounts.isEmpty()) emptyList() else listOf(AccountGroup.All(accounts.sortedByName()))
                     AccountGrouping.AccountType -> groupByAccountType(accounts)
