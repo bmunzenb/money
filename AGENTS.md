@@ -282,7 +282,9 @@ class CreateAccountUseCase {
 ```
 
 Register it in `AppModule` with `factory { ... }` and pass it to the ViewModel's constructor. The
-ViewModel also takes the `MoneyRepositoryController` and supplies the open repository:
+ViewModel also takes the `MoneyRepositoryController`
+(`desktop/.../desktop/database/MoneyRepositoryController.kt`), which tracks the open database, and
+supplies the open repository:
 
 - to write, it reads `repositoryController.moneyRepository.value` and calls the use case like a
   function (`createAccount(repository, input)`), treating no open repository as a failure;

@@ -1,8 +1,8 @@
 package com.munzenberger.money.desktop.payees
 
 import androidx.lifecycle.ViewModel
-import com.munzenberger.money.core.MoneyRepositoryController
-import com.munzenberger.money.core.resultFlow
+import com.munzenberger.money.desktop.database.MoneyRepositoryController
+import com.munzenberger.money.desktop.database.resultFlow
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 

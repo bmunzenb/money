@@ -2,7 +2,7 @@ package com.munzenberger.money.desktop
 
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
-import com.munzenberger.money.core.MoneyRepositoryController
+import com.munzenberger.money.desktop.database.MoneyRepositoryController
 import com.munzenberger.money.desktop.inject.appModule
 import money.shared.generated.resources.Res
 import money.shared.generated.resources.app_title

@@ -1,10 +1,10 @@
 package com.munzenberger.money.desktop
 
-import com.munzenberger.money.core.MoneyRepositoryController
 import com.munzenberger.money.data.api.MoneyRepository
 import com.munzenberger.money.data.api.MoneyRepositoryConnectionStatus
 import com.munzenberger.money.data.api.MoneyRepositoryConnector
 import com.munzenberger.money.data.sql.SqlMoneyRepositoryConnector
+import com.munzenberger.money.desktop.database.MoneyRepositoryController
 import java.io.File
 import kotlin.coroutines.EmptyCoroutineContext
 

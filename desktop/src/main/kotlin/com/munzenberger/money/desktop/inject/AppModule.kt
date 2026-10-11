@@ -1,14 +1,14 @@
 package com.munzenberger.money.desktop.inject
 
-import com.munzenberger.money.core.MoneyRepositoryController
 import com.munzenberger.money.core.account.CreateAccountUseCase
 import com.munzenberger.money.core.account.GetAccountGroupsUseCase
 import com.munzenberger.money.core.account.UpdateAccountUseCase
 import com.munzenberger.money.data.sql.SqlMoneyRepositoryConnector
 import com.munzenberger.money.desktop.AppViewModel
-import com.munzenberger.money.desktop.accounts.AccountListViewModel
 import com.munzenberger.money.desktop.accounts.AccountFormViewModel
+import com.munzenberger.money.desktop.accounts.AccountListViewModel
 import com.munzenberger.money.desktop.categories.CategoryListViewModel
+import com.munzenberger.money.desktop.database.MoneyRepositoryController
 import com.munzenberger.money.desktop.navigation.Navigator
 import com.munzenberger.money.desktop.payees.PayeeListViewModel
 import com.munzenberger.money.desktop.rail.AppNavigationRailViewModel

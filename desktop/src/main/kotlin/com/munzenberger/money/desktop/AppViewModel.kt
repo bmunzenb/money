@@ -2,7 +2,7 @@ package com.munzenberger.money.desktop
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.munzenberger.money.core.MoneyRepositoryController
+import com.munzenberger.money.desktop.database.MoneyRepositoryController
 import com.munzenberger.money.desktop.navigation.Navigator
 import com.munzenberger.money.desktop.navigation.Route
 import kotlinx.coroutines.flow.SharingStarted

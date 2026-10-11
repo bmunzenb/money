@@ -2,19 +2,19 @@ package com.munzenberger.money.desktop.accounts
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.munzenberger.money.core.MoneyRepositoryController
 import com.munzenberger.money.core.account.AccountInput
 import com.munzenberger.money.core.account.AccountInputError
 import com.munzenberger.money.core.account.CreateAccountUseCase
 import com.munzenberger.money.core.account.SaveAccountResult
 import com.munzenberger.money.core.account.UpdateAccountUseCase
 import com.munzenberger.money.core.account.parseInitialBalance
-import com.munzenberger.money.core.resultFlow
 import com.munzenberger.money.data.api.Money
 import com.munzenberger.money.data.api.account.Account
 import com.munzenberger.money.data.api.account.AccountId
 import com.munzenberger.money.data.api.account.AccountType
 import com.munzenberger.money.data.api.bank.Bank
+import com.munzenberger.money.desktop.database.MoneyRepositoryController
+import com.munzenberger.money.desktop.database.resultFlow
 import com.munzenberger.money.desktop.navigation.Navigator
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow

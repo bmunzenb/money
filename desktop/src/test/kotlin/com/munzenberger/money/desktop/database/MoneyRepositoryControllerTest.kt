@@ -1,4 +1,4 @@
-package com.munzenberger.money.core
+package com.munzenberger.money.desktop.database
 
 import com.munzenberger.money.data.api.MoneyRepository
 import com.munzenberger.money.data.api.MoneyRepositoryConnectionStatus

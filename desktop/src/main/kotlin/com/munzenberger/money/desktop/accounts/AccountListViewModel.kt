@@ -1,12 +1,12 @@
 package com.munzenberger.money.desktop.accounts
 
 import androidx.lifecycle.ViewModel
-import com.munzenberger.money.core.MoneyRepositoryController
 import com.munzenberger.money.core.account.AccountGroup
 import com.munzenberger.money.core.account.AccountGrouping
 import com.munzenberger.money.core.account.GetAccountGroupsUseCase
-import com.munzenberger.money.core.flow
 import com.munzenberger.money.data.api.account.Account
+import com.munzenberger.money.desktop.database.MoneyRepositoryController
+import com.munzenberger.money.desktop.database.flow
 import com.munzenberger.money.desktop.navigation.Navigator
 import com.munzenberger.money.desktop.navigation.Route
 import kotlinx.coroutines.flow.Flow
