@@ -20,9 +20,9 @@ val appModule = module {
     single { MoneyRepositoryController(connectorFactory = { file -> SqlMoneyRepositoryConnector(file) }) }
     single { Navigator() }
 
-    factory { CreateAccountUseCase(get()) }
+    factory { CreateAccountUseCase() }
     factory { GetAccountGroupsUseCase() }
-    factory { UpdateAccountUseCase(get()) }
+    factory { UpdateAccountUseCase() }
 
     viewModel { AppViewModel(get(), get()) }
     viewModel { WelcomeViewModel(get()) }

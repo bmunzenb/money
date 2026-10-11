@@ -131,11 +131,21 @@ class AccountFormViewModel(
         val current = _state.value
         if (!current.isFormReady || current.saveState == SaveState.Saving) return
 
+        val repository = repositoryController.moneyRepository.value
+        if (repository == null) {
+            _state.update { it.copy(saveState = SaveState.Failed) }
+            return
+        }
+
         _state.update { it.copy(saveState = SaveState.Saving) }
 
         viewModelScope.launch {
             val input = current.toAccountInput()
-            val result = if (accountId == null) createAccount(input) else updateAccount(accountId, input)
+            val result = if (accountId == null) {
+                createAccount(repository, input)
+            } else {
+                updateAccount(repository, accountId, input)
+            }
             when (result) {
                 is SaveAccountResult.Success -> navigator.navigate { removeLast() }
                 is SaveAccountResult.Invalid -> _state.update {
