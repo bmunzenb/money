@@ -27,15 +27,13 @@ sealed class RegisterEntry {
         override val payeeId: PayeeId?,
         override val payeeName: String?,
         override val date: LocalDate,
+        override val amount: Money,
         override val balance: Money,
         override val number: String?,
         override val memo: String?,
         override val status: TransactionStatus,
         val entries: List<Entry>,
     ) : RegisterEntry() {
-
-        override val amount: Money
-            get() = entries.fold(Money(0)) { sum, entry -> sum + entry.amount }
 
         sealed class Entry {
             abstract val amount: Money
