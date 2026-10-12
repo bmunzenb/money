@@ -3,7 +3,6 @@ package com.munzenberger.money.data.api.register
 import com.munzenberger.money.data.api.Money
 import com.munzenberger.money.data.api.account.AccountId
 import com.munzenberger.money.data.api.payee.Payee
-import com.munzenberger.money.data.api.payee.PayeeId
 import com.munzenberger.money.data.api.transaction.TransactionId
 import com.munzenberger.money.data.api.transaction.TransactionStatus
 import com.munzenberger.money.data.api.transaction.TransferEntryId
@@ -14,6 +13,7 @@ sealed class RegisterEntry {
     abstract val payee: Payee?
     abstract val date: LocalDate
     abstract val amount: Money
+    abstract val balance: Money
     abstract val number: String?
     abstract val memo: String?
     abstract val status: TransactionStatus
@@ -24,6 +24,7 @@ sealed class RegisterEntry {
         override val payee: Payee?,
         override val date: LocalDate,
         override val amount: Money,
+        override val balance: Money,
         override val number: String?,
         override val memo: String?,
         override val status: TransactionStatus
@@ -35,6 +36,7 @@ sealed class RegisterEntry {
         override val payee: Payee?,
         override val date: LocalDate,
         override val amount: Money,
+        override val balance: Money,
         override val number: String?,
         override val memo: String?,
         override val status: TransactionStatus
