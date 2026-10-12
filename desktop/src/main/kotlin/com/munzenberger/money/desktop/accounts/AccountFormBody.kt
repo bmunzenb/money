@@ -22,6 +22,7 @@ import money.shared.generated.resources.balance_and_reference_section_title
 import money.shared.generated.resources.edit_account_description
 import money.shared.generated.resources.new_account_description
 import money.shared.generated.resources.required_field_legend
+import money.shared.generated.resources.status_section_title
 import org.jetbrains.compose.resources.stringResource
 
 /** The account form's fields, grouped into sections, followed by its buttons. */
@@ -37,6 +38,7 @@ internal fun AccountFormBody(
     onInitialBalanceChange: (String) -> Unit,
     onInitialBalanceFocusLost: () -> Unit,
     onMemoChange: (String) -> Unit,
+    onIsClosedChange: (Boolean) -> Unit,
     onCancelClick: () -> Unit,
     onSaveClick: () -> Unit,
     modifier: Modifier = Modifier,
@@ -77,6 +79,13 @@ internal fun AccountFormBody(
                     onInitialBalanceChange = onInitialBalanceChange,
                     onFocusLost = onInitialBalanceFocusLost,
                 )
+            }
+
+            // A new account is always open, so it can only be closed once it exists.
+            if (state.isEditing) {
+                FormSectionCard(title = stringResource(Res.string.status_section_title)) {
+                    ClosedField(isClosed = state.isClosed, enabled = enabled, onIsClosedChange = onIsClosedChange)
+                }
             }
 
             FormSectionCard(title = stringResource(Res.string.additional_information_section_title)) {

@@ -27,6 +27,8 @@ import kotlinx.coroutines.launch
  * The account form. With an [accountId], it edits that account, starting from its saved values; without
  * one, it adds a new account.
  */
+// One handler per field, so the function count grows with the form.
+@Suppress("TooManyFunctions")
 class AccountFormViewModel(
     private val accountId: AccountId?,
     private val repositoryController: MoneyRepositoryController,
@@ -127,6 +129,10 @@ class AccountFormViewModel(
         _state.update { it.copy(memo = memo) }
     }
 
+    fun onIsClosedChange(isClosed: Boolean) {
+        _state.update { it.copy(isClosed = isClosed) }
+    }
+
     fun onSaveClick() {
         val current = _state.value
         if (!current.isFormReady || current.saveState == SaveState.Saving) return
@@ -144,7 +150,7 @@ class AccountFormViewModel(
             val result = if (accountId == null) {
                 createAccount(repository, input)
             } else {
-                updateAccount(repository, accountId, input)
+                updateAccount(repository, accountId, input, current.isClosed)
             }
             when (result) {
                 is SaveAccountResult.Success -> navigator.navigate { removeLast() }
@@ -184,6 +190,7 @@ private fun AccountFormUiState.filledInFrom(account: Account, bank: Bank?) = cop
     number = account.number.orEmpty(),
     initialBalance = account.initialBalance.toString(asCurrency = false),
     memo = account.memo.orEmpty(),
+    isClosed = account.isClosed,
 )
 
 private fun AccountFormUiState.toAccountInput() = AccountInput(

@@ -1,7 +1,10 @@
 package com.munzenberger.money.desktop.accounts
 
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenu
@@ -15,15 +18,19 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextOverflow
 import com.munzenberger.money.data.api.Money
 import com.munzenberger.money.data.api.account.AccountType
 import com.munzenberger.money.data.api.bank.Bank
+import com.munzenberger.money.shared.theme.MoneyTheme
 import money.shared.generated.resources.Res
+import money.shared.generated.resources.account_closed_label
 import money.shared.generated.resources.account_name_error_message
 import money.shared.generated.resources.account_name_label
 import money.shared.generated.resources.account_number_label
@@ -294,4 +301,26 @@ internal fun CommentsField(
         keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences),
         modifier = Modifier.fillMaxWidth(),
     )
+}
+
+/**
+ * Checkbox for whether the account is closed. Only the checkbox toggles it, not its label, but the two are
+ * read together as a single checkbox.
+ */
+@Composable
+internal fun ClosedField(
+    isClosed: Boolean,
+    enabled: Boolean,
+    onIsClosedChange: (Boolean) -> Unit,
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .semantics(mergeDescendants = true) {},
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(MoneyTheme.spacing.small),
+    ) {
+        Checkbox(checked = isClosed, onCheckedChange = onIsClosedChange, enabled = enabled)
+        Text(stringResource(Res.string.account_closed_label))
+    }
 }
