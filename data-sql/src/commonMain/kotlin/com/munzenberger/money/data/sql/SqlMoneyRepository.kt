@@ -15,6 +15,7 @@ import com.munzenberger.money.data.api.category.CategoryTypeRepository
 import com.munzenberger.money.data.api.category.CategoryWriter
 import com.munzenberger.money.data.api.payee.PayeeRepository
 import com.munzenberger.money.data.api.payee.PayeeWriter
+import com.munzenberger.money.data.api.register.RegisterRepository
 import com.munzenberger.money.data.api.transaction.CategoryEntryRepository
 import com.munzenberger.money.data.api.transaction.CategoryEntryWriter
 import com.munzenberger.money.data.api.transaction.TransactionRepository
@@ -29,6 +30,7 @@ import com.munzenberger.money.data.sql.bank.SqlBankRepository
 import com.munzenberger.money.data.sql.category.SqlCategoryRepository
 import com.munzenberger.money.data.sql.category.SqlCategoryTypeRepository
 import com.munzenberger.money.data.sql.payee.SqlPayeeRepository
+import com.munzenberger.money.data.sql.register.SqlRegisterRepository
 import com.munzenberger.money.data.sql.transaction.SqlCategoryEntryRepository
 import com.munzenberger.money.data.sql.transaction.SqlTransactionRepository
 import com.munzenberger.money.data.sql.transaction.SqlTransactionStatusRepository
@@ -54,7 +56,8 @@ class SqlMoneyRepository private constructor(
     CategoryEntryRepository by tables.categoryEntries,
     TransactionRepository by tables.transactions,
     TransactionStatusRepository by SqlTransactionStatusRepository(database, context),
-    TransferEntryRepository by tables.transferEntries
+    TransferEntryRepository by tables.transferEntries,
+    RegisterRepository by SqlRegisterRepository(database, context)
 {
     constructor(
         name: String,

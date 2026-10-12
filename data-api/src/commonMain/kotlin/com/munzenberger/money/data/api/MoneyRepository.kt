@@ -7,6 +7,7 @@ import com.munzenberger.money.data.api.bank.BankRepository
 import com.munzenberger.money.data.api.category.CategoryRepository
 import com.munzenberger.money.data.api.category.CategoryTypeRepository
 import com.munzenberger.money.data.api.payee.PayeeRepository
+import com.munzenberger.money.data.api.register.RegisterRepository
 import com.munzenberger.money.data.api.transaction.CategoryEntryRepository
 import com.munzenberger.money.data.api.transaction.TransactionRepository
 import com.munzenberger.money.data.api.transaction.TransactionStatusRepository
@@ -16,7 +17,7 @@ import java.io.Closeable
 interface MoneyRepository : AccountRepository, AccountTypeRepository, StatementRepository, BankRepository,
     CategoryRepository, CategoryTypeRepository,
     PayeeRepository, CategoryEntryRepository, TransactionRepository, TransactionStatusRepository,
-    TransferEntryRepository, Closeable {
+    TransferEntryRepository, RegisterRepository, Closeable {
 
     /**
      * Runs [block] in a single database transaction, off the calling thread, and returns its result.
