@@ -23,7 +23,14 @@ class SqlStatementRepository(
 
     override suspend fun statementsByAccountId(accountId: AccountId): Flow<List<Statement>> =
         database.statementQueries
-            .selectByAccountId(accountId.value.toString()) { id, accountIdValue, closingDate, startingBalance, endingBalance, isReconciled ->
+            .selectByAccountId(accountId.value.toString()) {
+                id,
+                accountIdValue,
+                closingDate,
+                startingBalance,
+                endingBalance,
+                isReconciled,
+                ->
                 Statement(
                     id = StatementId(Uuid.parse(id)),
                     accountId = AccountId(Uuid.parse(accountIdValue)),

@@ -41,7 +41,7 @@ class SqlMoneyRepositoryConnector(
             MoneyRepositoryConnectionStatus.Ready(SqlMoneyRepository(url, driver))
         } catch (e: CancellationException) {
             throw e
-        } catch (e: Exception) {
+        } catch (@Suppress("TooGenericExceptionCaught") e: Exception) {
             logger.log(Level.WARNING, "Failed to create database: $url", e)
             MoneyRepositoryConnectionStatus.Failed(e)
         }
@@ -54,7 +54,7 @@ class SqlMoneyRepositoryConnector(
             MoneyRepositoryConnectionStatus.Ready(repository)
         } catch (e: CancellationException) {
             throw e
-        } catch (e: Exception) {
+        } catch (@Suppress("TooGenericExceptionCaught") e: Exception) {
             logger.log(Level.WARNING, "Failed to open database: $url", e)
             MoneyRepositoryConnectionStatus.Failed(e)
         }

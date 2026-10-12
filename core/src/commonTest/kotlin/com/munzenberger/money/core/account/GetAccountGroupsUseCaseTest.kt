@@ -26,9 +26,17 @@ class GetAccountGroupsUseCaseTest {
     private val assets = AccountClass(id = AccountClassId(1), value = AccountClassConstant.Assets)
     private val liabilities = AccountClass(id = AccountClassId(2), value = AccountClassConstant.Liabilities)
 
-    private val checking = AccountType(id = AccountTypeId(2), accountClass = assets, value = AccountTypeConstant.Checking)
+    private val checking = AccountType(
+        id = AccountTypeId(2),
+        accountClass = assets,
+        value = AccountTypeConstant.Checking,
+    )
     private val savings = AccountType(id = AccountTypeId(1), accountClass = assets, value = AccountTypeConstant.Savings)
-    private val credit = AccountType(id = AccountTypeId(5), accountClass = liabilities, value = AccountTypeConstant.Credit)
+    private val credit = AccountType(
+        id = AccountTypeId(5),
+        accountClass = liabilities,
+        value = AccountTypeConstant.Credit,
+    )
 
     private val zephyr = Bank(name = "Zephyr Credit Union")
     private val acme = Bank(name = "acme Bank")

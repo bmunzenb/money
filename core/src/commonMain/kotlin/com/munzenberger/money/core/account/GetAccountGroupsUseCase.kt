@@ -51,7 +51,8 @@ class GetAccountGroupsUseCase {
         repository.resultFlow {
             combine(it.accounts, it.banks, grouping) { accounts, banks, grouping ->
                 when (grouping) {
-                    AccountGrouping.None -> if (accounts.isEmpty()) emptyList() else listOf(AccountGroup.All(accounts.sortedByName()))
+                    AccountGrouping.None ->
+                        if (accounts.isEmpty()) emptyList() else listOf(AccountGroup.All(accounts.sortedByName()))
                     AccountGrouping.AccountType -> groupByAccountType(accounts)
                     AccountGrouping.AccountClass -> groupByAccountClass(accounts)
                     AccountGrouping.Bank -> groupByBank(accounts, banks)
