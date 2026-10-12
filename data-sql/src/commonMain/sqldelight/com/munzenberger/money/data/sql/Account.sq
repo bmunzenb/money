@@ -1,3 +1,5 @@
+import kotlin.Boolean;
+
 CREATE TABLE Account (
     id TEXT NOT NULL PRIMARY KEY,
     name TEXT NOT NULL,
@@ -6,6 +8,7 @@ CREATE TABLE Account (
     bank_id TEXT,
     initial_balance INTEGER NOT NULL,
     memo TEXT,
+    is_closed INTEGER AS Boolean NOT NULL,
     FOREIGN KEY (account_type_id) REFERENCES AccountType (id),
     FOREIGN KEY (bank_id) REFERENCES Bank (id)
 );
@@ -18,6 +21,7 @@ SELECT
     Account.bank_id AS bank_id,
     Account.initial_balance AS initial_balance,
     Account.memo AS memo,
+    Account.is_closed AS is_closed,
     AccountType.id AS type_id,
     AccountType.value AS type_value,
     AccountClass.id AS type_class_id,
@@ -27,10 +31,10 @@ JOIN AccountType ON Account.account_type_id = AccountType.id
 JOIN AccountClass ON AccountType.class_id = AccountClass.id;
 
 insert:
-INSERT INTO Account (id, name, number, account_type_id, bank_id, initial_balance, memo) VALUES (?, ?, ?, ?, ?, ?, ?);
+INSERT INTO Account (id, name, number, account_type_id, bank_id, initial_balance, memo, is_closed) VALUES (?, ?, ?, ?, ?, ?, ?, ?);
 
 update:
-UPDATE Account SET name = ?, number = ?, account_type_id = ?, bank_id = ?, initial_balance = ?, memo = ? WHERE id = ?;
+UPDATE Account SET name = ?, number = ?, account_type_id = ?, bank_id = ?, initial_balance = ?, memo = ?, is_closed = ? WHERE id = ?;
 
 deleteById:
 DELETE FROM Account WHERE id = ?;

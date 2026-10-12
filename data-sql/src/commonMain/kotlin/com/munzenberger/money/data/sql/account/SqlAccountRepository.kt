@@ -27,7 +27,10 @@ class SqlAccountRepository(
 ) : AccountRepository, AccountWriter {
 
     override val accounts: Flow<List<Account>> = database.accountQueries
-        .selectAll { id, name, number, bankId, initialBalance, memo, typeId, typeValue, typeClassId, typeClassValue ->
+        .selectAll {
+                id, name, number, bankId, initialBalance, memo, isClosed,
+                typeId, typeValue, typeClassId, typeClassValue,
+            ->
             Account(
                 id = AccountId(Uuid.parse(id)),
                 name = name,
@@ -43,6 +46,7 @@ class SqlAccountRepository(
                 bankId = bankId?.let { BankId(Uuid.parse(it)) },
                 initialBalance = Money(initialBalance),
                 memo = memo,
+                isClosed = isClosed,
             )
         }
         .asFlow()
@@ -57,6 +61,7 @@ class SqlAccountRepository(
             bank_id = account.bankId?.value?.toString(),
             initial_balance = account.initialBalance.value,
             memo = account.memo,
+            is_closed = account.isClosed,
         )
     }
 
@@ -68,6 +73,7 @@ class SqlAccountRepository(
             bank_id = account.bankId?.value?.toString(),
             initial_balance = account.initialBalance.value,
             memo = account.memo,
+            is_closed = account.isClosed,
             id = account.id.value.toString(),
         ).requireOneRow { "No account with id ${account.id.value}" }
     }
