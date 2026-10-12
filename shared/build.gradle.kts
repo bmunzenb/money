@@ -34,3 +34,9 @@ kotlin {
         }
     }
 }
+
+detekt {
+    source.setFrom("src/commonMain/kotlin", "src/commonTest/kotlin")
+    config.setFrom(project.file("detekt.yml"))
+    buildUponDefaultConfig = true
+}

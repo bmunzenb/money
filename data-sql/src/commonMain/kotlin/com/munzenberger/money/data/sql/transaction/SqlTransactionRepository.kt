@@ -28,7 +28,16 @@ class SqlTransactionRepository(
 
     override suspend fun transactionsByAccountId(accountId: AccountId): Flow<List<Transaction>> =
         database.transactionQueries
-            .selectByAccountId(accountId.value.toString()) { id, accountIdValue, payeeId, date, number, memo, statusId, statusValue ->
+            .selectByAccountId(accountId.value.toString()) {
+                id,
+                accountIdValue,
+                payeeId,
+                date,
+                number,
+                memo,
+                statusId,
+                statusValue,
+                ->
                 Transaction(
                     id = TransactionId(Uuid.parse(id)),
                     accountId = AccountId(Uuid.parse(accountIdValue)),

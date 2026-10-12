@@ -48,7 +48,10 @@ class SqlCategoryEntryRepositoryTest {
         value = AccountTypeConstant.Checking,
     )
 
-    private val unreconciled = TransactionStatus(id = TransactionStatusId(1), value = TransactionStatusConstant.Unreconciled)
+    private val unreconciled = TransactionStatus(
+        id = TransactionStatusId(1),
+        value = TransactionStatusConstant.Unreconciled,
+    )
 
     private val expense = CategoryType(id = CategoryTypeId(2), value = CategoryTypeConstant.Expense)
 
@@ -68,7 +71,11 @@ class SqlCategoryEntryRepositoryTest {
         return transaction.id
     }
 
-    private fun createCategory(database: MoneyDatabase, dispatcher: CoroutineDispatcher, name: String = "Groceries"): CategoryId {
+    private fun createCategory(
+        database: MoneyDatabase,
+        dispatcher: CoroutineDispatcher,
+        name: String = "Groceries",
+    ): CategoryId {
         val category = Category(name = name, type = expense)
         SqlCategoryRepository(database, dispatcher).add(category)
         return category.id

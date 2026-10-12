@@ -42,7 +42,10 @@ class SqlTransferEntryRepositoryTest {
         value = AccountTypeConstant.Checking,
     )
 
-    private val unreconciled = TransactionStatus(id = TransactionStatusId(1), value = TransactionStatusConstant.Unreconciled)
+    private val unreconciled = TransactionStatus(
+        id = TransactionStatusId(1),
+        value = TransactionStatusConstant.Unreconciled,
+    )
     private val cleared = TransactionStatus(id = TransactionStatusId(2), value = TransactionStatusConstant.Cleared)
 
     private fun createAccount(database: MoneyDatabase, dispatcher: CoroutineDispatcher): AccountId {

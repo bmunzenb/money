@@ -2,7 +2,15 @@ package com.munzenberger.money.data.sql.account
 
 import com.munzenberger.money.data.api.EntityNotFoundException
 import com.munzenberger.money.data.api.Money
-import com.munzenberger.money.data.api.account.*
+import com.munzenberger.money.data.api.account.Account
+import com.munzenberger.money.data.api.account.AccountClass
+import com.munzenberger.money.data.api.account.AccountClassConstant
+import com.munzenberger.money.data.api.account.AccountClassId
+import com.munzenberger.money.data.api.account.AccountId
+import com.munzenberger.money.data.api.account.AccountType
+import com.munzenberger.money.data.api.account.AccountTypeConstant
+import com.munzenberger.money.data.api.account.AccountTypeId
+import com.munzenberger.money.data.api.account.remove
 import com.munzenberger.money.data.api.bank.Bank
 import com.munzenberger.money.data.sql.bank.SqlBankRepository
 import com.munzenberger.money.data.sql.createTestDatabase
@@ -23,8 +31,16 @@ class SqlAccountRepositoryTest {
     private val assets = AccountClass(id = AccountClassId(1), value = AccountClassConstant.Assets)
     private val liabilities = AccountClass(id = AccountClassId(2), value = AccountClassConstant.Liabilities)
 
-    private val checking = AccountType(id = AccountTypeId(2), accountClass = assets, value = AccountTypeConstant.Checking)
-    private val credit = AccountType(id = AccountTypeId(5), accountClass = liabilities, value = AccountTypeConstant.Credit)
+    private val checking = AccountType(
+        id = AccountTypeId(2),
+        accountClass = assets,
+        value = AccountTypeConstant.Checking,
+    )
+    private val credit = AccountType(
+        id = AccountTypeId(5),
+        accountClass = liabilities,
+        value = AccountTypeConstant.Credit,
+    )
 
     private fun createRepository(context: CoroutineDispatcher): SqlAccountRepository =
         SqlAccountRepository(createTestDatabase(), context)

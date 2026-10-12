@@ -28,3 +28,7 @@ sqldelight {
         }
     }
 }
+
+detekt {
+    source.setFrom("src/commonMain/kotlin", "src/commonTest/kotlin")
+}
