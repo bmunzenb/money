@@ -9,16 +9,18 @@ import java.util.logging.Level
 import kotlin.coroutines.cancellation.CancellationException
 
 /**
- * Validates [input] and, if it's valid, writes it to this repository as the account with [accountId].
+ * Validates [input] and, if it's valid, writes it to this repository as the account with [accountId],
+ * closed if [isClosed].
  * [write] writes the account; a new financial institution named in [input] is added before it, in the
  * same transaction.
  */
 internal suspend fun MoneyRepository.saveAccount(
     input: AccountInput,
     accountId: AccountId,
+    isClosed: Boolean,
     write: MoneyWriter.(Account) -> Unit,
 ): SaveAccountResult {
-    val (account, newBank) = when (val validated = input.validate(accountId)) {
+    val (account, newBank) = when (val validated = input.validate(accountId, isClosed)) {
         is ValidatedAccountInput.Invalid -> return SaveAccountResult.Invalid(validated.errors)
         is ValidatedAccountInput.Valid -> validated
     }

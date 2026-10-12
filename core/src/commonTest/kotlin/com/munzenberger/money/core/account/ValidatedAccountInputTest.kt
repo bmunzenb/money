@@ -14,9 +14,11 @@ import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertIs
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
+import kotlin.test.assertTrue
 
 class ValidatedAccountInputTest {
 
@@ -51,11 +53,13 @@ class ValidatedAccountInputTest {
         Locale.setDefault(defaultLocale)
     }
 
-    private fun AccountInput.validAccount() = assertIs<ValidatedAccountInput.Valid>(validate(accountId))
+    private fun AccountInput.validAccount(isClosed: Boolean = false) =
+        assertIs<ValidatedAccountInput.Valid>(validate(accountId, isClosed))
 
     @Test
     fun testInvalidInputReportsEveryError() {
-        val result = validInput.copy(name = "  ", accountType = null, initialBalance = "12abc").validate(accountId)
+        val result = validInput.copy(name = "  ", accountType = null, initialBalance = "12abc")
+            .validate(accountId, isClosed = false)
 
         assertEquals(
             ValidatedAccountInput.Invalid(
@@ -71,7 +75,7 @@ class ValidatedAccountInputTest {
 
     @Test
     fun testInitialBalanceTooLargeIsInvalid() {
-        val result = validInput.copy(initialBalance = "999999999999999999999").validate(accountId)
+        val result = validInput.copy(initialBalance = "999999999999999999999").validate(accountId, isClosed = false)
 
         assertEquals(ValidatedAccountInput.Invalid(setOf(AccountInputError.InvalidInitialBalance)), result)
     }
@@ -79,6 +83,16 @@ class ValidatedAccountInputTest {
     @Test
     fun testAccountHasTheGivenId() {
         assertEquals(accountId, validInput.validAccount().account.id)
+    }
+
+    @Test
+    fun testAccountIsOpenUnlessClosed() {
+        assertFalse(validInput.validAccount(isClosed = false).account.isClosed)
+    }
+
+    @Test
+    fun testAccountIsClosedWhenClosed() {
+        assertTrue(validInput.validAccount(isClosed = true).account.isClosed)
     }
 
     @Test

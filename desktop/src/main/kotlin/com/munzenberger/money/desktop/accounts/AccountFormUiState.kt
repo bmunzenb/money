@@ -34,6 +34,8 @@ data class AccountFormUiState(
      * tries to save.
      */
     val isInitialBalanceError: Boolean = false,
+    /** Whether the account is closed. Only shown, and only saved, when editing an existing account. */
+    val isClosed: Boolean = false,
     val saveState: SaveState = SaveState.Idle,
 ) {
     val isEditing: Boolean

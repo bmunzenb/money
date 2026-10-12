@@ -57,8 +57,8 @@ import org.jetbrains.compose.resources.stringResource
 /**
  * A card showing an [AccountGroup]: a header with the group's name, which toggles whether the group's
  * accounts are shown, above a table of the accounts with their name, masked account number, and balance.
- * Clicking an account's row calls [onAccountClick] with it. A footer row below the accounts shows the
- * group's total balance.
+ * Clicking an account's row calls [onAccountClick] with it. A closed account's row is dimmed. A footer
+ * row below the accounts shows the group's total balance.
  */
 @Composable
 fun AccountGroupCard(
@@ -140,6 +140,11 @@ private fun AccountTable(
             modifier = Modifier.background(MoneyTheme.colorScheme.surfaceContainer),
         )
 
+        val accountStyle = MoneyTheme.typography.bodyMedium
+        // Dimmed, but still readable, so a closed account recedes without looking disabled.
+        val closedAccountStyle = accountStyle.copy(
+            color = MoneyTheme.colorScheme.onSurface.copy(alpha = CLOSED_ACCOUNT_ALPHA),
+        )
         accounts.forEachIndexed { index, account ->
             if (index > 0) {
                 HorizontalDivider(color = MoneyTheme.colorScheme.surfaceContainer)
@@ -149,7 +154,7 @@ private fun AccountTable(
                 number = maskAccountNumber(account.number),
                 // The balance isn't available yet.
                 balance = "",
-                style = MoneyTheme.typography.bodyMedium,
+                style = if (account.isClosed) closedAccountStyle else accountStyle,
                 // clickable's indication highlights the row on hover, as well as on press and focus.
                 modifier = Modifier.clickable(role = Role.Button) { onAccountClick(account) },
             )
@@ -214,6 +219,7 @@ private fun AccountGroup.title(): String = when (this) {
 }
 
 private const val EXPANDED_ICON_ROTATION = 180f
+private const val CLOSED_ACCOUNT_ALPHA = 0.6f
 private const val NAME_COLUMN_WEIGHT = 2f
 private const val NUMBER_COLUMN_WEIGHT = 1f
 private const val BALANCE_COLUMN_WEIGHT = 1f
@@ -230,6 +236,7 @@ private fun AccountGroupCardPreview() {
                     Account(name = "Checking", number = "123456789", accountType = previewAccountType),
                     Account(name = "Savings", number = "987654321", accountType = previewAccountType),
                     Account(name = "Holiday fund", accountType = previewAccountType),
+                    Account(name = "Old savings", accountType = previewAccountType, isClosed = true),
                 ),
             ),
             expanded = expanded,

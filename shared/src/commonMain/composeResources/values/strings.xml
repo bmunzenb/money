@@ -19,6 +19,7 @@
     <string name="account_load_error_message">Unable to load the account.</string>
     <string name="account_section_title">Account</string>
     <string name="balance_and_reference_section_title">Balance and reference</string>
+    <string name="status_section_title">Status</string>
     <string name="additional_information_section_title">Additional information</string>
     <string name="save_button_title">Save</string>
     <string name="cancel_button_title">Cancel</string>
@@ -33,6 +34,7 @@
     <string name="initial_balance_label">Initial balance</string>
     <string name="initial_balance_error_message">Enter a valid amount.</string>
     <string name="comments_label">Comments</string>
+    <string name="account_closed_label">This account is closed</string>
     <string name="save_account_error_message">Unable to save the account. Please try again.</string>
     <string name="account_type_savings">Savings</string>
     <string name="account_type_checking">Checking</string>

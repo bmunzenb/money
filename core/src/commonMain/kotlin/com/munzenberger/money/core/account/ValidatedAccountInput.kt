@@ -16,11 +16,12 @@ internal sealed interface ValidatedAccountInput {
 }
 
 /**
- * Validates this input and, if it's valid, turns it into the account with [accountId]: values are
+ * Validates this input and, if it's valid, turns it into the account with [accountId], closed if
+ * [isClosed]: values are
  * trimmed, and blank optional values are left out. A financial institution named in [AccountInput.bankName]
  * that isn't an existing bank becomes a new one for the account.
  */
-internal fun AccountInput.validate(accountId: AccountId): ValidatedAccountInput {
+internal fun AccountInput.validate(accountId: AccountId, isClosed: Boolean): ValidatedAccountInput {
     val initialBalance = parseInitialBalance(initialBalance)
     val errors = buildSet {
         if (name.isBlank()) add(AccountInputError.BlankName)
@@ -43,6 +44,7 @@ internal fun AccountInput.validate(accountId: AccountId): ValidatedAccountInput 
         bankId = (bank ?: newBank)?.id,
         initialBalance = initialBalance,
         memo = memo.trim().ifEmpty { null },
+        isClosed = isClosed,
     )
 
     return ValidatedAccountInput.Valid(account, newBank)

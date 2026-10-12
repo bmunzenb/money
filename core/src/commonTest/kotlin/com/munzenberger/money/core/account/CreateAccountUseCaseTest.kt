@@ -16,6 +16,7 @@ import io.mockk.verify
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertNotEquals
 
 /** Validating and writing the account is covered by [ValidatedAccountInputTest] and [SaveAccountTest]. */
@@ -52,6 +53,15 @@ class CreateAccountUseCaseTest {
         verify { writer.add(capture(account)) }
         verify(exactly = 0) { writer.update(any<Account>()) }
         assertEquals(SaveAccountResult.Success(account.captured), result)
+    }
+
+    @Test
+    fun testAddsTheAccountAsOpen() = runTest {
+        createAccount(repository, validInput)
+
+        val account = slot<Account>()
+        verify { writer.add(capture(account)) }
+        assertFalse(account.captured.isClosed)
     }
 
     @Test

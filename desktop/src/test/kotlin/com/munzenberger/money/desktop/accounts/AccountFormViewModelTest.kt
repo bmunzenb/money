@@ -553,6 +553,17 @@ class AccountFormViewModelTest {
         assertEquals("1234-5678", state.number)
         assertEquals("1,250.50", state.initialBalance)
         assertEquals("Opened 2020.", state.memo)
+        assertFalse(state.isClosed)
+    }
+
+    @Test
+    fun `a closed existing account fills in the form as closed`() = runTest {
+        val account = existingAccount.copy(isClosed = true)
+        val viewModel = viewModel(account.id)
+
+        fixture.connect(repository(banks = flowOf(listOf(firstBank)), accounts = flowOf(listOf(account))))
+
+        assertTrue(viewModel.state.value.isClosed)
     }
 
     @Test
@@ -617,12 +628,12 @@ class AccountFormViewModelTest {
         viewModel.onSaveClick()
 
         assertEquals(SaveState.Idle, viewModel.state.value.saveState)
-        coVerify(exactly = 0) { updateAccount(any(), any(), any()) }
+        coVerify(exactly = 0) { updateAccount(any(), any(), any(), any()) }
     }
 
     @Test
     fun `saving an existing account updates it with the form's values`() = runTest {
-        coEvery { updateAccount(any(), any(), any()) } returns SaveAccountResult.Success(existingAccount)
+        coEvery { updateAccount(any(), any(), any(), any()) } returns SaveAccountResult.Success(existingAccount)
         navigator.navigate { clear(); add(Route.AccountList); add(Route.EditAccount(existingAccount.id)) }
         val viewModel = viewModel(existingAccount.id)
         fixture.connect(
@@ -649,6 +660,7 @@ class AccountFormViewModelTest {
                     initialBalance = "1,250.50",
                     memo = "Opened 2020.",
                 ),
+                false,
             )
         }
         coVerify(exactly = 0) { createAccount(any(), any()) }
@@ -656,8 +668,37 @@ class AccountFormViewModelTest {
     }
 
     @Test
+    fun `onIsClosedChange updates whether the account is closed`() = runTest {
+        val viewModel = viewModel(existingAccount.id)
+        fixture.connect(repository(banks = flowOf(listOf(firstBank)), accounts = flowOf(listOf(existingAccount))))
+
+        viewModel.onIsClosedChange(true)
+        assertTrue(viewModel.state.value.isClosed)
+
+        viewModel.onIsClosedChange(false)
+        assertFalse(viewModel.state.value.isClosed)
+    }
+
+    @Test
+    fun `saving a closed existing account updates it as closed`() = runTest {
+        coEvery { updateAccount(any(), any(), any(), any()) } returns SaveAccountResult.Success(existingAccount)
+        val viewModel = viewModel(existingAccount.id)
+        fixture.connect(repository(banks = flowOf(listOf(firstBank)), accounts = flowOf(listOf(existingAccount))))
+        viewModel.onIsClosedChange(true)
+
+        viewModel.onSaveClick()
+
+        coVerify { updateAccount(any(), existingAccount.id, any(), true) }
+    }
+
+    @Test
+    fun `a new account is open`() {
+        assertFalse(viewModel().state.value.isClosed)
+    }
+
+    @Test
     fun `invalid fields are marked as errors when saving an existing account`() = runTest {
-        coEvery { updateAccount(any(), any(), any()) } returns
+        coEvery { updateAccount(any(), any(), any(), any()) } returns
             SaveAccountResult.Invalid(setOf(AccountInputError.BlankName))
         val viewModel = viewModel(existingAccount.id)
         fixture.connect(repository(banks = flowOf(listOf(firstBank)), accounts = flowOf(listOf(existingAccount))))

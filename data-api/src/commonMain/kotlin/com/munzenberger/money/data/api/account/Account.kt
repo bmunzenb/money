@@ -17,4 +17,5 @@ data class Account(
     val bankId: BankId? = null,
     val initialBalance: Money = Money(0),
     val memo: String? = null,
+    val isClosed: Boolean = false,
 )

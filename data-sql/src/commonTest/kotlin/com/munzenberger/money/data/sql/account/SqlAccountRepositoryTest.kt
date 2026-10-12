@@ -96,6 +96,14 @@ class SqlAccountRepositoryTest {
     }
 
     @Test
+    fun `add inserts a closed account`() = runTest {
+        val repository = createRepository(UnconfinedTestDispatcher(testScheduler))
+        val account = Account(name = "Checking", accountType = checking, isClosed = true)
+        repository.add(account)
+        assertEquals(listOf(account), repository.accounts.first())
+    }
+
+    @Test
     fun `add inserts an account with a liability type`() = runTest {
         val repository = createRepository(UnconfinedTestDispatcher(testScheduler))
         val account = Account(name = "Credit Card", accountType = credit)
@@ -166,6 +174,16 @@ class SqlAccountRepositoryTest {
         val original = Account(name = "Checking", accountType = checking)
         repository.add(original)
         val updated = original.copy(memo = "new memo")
+        repository.update(updated)
+        assertEquals(listOf(updated), repository.accounts.first())
+    }
+
+    @Test
+    fun `update closes an existing account`() = runTest {
+        val repository = createRepository(UnconfinedTestDispatcher(testScheduler))
+        val account = Account(name = "Checking", accountType = checking)
+        repository.add(account)
+        val updated = account.copy(isClosed = true)
         repository.update(updated)
         assertEquals(listOf(updated), repository.accounts.first())
     }

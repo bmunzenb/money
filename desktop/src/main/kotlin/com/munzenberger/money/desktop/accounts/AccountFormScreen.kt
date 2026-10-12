@@ -51,6 +51,7 @@ fun AccountFormScreen(
         onInitialBalanceChange = viewModel::onInitialBalanceChange,
         onInitialBalanceFocusLost = viewModel::onInitialBalanceFocusLost,
         onMemoChange = viewModel::onMemoChange,
+        onIsClosedChange = viewModel::onIsClosedChange,
         onBackClick = viewModel::onBackClick,
         onSaveClick = viewModel::onSaveClick,
     )
@@ -67,6 +68,7 @@ private fun AccountFormScreenContent(
     onInitialBalanceChange: (String) -> Unit,
     onInitialBalanceFocusLost: () -> Unit,
     onMemoChange: (String) -> Unit,
+    onIsClosedChange: (Boolean) -> Unit,
     onBackClick: () -> Unit,
     onSaveClick: () -> Unit,
 ) {
@@ -107,6 +109,7 @@ private fun AccountFormScreenContent(
                     onInitialBalanceChange = onInitialBalanceChange,
                     onInitialBalanceFocusLost = onInitialBalanceFocusLost,
                     onMemoChange = onMemoChange,
+                    onIsClosedChange = onIsClosedChange,
                     onCancelClick = onBackClick,
                     onSaveClick = onSaveClick,
                     modifier = Modifier.weight(1f),
@@ -248,6 +251,7 @@ private fun AccountFormScreenPreviewContent(state: AccountFormUiState) {
         onInitialBalanceChange = {},
         onInitialBalanceFocusLost = {},
         onMemoChange = {},
+        onIsClosedChange = {},
         onBackClick = {},
         onSaveClick = {},
     )

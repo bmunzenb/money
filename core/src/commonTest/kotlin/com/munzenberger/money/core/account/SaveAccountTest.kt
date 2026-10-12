@@ -52,8 +52,8 @@ class SaveAccountTest {
     /** The accounts passed to the `write` block, in order. */
     private val written = mutableListOf<Account>()
 
-    private suspend fun saveAccount(input: AccountInput) =
-        repository.saveAccount(input, accountId) { account ->
+    private suspend fun saveAccount(input: AccountInput, isClosed: Boolean = false) =
+        repository.saveAccount(input, accountId, isClosed) { account ->
             written += account
             update(account)
         }
@@ -76,6 +76,13 @@ class SaveAccountTest {
         assertEquals(accountId, account.id)
         assertEquals("Checking", account.name)
         verify { writer.update(account) }
+    }
+
+    @Test
+    fun testWritesTheAccountAsClosed() = runTest {
+        saveAccount(validInput, isClosed = true)
+
+        assertTrue(written.single().isClosed)
     }
 
     @Test
