@@ -6,6 +6,8 @@ CREATE TABLE "Transaction" (
     number TEXT,
     memo TEXT,
     status_id INTEGER NOT NULL,
+    -- Epoch milliseconds when the row was inserted; never updated. Used for ordering, not exposed on the model.
+    created INTEGER NOT NULL,
     FOREIGN KEY (account_id) REFERENCES Account (id),
     FOREIGN KEY (payee_id) REFERENCES Payee (id),
     FOREIGN KEY (status_id) REFERENCES TransactionStatus (id)
@@ -28,7 +30,7 @@ JOIN TransactionStatus ON t.status_id = TransactionStatus.id
 WHERE t.account_id = ?;
 
 insert:
-INSERT INTO "Transaction" (id, account_id, payee_id, date, number, memo, status_id) VALUES (?, ?, ?, ?, ?, ?, ?);
+INSERT INTO "Transaction" (id, account_id, payee_id, date, number, memo, status_id, created) VALUES (?, ?, ?, ?, ?, ?, ?, ?);
 
 update:
 UPDATE "Transaction" SET account_id = ?, payee_id = ?, date = ?, number = ?, memo = ?, status_id = ? WHERE id = ?;
