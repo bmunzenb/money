@@ -33,6 +33,19 @@ data class Money(
 
     override fun toString(): String = toString(Locale.getDefault())
 
+    /**
+     * Adds [other] to this amount.
+     *
+     * @throws IllegalArgumentException if [other] is in a different currency.
+     * @throws ArithmeticException if the sum overflows a [Long].
+     */
+    operator fun plus(other: Money): Money {
+        require(currency == other.currency) {
+            "Cannot add ${other.currency} to $currency"
+        }
+        return Money(Math.addExact(value, other.value), currency)
+    }
+
     companion object {
         val DEFAULT_CURRENCY: Currency = Currency.getInstance("USD")
 

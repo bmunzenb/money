@@ -112,4 +112,23 @@ class MoneyTest {
         val money = Money(-123456, usd)
         assertEquals(money, Money.parse(money.toString(Locale.US, asCurrency = false), usd, Locale.US))
     }
+
+    @Test
+    fun plusAddsValues() {
+        assertEquals(Money(750, usd), Money(1000, usd) + Money(-250, usd))
+    }
+
+    @Test
+    fun plusRejectsDifferentCurrencies() {
+        assertFailsWith<IllegalArgumentException> {
+            Money(100, usd) + Money(100, Currency.getInstance("EUR"))
+        }
+    }
+
+    @Test
+    fun plusThrowsOnOverflow() {
+        assertFailsWith<ArithmeticException> {
+            Money(Long.MAX_VALUE, usd) + Money(1, usd)
+        }
+    }
 }
