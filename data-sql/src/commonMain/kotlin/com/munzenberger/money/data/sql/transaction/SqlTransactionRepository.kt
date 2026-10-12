@@ -17,11 +17,13 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.datetime.LocalDate
 import kotlin.coroutines.CoroutineContext
+import kotlin.time.Clock
 import kotlin.uuid.Uuid
 
 class SqlTransactionRepository(
     private val database: MoneyDatabase,
     private val context: CoroutineContext = Dispatchers.IO,
+    private val clock: Clock = Clock.System,
 ) : TransactionRepository, TransactionWriter {
 
     override suspend fun transactionsByAccountId(accountId: AccountId): Flow<List<Transaction>> =
@@ -52,6 +54,7 @@ class SqlTransactionRepository(
             number = transaction.number,
             memo = transaction.memo,
             status_id = transaction.status.id.value,
+            created = clock.now().toEpochMilliseconds(),
         )
     }
 

@@ -1,5 +1,7 @@
 package com.munzenberger.money.data.sql.transaction
 
+import app.cash.sqldelight.db.QueryResult
+import app.cash.sqldelight.db.SqlDriver
 import com.munzenberger.money.data.api.EntityNotFoundException
 import com.munzenberger.money.data.api.account.Account
 import com.munzenberger.money.data.api.account.AccountClass
@@ -19,6 +21,7 @@ import com.munzenberger.money.data.api.transaction.remove
 import com.munzenberger.money.data.sql.MoneyDatabase
 import com.munzenberger.money.data.sql.account.SqlAccountRepository
 import com.munzenberger.money.data.sql.createTestDatabase
+import com.munzenberger.money.data.sql.createTestJdbcDriver
 import com.munzenberger.money.data.sql.payee.SqlPayeeRepository
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -31,6 +34,8 @@ import kotlin.test.assertContains
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertTrue
+import kotlin.time.Clock
+import kotlin.time.Instant
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class SqlTransactionRepositoryTest {
@@ -53,6 +58,21 @@ class SqlTransactionRepositoryTest {
 
     private fun createRepository(database: MoneyDatabase, context: CoroutineDispatcher): SqlTransactionRepository =
         SqlTransactionRepository(database, context)
+
+    private class FixedClock(var now: Instant) : Clock {
+        override fun now(): Instant = now
+    }
+
+    private fun SqlDriver.selectCreated(transactionId: TransactionId): Long =
+        executeQuery(
+            identifier = null,
+            sql = """SELECT created FROM "Transaction" WHERE id = ?""",
+            mapper = { cursor ->
+                cursor.next()
+                QueryResult.Value(cursor.getLong(0)!!)
+            },
+            parameters = 1,
+        ) { bindString(0, transactionId.value.toString()) }.value
 
     @Test
     fun `transactionsByAccountId emits empty list when no transactions exist`() = runTest {
@@ -307,5 +327,35 @@ class SqlTransactionRepositoryTest {
         repository.add(transaction)
         repository.remove(transaction)
         assertTrue(repository.transactionsByAccountId(accountId).first().isEmpty())
+    }
+
+    @Test
+    fun `add records the created time from the clock`() = runTest {
+        val dispatcher = UnconfinedTestDispatcher(testScheduler)
+        val driver = createTestJdbcDriver()
+        MoneyDatabase.Schema.create(driver)
+        val database = MoneyDatabase(driver)
+        val accountId = createAccount(database, dispatcher)
+        val clock = FixedClock(Instant.fromEpochMilliseconds(1_700_000_000_123))
+        val repository = SqlTransactionRepository(database, dispatcher, clock)
+        val transaction = Transaction(accountId = accountId, date = LocalDate(2024, 1, 15), status = unreconciled)
+        repository.add(transaction)
+        assertEquals(1_700_000_000_123, driver.selectCreated(transaction.id))
+    }
+
+    @Test
+    fun `update does not change the created time`() = runTest {
+        val dispatcher = UnconfinedTestDispatcher(testScheduler)
+        val driver = createTestJdbcDriver()
+        MoneyDatabase.Schema.create(driver)
+        val database = MoneyDatabase(driver)
+        val accountId = createAccount(database, dispatcher)
+        val clock = FixedClock(Instant.fromEpochMilliseconds(1_700_000_000_123))
+        val repository = SqlTransactionRepository(database, dispatcher, clock)
+        val transaction = Transaction(accountId = accountId, date = LocalDate(2024, 1, 15), status = unreconciled)
+        repository.add(transaction)
+        clock.now = Instant.fromEpochMilliseconds(1_800_000_000_000)
+        repository.update(transaction.copy(memo = "Updated"))
+        assertEquals(1_700_000_000_123, driver.selectCreated(transaction.id))
     }
 }
