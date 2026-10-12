@@ -171,7 +171,6 @@ class SqlRegisterRepositoryTest {
 
         val expected = RegisterEntry.Transaction(
             transactionId = transaction.id,
-            accountId = account.id,
             payeeId = payee.id,
             payeeName = "Grocer",
             date = transaction.date,
@@ -293,7 +292,6 @@ class SqlRegisterRepositoryTest {
 
             val expected = RegisterEntry.Transfer(
                 transferEntryId = transfer.id,
-                accountId = savings.id,
                 payeeId = payee.id,
                 payeeName = "Bank",
                 date = LocalDate(2024, 2, 1),
@@ -302,6 +300,8 @@ class SqlRegisterRepositoryTest {
                 number = "XFER",
                 memo = "Transfer memo",
                 status = cleared,
+                accountId = checkingAccount.id,
+                accountName = "Checking",
             )
             assertEquals(listOf<RegisterEntry>(expected), fixture.register(savings))
         }
