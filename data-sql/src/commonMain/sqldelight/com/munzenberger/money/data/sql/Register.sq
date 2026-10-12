@@ -4,7 +4,6 @@ SELECT initial_balance FROM Account WHERE id = ?;
 selectTransactions:
 SELECT
     t.id AS id,
-    t.account_id AS account_id,
     t.payee_id AS payee_id,
     Payee.name AS payee_name,
     t.date AS date,
@@ -49,7 +48,6 @@ WHERE t.account_id = ?;
 selectTransfers:
 SELECT
     TransferEntry.id AS id,
-    TransferEntry.account_id AS account_id,
     t.payee_id AS payee_id,
     Payee.name AS payee_name,
     t.date AS date,
@@ -58,9 +56,12 @@ SELECT
     TransferEntry.number AS number,
     TransferEntry.memo AS memo,
     TransactionStatus.id AS status_id,
-    TransactionStatus.value AS status_value
+    TransactionStatus.value AS status_value,
+    t.account_id AS account_id,
+    Account.name AS account_name
 FROM TransferEntry
 JOIN "Transaction" AS t ON TransferEntry.transaction_id = t.id
+JOIN Account ON t.account_id = Account.id
 LEFT JOIN Payee ON t.payee_id = Payee.id
 JOIN TransactionStatus ON TransferEntry.status_id = TransactionStatus.id
 WHERE TransferEntry.account_id = ?;

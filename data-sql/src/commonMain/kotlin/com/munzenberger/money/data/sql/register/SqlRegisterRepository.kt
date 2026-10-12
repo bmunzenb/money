@@ -62,7 +62,6 @@ class SqlRegisterRepository(
         database.registerQueries
             .selectTransactions(accountId) {
                 transactionId,
-                accountIdValue,
                 payeeId,
                 payeeName,
                 date,
@@ -74,7 +73,6 @@ class SqlRegisterRepository(
                 ->
                 TransactionRow(
                     transactionId = transactionId,
-                    accountId = AccountId(Uuid.parse(accountIdValue)),
                     payeeId = payeeId?.let { PayeeId(Uuid.parse(it)) },
                     payeeName = payeeName,
                     date = LocalDate.fromEpochDays(date),
@@ -141,7 +139,6 @@ class SqlRegisterRepository(
         database.registerQueries
             .selectTransfers(accountId) {
                 transferEntryId,
-                accountIdValue,
                 payeeId,
                 payeeName,
                 date,
@@ -151,10 +148,11 @@ class SqlRegisterRepository(
                 memo,
                 statusId,
                 statusValue,
+                accountIdValue,
+                accountName,
                 ->
                 TransferRow(
                     transferEntryId = TransferEntryId(Uuid.parse(transferEntryId)),
-                    accountId = AccountId(Uuid.parse(accountIdValue)),
                     payeeId = payeeId?.let { PayeeId(Uuid.parse(it)) },
                     payeeName = payeeName,
                     date = LocalDate.fromEpochDays(date),
@@ -164,6 +162,8 @@ class SqlRegisterRepository(
                     number = number,
                     memo = memo,
                     status = transactionStatus(statusId, statusValue),
+                    accountId = AccountId(Uuid.parse(accountIdValue)),
+                    accountName = accountName,
                 )
             }
             .asFlow()
@@ -207,7 +207,6 @@ class SqlRegisterRepository(
 
     private data class TransactionRow(
         val transactionId: String,
-        val accountId: AccountId,
         val payeeId: PayeeId?,
         val payeeName: String?,
         val date: LocalDate,
@@ -225,7 +224,6 @@ class SqlRegisterRepository(
                 toEntry = { balance ->
                     RegisterEntry.Transaction(
                         transactionId = TransactionId(Uuid.parse(transactionId)),
-                        accountId = accountId,
                         payeeId = payeeId,
                         payeeName = payeeName,
                         date = date,
@@ -249,7 +247,6 @@ class SqlRegisterRepository(
 
     private data class TransferRow(
         val transferEntryId: TransferEntryId,
-        val accountId: AccountId,
         val payeeId: PayeeId?,
         val payeeName: String?,
         val date: LocalDate,
@@ -258,6 +255,8 @@ class SqlRegisterRepository(
         val number: String?,
         val memo: String?,
         val status: TransactionStatus,
+        val accountId: AccountId,
+        val accountName: String,
     ) {
         fun toRegisterRow() = RegisterRow(
             date = date,
@@ -266,7 +265,6 @@ class SqlRegisterRepository(
             toEntry = { balance ->
                 RegisterEntry.Transfer(
                     transferEntryId = transferEntryId,
-                    accountId = accountId,
                     payeeId = payeeId,
                     payeeName = payeeName,
                     date = date,
@@ -275,6 +273,8 @@ class SqlRegisterRepository(
                     number = number,
                     memo = memo,
                     status = status,
+                    accountId = accountId,
+                    accountName = accountName,
                 )
             },
         )

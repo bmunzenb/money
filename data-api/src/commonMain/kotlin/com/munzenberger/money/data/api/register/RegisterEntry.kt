@@ -11,7 +11,6 @@ import com.munzenberger.money.data.api.transaction.TransferEntryId
 import kotlinx.datetime.LocalDate
 
 sealed class RegisterEntry {
-    abstract val accountId: AccountId
     abstract val payeeId: PayeeId?
     abstract val payeeName: String?
     abstract val date: LocalDate
@@ -23,7 +22,6 @@ sealed class RegisterEntry {
 
     data class Transaction(
         val transactionId: TransactionId,
-        override val accountId: AccountId,
         override val payeeId: PayeeId?,
         override val payeeName: String?,
         override val date: LocalDate,
@@ -57,7 +55,6 @@ sealed class RegisterEntry {
 
     data class Transfer(
         val transferEntryId: TransferEntryId,
-        override val accountId: AccountId,
         override val payeeId: PayeeId?,
         override val payeeName: String?,
         override val date: LocalDate,
@@ -65,6 +62,9 @@ sealed class RegisterEntry {
         override val balance: Money,
         override val number: String?,
         override val memo: String?,
-        override val status: TransactionStatus
+        override val status: TransactionStatus,
+        /** The account of the transaction this transfer is part of, which the transfer's amount moves to. */
+        val accountId: AccountId,
+        val accountName: String,
     ) : RegisterEntry()
 }
