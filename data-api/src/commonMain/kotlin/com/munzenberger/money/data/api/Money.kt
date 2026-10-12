@@ -46,6 +46,13 @@ data class Money(
         return Money(Math.addExact(value, other.value), currency)
     }
 
+    /**
+     * Negates this amount, keeping its currency.
+     *
+     * @throws ArithmeticException if [value] is [Long.MIN_VALUE], which has no positive counterpart.
+     */
+    operator fun unaryMinus(): Money = Money(Math.negateExact(value), currency)
+
     companion object {
         val DEFAULT_CURRENCY: Currency = Currency.getInstance("USD")
 

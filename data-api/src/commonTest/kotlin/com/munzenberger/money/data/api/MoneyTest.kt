@@ -131,4 +131,18 @@ class MoneyTest {
             Money(Long.MAX_VALUE, usd) + Money(1, usd)
         }
     }
+
+    @Test
+    fun unaryMinusNegatesValueAndKeepsCurrency() {
+        val eur = Currency.getInstance("EUR")
+        assertEquals(Money(-1000, eur), -Money(1000, eur))
+        assertEquals(Money(250, eur), -Money(-250, eur))
+    }
+
+    @Test
+    fun unaryMinusThrowsOnOverflow() {
+        assertFailsWith<ArithmeticException> {
+            -Money(Long.MIN_VALUE, usd)
+        }
+    }
 }

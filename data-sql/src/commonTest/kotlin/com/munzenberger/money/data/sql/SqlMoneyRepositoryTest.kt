@@ -1,6 +1,7 @@
 package com.munzenberger.money.data.sql
 
 import com.munzenberger.money.data.api.EntityNotFoundException
+import com.munzenberger.money.data.api.Money
 import com.munzenberger.money.data.api.account.Account
 import com.munzenberger.money.data.api.account.AccountClass
 import com.munzenberger.money.data.api.account.AccountClassConstant
@@ -11,11 +12,17 @@ import com.munzenberger.money.data.api.account.AccountTypeId
 import com.munzenberger.money.data.api.bank.Bank
 import com.munzenberger.money.data.api.bank.BankId
 import com.munzenberger.money.data.api.payee.Payee
+import com.munzenberger.money.data.api.register.RegisterEntry
+import com.munzenberger.money.data.api.transaction.Transaction
+import com.munzenberger.money.data.api.transaction.TransactionStatus
+import com.munzenberger.money.data.api.transaction.TransactionStatusConstant
+import com.munzenberger.money.data.api.transaction.TransactionStatusId
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.runTest
+import kotlinx.datetime.LocalDate
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
@@ -98,5 +105,23 @@ class SqlMoneyRepositoryTest {
             }
         }
         assertTrue(repository.banks.first().isEmpty())
+    }
+
+    @Test
+    fun `registerEntriesForAccount reads the register of transactions written through transaction`() = runTest {
+        val repository = createRepository(UnconfinedTestDispatcher(testScheduler))
+        val account = Account(name = "Checking", accountType = checking, initialBalance = Money(1000))
+        val transaction = Transaction(
+            accountId = account.id,
+            date = LocalDate(2024, 1, 15),
+            status = TransactionStatus(id = TransactionStatusId(1), value = TransactionStatusConstant.Unreconciled),
+        )
+        repository.transaction {
+            add(account)
+            add(transaction)
+        }
+        val entry = repository.registerEntriesForAccount(account.id).first().single() as RegisterEntry.Transaction
+        assertEquals(transaction.id, entry.transactionId)
+        assertEquals(Money(1000), entry.balance)
     }
 }
