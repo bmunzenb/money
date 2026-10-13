@@ -1,0 +1,34 @@
+package com.munzenberger.money.presentation.accounts
+
+import kotlin.test.Test
+import kotlin.test.assertEquals
+
+class AccountLabelsTest {
+
+    @Test
+    fun `masks all but the last four characters`() {
+        assertEquals("••••6789", maskAccountNumber("123456789"))
+    }
+
+    @Test
+    fun `shows only the mask for a number of four or fewer characters`() {
+        assertEquals("••••", maskAccountNumber("12"))
+        assertEquals("••••", maskAccountNumber("1234"))
+    }
+
+    @Test
+    fun `masks a number of five characters`() {
+        assertEquals("••••2345", maskAccountNumber("12345"))
+    }
+
+    @Test
+    fun `ignores surrounding whitespace`() {
+        assertEquals("••••6789", maskAccountNumber(" 123456789 "))
+    }
+
+    @Test
+    fun `is empty for a missing or blank number`() {
+        assertEquals("", maskAccountNumber(null))
+        assertEquals("", maskAccountNumber("  "))
+    }
+}

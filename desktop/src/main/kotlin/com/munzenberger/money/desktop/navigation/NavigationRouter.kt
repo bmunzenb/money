@@ -6,6 +6,7 @@ import com.munzenberger.money.desktop.accounts.AccountListScreen
 import com.munzenberger.money.desktop.categories.CategoryListScreen
 import com.munzenberger.money.desktop.payees.PayeeListScreen
 import com.munzenberger.money.desktop.welcome.WelcomeScreen
+import com.munzenberger.money.presentation.navigation.Route
 
 val navigationRouter = entryProvider<Route> {
     entry<Route.Welcome> {

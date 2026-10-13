@@ -14,6 +14,7 @@ import com.munzenberger.money.data.api.bank.Bank
 import com.munzenberger.money.desktop.components.FormDefaults
 import com.munzenberger.money.desktop.components.FormSectionCard
 import com.munzenberger.money.desktop.components.ScrollableColumn
+import com.munzenberger.money.presentation.accounts.AccountFormUiState
 import com.munzenberger.money.shared.theme.MoneyTheme
 import money.shared.generated.resources.Res
 import money.shared.generated.resources.account_section_title
