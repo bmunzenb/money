@@ -18,8 +18,8 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.tooling.preview.Preview
-import com.munzenberger.money.shared.theme.MoneyTheme
-import com.munzenberger.money.shared.theme.PreviewThemed
+import com.munzenberger.money.desktop.theme.MoneyTheme
+import com.munzenberger.money.desktop.theme.PreviewThemed
 
 /**
  * Header for list screens: the screen title, with the screen's primary action at the end. It's placed

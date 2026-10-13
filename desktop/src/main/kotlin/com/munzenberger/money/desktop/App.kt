@@ -13,9 +13,9 @@ import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
 import com.munzenberger.money.desktop.navigation.navigationRouter
 import com.munzenberger.money.desktop.rail.AppNavigationRail
+import com.munzenberger.money.desktop.theme.MoneyTheme
 import com.munzenberger.money.presentation.AppViewModel
 import com.munzenberger.money.presentation.navigation.Navigator
-import com.munzenberger.money.shared.theme.MoneyTheme
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 

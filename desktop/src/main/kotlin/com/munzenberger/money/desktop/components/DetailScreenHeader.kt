@@ -15,8 +15,8 @@ import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.munzenberger.money.shared.theme.MoneyTheme
-import com.munzenberger.money.shared.theme.PreviewThemed
+import com.munzenberger.money.desktop.theme.MoneyTheme
+import com.munzenberger.money.desktop.theme.PreviewThemed
 import money.shared.generated.resources.Res
 import money.shared.generated.resources.back_button_description
 import org.jetbrains.compose.resources.stringResource

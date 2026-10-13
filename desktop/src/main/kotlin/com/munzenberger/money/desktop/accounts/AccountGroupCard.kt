@@ -41,10 +41,10 @@ import com.munzenberger.money.data.api.account.AccountType
 import com.munzenberger.money.data.api.account.AccountTypeConstant
 import com.munzenberger.money.data.api.account.AccountTypeId
 import com.munzenberger.money.data.api.bank.Bank
+import com.munzenberger.money.desktop.theme.MoneyTheme
+import com.munzenberger.money.desktop.theme.PreviewThemed
 import com.munzenberger.money.presentation.accounts.label
 import com.munzenberger.money.presentation.accounts.maskAccountNumber
-import com.munzenberger.money.shared.theme.MoneyTheme
-import com.munzenberger.money.shared.theme.PreviewThemed
 import money.shared.generated.resources.Res
 import money.shared.generated.resources.account_group_all_title
 import money.shared.generated.resources.account_group_no_bank_title

@@ -14,8 +14,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.tooling.preview.Preview
-import com.munzenberger.money.shared.theme.MoneyTheme
-import com.munzenberger.money.shared.theme.PreviewThemed
+import com.munzenberger.money.desktop.theme.MoneyTheme
+import com.munzenberger.money.desktop.theme.PreviewThemed
 
 /** An outlined card with a title, grouping related fields of a form. */
 @Composable

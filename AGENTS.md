@@ -1,7 +1,9 @@
 # AGENTS.md
 
 Conventions for working in this repo. This is a Kotlin Multiplatform project with a Compose Desktop
-app module (`desktop`); shared UI/theming/resources live in `shared`.
+app module (`desktop`); shared Compose resources (strings) live in `shared`. The Material theme
+(`MoneyTheme`, color scheme, typography, shapes, spacing) and all Material dependencies live in `desktop`
+(`desktop/.../desktop/theme/`), so `shared` and `presentation` stay free of Material.
 
 The UI-independent presentation layer lives in `presentation`: ViewModels and their UI states,
 `Navigator` and the `Route` keys, `TopLevelDestination`, `MoneyRepositoryController`, the Koin
@@ -142,7 +144,7 @@ private fun XScreenPreview() {
 }
 ```
 
-- `PreviewThemed` (`com.munzenberger.money.shared.theme.PreviewThemed`) wraps the preview content in
+- `PreviewThemed` (`com.munzenberger.money.desktop.theme.PreviewThemed`) wraps the preview content in
   the app theme, on a full-size box filled with the theme's background color.
 - The preview function is `private`, named `<Screen>Preview`, and placed at the bottom of the same
   file as the screen.

@@ -21,9 +21,9 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.munzenberger.money.desktop.theme.PreviewThemed
 import com.munzenberger.money.presentation.rail.AppNavigationRailViewModel
 import com.munzenberger.money.presentation.rail.TopLevelDestination
-import com.munzenberger.money.shared.theme.PreviewThemed
 import kotlinx.coroutines.launch
 import money.shared.generated.resources.Res
 import money.shared.generated.resources.collapse_navigation_rail_button_description

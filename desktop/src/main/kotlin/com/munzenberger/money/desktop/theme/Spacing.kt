@@ -1,4 +1,4 @@
-package com.munzenberger.money.shared.theme
+package com.munzenberger.money.desktop.theme
 
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp

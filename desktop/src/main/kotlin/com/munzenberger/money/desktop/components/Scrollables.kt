@@ -24,7 +24,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import com.munzenberger.money.shared.theme.MoneyTheme
+import com.munzenberger.money.desktop.theme.MoneyTheme
 
 /**
  * A [LazyColumn] with a [VerticalScrollbar] along its end edge. [contentPadding] is applied inside the

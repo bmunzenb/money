@@ -12,6 +12,10 @@ dependencies {
 
     implementation(libs.kotlinx.coroutinesSwing)
 
+    implementation(libs.compose.material3)
+    implementation(libs.compose.materialIconsExtended)
+    implementation(libs.compose.material3.adaptiveNavigation3)
+
     implementation(libs.compose.uiToolingPreview)
 }
 

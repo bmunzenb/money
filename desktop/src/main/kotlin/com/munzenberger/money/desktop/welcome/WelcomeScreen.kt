@@ -19,12 +19,12 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import com.munzenberger.money.desktop.theme.MoneyTheme
+import com.munzenberger.money.desktop.theme.PreviewThemed
 import com.munzenberger.money.presentation.database.rememberCreateDatabaseLauncher
 import com.munzenberger.money.presentation.database.rememberOpenDatabaseLauncher
 import com.munzenberger.money.presentation.welcome.WelcomeUiState
 import com.munzenberger.money.presentation.welcome.WelcomeViewModel
-import com.munzenberger.money.shared.theme.MoneyTheme
-import com.munzenberger.money.shared.theme.PreviewThemed
 import money.shared.generated.resources.Res
 import money.shared.generated.resources.create_database_button_title
 import money.shared.generated.resources.create_database_error_message
