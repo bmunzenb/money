@@ -21,7 +21,7 @@ data class Money(
     fun toString(locale: Locale = Locale.getDefault(), asCurrency: Boolean = true): String {
         val fractionDigits = currency.fractionDigits
         val format = if (asCurrency) {
-            NumberFormat.getCurrencyInstance(locale).also { it.currency = currency }
+            NumberFormat.getCurrencyInstance(locale.accountNumberFormat).also { it.currency = currency }
         } else {
             NumberFormat.getNumberInstance(locale)
         }.apply {
@@ -92,3 +92,11 @@ data class Money(
 /** The number of fractional digits [this] currency uses, or 0 for pseudo-currencies that have none. */
 private val Currency.fractionDigits: Int
     get() = defaultFractionDigits.coerceAtLeast(0)
+
+private val Locale.accountNumberFormat: Locale
+    get() =
+        Locale
+            .Builder()
+            .setLocale(this)
+            .setExtension(Locale.UNICODE_LOCALE_EXTENSION, "cf-account")
+            .build()

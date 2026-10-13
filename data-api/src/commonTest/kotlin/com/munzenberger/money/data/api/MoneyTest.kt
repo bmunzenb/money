@@ -74,7 +74,7 @@ class MoneyTest {
     @Test
     fun toStringFormatsAsCurrency() {
         assertEquals("$1,234.56", Money(123456, usd).toString(Locale.US))
-        assertEquals("-$12.34", Money(-1234, usd).toString(Locale.US))
+        assertEquals("($12.34)", Money(-1234, usd).toString(Locale.US))
         assertEquals("$0.05", Money(5, usd).toString(Locale.US))
     }
 
