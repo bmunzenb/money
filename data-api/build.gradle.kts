@@ -1,24 +1,14 @@
 plugins {
-    alias(libs.plugins.kotlinMultiplatform)
+    `java-library`
+    alias(libs.plugins.kotlinJvm)
     alias(libs.plugins.kotlinSerialization)
     alias(libs.plugins.detekt)
 }
 
-kotlin {
-    jvm()
+dependencies {
+    api(libs.kotlinx.coroutinesCore)
+    api(libs.kotlinx.datetime)
+    api(libs.kotlinx.serializationCore)
 
-    sourceSets {
-        commonMain.dependencies {
-            api(libs.kotlinx.coroutinesCore)
-            api(libs.kotlinx.datetime)
-            api(libs.kotlinx.serializationCore)
-        }
-        commonTest.dependencies {
-            implementation(libs.kotlin.test)
-        }
-    }
-}
-
-detekt {
-    source.setFrom("src/commonMain/kotlin", "src/commonTest/kotlin")
+    testImplementation(libs.kotlin.test)
 }

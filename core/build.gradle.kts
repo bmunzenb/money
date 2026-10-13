@@ -1,25 +1,14 @@
 plugins {
-    alias(libs.plugins.kotlinMultiplatform)
+    `java-library`
+    alias(libs.plugins.kotlinJvm)
     alias(libs.plugins.detekt)
 }
 
-kotlin {
-    jvm()
+dependencies {
+    api(projects.dataApi)
 
-    sourceSets {
-        commonMain.dependencies {
-            api(projects.dataApi)
-        }
-
-        commonTest.dependencies {
-            implementation(libs.kotlin.test)
-            implementation(libs.mockk)
-            implementation(libs.kotlinx.coroutinesTest)
-            implementation(libs.turbine)
-        }
-    }
-}
-
-detekt {
-    source.setFrom("src/commonMain/kotlin", "src/commonTest/kotlin")
+    testImplementation(libs.kotlin.test)
+    testImplementation(libs.mockk)
+    testImplementation(libs.kotlinx.coroutinesTest)
+    testImplementation(libs.turbine)
 }
