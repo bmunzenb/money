@@ -1,11 +1,20 @@
 # AGENTS.md
 
 Conventions for working in this repo. This is a Kotlin Multiplatform project with a Compose Desktop
-presentation module (`desktop`); shared UI/theming/resources live in `shared`.
+app module (`desktop`); shared UI/theming/resources live in `shared`.
+
+The UI-independent presentation layer lives in `presentation`: ViewModels and their UI states,
+`Navigator` and the `Route` keys, `TopLevelDestination`, `MoneyRepositoryController`, the Koin
+`AppModule`, and their tests. `desktop` holds only the Compose UI (screens, components, `App.kt`,
+`Main.kt`, `navigationRouter`) and depends on `presentation`, so another UI module can reuse the same
+presentation layer. Both modules use the same `com.munzenberger.money.desktop.<feature>` packages, so a
+screen and its ViewModel share a package even though they're in different modules. Keep Material and
+other UI-toolkit types out of `presentation`.
 
 ## Navigation (Navigation3)
 
-Routes are defined in `desktop/src/main/kotlin/com/munzenberger/money/desktop/navigation/Route.kt`:
+Routes are defined in `presentation/src/main/kotlin/com/munzenberger/money/desktop/navigation/Route.kt`,
+and wired to screens in `desktop/src/main/kotlin/com/munzenberger/money/desktop/navigation/NavigationRouter.kt`:
 
 ```kotlin
 @Serializable
@@ -17,6 +26,7 @@ sealed interface Route : NavKey {
     data object AccountList : Route
 }
 
+// desktop
 val navigationRouter = entryProvider<Route> {
     entry<Route.Welcome> { WelcomeScreen() }
     entry<Route.AccountList> { AccountListScreen() }
@@ -31,7 +41,7 @@ val navigationRouter = entryProvider<Route> {
   `accounts/AccountListScreen.kt`.
 
 The back stack is owned by the `Navigator` singleton
-(`desktop/src/main/kotlin/com/munzenberger/money/desktop/navigation/Navigator.kt`, registered with
+(`presentation/src/main/kotlin/com/munzenberger/money/desktop/navigation/Navigator.kt`, registered with
 `single { Navigator() }` in `AppModule`). It holds the `NavBackStack<Route>` (starting at
 `Route.Welcome`) and exposes `currentRoute: StateFlow<Route?>` (the top of the stack). ViewModels take
 `Navigator` as a constructor dependency and navigate through `navigate { ... }`, which applies the
@@ -49,19 +59,20 @@ navigator.navigate { removeLast() }
 Reading `navigator.backStack` is fine, but prefer `currentRoute` when you only need the top route.
 
 Top-level destinations are listed in the `TopLevelDestination` enum
-(`desktop/.../desktop/rail/TopLevelDestination.kt`: route, icon, label) and shown in the Material 3
+(`presentation/.../desktop/rail/TopLevelDestination.kt`: route, label; its icon is mapped in
+`desktop/.../desktop/rail/TopLevelDestinationIcons.kt`) and shown in the Material 3
 Expressive `WideNavigationRail` in `rail/AppNavigationRail.kt`, which the user can collapse or expand.
 `AppNavigationRailViewModel` selects the top-most top-level destination in the back stack (so a
 screen pushed on top, like `NewAccount` over `AccountList`, keeps its parent selected) and switches destinations by
 replacing the stack (`clear(); add(route)`), not pushing onto it, so peers don't build up back history. To
-add a top-level screen, add a `Route`, its `entry`, and a `TopLevelDestination` entry.
+add a top-level screen, add a `Route`, its `entry`, a `TopLevelDestination` entry, and its icon.
 
 `App.kt` (the root composable) injects the `Navigator` with `koinInject()` and hands
 `navigator.backStack` and `navigationRouter` to the single `NavDisplay`; it doesn't apply navigation
 itself. `NavDisplay` is given `rememberSaveableStateHolderNavEntryDecorator()` and
 `rememberViewModelStoreNavEntryDecorator()` (in that order), so each back stack entry has its own
 `ViewModelStoreOwner`: a screen's `koinViewModel()` is scoped to its entry and cleared when the entry is
-popped, and navigating to the screen again starts with a fresh ViewModel. App-wide reactive navigation lives in `AppViewModel` (`desktop/.../desktop/AppViewModel.kt`):
+popped, and navigating to the screen again starts with a fresh ViewModel. App-wide reactive navigation lives in `AppViewModel` (`presentation/.../desktop/AppViewModel.kt`):
 in `init` it collects `MoneyRepositoryController.moneyRepository` and does
 `navigator.navigate { clear(); add(...) }` to `AccountList`/`Welcome` depending on whether a
 repository is open. It also exposes `state: StateFlow<AppUiState>` (`isRepositoryConnected`), which
@@ -70,8 +81,8 @@ repository is open. It also exposes `state: StateFlow<AppUiState>` (`isRepositor
 
 ## ViewModels
 
-Each screen that needs one has its own `ViewModel`, defined alongside the screen composable in the
-same package, e.g. `welcome/WelcomeViewModel.kt`, `accounts/AccountListViewModel.kt`. It extends
+Each screen that needs one has its own `ViewModel`, defined in `presentation` in the same package as
+the screen composable, e.g. `welcome/WelcomeViewModel.kt`, `accounts/AccountListViewModel.kt`. It extends
 `androidx.lifecycle.ViewModel` and takes any dependencies (singletons like `MoneyRepositoryController`)
 as constructor params:
 
@@ -84,7 +95,7 @@ class WelcomeViewModel(
 Non-screen UI (e.g. `rail/AppNavigationRailViewModel.kt`) and the root
 `AppViewModel` follow the same pattern.
 
-Register it in `desktop/src/main/kotlin/com/munzenberger/money/desktop/inject/AppModule.kt` with Koin's
+Register it in `presentation/src/main/kotlin/com/munzenberger/money/desktop/inject/AppModule.kt` with Koin's
 `viewModel { ... }` DSL, passing constructor deps via `get()`. Singletons are registered with
 `single { ... }` in the same module:
 
@@ -283,7 +294,7 @@ class CreateAccountUseCase {
 
 Register it in `AppModule` with `factory { ... }` and pass it to the ViewModel's constructor. The
 ViewModel also takes the `MoneyRepositoryController`
-(`desktop/.../desktop/database/MoneyRepositoryController.kt`), which tracks the open database, and
+(`presentation/.../desktop/database/MoneyRepositoryController.kt`), which tracks the open database, and
 supplies the open repository:
 
 - to write, it reads `repositoryController.moneyRepository.value` and calls the use case like a

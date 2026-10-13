@@ -33,6 +33,7 @@ plugins {
 }
 
 include(":desktop")
+include(":presentation")
 include(":data-api")
 include(":data-sql")
 include(":shared")

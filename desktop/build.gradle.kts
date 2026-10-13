@@ -4,27 +4,15 @@ plugins {
     alias(libs.plugins.kotlinJvm)
     alias(libs.plugins.composeMultiplatform)
     alias(libs.plugins.composeCompiler)
-    alias(libs.plugins.kotlinSerialization)
     alias(libs.plugins.detekt)
 }
 
 dependencies {
-    implementation(projects.shared)
-    implementation(projects.core)
-    implementation(projects.dataSql)
+    implementation(projects.presentation)
 
     implementation(libs.kotlinx.coroutinesSwing)
 
     implementation(libs.compose.uiToolingPreview)
-
-    implementation(libs.filekit.core)
-    implementation(libs.filekit.dialogs)
-    implementation(libs.filekit.dialogs.compose)
-
-    testImplementation(libs.kotlin.test)
-    testImplementation(libs.kotlinx.coroutinesTest)
-    testImplementation(libs.turbine)
-    testImplementation(libs.mockk)
 }
 
 compose.desktop {

@@ -20,7 +20,7 @@ import money.shared.generated.resources.account_type_savings
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
-internal fun AccountTypeConstant.label(): String = stringResource(
+fun AccountTypeConstant.label(): String = stringResource(
     when (this) {
         AccountTypeConstant.Savings -> Res.string.account_type_savings
         AccountTypeConstant.Checking -> Res.string.account_type_checking
@@ -32,7 +32,7 @@ internal fun AccountTypeConstant.label(): String = stringResource(
 )
 
 @Composable
-internal fun AccountClassConstant.label(): String = stringResource(
+fun AccountClassConstant.label(): String = stringResource(
     when (this) {
         AccountClassConstant.Assets -> Res.string.account_class_assets
         AccountClassConstant.Liabilities -> Res.string.account_class_liabilities
@@ -40,7 +40,7 @@ internal fun AccountClassConstant.label(): String = stringResource(
 )
 
 @Composable
-internal fun AccountGrouping.label(): String = stringResource(
+fun AccountGrouping.label(): String = stringResource(
     when (this) {
         AccountGrouping.None -> Res.string.account_grouping_none
         AccountGrouping.AccountType -> Res.string.account_grouping_account_type
@@ -54,7 +54,7 @@ internal fun AccountGrouping.label(): String = stringResource(
  * "••••1234", or an empty string if there's no number. A number no longer than that is hidden
  * entirely and shows just the mask, so revealing its last characters wouldn't reveal all of it.
  */
-internal fun maskAccountNumber(number: String?): String {
+fun maskAccountNumber(number: String?): String {
     val trimmed = number?.trim().orEmpty()
     return when {
         trimmed.isEmpty() -> ""
