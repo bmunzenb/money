@@ -45,15 +45,15 @@ import com.munzenberger.money.desktop.theme.MoneyTheme
 import com.munzenberger.money.desktop.theme.PreviewThemed
 import com.munzenberger.money.presentation.accounts.label
 import com.munzenberger.money.presentation.accounts.maskAccountNumber
-import money.shared.generated.resources.Res
-import money.shared.generated.resources.account_group_all_title
-import money.shared.generated.resources.account_group_no_bank_title
-import money.shared.generated.resources.account_name_column_title
-import money.shared.generated.resources.account_number_column_title
-import money.shared.generated.resources.balance_column_title
-import money.shared.generated.resources.collapse_account_group_action
-import money.shared.generated.resources.expand_account_group_action
-import money.shared.generated.resources.total_balance_row_title
+import money.presentation.generated.resources.Res
+import money.presentation.generated.resources.account_group_all_title
+import money.presentation.generated.resources.account_group_no_bank_title
+import money.presentation.generated.resources.account_name_column_title
+import money.presentation.generated.resources.account_number_column_title
+import money.presentation.generated.resources.balance_column_title
+import money.presentation.generated.resources.collapse_account_group_action
+import money.presentation.generated.resources.expand_account_group_action
+import money.presentation.generated.resources.total_balance_row_title
 import org.jetbrains.compose.resources.stringResource
 
 /**

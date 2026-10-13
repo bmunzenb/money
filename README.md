@@ -1,27 +1,25 @@
-This is a Kotlin Multiplatform project targeting Desktop (JVM).
+This is a Kotlin JVM project with a Compose Desktop app.
 
-* [/shared](./shared/src) is for code that will be shared across your Compose Multiplatform applications.
-  It contains several subfolders:
-  - [commonMain](./shared/src/commonMain/kotlin) is for code that’s common for all targets.
-  - Other folders are for Kotlin code that will be compiled for only the platform indicated in the folder name.
-    For example, if you want to use Apple’s CoreCrypto for the iOS part of your Kotlin app,
-    the [iosMain](./shared/src/iosMain/kotlin) folder would be the right place for such calls.
-    Similarly, if you want to edit the Desktop (JVM) specific part, the [jvmMain](./shared/src/jvmMain/kotlin)
-    folder is the appropriate location.
+* [/desktop](./desktop/src) is the Compose Desktop app: the Material 3 UI and theme.
+* [/presentation](./presentation/src) is the UI-independent presentation layer: string resources,
+  ViewModels, navigation, and dependency injection.
+* [/core](./core/src) holds the use cases (business logic).
+* [/data-api](./data-api/src) defines the repository interfaces, and [/data-sql](./data-sql/src)
+  implements them with SQLDelight.
 
 ### Running the apps
 
 Use the run configurations provided by the run widget in your IDE's toolbar. You can also use these commands and options:
 
 - Desktop app:
-  - Hot reload: `./gradlew :desktopApp:hotRun --auto`
-  - Standard run: `./gradlew :desktopApp:run`
+  - Hot reload: `./gradlew :desktop:hotRun --auto`
+  - Standard run: `./gradlew :desktop:run`
 
 ### Running tests
 
 Use the run button in your IDE's editor gutter, or run tests using Gradle tasks:
 
-- Desktop tests: `./gradlew :shared:jvmTest`
+- All tests: `./gradlew test`
 
 ### Logging
 

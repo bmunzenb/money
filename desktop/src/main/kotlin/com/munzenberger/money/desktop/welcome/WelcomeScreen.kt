@@ -25,10 +25,10 @@ import com.munzenberger.money.presentation.database.rememberCreateDatabaseLaunch
 import com.munzenberger.money.presentation.database.rememberOpenDatabaseLauncher
 import com.munzenberger.money.presentation.welcome.WelcomeUiState
 import com.munzenberger.money.presentation.welcome.WelcomeViewModel
-import money.shared.generated.resources.Res
-import money.shared.generated.resources.create_database_button_title
-import money.shared.generated.resources.create_database_error_message
-import money.shared.generated.resources.open_database_button_title
+import money.presentation.generated.resources.Res
+import money.presentation.generated.resources.create_database_button_title
+import money.presentation.generated.resources.create_database_error_message
+import money.presentation.generated.resources.open_database_button_title
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 

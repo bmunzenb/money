@@ -1,11 +1,11 @@
 # AGENTS.md
 
-Conventions for working in this repo. This is a Kotlin Multiplatform project with a Compose Desktop
-app module (`desktop`); shared Compose resources (strings) live in `shared`. The Material theme
-(`MoneyTheme`, color scheme, typography, shapes, spacing) and all Material dependencies live in `desktop`
-(`desktop/.../desktop/theme/`), so `shared` and `presentation` stay free of Material.
+Conventions for working in this repo. This is a Kotlin JVM project with a Compose Desktop app module
+(`desktop`). The Material theme (`MoneyTheme`, color scheme, typography, shapes, spacing) and all
+Material dependencies live in `desktop` (`desktop/.../desktop/theme/`), so `presentation` stays free of
+Material.
 
-The UI-independent presentation layer lives in `presentation`: ViewModels and their UI states,
+The UI-independent presentation layer lives in `presentation`: string resources, ViewModels and their UI states,
 `Navigator` and the `Route` keys, `TopLevelDestination`, `MoneyRepositoryController`, the Koin
 `AppModule`, and their tests. `desktop` holds only the Compose UI (screens, components, `App.kt`,
 `Main.kt`, `navigationRouter`) and depends on `presentation`, so another UI module can reuse the same
@@ -227,7 +227,7 @@ Column(modifier = Modifier.fillMaxSize()) {
 
 ## String resources
 
-Strings live in `shared/src/commonMain/composeResources/values/strings.xml` (standard Android-style
+Strings live in `presentation/src/main/composeResources/values/strings.xml` (standard Android-style
 `strings.xml`, one module-wide file — not per-screen):
 
 ```xml
@@ -240,8 +240,8 @@ Strings live in `shared/src/commonMain/composeResources/values/strings.xml` (sta
 - Usage in Compose code:
 
   ```kotlin
-  import money.shared.generated.resources.Res
-  import money.shared.generated.resources.account_list_title
+  import money.presentation.generated.resources.Res
+  import money.presentation.generated.resources.account_list_title
   import org.jetbrains.compose.resources.stringResource
 
   Text(text = stringResource(Res.string.account_list_title))

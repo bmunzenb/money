@@ -7,9 +7,24 @@ plugins {
     alias(libs.plugins.detekt)
 }
 
+compose.resources {
+    publicResClass = true
+}
+
 dependencies {
-    api(projects.shared)
     api(projects.core)
+
+    api(libs.compose.runtime)
+    api(libs.compose.foundation)
+    api(libs.compose.ui)
+    api(libs.compose.components.resources)
+    api(libs.compose.uiToolingPreview)
+    api(libs.androidx.lifecycle.viewmodelCompose)
+    api(libs.androidx.lifecycle.runtimeCompose)
+    api(libs.navigation3.ui)
+    api(libs.lifecycle.viewmodelNavigation3)
+    api(libs.koin.compose)
+    api(libs.koin.compose.viewmodel)
     implementation(projects.dataSql)
 
     implementation(libs.filekit.core)

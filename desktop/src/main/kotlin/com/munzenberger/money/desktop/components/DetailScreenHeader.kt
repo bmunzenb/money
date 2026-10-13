@@ -17,8 +17,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.munzenberger.money.desktop.theme.MoneyTheme
 import com.munzenberger.money.desktop.theme.PreviewThemed
-import money.shared.generated.resources.Res
-import money.shared.generated.resources.back_button_description
+import money.presentation.generated.resources.Res
+import money.presentation.generated.resources.back_button_description
 import org.jetbrains.compose.resources.stringResource
 
 /**

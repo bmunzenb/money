@@ -18,11 +18,11 @@ import com.munzenberger.money.desktop.components.ScrollableLazyColumn
 import com.munzenberger.money.desktop.theme.PreviewThemed
 import com.munzenberger.money.presentation.payees.PayeeListUiState
 import com.munzenberger.money.presentation.payees.PayeeListViewModel
-import money.shared.generated.resources.Res
-import money.shared.generated.resources.add_payee_button_title
-import money.shared.generated.resources.payee_list_empty_message
-import money.shared.generated.resources.payee_list_error_message
-import money.shared.generated.resources.payee_list_title
+import money.presentation.generated.resources.Res
+import money.presentation.generated.resources.add_payee_button_title
+import money.presentation.generated.resources.payee_list_empty_message
+import money.presentation.generated.resources.payee_list_error_message
+import money.presentation.generated.resources.payee_list_title
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 

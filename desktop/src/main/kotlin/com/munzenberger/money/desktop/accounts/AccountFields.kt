@@ -32,20 +32,20 @@ import com.munzenberger.money.desktop.theme.MoneyTheme
 import com.munzenberger.money.presentation.accounts.LoadState
 import com.munzenberger.money.presentation.accounts.label
 import com.munzenberger.money.presentation.accounts.loadedOrEmpty
-import money.shared.generated.resources.Res
-import money.shared.generated.resources.account_closed_label
-import money.shared.generated.resources.account_name_error_message
-import money.shared.generated.resources.account_name_label
-import money.shared.generated.resources.account_number_label
-import money.shared.generated.resources.account_type_error_message
-import money.shared.generated.resources.account_type_label
-import money.shared.generated.resources.account_type_load_error_message
-import money.shared.generated.resources.comments_label
-import money.shared.generated.resources.financial_institution_label
-import money.shared.generated.resources.financial_institution_load_error_message
-import money.shared.generated.resources.initial_balance_error_message
-import money.shared.generated.resources.initial_balance_label
-import money.shared.generated.resources.required_field_label
+import money.presentation.generated.resources.Res
+import money.presentation.generated.resources.account_closed_label
+import money.presentation.generated.resources.account_name_error_message
+import money.presentation.generated.resources.account_name_label
+import money.presentation.generated.resources.account_number_label
+import money.presentation.generated.resources.account_type_error_message
+import money.presentation.generated.resources.account_type_label
+import money.presentation.generated.resources.account_type_load_error_message
+import money.presentation.generated.resources.comments_label
+import money.presentation.generated.resources.financial_institution_label
+import money.presentation.generated.resources.financial_institution_load_error_message
+import money.presentation.generated.resources.initial_balance_error_message
+import money.presentation.generated.resources.initial_balance_label
+import money.presentation.generated.resources.required_field_label
 import org.jetbrains.compose.resources.stringResource
 
 /** Required field for the account's name. */

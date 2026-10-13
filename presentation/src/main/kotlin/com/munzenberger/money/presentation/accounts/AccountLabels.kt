@@ -4,19 +4,19 @@ import androidx.compose.runtime.Composable
 import com.munzenberger.money.core.account.AccountGrouping
 import com.munzenberger.money.data.api.account.AccountClassConstant
 import com.munzenberger.money.data.api.account.AccountTypeConstant
-import money.shared.generated.resources.Res
-import money.shared.generated.resources.account_class_assets
-import money.shared.generated.resources.account_class_liabilities
-import money.shared.generated.resources.account_grouping_account_class
-import money.shared.generated.resources.account_grouping_account_type
-import money.shared.generated.resources.account_grouping_bank
-import money.shared.generated.resources.account_grouping_none
-import money.shared.generated.resources.account_type_asset
-import money.shared.generated.resources.account_type_cash
-import money.shared.generated.resources.account_type_checking
-import money.shared.generated.resources.account_type_credit
-import money.shared.generated.resources.account_type_loan
-import money.shared.generated.resources.account_type_savings
+import money.presentation.generated.resources.Res
+import money.presentation.generated.resources.account_class_assets
+import money.presentation.generated.resources.account_class_liabilities
+import money.presentation.generated.resources.account_grouping_account_class
+import money.presentation.generated.resources.account_grouping_account_type
+import money.presentation.generated.resources.account_grouping_bank
+import money.presentation.generated.resources.account_grouping_none
+import money.presentation.generated.resources.account_type_asset
+import money.presentation.generated.resources.account_type_cash
+import money.presentation.generated.resources.account_type_checking
+import money.presentation.generated.resources.account_type_credit
+import money.presentation.generated.resources.account_type_loan
+import money.presentation.generated.resources.account_type_savings
 import org.jetbrains.compose.resources.stringResource
 
 @Composable

@@ -29,10 +29,10 @@ import com.munzenberger.money.presentation.accounts.AccountFormUiState
 import com.munzenberger.money.presentation.accounts.AccountFormViewModel
 import com.munzenberger.money.presentation.accounts.LoadState
 import com.munzenberger.money.presentation.accounts.SaveState
-import money.shared.generated.resources.Res
-import money.shared.generated.resources.account_load_error_message
-import money.shared.generated.resources.edit_account_title
-import money.shared.generated.resources.new_account_title
+import money.presentation.generated.resources.Res
+import money.presentation.generated.resources.account_load_error_message
+import money.presentation.generated.resources.edit_account_title
+import money.presentation.generated.resources.new_account_title
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf

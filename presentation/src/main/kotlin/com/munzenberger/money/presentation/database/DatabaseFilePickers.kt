@@ -7,10 +7,10 @@ import io.github.vinceglb.filekit.dialogs.FileKitDialogParent
 import io.github.vinceglb.filekit.dialogs.FileKitDialogSettings
 import io.github.vinceglb.filekit.dialogs.compose.rememberFilePickerLauncher
 import io.github.vinceglb.filekit.dialogs.compose.rememberFileSaverLauncher
-import money.shared.generated.resources.Res
-import money.shared.generated.resources.create_database_dialog_title
-import money.shared.generated.resources.default_file_name
-import money.shared.generated.resources.open_database_dialog_title
+import money.presentation.generated.resources.Res
+import money.presentation.generated.resources.create_database_dialog_title
+import money.presentation.generated.resources.default_file_name
+import money.presentation.generated.resources.open_database_dialog_title
 import org.jetbrains.compose.resources.stringResource
 import java.io.File
 

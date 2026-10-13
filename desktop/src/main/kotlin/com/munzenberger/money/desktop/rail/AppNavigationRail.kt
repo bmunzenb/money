@@ -25,9 +25,9 @@ import com.munzenberger.money.desktop.theme.PreviewThemed
 import com.munzenberger.money.presentation.rail.AppNavigationRailViewModel
 import com.munzenberger.money.presentation.rail.TopLevelDestination
 import kotlinx.coroutines.launch
-import money.shared.generated.resources.Res
-import money.shared.generated.resources.collapse_navigation_rail_button_description
-import money.shared.generated.resources.expand_navigation_rail_button_description
+import money.presentation.generated.resources.Res
+import money.presentation.generated.resources.collapse_navigation_rail_button_description
+import money.presentation.generated.resources.expand_navigation_rail_button_description
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 

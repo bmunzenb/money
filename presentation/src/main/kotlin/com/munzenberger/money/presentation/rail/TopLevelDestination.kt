@@ -1,10 +1,10 @@
 package com.munzenberger.money.presentation.rail
 
 import com.munzenberger.money.presentation.navigation.Route
-import money.shared.generated.resources.Res
-import money.shared.generated.resources.accounts_button_title
-import money.shared.generated.resources.categories_button_title
-import money.shared.generated.resources.payees_button_title
+import money.presentation.generated.resources.Res
+import money.presentation.generated.resources.accounts_button_title
+import money.presentation.generated.resources.categories_button_title
+import money.presentation.generated.resources.payees_button_title
 import org.jetbrains.compose.resources.StringResource
 
 enum class TopLevelDestination(

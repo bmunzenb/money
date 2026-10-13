@@ -8,9 +8,9 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-import money.shared.generated.resources.Res
-import money.shared.generated.resources.create_database_error_message
-import money.shared.generated.resources.open_database_error_message
+import money.presentation.generated.resources.Res
+import money.presentation.generated.resources.create_database_error_message
+import money.presentation.generated.resources.open_database_error_message
 import java.io.File
 
 class WelcomeViewModel(
