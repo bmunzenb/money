@@ -7,6 +7,7 @@ import com.munzenberger.money.data.sql.SqlMoneyRepositoryConnector
 import com.munzenberger.money.presentation.MoneyRepositoryControllerFixture
 import io.mockk.mockk
 import io.mockk.verify
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
 import money.presentation.generated.resources.Res
 import money.presentation.generated.resources.create_database_error_message
@@ -52,7 +53,7 @@ class WelcomeViewModelTest {
     }
 
     @Test
-    fun `state moves to loading then back to idle while a database is created successfully`() = runTest {
+    fun `state stays loading after a database is created successfully`() = runTest {
         val file = createTempFile()
         val viewModel = WelcomeViewModel(controller)
 
@@ -62,12 +63,16 @@ class WelcomeViewModelTest {
             viewModel.createDatabase(file)
 
             assertEquals(WelcomeUiState.Loading, awaitItem())
-            assertEquals(WelcomeUiState.Idle, awaitItem())
+
+            // The screen is about to be replaced, so it keeps showing progress instead of its buttons.
+            controller.moneyRepository.first { it != null }
+            assertEquals(WelcomeUiState.Loading, viewModel.state.value)
+            expectNoEvents()
         }
     }
 
     @Test
-    fun `state moves to loading then back to idle while a database is opened successfully`() = runTest {
+    fun `state stays loading after a database is opened successfully`() = runTest {
         val file = createTempFile()
         val created = SqlMoneyRepositoryConnector(file).create()
         check(created is MoneyRepositoryConnectionStatus.Ready)
@@ -81,7 +86,11 @@ class WelcomeViewModelTest {
             viewModel.openDatabase(file)
 
             assertEquals(WelcomeUiState.Loading, awaitItem())
-            assertEquals(WelcomeUiState.Idle, awaitItem())
+
+            // The screen is about to be replaced, so it keeps showing progress instead of its buttons.
+            controller.moneyRepository.first { it != null }
+            assertEquals(WelcomeUiState.Loading, viewModel.state.value)
+            expectNoEvents()
         }
     }
 

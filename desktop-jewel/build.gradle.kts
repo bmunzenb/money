@@ -13,6 +13,7 @@ dependencies {
     implementation(libs.kotlinx.coroutinesSwing)
 
     implementation(libs.jewel.intUiStandalone)
+    implementation(libs.intellijPlatform.icons)
 
     implementation(libs.compose.uiToolingPreview)
 }
