@@ -79,6 +79,19 @@ class MoneyTest {
     }
 
     @Test
+    fun toStringFormatsAsAccountCurrency() {
+        assertEquals("$1,234.56", Money(123456, usd).toString(Locale.US, accountFormat = true))
+        assertEquals("($12.34)", Money(-1234, usd).toString(Locale.US, accountFormat = true))
+        assertEquals("$0.05", Money(5, usd).toString(Locale.US, accountFormat = true))
+    }
+
+    @Test
+    fun toStringFormatsAsAccountNumber() {
+        assertEquals("1,234.56", Money(123456, usd).toString(Locale.US, asCurrency = false, accountFormat = true))
+        assertEquals("-12.34", Money(-1234, usd).toString(Locale.US, asCurrency = false, accountFormat = true))
+    }
+
+    @Test
     fun toStringFormatsAsNumber() {
         assertEquals("1,234.56", Money(123456, usd).toString(Locale.US, asCurrency = false))
         assertEquals("12.50", Money(1250, usd).toString(Locale.US, asCurrency = false))

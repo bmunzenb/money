@@ -17,13 +17,20 @@ data class Money(
      * Formats this amount for [locale], converting [value] from whole fractional units (e.g. cents
      * for USD) to the currency's major unit (e.g. dollars). When [asCurrency] is true, the result
      * is formatted as [currency] (e.g. "$1,234.56"); otherwise as a plain number (e.g. "1,234.56").
+     * When [accountFormat] is true, [locale]'s accounting format is used, which shows negative
+     * currency amounts in parentheses (e.g. "($12.34)") rather than with a minus sign.
      */
-    fun toString(locale: Locale = Locale.getDefault(), asCurrency: Boolean = true): String {
+    fun toString(
+        locale: Locale = Locale.getDefault(),
+        asCurrency: Boolean = true,
+        accountFormat: Boolean = false,
+    ): String {
+        val formatLocale = if (accountFormat) locale.accountNumberFormat else locale
         val fractionDigits = currency.fractionDigits
         val format = if (asCurrency) {
-            NumberFormat.getCurrencyInstance(locale).also { it.currency = currency }
+            NumberFormat.getCurrencyInstance(formatLocale).also { it.currency = currency }
         } else {
-            NumberFormat.getNumberInstance(locale)
+            NumberFormat.getNumberInstance(formatLocale)
         }.apply {
             minimumFractionDigits = fractionDigits
             maximumFractionDigits = fractionDigits
@@ -92,3 +99,12 @@ data class Money(
 /** The number of fractional digits [this] currency uses, or 0 for pseudo-currencies that have none. */
 private val Currency.fractionDigits: Int
     get() = defaultFractionDigits.coerceAtLeast(0)
+
+/** [this] locale with the Unicode "cf-account" extension, which selects its accounting currency format. */
+private val Locale.accountNumberFormat: Locale
+    get() =
+        Locale
+            .Builder()
+            .setLocale(this)
+            .setExtension(Locale.UNICODE_LOCALE_EXTENSION, "cf-account")
+            .build()
