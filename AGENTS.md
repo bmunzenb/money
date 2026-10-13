@@ -1,23 +1,23 @@
 # AGENTS.md
 
 Conventions for working in this repo. This is a Kotlin JVM project with a Compose Desktop app module
-(`desktop`). The Material theme (`MoneyTheme`, color scheme, typography, shapes, spacing) and all
-Material dependencies live in `desktop` (`desktop/.../desktop/theme/`), so `presentation` stays free of
+(`desktop-material`). The Material theme (`MoneyTheme`, color scheme, typography, shapes, spacing) and all
+Material dependencies live in `desktop-material` (`desktop-material/.../desktop/theme/`), so `presentation` stays free of
 Material.
 
 The UI-independent presentation layer lives in `presentation`: string resources, ViewModels and their UI states,
 `Navigator` and the `Route` keys, `TopLevelDestination`, `MoneyRepositoryController`, the Koin
-`AppModule`, and their tests. `desktop` holds only the Compose UI (screens, components, `App.kt`,
+`AppModule`, and their tests. `desktop-material` holds only the Compose UI (screens, components, `App.kt`,
 `Main.kt`, `navigationRouter`) and depends on `presentation`, so another UI module can reuse the same
 presentation layer. Both modules group code by the same feature subpackages:
 `com.munzenberger.money.presentation.<feature>` in `presentation` and
-`com.munzenberger.money.desktop.<feature>` in `desktop`. Keep Material and other UI-toolkit types out of
+`com.munzenberger.money.desktop.<feature>` in `desktop-material`. Keep Material and other UI-toolkit types out of
 `presentation`.
 
 ## Navigation (Navigation3)
 
 Routes are defined in `presentation/src/main/kotlin/com/munzenberger/money/presentation/navigation/Route.kt`,
-and wired to screens in `desktop/src/main/kotlin/com/munzenberger/money/desktop/navigation/NavigationRouter.kt`:
+and wired to screens in `desktop-material/src/main/kotlin/com/munzenberger/money/desktop/navigation/NavigationRouter.kt`:
 
 ```kotlin
 @Serializable
@@ -29,7 +29,7 @@ sealed interface Route : NavKey {
     data object AccountList : Route
 }
 
-// desktop
+// desktop-material
 val navigationRouter = entryProvider<Route> {
     entry<Route.Welcome> { WelcomeScreen() }
     entry<Route.AccountList> { AccountListScreen() }
@@ -40,7 +40,7 @@ val navigationRouter = entryProvider<Route> {
   `Route` sealed interface.
 - Wire each route to its composable with `entry<Route.X> { XScreen() }` inside `navigationRouter`.
 - Screen composables live in their own subpackage under
-  `desktop/src/main/kotlin/com/munzenberger/money/desktop/<screenName>/`, e.g. `welcome/WelcomeScreen.kt`,
+  `desktop-material/src/main/kotlin/com/munzenberger/money/desktop/<screenName>/`, e.g. `welcome/WelcomeScreen.kt`,
   `accounts/AccountListScreen.kt`.
 
 The back stack is owned by the `Navigator` singleton
@@ -63,7 +63,7 @@ Reading `navigator.backStack` is fine, but prefer `currentRoute` when you only n
 
 Top-level destinations are listed in the `TopLevelDestination` enum
 (`presentation/.../presentation/rail/TopLevelDestination.kt`: route, label; its icon is mapped in
-`desktop/.../desktop/rail/TopLevelDestinationIcons.kt`) and shown in the Material 3
+`desktop-material/.../desktop/rail/TopLevelDestinationIcons.kt`) and shown in the Material 3
 Expressive `WideNavigationRail` in `rail/AppNavigationRail.kt`, which the user can collapse or expand.
 `AppNavigationRailViewModel` selects the top-most top-level destination in the back stack (so a
 screen pushed on top, like `NewAccount` over `AccountList`, keeps its parent selected) and switches destinations by
@@ -157,7 +157,7 @@ private fun XScreenPreview() {
 ## List screens
 
 List screens put their title and primary action (e.g. "New account") in `ListScreenHeader`
-(`desktop/.../desktop/components/ListScreenHeader.kt`), fixed above the list. The list goes in a
+(`desktop-material/.../desktop/components/ListScreenHeader.kt`), fixed above the list. The list goes in a
 `weight(1f)` container below it, so only the list scrolls and the action stays visible:
 
 ```kotlin
@@ -183,7 +183,7 @@ looks the same.
 
 Every scrollable area shows a scrollbar. Instead of a bare `LazyColumn` or
 `Column(Modifier.verticalScroll(...))`, use `ScrollableLazyColumn` or `ScrollableColumn`
-(`desktop/.../desktop/components/Scrollables.kt`). They overlay a theme-tinted `VerticalScrollbar` on the
+(`desktop-material/.../desktop/components/Scrollables.kt`). They overlay a theme-tinted `VerticalScrollbar` on the
 end edge. Pass the padding to `ScrollableColumn`'s `contentPadding` so the scrollbar sits in the end
 gutter instead of over the content.
 
@@ -197,7 +197,7 @@ field's text.
 ## Form sections
 
 Group related fields of a form in a `FormSectionCard`
-(`desktop/.../desktop/components/FormSectionCard.kt`): an outlined card on `surfaceContainerLowest` with a `titleMedium` heading. Its
+(`desktop-material/.../desktop/components/FormSectionCard.kt`): an outlined card on `surfaceContainerLowest` with a `titleMedium` heading. Its
 content is a `Column` that spaces the fields `MoneyTheme.spacing.small` apart:
 
 ```kotlin
@@ -210,7 +210,7 @@ FormSectionCard(title = stringResource(Res.string.account_section_title)) {
 ## Detail screens
 
 Screens pushed on top of another screen (e.g. `NewAccount` over `AccountList`) start with
-`DetailScreenHeader` (`desktop/.../desktop/components/DetailScreenHeader.kt`): a back button followed by
+`DetailScreenHeader` (`desktop-material/.../desktop/components/DetailScreenHeader.kt`): a back button followed by
 the title. Its back arrow lines up with `ListScreenHeader`'s title. Wire `onBackClick` to a ViewModel
 function that does `navigator.navigate { removeLast() }`:
 

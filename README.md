@@ -1,6 +1,6 @@
 This is a Kotlin JVM project with a Compose Desktop app.
 
-* [/desktop](./desktop/src) is the Compose Desktop app: the Material 3 UI and theme.
+* [/desktop-material](./desktop-material/src) is the Compose Desktop app: the Material 3 UI and theme.
 * [/presentation](./presentation/src) is the UI-independent presentation layer: string resources,
   ViewModels, navigation, and dependency injection.
 * [/core](./core/src) holds the use cases (business logic).
@@ -12,8 +12,8 @@ This is a Kotlin JVM project with a Compose Desktop app.
 Use the run configurations provided by the run widget in your IDE's toolbar. You can also use these commands and options:
 
 - Desktop app:
-  - Hot reload: `./gradlew :desktop:hotRun --auto`
-  - Standard run: `./gradlew :desktop:run`
+  - Hot reload: `./gradlew :desktop-material:hotRun --auto`
+  - Standard run: `./gradlew :desktop-material:run`
 
 ### Running tests
 
@@ -25,7 +25,7 @@ Use the run button in your IDE's editor gutter, or run tests using Gradle tasks:
 
 App code logs using the JDK's built-in `java.util.logging`, under the `com.munzenberger.money` package — no external logging library or configuration is required.
 
-For more verbose output during local development, create a `logging.local.properties` file at the repo root (it's `.gitignore`d, so it's per-developer and never committed). If present, `./gradlew :desktop:run` automatically picks it up via a `java.util.logging.config.file` JVM argument (see `desktop/build.gradle.kts`).
+For more verbose output during local development, create a `logging.local.properties` file at the repo root (it's `.gitignore`d, so it's per-developer and never committed). If present, `./gradlew :desktop-material:run` automatically picks it up via a `java.util.logging.config.file` JVM argument (see `desktop-material/build.gradle.kts`).
 
 Example that logs everything down to `FINEST` for `com.munzenberger.money` code, while keeping everything else (AWT/Swing, third-party libraries, etc.) at `WARNING` and above:
 
