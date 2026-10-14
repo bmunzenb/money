@@ -25,7 +25,7 @@ class WelcomeViewModel(
             stateFlow.value = WelcomeUiState.Loading
 
             stateFlow.value = when (repositoryController.createDatabase(file)) {
-                is MoneyRepositoryConnectionStatus.Ready -> WelcomeUiState.Idle
+                is MoneyRepositoryConnectionStatus.Ready -> WelcomeUiState.Loading
                 is MoneyRepositoryConnectionStatus.Failed ->
                     WelcomeUiState.Error(Res.string.create_database_error_message)
                 // Not yet supported; see MoneyRepositoryConnectionStatus.
@@ -41,7 +41,7 @@ class WelcomeViewModel(
             stateFlow.value = WelcomeUiState.Loading
 
             stateFlow.value = when (repositoryController.openDatabase(file)) {
-                is MoneyRepositoryConnectionStatus.Ready -> WelcomeUiState.Idle
+                is MoneyRepositoryConnectionStatus.Ready -> WelcomeUiState.Loading
                 is MoneyRepositoryConnectionStatus.Failed ->
                     WelcomeUiState.Error(Res.string.open_database_error_message)
                 // Not yet supported; see MoneyRepositoryConnectionStatus.

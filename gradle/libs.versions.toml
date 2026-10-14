@@ -14,6 +14,9 @@ sqldelight = "2.4.0"
 detekt = "2.0.0-alpha.6"
 koin = "4.2.2"
 filekit = "0.16.0"
+jewel = "0.41.0-262.10968.63"
+# The IntelliJ Platform build Jewel is compiled against: the suffix of the jewel version.
+intellijPlatform = "262.10968.63"
 
 [libraries]
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
@@ -44,6 +47,8 @@ koin-compose-viewmodel = { module = "io.insert-koin:koin-compose-viewmodel", ver
 filekit-core = { module = "io.github.vinceglb:filekit-core", version.ref = "filekit" }
 filekit-dialogs = { module = "io.github.vinceglb:filekit-dialogs", version.ref = "filekit" }
 filekit-dialogs-compose = { module = "io.github.vinceglb:filekit-dialogs-compose", version.ref = "filekit" }
+jewel-intUiStandalone = { module = "org.jetbrains.jewel:jewel-int-ui-standalone", version.ref = "jewel" }
+intellijPlatform-icons = { module = "com.jetbrains.intellij.platform:icons", version.ref = "intellijPlatform" }
 
 [plugins]
 composeMultiplatform = { id = "org.jetbrains.compose", version.ref = "composeMultiplatform" }
