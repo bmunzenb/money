@@ -11,4 +11,5 @@ javafx {
 
 application {
     mainClass = "com.munzenberger.money.desktop.MainKt"
+    applicationDefaultJvmArgs = listOf("--enable-native-access=javafx.graphics")
 }
