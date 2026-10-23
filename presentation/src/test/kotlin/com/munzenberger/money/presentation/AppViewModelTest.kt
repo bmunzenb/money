@@ -37,7 +37,7 @@ class AppViewModelTest {
     fun `navigates to Welcome when there is no repository`() = runTest {
         AppViewModel(navigator, controller)
 
-        assertEquals(listOf(Route.Welcome), navigator.backStack.toList())
+        assertEquals(listOf(Route.Welcome), navigator.backStack.value)
     }
 
     @Test
@@ -46,7 +46,7 @@ class AppViewModelTest {
 
         fixture.connect(mockk<MoneyRepository>(relaxUnitFun = true))
 
-        assertEquals(listOf(Route.AccountList), navigator.backStack.toList())
+        assertEquals(listOf(Route.AccountList), navigator.backStack.value)
     }
 
     @Test
@@ -56,7 +56,7 @@ class AppViewModelTest {
         fixture.connect(mockk<MoneyRepository>(relaxUnitFun = true))
         controller.close()
 
-        assertEquals(listOf(Route.Welcome), navigator.backStack.toList())
+        assertEquals(listOf(Route.Welcome), navigator.backStack.value)
     }
 
     @Test

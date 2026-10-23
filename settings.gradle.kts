@@ -25,12 +25,6 @@ dependencyResolutionManagement {
             }
         }
         mavenCentral()
-        // The IntelliJ Platform icons that Jewel's AllIconsKeys point to aren't on Maven Central.
-        maven("https://www.jetbrains.com/intellij-repository/releases") {
-            mavenContent {
-                includeModule("com.jetbrains.intellij.platform", "icons")
-            }
-        }
     }
 }
 
@@ -39,7 +33,7 @@ plugins {
 }
 
 include(":desktop-material")
-include(":desktop-jewel")
+include(":desktop-javafx")
 include(":presentation")
 include(":data-api")
 include(":data-sql")

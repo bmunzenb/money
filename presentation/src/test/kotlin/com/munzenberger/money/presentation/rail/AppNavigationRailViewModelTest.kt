@@ -65,7 +65,7 @@ class AppNavigationRailViewModelTest {
 
         viewModel.onDestinationClick(TopLevelDestination.Payees)
 
-        assertEquals(listOf(Route.PayeeList), navigator.backStack.toList())
+        assertEquals(listOf(Route.PayeeList), navigator.backStack.value)
     }
 
     @Test
@@ -75,6 +75,6 @@ class AppNavigationRailViewModelTest {
 
         viewModel.onDestinationClick(TopLevelDestination.Categories)
 
-        assertEquals(listOf(Route.Welcome, Route.CategoryList), navigator.backStack.toList())
+        assertEquals(listOf(Route.Welcome, Route.CategoryList), navigator.backStack.value)
     }
 }

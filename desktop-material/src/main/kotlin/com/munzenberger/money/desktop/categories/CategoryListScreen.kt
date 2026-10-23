@@ -21,11 +21,11 @@ import com.munzenberger.money.desktop.components.ScrollableLazyColumn
 import com.munzenberger.money.desktop.theme.PreviewThemed
 import com.munzenberger.money.presentation.categories.CategoryListUiState
 import com.munzenberger.money.presentation.categories.CategoryListViewModel
-import money.presentation.generated.resources.Res
-import money.presentation.generated.resources.add_category_button_title
-import money.presentation.generated.resources.category_list_empty_message
-import money.presentation.generated.resources.category_list_error_message
-import money.presentation.generated.resources.category_list_title
+import money.desktop_material.generated.resources.Res
+import money.desktop_material.generated.resources.add_category_button_title
+import money.desktop_material.generated.resources.category_list_empty_message
+import money.desktop_material.generated.resources.category_list_error_message
+import money.desktop_material.generated.resources.category_list_title
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 

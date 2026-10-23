@@ -1,4 +1,4 @@
-package com.munzenberger.money.presentation.database
+package com.munzenberger.money.desktop.database
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.ExperimentalComposeUiApi
@@ -7,10 +7,10 @@ import io.github.vinceglb.filekit.dialogs.FileKitDialogParent
 import io.github.vinceglb.filekit.dialogs.FileKitDialogSettings
 import io.github.vinceglb.filekit.dialogs.compose.rememberFilePickerLauncher
 import io.github.vinceglb.filekit.dialogs.compose.rememberFileSaverLauncher
-import money.presentation.generated.resources.Res
-import money.presentation.generated.resources.create_database_dialog_title
-import money.presentation.generated.resources.default_file_name
-import money.presentation.generated.resources.open_database_dialog_title
+import money.desktop_material.generated.resources.Res
+import money.desktop_material.generated.resources.create_database_dialog_title
+import money.desktop_material.generated.resources.default_file_name
+import money.desktop_material.generated.resources.open_database_dialog_title
 import org.jetbrains.compose.resources.stringResource
 import java.io.File
 

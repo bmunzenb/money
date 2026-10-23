@@ -21,14 +21,16 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import com.munzenberger.money.desktop.theme.MoneyTheme
 import com.munzenberger.money.desktop.theme.PreviewThemed
-import com.munzenberger.money.presentation.database.rememberCreateDatabaseLauncher
-import com.munzenberger.money.presentation.database.rememberOpenDatabaseLauncher
+import com.munzenberger.money.desktop.database.rememberCreateDatabaseLauncher
+import com.munzenberger.money.desktop.database.rememberOpenDatabaseLauncher
+import com.munzenberger.money.presentation.welcome.WelcomeError
 import com.munzenberger.money.presentation.welcome.WelcomeUiState
 import com.munzenberger.money.presentation.welcome.WelcomeViewModel
-import money.presentation.generated.resources.Res
-import money.presentation.generated.resources.create_database_button_title
-import money.presentation.generated.resources.create_database_error_message
-import money.presentation.generated.resources.open_database_button_title
+import money.desktop_material.generated.resources.Res
+import money.desktop_material.generated.resources.create_database_button_title
+import money.desktop_material.generated.resources.create_database_error_message
+import money.desktop_material.generated.resources.open_database_button_title
+import money.desktop_material.generated.resources.open_database_error_message
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 
@@ -83,7 +85,12 @@ private fun WelcomeScreenContent(
 
             if (state is WelcomeUiState.Error) {
                 Text(
-                    text = stringResource(state.messageRes),
+                    text = stringResource(
+                        when (state.error) {
+                            WelcomeError.CreateDatabaseFailed -> Res.string.create_database_error_message
+                            WelcomeError.OpenDatabaseFailed -> Res.string.open_database_error_message
+                        }
+                    ),
                     color = MoneyTheme.colorScheme.error
                 )
             }
@@ -120,7 +127,7 @@ private fun WelcomeScreenLoadingPreview() {
 private fun WelcomeScreenErrorPreview() {
     PreviewThemed {
         WelcomeScreenContent(
-            state = WelcomeUiState.Error(Res.string.create_database_error_message),
+            state = WelcomeUiState.Error(WelcomeError.CreateDatabaseFailed),
             onCreateDatabaseClick = {},
             onOpenDatabaseClick = {}
         )

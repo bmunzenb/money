@@ -43,17 +43,16 @@ import com.munzenberger.money.data.api.account.AccountTypeId
 import com.munzenberger.money.data.api.bank.Bank
 import com.munzenberger.money.desktop.theme.MoneyTheme
 import com.munzenberger.money.desktop.theme.PreviewThemed
-import com.munzenberger.money.presentation.accounts.label
 import com.munzenberger.money.presentation.accounts.maskAccountNumber
-import money.presentation.generated.resources.Res
-import money.presentation.generated.resources.account_group_all_title
-import money.presentation.generated.resources.account_group_no_bank_title
-import money.presentation.generated.resources.account_name_column_title
-import money.presentation.generated.resources.account_number_column_title
-import money.presentation.generated.resources.balance_column_title
-import money.presentation.generated.resources.collapse_account_group_action
-import money.presentation.generated.resources.expand_account_group_action
-import money.presentation.generated.resources.total_balance_row_title
+import money.desktop_material.generated.resources.Res
+import money.desktop_material.generated.resources.account_group_all_title
+import money.desktop_material.generated.resources.account_group_no_bank_title
+import money.desktop_material.generated.resources.account_name_column_title
+import money.desktop_material.generated.resources.account_number_column_title
+import money.desktop_material.generated.resources.balance_column_title
+import money.desktop_material.generated.resources.collapse_account_group_action
+import money.desktop_material.generated.resources.expand_account_group_action
+import money.desktop_material.generated.resources.total_balance_row_title
 import org.jetbrains.compose.resources.stringResource
 
 /**

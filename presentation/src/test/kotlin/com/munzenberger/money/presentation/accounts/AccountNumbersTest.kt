@@ -3,7 +3,7 @@ package com.munzenberger.money.presentation.accounts
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
-class AccountLabelsTest {
+class AccountNumbersTest {
 
     @Test
     fun `masks all but the last four characters`() {
