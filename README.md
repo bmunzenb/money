@@ -1,9 +1,6 @@
 This is a Kotlin JVM project with a Compose Desktop app.
 
 * [/desktop-material](./desktop-material/src) is the Compose Desktop app: the Material 3 UI and theme.
-* [/desktop-jewel](./desktop-jewel/src) is an alternative Compose Desktop app built with IntelliJ's
-  [Jewel](https://github.com/JetBrains/intellij-community/tree/master/platform/jewel) components. It's a
-  work in progress.
 * [/presentation](./presentation/src) is the UI-independent presentation layer: string resources,
   ViewModels, navigation, and dependency injection.
 * [/core](./core/src) holds the use cases (business logic).
@@ -17,8 +14,6 @@ Use the run configurations provided by the run widget in your IDE's toolbar. You
 - Desktop app:
   - Hot reload: `./gradlew :desktop-material:hotRun --auto`
   - Standard run: `./gradlew :desktop-material:run`
-- Jewel desktop app: `./gradlew :desktop-jewel:run`. Jewel only supports the JetBrains Runtime, so this
-  runs on a JBR 25, which Gradle finds among your installed JDKs or downloads.
 
 ### Running tests
 
