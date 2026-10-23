@@ -184,6 +184,7 @@ class SqlRegisterRepositoryTest {
                     categoryEntryId = entry.id,
                     categoryId = groceries.id,
                     categoryName = "Groceries",
+                    parentCategoryId = null,
                     parentCategoryName = null,
                     amount = Money(-2500),
                 ),
@@ -206,7 +207,7 @@ class SqlRegisterRepositoryTest {
     }
 
     @Test
-    fun `category entry includes the name of its immediate parent category`() = runTest {
+    fun `category entry includes the id and name of its immediate parent category`() = runTest {
         val fixture = createFixture()
         val account = fixture.createAccount()
         val auto = fixture.createCategory("Auto")
@@ -219,8 +220,11 @@ class SqlRegisterRepositoryTest {
         val entries = (fixture.register(account).single() as RegisterEntry.Transaction).entries
             .map { it as RegisterEntry.Transaction.Entry.Category }
         assertEquals(
-            listOf("Fuel" to "Auto", "Premium" to "Fuel"),
-            entries.map { it.categoryName to it.parentCategoryName },
+            listOf(
+                Triple("Fuel", auto.id, "Auto"),
+                Triple("Premium", fuel.id, "Fuel"),
+            ),
+            entries.map { Triple(it.categoryName, it.parentCategoryId, it.parentCategoryName) },
         )
     }
 
@@ -243,6 +247,7 @@ class SqlRegisterRepositoryTest {
                     categoryEntryId = first.id,
                     categoryId = groceries.id,
                     categoryName = "Groceries",
+                    parentCategoryId = null,
                     parentCategoryName = null,
                     amount = Money(-200),
                 ),
@@ -256,6 +261,7 @@ class SqlRegisterRepositoryTest {
                     categoryEntryId = second.id,
                     categoryId = dining.id,
                     categoryName = "Dining",
+                    parentCategoryId = null,
                     parentCategoryName = null,
                     amount = Money(-300),
                 ),

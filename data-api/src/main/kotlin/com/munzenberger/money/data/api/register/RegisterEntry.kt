@@ -40,6 +40,7 @@ sealed class RegisterEntry {
                 val categoryEntryId: CategoryEntryId,
                 val categoryId: CategoryId,
                 val categoryName: String,
+                val parentCategoryId: CategoryId?,
                 val parentCategoryName: String?,
                 override val amount: Money,
             ) : Entry()
