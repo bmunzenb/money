@@ -23,6 +23,7 @@ import org.koin.compose.viewmodel.koinViewModel
 fun App(viewModel: AppViewModel = koinViewModel()) {
     val navigator: Navigator = koinInject()
     val state by viewModel.state.collectAsState()
+    val backStack by navigator.backStack.collectAsState()
 
     MoneyTheme {
         Row(
@@ -33,7 +34,8 @@ fun App(viewModel: AppViewModel = koinViewModel()) {
             if (state.isRepositoryConnected) AppNavigationRail()
 
             NavDisplay(
-                backStack = navigator.backStack,
+                backStack = backStack,
+                onBack = { navigator.navigate { if (size > 1) removeAt(lastIndex) } },
                 entryDecorators = listOf(
                     rememberSaveableStateHolderNavEntryDecorator(),
                     rememberViewModelStoreNavEntryDecorator(),

@@ -168,7 +168,7 @@ class AccountListViewModelTest {
 
         viewModel().onAddAccountClick()
 
-        assertEquals(listOf(Route.AccountList, Route.NewAccount), navigator.backStack.toList())
+        assertEquals(listOf(Route.AccountList, Route.NewAccount), navigator.backStack.value)
     }
 
     @Test
@@ -179,6 +179,6 @@ class AccountListViewModelTest {
 
         viewModel().onAccountClick(account)
 
-        assertEquals(listOf(Route.AccountList, Route.EditAccount(account.id)), navigator.backStack.toList())
+        assertEquals(listOf(Route.AccountList, Route.EditAccount(account.id)), navigator.backStack.value)
     }
 }

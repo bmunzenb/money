@@ -23,7 +23,7 @@ class AppNavigationRailViewModel(
     // Screens pushed on top of a top-level destination (e.g. NewAccount over AccountList) keep that
     // destination selected.
     private fun selectedDestination(): TopLevelDestination? =
-        navigator.backStack.asReversed().firstNotNullOfOrNull { TopLevelDestination.of(it) }
+        navigator.backStack.value.asReversed().firstNotNullOfOrNull { TopLevelDestination.of(it) }
 
     fun onDestinationClick(destination: TopLevelDestination) {
         if (navigator.currentRoute.value != destination.route) {

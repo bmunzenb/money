@@ -1,5 +1,7 @@
 package com.munzenberger.money.presentation.navigation
 
+import app.cash.turbine.test
+import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -9,7 +11,7 @@ class NavigatorTest {
 
     @Test
     fun `backStack starts with the Welcome route`() {
-        assertEquals(listOf(Route.Welcome), navigator.backStack.toList())
+        assertEquals(listOf(Route.Welcome), navigator.backStack.value)
     }
 
     @Test
@@ -19,7 +21,7 @@ class NavigatorTest {
             add(Route.AccountList)
         }
 
-        assertEquals(listOf(Route.AccountList), navigator.backStack.toList())
+        assertEquals(listOf(Route.AccountList), navigator.backStack.value)
     }
 
     @Test
@@ -34,5 +36,18 @@ class NavigatorTest {
 
         navigator.navigate { removeAt(lastIndex) }
         assertEquals(Route.Welcome, navigator.currentRoute.value)
+    }
+
+    @Test
+    fun `collecting currentRoute emits the top of the back stack as it changes`() = runTest {
+        navigator.currentRoute.test {
+            assertEquals(Route.Welcome, awaitItem())
+
+            navigator.navigate { add(Route.AccountList) }
+            assertEquals(Route.AccountList, awaitItem())
+
+            navigator.navigate { removeAt(lastIndex) }
+            assertEquals(Route.Welcome, awaitItem())
+        }
     }
 }

@@ -1,11 +1,10 @@
 package com.munzenberger.money.presentation.navigation
 
-import androidx.navigation3.runtime.NavKey
 import com.munzenberger.money.data.api.account.AccountId
 import kotlinx.serialization.Serializable
 
 @Serializable
-sealed interface Route : NavKey {
+sealed interface Route {
     @Serializable
     data object Welcome : Route
 

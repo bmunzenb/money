@@ -22,7 +22,7 @@ and wired to screens in `desktop-material/src/main/kotlin/com/munzenberger/money
 
 ```kotlin
 @Serializable
-sealed interface Route : NavKey {
+sealed interface Route {
     @Serializable
     data object Welcome : Route
 
@@ -38,7 +38,8 @@ val navigationRouter = entryProvider<Route> {
 ```
 
 - Each route is a `@Serializable data object` (or `data class` if it needs args) nested in the
-  `Route` sealed interface.
+  `Route` sealed interface. `Route` is a plain Kotlin type, not a Navigation3 `NavKey`, so `presentation`
+  doesn't depend on Navigation3 types; `NavDisplay` accepts any key type.
 - Wire each route to its composable with `entry<Route.X> { XScreen() }` inside `navigationRouter`.
 - Screen composables live in their own subpackage under
   `desktop-material/src/main/kotlin/com/munzenberger/money/desktop/<screenName>/`, e.g. `welcome/WelcomeScreen.kt`,
@@ -46,11 +47,12 @@ val navigationRouter = entryProvider<Route> {
 
 The back stack is owned by the `Navigator` singleton
 (`presentation/src/main/kotlin/com/munzenberger/money/presentation/navigation/Navigator.kt`, registered with
-`single { Navigator() }` in `AppModule`). It holds the `NavBackStack<Route>` (starting at
-`Route.Welcome`) and exposes `currentRoute: StateFlow<Route?>` (the top of the stack). ViewModels take
-`Navigator` as a constructor dependency and navigate through `navigate { ... }`, which applies the
-change to the back stack immediately and updates `currentRoute` — don't mutate `navigator.backStack`
-directly:
+`single { Navigator() }` in `AppModule`). It exposes the back stack as a plain
+`backStack: StateFlow<List<Route>>` (starting at `Route.Welcome`), with no Navigation3 or Compose types, and
+`currentRoute: StateFlow<Route?>` (the top of the stack). ViewModels take `Navigator` as a constructor
+dependency and navigate through `navigate { ... }`, which applies the change to a mutable copy of the back
+stack, publishes it, and updates `currentRoute` to its new top, so both `backStack.value` and
+`currentRoute.value` reflect it as soon as `navigate` returns:
 
 ```kotlin
 navigator.navigate { add(Route.AccountList) }
@@ -60,7 +62,7 @@ navigator.navigate { clear(); add(Route.AccountList) }
 navigator.navigate { removeLast() }
 ```
 
-Reading `navigator.backStack` is fine, but prefer `currentRoute` when you only need the top route.
+Reading `navigator.backStack.value` is fine, but prefer `currentRoute` when you only need the top route.
 
 Top-level destinations are listed in the `TopLevelDestination` enum
 (`presentation/.../presentation/rail/TopLevelDestination.kt`: route; its icon and label are mapped in
@@ -71,9 +73,10 @@ screen pushed on top, like `NewAccount` over `AccountList`, keeps its parent sel
 replacing the stack (`clear(); add(route)`), not pushing onto it, so peers don't build up back history. To
 add a top-level screen, add a `Route`, its `entry`, a `TopLevelDestination` entry, and its icon and label.
 
-`App.kt` (the root composable) injects the `Navigator` with `koinInject()` and hands
-`navigator.backStack` and `navigationRouter` to the single `NavDisplay`; it doesn't apply navigation
-itself. `NavDisplay` is given `rememberSaveableStateHolderNavEntryDecorator()` and
+`App.kt` (the root composable) injects the `Navigator` with `koinInject()`, collects
+`navigator.backStack` with `collectAsState()`, and hands it and `navigationRouter` to the single `NavDisplay`.
+Since that list is read-only, `NavDisplay`'s `onBack` pops through `navigator.navigate { ... }` (never
+below the last route); otherwise `App.kt` doesn't apply navigation itself. `NavDisplay` is given `rememberSaveableStateHolderNavEntryDecorator()` and
 `rememberViewModelStoreNavEntryDecorator()` (in that order), so each back stack entry has its own
 `ViewModelStoreOwner`: a screen's `koinViewModel()` is scoped to its entry and cleared when the entry is
 popped, and navigating to the screen again starts with a fresh ViewModel. App-wide reactive navigation lives in `AppViewModel` (`presentation/.../presentation/AppViewModel.kt`):

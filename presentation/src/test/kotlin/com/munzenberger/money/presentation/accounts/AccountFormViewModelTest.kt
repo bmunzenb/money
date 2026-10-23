@@ -344,7 +344,7 @@ class AccountFormViewModelTest {
 
         viewModel.onBackClick()
 
-        assertEquals(listOf(Route.AccountList), navigator.backStack.toList())
+        assertEquals(listOf(Route.AccountList), navigator.backStack.value)
         assertEquals(Route.AccountList, navigator.currentRoute.value)
     }
 
@@ -497,7 +497,7 @@ class AccountFormViewModelTest {
 
         viewModel.onSaveClick()
 
-        assertEquals(listOf(Route.AccountList), navigator.backStack.toList())
+        assertEquals(listOf(Route.AccountList), navigator.backStack.value)
     }
 
     @Test
@@ -664,7 +664,7 @@ class AccountFormViewModelTest {
             )
         }
         coVerify(exactly = 0) { createAccount(any(), any()) }
-        assertEquals(listOf(Route.AccountList), navigator.backStack.toList())
+        assertEquals(listOf(Route.AccountList), navigator.backStack.value)
     }
 
     @Test
