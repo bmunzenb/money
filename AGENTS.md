@@ -7,7 +7,7 @@ Material.
 
 The UI-independent presentation layer lives in `presentation`: ViewModels and their UI states,
 `Navigator` and the `Route` keys, `TopLevelDestination`, `MoneyRepositoryController`, the Koin
-`AppModule`, and their tests. `desktop-material` holds the Compose UI (screens, components, `App.kt`,
+`PresentationModule`, and their tests. `desktop-material` holds the Compose UI (screens, components, `App.kt`,
 `Main.kt`, `navigationRouter`), its string resources and composable helpers such as the database file
 pickers, and depends on `presentation`, so another UI module can reuse the same presentation layer. Both modules group code by the same feature subpackages:
 `com.munzenberger.money.presentation.<feature>` in `presentation` and
@@ -47,7 +47,7 @@ val navigationRouter = entryProvider<Route> {
 
 The back stack is owned by the `Navigator` singleton
 (`presentation/src/main/kotlin/com/munzenberger/money/presentation/navigation/Navigator.kt`, registered with
-`single { Navigator() }` in `AppModule`). It exposes the back stack as a plain
+`single { Navigator() }` in `PresentationModule`). It exposes the back stack as a plain
 `backStack: StateFlow<List<Route>>` (starting at `Route.Welcome`), with no Navigation3 or Compose types, and
 `currentRoute: StateFlow<Route?>` (the top of the stack). ViewModels take `Navigator` as a constructor
 dependency and navigate through `navigate { ... }`, which applies the change to a mutable copy of the back
@@ -102,12 +102,12 @@ class WelcomeViewModel(
 Non-screen UI (e.g. `rail/AppNavigationRailViewModel.kt`) and the root
 `AppViewModel` follow the same pattern.
 
-Register it in `presentation/src/main/kotlin/com/munzenberger/money/presentation/inject/AppModule.kt` with Koin's
+Register it in `presentation/src/main/kotlin/com/munzenberger/money/presentation/inject/PresentationModule.kt` with Koin's
 `viewModel { ... }` DSL, passing constructor deps via `get()`. Singletons are registered with
 `single { ... }` in the same module:
 
 ```kotlin
-val appModule = module {
+val presentationModule = module {
     single { MoneyRepositoryController(/* ... */) }
     single { Navigator() }
 
@@ -299,7 +299,7 @@ class CreateAccountUseCase {
 }
 ```
 
-Register it in `AppModule` with `factory { ... }` and pass it to the ViewModel's constructor. The
+Register it in `PresentationModule` with `factory { ... }` and pass it to the ViewModel's constructor. The
 ViewModel also takes the `MoneyRepositoryController`
 (`presentation/.../presentation/database/MoneyRepositoryController.kt`), which tracks the open database, and
 supplies the open repository:

@@ -16,7 +16,7 @@ import com.munzenberger.money.presentation.welcome.WelcomeViewModel
 import org.koin.core.module.dsl.viewModel
 import org.koin.dsl.module
 
-val appModule = module {
+val presentationModule = module {
     single { MoneyRepositoryController(connectorFactory = { file -> SqlMoneyRepositoryConnector(file) }) }
     single { Navigator() }
 
