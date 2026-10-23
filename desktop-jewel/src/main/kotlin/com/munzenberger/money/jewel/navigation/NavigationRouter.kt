@@ -6,6 +6,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.navigation3.runtime.entryProvider
+import com.munzenberger.money.jewel.accounts.AccountListScreen
 import com.munzenberger.money.jewel.welcome.WelcomeScreen
 import com.munzenberger.money.presentation.navigation.Route
 import org.jetbrains.jewel.ui.component.Text
@@ -16,7 +17,7 @@ val navigationRouter = entryProvider<Route> {
     }
 
     entry<Route.AccountList> {
-        RoutePlaceholder(it)
+        AccountListScreen()
     }
 
     entry<Route.NewAccount> {

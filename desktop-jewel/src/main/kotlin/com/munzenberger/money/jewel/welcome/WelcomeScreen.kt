@@ -3,7 +3,6 @@ package com.munzenberger.money.jewel.welcome
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.width
@@ -26,11 +25,8 @@ import money.presentation.generated.resources.open_database_button_title
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.jewel.foundation.theme.JewelTheme
 import org.jetbrains.jewel.ui.component.CircularProgressIndicatorBig
-import org.jetbrains.jewel.ui.component.Icon
 import org.jetbrains.jewel.ui.component.OutlinedButton
 import org.jetbrains.jewel.ui.component.Text
-import org.jetbrains.jewel.ui.icon.IconKey
-import org.jetbrains.jewel.ui.icons.AllIconsKeys
 import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
@@ -66,13 +62,11 @@ private fun WelcomeScreenContent(
                 modifier = Modifier.width(IntrinsicSize.Max),
             ) {
                 WelcomeButton(
-                    icon = AllIconsKeys.Actions.AddFile,
                     text = stringResource(Res.string.create_database_button_title),
                     onClick = onCreateDatabaseClick,
                 )
 
                 WelcomeButton(
-                    icon = AllIconsKeys.Actions.MenuOpen,
                     text = stringResource(Res.string.open_database_button_title),
                     onClick = onOpenDatabaseClick,
                 )
@@ -90,19 +84,11 @@ private fun WelcomeScreenContent(
 
 @Composable
 private fun WelcomeButton(
-    icon: IconKey,
     text: String,
     onClick: () -> Unit,
 ) {
     OutlinedButton(onClick = onClick, modifier = Modifier.fillMaxWidth()) {
-        Row(
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.fillMaxWidth(),
-        ) {
-            Icon(key = icon, contentDescription = null)
-            Text(text = text)
-        }
+        Text(text = text)
     }
 }
 
