@@ -21,7 +21,6 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.tooling.preview.Preview
@@ -35,6 +34,7 @@ import com.munzenberger.money.data.api.account.AccountClassId
 import com.munzenberger.money.data.api.account.AccountType
 import com.munzenberger.money.data.api.account.AccountTypeConstant
 import com.munzenberger.money.data.api.account.AccountTypeId
+import com.munzenberger.money.jewel.theme.ContentBackground
 import com.munzenberger.money.jewel.theme.PreviewThemed
 import com.munzenberger.money.presentation.accounts.AccountListUiState
 import com.munzenberger.money.presentation.accounts.AccountListViewModel
@@ -55,7 +55,6 @@ import org.jetbrains.jewel.ui.component.ListComboBox
 import org.jetbrains.jewel.ui.component.Text
 import org.jetbrains.jewel.ui.component.VerticallyScrollableContainer
 import org.jetbrains.jewel.ui.Orientation
-import org.jetbrains.jewel.ui.theme.colorPalette
 import org.jetbrains.jewel.ui.typography
 import org.koin.compose.viewmodel.koinViewModel
 
@@ -78,7 +77,6 @@ private fun AccountListScreenContent(
     onAddAccountClick: () -> Unit,
     onAccountClick: (Account) -> Unit,
 ) {
-    // The content background, like the IDE's editor: lighter than the panel background around it.
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -215,15 +213,6 @@ private fun AccountListMessage(text: String, isError: Boolean = false) {
 
 private val GroupingFieldWidth = 200.dp
 
-/**
- * White in the light theme and the editor's near-black in the dark theme, from the Int UI gray palette, or the panel
- * background if the palette doesn't have that gray.
- */
-private val ContentBackground: Color
-    @Composable get() {
-        val index = if (JewelTheme.isDark) 1 else 14
-        return JewelTheme.colorPalette.grayOrNull(index) ?: JewelTheme.globalColors.panelBackground
-    }
 
 @Preview
 @Composable
