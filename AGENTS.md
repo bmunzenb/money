@@ -12,7 +12,9 @@ The UI-independent presentation layer lives in `presentation`: ViewModels and th
 pickers, and depends on `presentation`, so another UI module can reuse the same presentation layer. Both modules group code by the same feature subpackages:
 `com.munzenberger.money.presentation.<feature>` in `presentation` and
 `com.munzenberger.money.desktop.<feature>` in `desktop-material`. Keep Material, Compose Resources, composables
-and other UI-toolkit types out of `presentation`. UI state carries plain values (e.g. an enum such as
+and other UI-toolkit types out of `presentation`: it has no Compose or Navigation3 dependencies, only the plain
+`lifecycle-viewmodel` and `koin-core-viewmodel`, and UI modules declare their own Compose, Navigation3 and
+Koin-Compose dependencies. UI state carries plain values (e.g. an enum such as
 `WelcomeError`) that the UI module maps to its own strings, rather than string resources.
 
 ## Navigation (Navigation3)
