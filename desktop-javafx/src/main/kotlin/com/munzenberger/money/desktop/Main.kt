@@ -1,4 +1,4 @@
-package com.munzenberger.money.desktop.javafx
+package com.munzenberger.money.desktop
 
 import javafx.application.Application
 import javafx.scene.Scene

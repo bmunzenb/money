@@ -10,5 +10,5 @@ javafx {
 }
 
 application {
-    mainClass = "com.munzenberger.money.desktop.javafx.MainKt"
+    mainClass = "com.munzenberger.money.desktop.MainKt"
 }
