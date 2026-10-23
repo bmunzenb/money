@@ -23,6 +23,7 @@ SELECT
     CategoryEntry.transaction_id AS transaction_id,
     CategoryEntry.category_id AS category_id,
     Category.name AS category_name,
+    ParentCategory.id AS parent_category_id,
     ParentCategory.name AS parent_category_name,
     CategoryEntry.amount AS amount,
     CategoryEntry.order_in_transaction AS order_in_transaction
