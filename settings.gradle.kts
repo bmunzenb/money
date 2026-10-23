@@ -40,6 +40,7 @@ plugins {
 
 include(":desktop-material")
 include(":desktop-jewel")
+include(":desktop-javafx")
 include(":presentation")
 include(":data-api")
 include(":data-sql")
