@@ -25,9 +25,9 @@ import com.munzenberger.money.desktop.theme.PreviewThemed
 import com.munzenberger.money.presentation.rail.AppNavigationRailViewModel
 import com.munzenberger.money.presentation.rail.TopLevelDestination
 import kotlinx.coroutines.launch
-import money.presentation.generated.resources.Res
-import money.presentation.generated.resources.collapse_navigation_rail_button_description
-import money.presentation.generated.resources.expand_navigation_rail_button_description
+import money.desktop_material.generated.resources.Res
+import money.desktop_material.generated.resources.collapse_navigation_rail_button_description
+import money.desktop_material.generated.resources.expand_navigation_rail_button_description
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 
@@ -79,7 +79,7 @@ private fun AppNavigationRailContent(
                 selected = destination == selected,
                 onClick = { onDestinationClick(destination) },
                 icon = { Icon(imageVector = destination.icon, contentDescription = null) },
-                label = { Text(text = stringResource(destination.label)) },
+                label = { Text(text = destination.label()) },
                 railExpanded = isExpanded,
             )
         }

@@ -22,10 +22,10 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import com.munzenberger.money.desktop.theme.MoneyTheme
 import com.munzenberger.money.presentation.accounts.SaveState
-import money.presentation.generated.resources.Res
-import money.presentation.generated.resources.cancel_button_title
-import money.presentation.generated.resources.save_account_error_message
-import money.presentation.generated.resources.save_button_title
+import money.desktop_material.generated.resources.Res
+import money.desktop_material.generated.resources.cancel_button_title
+import money.desktop_material.generated.resources.save_account_error_message
+import money.desktop_material.generated.resources.save_button_title
 import org.jetbrains.compose.resources.stringResource
 
 /**

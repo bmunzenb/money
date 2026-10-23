@@ -47,13 +47,12 @@ import com.munzenberger.money.desktop.theme.PreviewThemed
 import com.munzenberger.money.presentation.accounts.AccountListUiState
 import com.munzenberger.money.presentation.accounts.AccountListViewModel
 import com.munzenberger.money.presentation.accounts.LoadState
-import com.munzenberger.money.presentation.accounts.label
-import money.presentation.generated.resources.Res
-import money.presentation.generated.resources.account_grouping_label
-import money.presentation.generated.resources.account_list_empty_message
-import money.presentation.generated.resources.account_list_error_message
-import money.presentation.generated.resources.account_list_title
-import money.presentation.generated.resources.add_account_button_title
+import money.desktop_material.generated.resources.Res
+import money.desktop_material.generated.resources.account_grouping_label
+import money.desktop_material.generated.resources.account_list_empty_message
+import money.desktop_material.generated.resources.account_list_error_message
+import money.desktop_material.generated.resources.account_list_title
+import money.desktop_material.generated.resources.add_account_button_title
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 

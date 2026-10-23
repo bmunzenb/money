@@ -17,6 +17,11 @@ dependencies {
     implementation(libs.compose.material3.adaptiveNavigation3)
 
     implementation(libs.compose.uiToolingPreview)
+    implementation(libs.compose.components.resources)
+
+    implementation(libs.filekit.core)
+    implementation(libs.filekit.dialogs)
+    implementation(libs.filekit.dialogs.compose)
 }
 
 compose.desktop {

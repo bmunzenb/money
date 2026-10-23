@@ -4,8 +4,8 @@ import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
 import com.munzenberger.money.presentation.database.MoneyRepositoryController
 import com.munzenberger.money.presentation.inject.appModule
-import money.presentation.generated.resources.Res
-import money.presentation.generated.resources.app_title
+import money.desktop_material.generated.resources.Res
+import money.desktop_material.generated.resources.app_title
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 import org.koin.core.context.startKoin

@@ -1,19 +1,11 @@
 package com.munzenberger.money.presentation.rail
 
 import com.munzenberger.money.presentation.navigation.Route
-import money.presentation.generated.resources.Res
-import money.presentation.generated.resources.accounts_button_title
-import money.presentation.generated.resources.categories_button_title
-import money.presentation.generated.resources.payees_button_title
-import org.jetbrains.compose.resources.StringResource
 
-enum class TopLevelDestination(
-    val route: Route,
-    val label: StringResource,
-) {
-    Accounts(Route.AccountList, Res.string.accounts_button_title),
-    Categories(Route.CategoryList, Res.string.categories_button_title),
-    Payees(Route.PayeeList, Res.string.payees_button_title);
+enum class TopLevelDestination(val route: Route) {
+    Accounts(Route.AccountList),
+    Categories(Route.CategoryList),
+    Payees(Route.PayeeList);
 
     companion object {
         fun of(route: Route?): TopLevelDestination? = entries.firstOrNull { it.route == route }

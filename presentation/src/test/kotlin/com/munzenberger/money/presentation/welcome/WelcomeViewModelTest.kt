@@ -9,8 +9,6 @@ import io.mockk.mockk
 import io.mockk.verify
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
-import money.presentation.generated.resources.Res
-import money.presentation.generated.resources.create_database_error_message
 import java.io.File
 import kotlin.test.AfterTest
 import kotlin.test.Test
@@ -105,7 +103,7 @@ class WelcomeViewModelTest {
             viewModel.createDatabase(path)
 
             assertEquals(WelcomeUiState.Loading, awaitItem())
-            assertEquals(WelcomeUiState.Error(Res.string.create_database_error_message), awaitItem())
+            assertEquals(WelcomeUiState.Error(WelcomeError.CreateDatabaseFailed), awaitItem())
         }
     }
 

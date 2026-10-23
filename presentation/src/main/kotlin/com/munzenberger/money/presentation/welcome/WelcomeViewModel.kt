@@ -8,9 +8,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-import money.presentation.generated.resources.Res
-import money.presentation.generated.resources.create_database_error_message
-import money.presentation.generated.resources.open_database_error_message
 import java.io.File
 
 class WelcomeViewModel(
@@ -27,7 +24,7 @@ class WelcomeViewModel(
             stateFlow.value = when (repositoryController.createDatabase(file)) {
                 is MoneyRepositoryConnectionStatus.Ready -> WelcomeUiState.Loading
                 is MoneyRepositoryConnectionStatus.Failed ->
-                    WelcomeUiState.Error(Res.string.create_database_error_message)
+                    WelcomeUiState.Error(WelcomeError.CreateDatabaseFailed)
                 // Not yet supported; see MoneyRepositoryConnectionStatus.
                 is MoneyRepositoryConnectionStatus.RequiresMigration,
                 MoneyRepositoryConnectionStatus.UnsupportedVersion ->
@@ -43,7 +40,7 @@ class WelcomeViewModel(
             stateFlow.value = when (repositoryController.openDatabase(file)) {
                 is MoneyRepositoryConnectionStatus.Ready -> WelcomeUiState.Loading
                 is MoneyRepositoryConnectionStatus.Failed ->
-                    WelcomeUiState.Error(Res.string.open_database_error_message)
+                    WelcomeUiState.Error(WelcomeError.OpenDatabaseFailed)
                 // Not yet supported; see MoneyRepositoryConnectionStatus.
                 is MoneyRepositoryConnectionStatus.RequiresMigration,
                 MoneyRepositoryConnectionStatus.UnsupportedVersion ->

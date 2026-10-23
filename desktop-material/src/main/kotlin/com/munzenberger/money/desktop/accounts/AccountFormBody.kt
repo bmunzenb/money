@@ -16,14 +16,14 @@ import com.munzenberger.money.desktop.components.FormSectionCard
 import com.munzenberger.money.desktop.components.ScrollableColumn
 import com.munzenberger.money.desktop.theme.MoneyTheme
 import com.munzenberger.money.presentation.accounts.AccountFormUiState
-import money.presentation.generated.resources.Res
-import money.presentation.generated.resources.account_section_title
-import money.presentation.generated.resources.additional_information_section_title
-import money.presentation.generated.resources.balance_and_reference_section_title
-import money.presentation.generated.resources.edit_account_description
-import money.presentation.generated.resources.new_account_description
-import money.presentation.generated.resources.required_field_legend
-import money.presentation.generated.resources.status_section_title
+import money.desktop_material.generated.resources.Res
+import money.desktop_material.generated.resources.account_section_title
+import money.desktop_material.generated.resources.additional_information_section_title
+import money.desktop_material.generated.resources.balance_and_reference_section_title
+import money.desktop_material.generated.resources.edit_account_description
+import money.desktop_material.generated.resources.new_account_description
+import money.desktop_material.generated.resources.required_field_legend
+import money.desktop_material.generated.resources.status_section_title
 import org.jetbrains.compose.resources.stringResource
 
 /** The account form's fields, grouped into sections, followed by its buttons. */
