@@ -18,8 +18,3 @@ dependencies {
     testImplementation(libs.turbine)
     testImplementation(libs.mockk)
 }
-
-detekt {
-    config.setFrom(project.file("detekt.yml"))
-    buildUponDefaultConfig = true
-}
