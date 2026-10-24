@@ -6,3 +6,7 @@ import kotlinx.serialization.builtins.nullable
 object PreferenceKeys {
     val windowBounds = PreferenceKey("window.bounds", null, WindowBounds.serializer().nullable)
 }
+
+var UserPreferences.windowBounds: WindowBounds?
+    get() = get(PreferenceKeys.windowBounds)
+    set(value) = set(PreferenceKeys.windowBounds, value)

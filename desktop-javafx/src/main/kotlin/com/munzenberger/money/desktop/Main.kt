@@ -1,9 +1,9 @@
 package com.munzenberger.money.desktop
 
-import com.munzenberger.money.data.api.preferences.MoneyPreferences
 import com.munzenberger.money.presentation.inject.presentationModule
-import com.munzenberger.money.presentation.preferences.PreferenceKeys
+import com.munzenberger.money.presentation.preferences.UserPreferences
 import com.munzenberger.money.presentation.preferences.WindowBounds
+import com.munzenberger.money.presentation.preferences.windowBounds
 import javafx.animation.Animation
 import javafx.animation.PauseTransition
 import javafx.application.Application
@@ -18,7 +18,7 @@ import org.koin.core.component.inject
 import org.koin.core.context.startKoin
 
 class MoneyApplication : Application(), KoinComponent {
-    private val preferences: MoneyPreferences by inject()
+    private val preferences: UserPreferences by inject()
 
     private lateinit var stage: Stage
 
@@ -43,7 +43,7 @@ class MoneyApplication : Application(), KoinComponent {
 
     // Skips bounds that no longer fall on any screen, e.g. from a disconnected monitor.
     private fun restoreBounds(stage: Stage) {
-        val bounds = preferences[PreferenceKeys.windowBounds]?.takeIf { it.isOnScreen() } ?: return
+        val bounds = preferences.windowBounds?.takeIf { it.isOnScreen() } ?: return
         stage.x = bounds.x
         stage.y = bounds.y
         stage.width = bounds.width
@@ -62,7 +62,7 @@ class MoneyApplication : Application(), KoinComponent {
     // Skips a maximized, full-screen or minimized window, so its normal bounds are what's restored.
     private fun saveBounds(stage: Stage) {
         if (stage.isMaximized || stage.isFullScreen || stage.isIconified) return
-        preferences[PreferenceKeys.windowBounds] = WindowBounds(stage.x, stage.y, stage.width, stage.height)
+        preferences.windowBounds = WindowBounds(stage.x, stage.y, stage.width, stage.height)
     }
 
     private fun WindowBounds.isOnScreen() =
