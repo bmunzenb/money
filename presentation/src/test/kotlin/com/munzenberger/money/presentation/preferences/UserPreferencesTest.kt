@@ -14,9 +14,12 @@ class UserPreferencesTest {
     private val node = InMemoryPreferences()
     private val preferences = UserPreferences(node)
 
+    private val enabled = PreferenceKey("test.enabled", true, Boolean.serializer())
+    private val count = PreferenceKey("test.count", 0, Int.serializer())
+
     @Test
     fun `get returns the default when no value is stored`() {
-        assertEquals(true, preferences[PreferenceKeys.navigationRailExpanded])
+        assertEquals(true, preferences[enabled])
         assertNull(preferences[PreferenceKeys.windowBounds])
     }
 
@@ -31,52 +34,50 @@ class UserPreferencesTest {
 
     @Test
     fun `set stores the value as JSON under the key's name`() {
-        preferences[PreferenceKeys.windowMaximized] = true
+        preferences[enabled] = false
 
-        assertEquals("true", node.get("window.maximized", null))
+        assertEquals("false", node.get("test.enabled", null))
     }
 
     @Test
     fun `remove restores the default`() {
-        preferences[PreferenceKeys.navigationRailExpanded] = false
+        preferences[enabled] = false
 
-        preferences.remove(PreferenceKeys.navigationRailExpanded)
+        preferences.remove(enabled)
 
-        assertEquals(true, preferences[PreferenceKeys.navigationRailExpanded])
-        assertNull(node.get("rail.expanded", null))
+        assertEquals(true, preferences[enabled])
+        assertNull(node.get("test.enabled", null))
     }
 
     @Test
     fun `get returns the default when the stored value can't be read`() {
-        node.put("rail.expanded", "not a boolean")
+        node.put("test.enabled", "not a boolean")
 
-        assertEquals(true, preferences[PreferenceKeys.navigationRailExpanded])
+        assertEquals(true, preferences[enabled])
     }
 
     @Test
     fun `observe emits the current value, then each change`() = runTest {
-        val key = PreferenceKey("test.count", 0, Int.serializer())
-
-        preferences.observe(key).test {
+        preferences.observe(count).test {
             assertEquals(0, awaitItem())
 
-            preferences[key] = 1
+            preferences[count] = 1
             assertEquals(1, awaitItem())
 
-            preferences.remove(key)
+            preferences.remove(count)
             assertEquals(0, awaitItem())
         }
     }
 
     @Test
     fun `observe doesn't emit when another key changes`() = runTest {
-        preferences.observe(PreferenceKeys.windowMaximized).test {
-            assertEquals(false, awaitItem())
+        preferences.observe(count).test {
+            assertEquals(0, awaitItem())
 
-            preferences[PreferenceKeys.navigationRailExpanded] = false
-            preferences[PreferenceKeys.windowMaximized] = true
+            preferences[enabled] = false
+            preferences[count] = 1
 
-            assertEquals(true, awaitItem())
+            assertEquals(1, awaitItem())
         }
     }
 
