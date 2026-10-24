@@ -11,14 +11,10 @@ dependencies {
     api(libs.androidx.lifecycle.viewmodel)
     api(libs.koin.core.viewmodel)
     implementation(projects.dataSql)
+    implementation(libs.kotlinx.serializationJson)
 
     testImplementation(libs.kotlin.test)
     testImplementation(libs.kotlinx.coroutinesTest)
     testImplementation(libs.turbine)
     testImplementation(libs.mockk)
-}
-
-detekt {
-    config.setFrom(project.file("detekt.yml"))
-    buildUponDefaultConfig = true
 }

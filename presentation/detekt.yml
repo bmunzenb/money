@@ -1,5 +1,0 @@
-# Recommended configuration for Compose: https://detekt.dev/docs/introduction/compose/
-naming:
-  FunctionNaming:
-    ignoreAnnotated:
-      - 'Composable'
