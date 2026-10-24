@@ -1,4 +1,4 @@
-package com.munzenberger.money.presentation.preferences
+package com.munzenberger.money.data.api.preferences
 
 import kotlinx.serialization.KSerializer
 

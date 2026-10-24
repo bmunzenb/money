@@ -1,11 +1,8 @@
-package com.munzenberger.money.presentation.preferences
+package com.munzenberger.money.data.api.preferences
 
 import kotlinx.coroutines.flow.Flow
 
-/**
- * Installation-specific user preferences, such as the window's size and location.
- */
-interface Preferences {
+interface MoneyPreferences {
     /**
      * Returns the stored value for [key], or its default if none is stored, or it can't be read.
      */

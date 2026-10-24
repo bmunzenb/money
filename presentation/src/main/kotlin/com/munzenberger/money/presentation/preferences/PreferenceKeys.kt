@@ -1,5 +1,6 @@
 package com.munzenberger.money.presentation.preferences
 
+import com.munzenberger.money.data.api.preferences.PreferenceKey
 import kotlinx.serialization.builtins.nullable
 import kotlinx.serialization.builtins.serializer
 
