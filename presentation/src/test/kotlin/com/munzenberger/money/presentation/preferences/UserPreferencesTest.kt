@@ -20,16 +20,16 @@ class UserPreferencesTest {
     @Test
     fun `get returns the default when no value is stored`() {
         assertEquals(true, preferences[enabled])
-        assertNull(preferences[PreferenceKeys.windowBounds])
+        assertNull(preferences.windowBounds)
     }
 
     @Test
     fun `get returns the value that was set`() {
         val bounds = WindowBounds(x = 10.0, y = 20.0, width = 800.0, height = 600.0)
 
-        preferences[PreferenceKeys.windowBounds] = bounds
+        preferences.windowBounds = bounds
 
-        assertEquals(bounds, preferences[PreferenceKeys.windowBounds])
+        assertEquals(bounds, preferences.windowBounds)
     }
 
     @Test
