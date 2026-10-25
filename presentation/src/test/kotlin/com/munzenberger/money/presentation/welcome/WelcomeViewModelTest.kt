@@ -47,7 +47,7 @@ class WelcomeViewModelTest {
     fun `state starts as idle`() = runTest {
         val viewModel = WelcomeViewModel(controller)
 
-        assertEquals(WelcomeUiState.Idle, viewModel.state.value)
+        assertEquals(WelcomeUiState(), viewModel.state.value)
     }
 
     @Test
@@ -56,15 +56,15 @@ class WelcomeViewModelTest {
         val viewModel = WelcomeViewModel(controller)
 
         viewModel.state.test {
-            assertEquals(WelcomeUiState.Idle, awaitItem())
+            assertEquals(WelcomeUiState(), awaitItem())
 
             viewModel.createDatabase(file)
 
-            assertEquals(WelcomeUiState.Loading, awaitItem())
+            assertEquals(WelcomeUiState(isLoading = true), awaitItem())
 
             // The screen is about to be replaced, so it keeps showing progress instead of its buttons.
             controller.moneyRepository.first { it != null }
-            assertEquals(WelcomeUiState.Loading, viewModel.state.value)
+            assertEquals(WelcomeUiState(isLoading = true), viewModel.state.value)
             expectNoEvents()
         }
     }
@@ -79,15 +79,15 @@ class WelcomeViewModelTest {
         val viewModel = WelcomeViewModel(controller)
 
         viewModel.state.test {
-            assertEquals(WelcomeUiState.Idle, awaitItem())
+            assertEquals(WelcomeUiState(), awaitItem())
 
             viewModel.openDatabase(file)
 
-            assertEquals(WelcomeUiState.Loading, awaitItem())
+            assertEquals(WelcomeUiState(isLoading = true), awaitItem())
 
             // The screen is about to be replaced, so it keeps showing progress instead of its buttons.
             controller.moneyRepository.first { it != null }
-            assertEquals(WelcomeUiState.Loading, viewModel.state.value)
+            assertEquals(WelcomeUiState(isLoading = true), viewModel.state.value)
             expectNoEvents()
         }
     }
@@ -98,12 +98,49 @@ class WelcomeViewModelTest {
         val viewModel = WelcomeViewModel(controller)
 
         viewModel.state.test {
-            assertEquals(WelcomeUiState.Idle, awaitItem())
+            assertEquals(WelcomeUiState(), awaitItem())
 
             viewModel.createDatabase(path)
 
-            assertEquals(WelcomeUiState.Loading, awaitItem())
-            assertEquals(WelcomeUiState.Error(WelcomeError.CreateDatabaseFailed), awaitItem())
+            assertEquals(WelcomeUiState(isLoading = true), awaitItem())
+            assertEquals(WelcomeUiState(error = WelcomeError.CreateDatabaseFailed), awaitItem())
+        }
+    }
+
+    @Test
+    fun `dismissing an error clears it`() = runTest {
+        val path = createUnusableDatabasePath()
+        val viewModel = WelcomeViewModel(controller)
+
+        viewModel.state.test {
+            assertEquals(WelcomeUiState(), awaitItem())
+
+            viewModel.createDatabase(path)
+            assertEquals(WelcomeUiState(isLoading = true), awaitItem())
+            assertEquals(WelcomeUiState(error = WelcomeError.CreateDatabaseFailed), awaitItem())
+
+            viewModel.dismissError()
+
+            assertEquals(WelcomeUiState(), awaitItem())
+        }
+    }
+
+    @Test
+    fun `starting another operation clears an error`() = runTest {
+        val path = createUnusableDatabasePath()
+        val viewModel = WelcomeViewModel(controller)
+
+        viewModel.state.test {
+            assertEquals(WelcomeUiState(), awaitItem())
+
+            viewModel.createDatabase(path)
+            assertEquals(WelcomeUiState(isLoading = true), awaitItem())
+            assertEquals(WelcomeUiState(error = WelcomeError.CreateDatabaseFailed), awaitItem())
+
+            viewModel.openDatabase(createTempFile())
+
+            assertEquals(WelcomeUiState(isLoading = true), awaitItem())
+            cancelAndIgnoreRemainingEvents()
         }
     }
 

@@ -1,7 +1,9 @@
 package com.munzenberger.money.desktop
 
 import com.munzenberger.money.desktop.navigation.NavigationHost
+import com.munzenberger.money.desktop.navigation.ScreenScope
 import com.munzenberger.money.desktop.navigation.navigationRouter
+import com.munzenberger.money.presentation.AppViewModel
 import com.munzenberger.money.presentation.navigation.Navigator
 import com.munzenberger.money.presentation.preferences.UserPreferences
 import com.munzenberger.money.presentation.preferences.WindowBounds
@@ -21,6 +23,9 @@ class MoneyApplication : Application(), KoinComponent {
     private val navigator: Navigator by inject()
     private val preferences: UserPreferences by inject()
 
+    // Holds the app-lifetime AppViewModel, which navigates as the open repository changes.
+    private val appScope = ScreenScope()
+
     private lateinit var stage: Stage
     private lateinit var navigationHost: NavigationHost
 
@@ -30,6 +35,7 @@ class MoneyApplication : Application(), KoinComponent {
     override fun start(stage: Stage) {
         this.stage = stage
         stage.title = strings.getString("app_title")
+        appScope.viewModel<AppViewModel>()
         navigationHost = NavigationHost(navigator, navigationRouter)
         stage.scene = Scene(navigationHost, DEFAULT_WIDTH, DEFAULT_HEIGHT)
         restoreBounds(stage)
@@ -39,6 +45,7 @@ class MoneyApplication : Application(), KoinComponent {
 
     override fun stop() {
         navigationHost.close()
+        appScope.close()
 
         if (saveBoundsDelay.status == Animation.Status.RUNNING) {
             saveBoundsDelay.stop()
