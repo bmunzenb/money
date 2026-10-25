@@ -94,7 +94,8 @@ builds each entry's node with `navigationRouter` (`desktop-javafx/.../desktop/na
 exhaustive `when` over `Route`; every route shows a placeholder until it has a JavaFX screen), and gives each entry a `ScreenScope`. `ScreenScope` holds that entry's
 `ViewModelStore`: `scope.viewModel<XViewModel>()` resolves the ViewModel from Koin, and
 `scope.collect(viewModel.state) { ... }` updates nodes on the FX thread. The scope is closed (clearing its
-ViewModels) when the entry is popped. `kotlinx-coroutines-javafx` supplies `Dispatchers.Main` for `viewModelScope`.
+ViewModels) when the entry is popped. `kotlinx-coroutines-javafx` supplies `Dispatchers.Main` for `viewModelScope`. `MoneyApplication` holds the
+`AppViewModel` in an app-lifetime `ScreenScope`, created in `start` and closed in `stop`.
 
 ## ViewModels
 
