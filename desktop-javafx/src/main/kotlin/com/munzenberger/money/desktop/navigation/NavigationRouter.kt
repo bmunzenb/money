@@ -9,7 +9,7 @@ import javafx.scene.layout.StackPane
 // Exhaustive, so adding a Route fails to compile until it's mapped to a screen here.
 val navigationRouter: (route: Route, scope: ScreenScope) -> Node = { route, scope ->
     when (route) {
-        Route.Welcome -> WelcomeScreen(scope.viewModel())
+        Route.Welcome -> WelcomeScreen(scope)
         Route.AccountList -> placeholderScreen(route)
         Route.NewAccount -> placeholderScreen(route)
         is Route.EditAccount -> placeholderScreen(route)
