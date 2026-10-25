@@ -88,6 +88,13 @@ repository is open. It also exposes `state: StateFlow<AppUiState>` (`isRepositor
 `App.kt` uses to decide whether to show `AppNavigationRail` beside the `NavDisplay`. Put new app-lifetime reactive navigation in
 `AppViewModel`.
 
+`desktop-javafx` uses the same `Navigator` and ViewModels without Navigation3. `NavigationHost`
+(`desktop-javafx/.../desktop/navigation/NavigationHost.kt`) is its `NavDisplay`: it collects `navigator.backStack`,
+builds each entry's node with its router, and gives each entry a `ScreenScope`. `ScreenScope` holds that entry's
+`ViewModelStore`: `scope.viewModel<XViewModel>()` resolves the ViewModel from Koin, and
+`scope.collect(viewModel.state) { ... }` updates nodes on the FX thread. The scope is closed (clearing its
+ViewModels) when the entry is popped. `kotlinx-coroutines-javafx` supplies `Dispatchers.Main` for `viewModelScope`.
+
 ## ViewModels
 
 Each screen that needs one has its own `ViewModel`, defined in `presentation` under the same feature subpackage as
