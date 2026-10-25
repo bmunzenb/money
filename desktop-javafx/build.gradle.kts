@@ -6,6 +6,8 @@ plugins {
 
 dependencies {
     implementation(projects.presentation)
+
+    implementation(libs.kotlinx.coroutinesJavafx)
 }
 
 distributions.main {

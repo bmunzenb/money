@@ -1,5 +1,8 @@
 package com.munzenberger.money.desktop
 
+import com.munzenberger.money.desktop.navigation.NavigationHost
+import com.munzenberger.money.desktop.navigation.navigationRouter
+import com.munzenberger.money.presentation.navigation.Navigator
 import com.munzenberger.money.presentation.preferences.UserPreferences
 import com.munzenberger.money.presentation.preferences.WindowBounds
 import com.munzenberger.money.presentation.preferences.windowBounds
@@ -8,7 +11,6 @@ import javafx.animation.PauseTransition
 import javafx.application.Application
 import javafx.beans.InvalidationListener
 import javafx.scene.Scene
-import javafx.scene.layout.StackPane
 import javafx.stage.Screen
 import javafx.stage.Stage
 import javafx.util.Duration
@@ -16,9 +18,11 @@ import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 
 class MoneyApplication : Application(), KoinComponent {
+    private val navigator: Navigator by inject()
     private val preferences: UserPreferences by inject()
 
     private lateinit var stage: Stage
+    private lateinit var navigationHost: NavigationHost
 
     // Saves the bounds once the window stops moving or resizing, rather than on every change.
     private val saveBoundsDelay = PauseTransition(Duration.millis(SAVE_BOUNDS_DELAY_MILLIS))
@@ -26,13 +30,16 @@ class MoneyApplication : Application(), KoinComponent {
     override fun start(stage: Stage) {
         this.stage = stage
         stage.title = strings.getString("app_title")
-        stage.scene = Scene(StackPane(), DEFAULT_WIDTH, DEFAULT_HEIGHT)
+        navigationHost = NavigationHost(navigator, navigationRouter)
+        stage.scene = Scene(navigationHost, DEFAULT_WIDTH, DEFAULT_HEIGHT)
         restoreBounds(stage)
         stage.show()
         saveBoundsOnChange(stage)
     }
 
     override fun stop() {
+        navigationHost.close()
+
         if (saveBoundsDelay.status == Animation.Status.RUNNING) {
             saveBoundsDelay.stop()
             saveBounds(stage)
