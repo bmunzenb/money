@@ -1,6 +1,7 @@
 package com.munzenberger.money.desktop
 
 import com.munzenberger.money.desktop.navigation.NavigationHost
+import com.munzenberger.money.desktop.navigation.navigationRouter
 import com.munzenberger.money.presentation.navigation.Navigator
 import com.munzenberger.money.presentation.preferences.UserPreferences
 import com.munzenberger.money.presentation.preferences.WindowBounds
@@ -10,7 +11,6 @@ import javafx.animation.PauseTransition
 import javafx.application.Application
 import javafx.beans.InvalidationListener
 import javafx.scene.Scene
-import javafx.scene.layout.StackPane
 import javafx.stage.Screen
 import javafx.stage.Stage
 import javafx.util.Duration
@@ -30,8 +30,7 @@ class MoneyApplication : Application(), KoinComponent {
     override fun start(stage: Stage) {
         this.stage = stage
         stage.title = strings.getString("app_title")
-        // No JavaFX screens yet, so every route shows an empty pane.
-        navigationHost = NavigationHost(navigator) { _, _ -> StackPane() }
+        navigationHost = NavigationHost(navigator, navigationRouter)
         stage.scene = Scene(navigationHost, DEFAULT_WIDTH, DEFAULT_HEIGHT)
         restoreBounds(stage)
         stage.show()
