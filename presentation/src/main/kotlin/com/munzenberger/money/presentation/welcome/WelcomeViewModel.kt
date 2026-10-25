@@ -7,6 +7,7 @@ import com.munzenberger.money.presentation.database.MoneyRepositoryController
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.io.File
 
@@ -14,33 +15,32 @@ class WelcomeViewModel(
     private val repositoryController: MoneyRepositoryController
 ) : ViewModel() {
 
-    private val stateFlow = MutableStateFlow<WelcomeUiState>(WelcomeUiState.Idle)
+    private val stateFlow = MutableStateFlow(WelcomeUiState())
     val state: StateFlow<WelcomeUiState> = stateFlow.asStateFlow()
 
     fun createDatabase(file: File) {
-        viewModelScope.launch {
-            stateFlow.value = WelcomeUiState.Loading
-
-            stateFlow.value = when (repositoryController.createDatabase(file)) {
-                is MoneyRepositoryConnectionStatus.Ready -> WelcomeUiState.Loading
-                is MoneyRepositoryConnectionStatus.Failed ->
-                    WelcomeUiState.Error(WelcomeError.CreateDatabaseFailed)
-                // Not yet supported; see MoneyRepositoryConnectionStatus.
-                is MoneyRepositoryConnectionStatus.RequiresMigration,
-                MoneyRepositoryConnectionStatus.UnsupportedVersion ->
-                    error("Unhandled connection status")
-            }
-        }
+        connect(WelcomeError.CreateDatabaseFailed) { repositoryController.createDatabase(file) }
     }
 
     fun openDatabase(file: File) {
-        viewModelScope.launch {
-            stateFlow.value = WelcomeUiState.Loading
+        connect(WelcomeError.OpenDatabaseFailed) { repositoryController.openDatabase(file) }
+    }
 
-            stateFlow.value = when (repositoryController.openDatabase(file)) {
-                is MoneyRepositoryConnectionStatus.Ready -> WelcomeUiState.Loading
-                is MoneyRepositoryConnectionStatus.Failed ->
-                    WelcomeUiState.Error(WelcomeError.OpenDatabaseFailed)
+    fun dismissError() {
+        stateFlow.update { it.copy(error = null) }
+    }
+
+    private fun connect(
+        failure: WelcomeError,
+        connect: suspend () -> MoneyRepositoryConnectionStatus,
+    ) {
+        viewModelScope.launch {
+            stateFlow.value = WelcomeUiState(isLoading = true)
+
+            stateFlow.value = when (connect()) {
+                // The screen is about to be replaced, so it keeps showing progress instead of its buttons.
+                is MoneyRepositoryConnectionStatus.Ready -> WelcomeUiState(isLoading = true)
+                is MoneyRepositoryConnectionStatus.Failed -> WelcomeUiState(error = failure)
                 // Not yet supported; see MoneyRepositoryConnectionStatus.
                 is MoneyRepositoryConnectionStatus.RequiresMigration,
                 MoneyRepositoryConnectionStatus.UnsupportedVersion ->

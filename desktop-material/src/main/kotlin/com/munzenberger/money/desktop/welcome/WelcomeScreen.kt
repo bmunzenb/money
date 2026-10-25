@@ -58,7 +58,7 @@ private fun WelcomeScreenContent(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier.fillMaxSize()
     ) {
-        if (state is WelcomeUiState.Loading) {
+        if (state.isLoading) {
             CircularProgressIndicator()
         } else {
             Column(horizontalAlignment = Alignment.Start) {
@@ -83,10 +83,10 @@ private fun WelcomeScreenContent(
                 }
             }
 
-            if (state is WelcomeUiState.Error) {
+            state.error?.let { error ->
                 Text(
                     text = stringResource(
-                        when (state.error) {
+                        when (error) {
                             WelcomeError.CreateDatabaseFailed -> Res.string.create_database_error_message
                             WelcomeError.OpenDatabaseFailed -> Res.string.open_database_error_message
                         }
@@ -103,7 +103,7 @@ private fun WelcomeScreenContent(
 private fun WelcomeScreenPreview() {
     PreviewThemed {
         WelcomeScreenContent(
-            state = WelcomeUiState.Idle,
+            state = WelcomeUiState(),
             onCreateDatabaseClick = {},
             onOpenDatabaseClick = {}
         )
@@ -115,7 +115,7 @@ private fun WelcomeScreenPreview() {
 private fun WelcomeScreenLoadingPreview() {
     PreviewThemed {
         WelcomeScreenContent(
-            state = WelcomeUiState.Loading,
+            state = WelcomeUiState(isLoading = true),
             onCreateDatabaseClick = {},
             onOpenDatabaseClick = {}
         )
@@ -127,7 +127,7 @@ private fun WelcomeScreenLoadingPreview() {
 private fun WelcomeScreenErrorPreview() {
     PreviewThemed {
         WelcomeScreenContent(
-            state = WelcomeUiState.Error(WelcomeError.CreateDatabaseFailed),
+            state = WelcomeUiState(error = WelcomeError.CreateDatabaseFailed),
             onCreateDatabaseClick = {},
             onOpenDatabaseClick = {}
         )
