@@ -7,6 +7,11 @@ import com.munzenberger.money.presentation.rail.AppNavigationRailViewModel
 import com.munzenberger.money.presentation.rail.TopLevelDestination
 import javafx.scene.control.ListCell
 import javafx.scene.control.ListView
+import org.kordamp.ikonli.Ikon
+import org.kordamp.ikonli.javafx.FontIcon
+import org.kordamp.ikonli.materialdesign2.MaterialDesignA
+import org.kordamp.ikonli.materialdesign2.MaterialDesignS
+import org.kordamp.ikonli.materialdesign2.MaterialDesignW
 
 /** Lists the [TopLevelDestination]s, with the one [AppNavigationRailViewModel] selects shown as selected. */
 class AppNavigationRail(scope: ScreenScope) : ListView<TopLevelDestination>() {
@@ -42,6 +47,9 @@ class AppNavigationRail(scope: ScreenScope) : ListView<TopLevelDestination>() {
     // Clicking the selected destination doesn't change the selection, so the click itself reports it, e.g. to
     // go back to Accounts from a screen pushed on top of it.
     private inner class DestinationCell : ListCell<TopLevelDestination>() {
+        // Follows the text fill, so the icon changes color with the text when the cell is selected.
+        private val icon = FontIcon().apply { iconColorProperty().bind(textFillProperty()) }
+
         init {
             setOnMouseClicked {
                 if (!isEmpty) viewModel.onDestinationClick(item)
@@ -51,6 +59,7 @@ class AppNavigationRail(scope: ScreenScope) : ListView<TopLevelDestination>() {
         override fun updateItem(item: TopLevelDestination?, empty: Boolean) {
             super.updateItem(item, empty)
             text = if (empty || item == null) null else item.label
+            graphic = if (empty || item == null) null else icon.apply { iconCode = item.icon }
         }
     }
 
@@ -62,6 +71,14 @@ class AppNavigationRail(scope: ScreenScope) : ListView<TopLevelDestination>() {
                 TopLevelDestination.Payees -> "payees_button_title"
             }
         )
+
+    // Matches the icons desktop-material's TopLevelDestinationIcons uses.
+    private val TopLevelDestination.icon: Ikon
+        get() = when (this) {
+            TopLevelDestination.Accounts -> MaterialDesignW.WALLET
+            TopLevelDestination.Categories -> MaterialDesignS.SHAPE
+            TopLevelDestination.Payees -> MaterialDesignA.ACCOUNT_GROUP
+        }
 
     private companion object {
         const val PREF_WIDTH = 160.0
