@@ -2,12 +2,15 @@ plugins {
     application
     alias(libs.plugins.kotlinJvm)
     alias(libs.plugins.javafx)
+    alias(libs.plugins.detekt)
 }
 
 dependencies {
     implementation(projects.presentation)
 
     implementation(libs.kotlinx.coroutinesJavafx)
+    implementation(libs.ikonli.javafx)
+    implementation(libs.ikonli.coreuiPack)
 }
 
 distributions.main {

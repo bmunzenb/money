@@ -1,10 +1,6 @@
 package com.munzenberger.money.desktop
 
-import com.munzenberger.money.desktop.navigation.NavigationHost
 import com.munzenberger.money.desktop.navigation.ScreenScope
-import com.munzenberger.money.desktop.navigation.navigationRouter
-import com.munzenberger.money.presentation.AppViewModel
-import com.munzenberger.money.presentation.navigation.Navigator
 import com.munzenberger.money.presentation.preferences.UserPreferences
 import com.munzenberger.money.presentation.preferences.WindowBounds
 import com.munzenberger.money.presentation.preferences.windowBounds
@@ -20,14 +16,13 @@ import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 
 class MoneyApplication : Application(), KoinComponent {
-    private val navigator: Navigator by inject()
     private val preferences: UserPreferences by inject()
 
-    // Holds the app-lifetime AppViewModel, which navigates as the open repository changes.
+    // Holds AppScreen's app-lifetime ViewModels.
     private val appScope = ScreenScope()
 
     private lateinit var stage: Stage
-    private lateinit var navigationHost: NavigationHost
+    private lateinit var appScreen: AppScreen
 
     // Saves the bounds once the window stops moving or resizing, rather than on every change.
     private val saveBoundsDelay = PauseTransition(Duration.millis(SAVE_BOUNDS_DELAY_MILLIS))
@@ -35,16 +30,15 @@ class MoneyApplication : Application(), KoinComponent {
     override fun start(stage: Stage) {
         this.stage = stage
         stage.title = strings.getString("app_title")
-        appScope.viewModel<AppViewModel>()
-        navigationHost = NavigationHost(navigator, navigationRouter)
-        stage.scene = Scene(navigationHost, DEFAULT_WIDTH, DEFAULT_HEIGHT)
+        appScreen = AppScreen(appScope)
+        stage.scene = Scene(appScreen, DEFAULT_WIDTH, DEFAULT_HEIGHT)
         restoreBounds(stage)
         stage.show()
         saveBoundsOnChange(stage)
     }
 
     override fun stop() {
-        navigationHost.close()
+        appScreen.close()
         appScope.close()
 
         if (saveBoundsDelay.status == Animation.Status.RUNNING) {
