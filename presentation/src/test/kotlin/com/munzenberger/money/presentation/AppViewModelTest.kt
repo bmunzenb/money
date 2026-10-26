@@ -96,4 +96,36 @@ class AppViewModelTest {
             assertEquals(AppUiState(isRepositoryConnected = false), awaitItem())
         }
     }
+
+    @Test
+    fun `state reports it can navigate back once a route is pushed`() = runTest {
+        val viewModel = AppViewModel(navigator, controller)
+
+        viewModel.state.test {
+            assertEquals(AppUiState(canNavigateBack = false), awaitItem())
+
+            navigator.navigate { add(Route.NewAccount) }
+
+            assertEquals(AppUiState(canNavigateBack = true), awaitItem())
+        }
+    }
+
+    @Test
+    fun `navigateBack pops the last route`() = runTest {
+        val viewModel = AppViewModel(navigator, controller)
+        navigator.navigate { add(Route.NewAccount) }
+
+        viewModel.navigateBack()
+
+        assertEquals(listOf(Route.Welcome), navigator.backStack.value)
+    }
+
+    @Test
+    fun `navigateBack never pops the last route`() = runTest {
+        val viewModel = AppViewModel(navigator, controller)
+
+        viewModel.navigateBack()
+
+        assertEquals(listOf(Route.Welcome), navigator.backStack.value)
+    }
 }
