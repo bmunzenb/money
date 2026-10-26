@@ -12,6 +12,8 @@ import javafx.scene.control.ToolBar
 import javafx.scene.layout.BorderPane
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
+import org.kordamp.ikonli.coreui.CoreUiFree
+import org.kordamp.ikonli.javafx.FontIcon
 
 /**
  * The root of the scene: shows the [NavigationHost] for the back stack, with a toolbar above it and the
@@ -25,7 +27,8 @@ class AppScreen(scope: ScreenScope) : BorderPane(), KoinComponent, AutoCloseable
 
     private val navigationHost = NavigationHost(navigator, navigationRouter)
 
-    private val backButton = Button(strings.getString("back_button_title")).apply {
+    private val backButton = Button(null, FontIcon(CoreUiFree.ARROW_LEFT)).apply {
+        accessibleText = strings.getString("back_button_accessible_text")
         setOnAction { viewModel.navigateBack() }
     }
 

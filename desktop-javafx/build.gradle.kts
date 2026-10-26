@@ -9,6 +9,8 @@ dependencies {
     implementation(projects.presentation)
 
     implementation(libs.kotlinx.coroutinesJavafx)
+    implementation(libs.ikonli.javafx)
+    implementation(libs.ikonli.coreuiPack)
 }
 
 distributions.main {
