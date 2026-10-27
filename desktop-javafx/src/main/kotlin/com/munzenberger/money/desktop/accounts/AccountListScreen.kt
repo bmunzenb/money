@@ -58,9 +58,17 @@ class AccountListScreen(scope: ScreenScope) : VBox(Spacing.CONTROL_SPACING) {
         VBox.setVgrow(this, Priority.ALWAYS)
     }
 
+    // Stays at the bottom of the screen, since the table above it takes the rest of the height. It shows only
+    // the label until the total balance is available. Its labels inherit the bold font.
+    private val totalBalance = HBox(Spacing.CONTROL_SPACING).apply {
+        alignment = Pos.CENTER_RIGHT
+        style = "-fx-font-weight: bold;"
+        children.setAll(Label(strings.getString("total_balance_label")))
+    }
+
     init {
         padding = Insets(Spacing.SCREEN_PADDING)
-        children.setAll(heading, controls, accountTable)
+        children.setAll(heading, controls, accountTable, totalBalance)
         scope.collect(viewModel.state, ::render)
     }
 
