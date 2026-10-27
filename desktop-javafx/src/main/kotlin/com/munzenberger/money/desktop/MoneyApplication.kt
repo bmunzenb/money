@@ -1,7 +1,5 @@
 package com.munzenberger.money.desktop
 
-import atlantafx.base.theme.PrimerDark
-import atlantafx.base.theme.PrimerLight
 import com.munzenberger.money.desktop.navigation.ScreenScope
 import com.munzenberger.money.presentation.preferences.UserPreferences
 import com.munzenberger.money.presentation.preferences.WindowBounds
@@ -9,8 +7,6 @@ import com.munzenberger.money.presentation.preferences.windowBounds
 import javafx.animation.Animation
 import javafx.animation.PauseTransition
 import javafx.application.Application
-import javafx.application.ColorScheme
-import javafx.application.Platform
 import javafx.beans.InvalidationListener
 import javafx.scene.Scene
 import javafx.stage.Screen
@@ -32,8 +28,6 @@ class MoneyApplication : Application(), KoinComponent {
     private val saveBoundsDelay = PauseTransition(Duration.millis(SAVE_BOUNDS_DELAY_MILLIS))
 
     override fun start(stage: Stage) {
-        applyTheme()
-
         this.stage = stage
         stage.title = strings.getString("app_title")
         appScreen = AppScreen(appScope)
@@ -51,18 +45,6 @@ class MoneyApplication : Application(), KoinComponent {
             saveBoundsDelay.stop()
             saveBounds(stage)
         }
-    }
-
-    // Follows the system's light or dark appearance, including changes while the app is running.
-    private fun applyTheme() {
-        val colorScheme = Platform.getPreferences().colorSchemeProperty()
-        setThemeFor(colorScheme.get())
-        colorScheme.addListener { _, _, scheme -> setThemeFor(scheme) }
-    }
-
-    private fun setThemeFor(colorScheme: ColorScheme) {
-        val theme = if (colorScheme == ColorScheme.DARK) PrimerDark() else PrimerLight()
-        setUserAgentStylesheet(theme.userAgentStylesheet)
     }
 
     // Skips bounds that no longer fall on any screen, e.g. from a disconnected monitor.

@@ -23,8 +23,6 @@ class AppNavigationRail(scope: ScreenScope) : ListView<TopLevelDestination>() {
     init {
         items.setAll(TopLevelDestination.entries)
         prefWidth = PREF_WIDTH
-        // Gives odd rows the same background as even rows, rather than Modena's alternating stripes.
-        style = "-fx-control-inner-background-alt: -fx-control-inner-background;"
         setCellFactory { DestinationCell() }
 
         // Covers choosing another destination with the mouse or the keyboard.
