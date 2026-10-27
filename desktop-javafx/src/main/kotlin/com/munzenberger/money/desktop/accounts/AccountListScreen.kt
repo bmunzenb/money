@@ -3,6 +3,7 @@ package com.munzenberger.money.desktop.accounts
 import com.munzenberger.money.core.account.AccountGrouping
 import com.munzenberger.money.desktop.navigation.ScreenScope
 import com.munzenberger.money.desktop.strings
+import com.munzenberger.money.desktop.theme.Spacing
 import com.munzenberger.money.presentation.accounts.AccountListUiState
 import com.munzenberger.money.presentation.accounts.AccountListViewModel
 import javafx.geometry.Insets
@@ -19,7 +20,7 @@ import org.kordamp.ikonli.javafx.FontIcon
 import org.kordamp.ikonli.materialdesign2.MaterialDesignP
 
 /** Lists the accounts, with a heading and a row of controls to group them and add a new one. */
-class AccountListScreen(scope: ScreenScope) : VBox(SPACING) {
+class AccountListScreen(scope: ScreenScope) : VBox(Spacing.CONTROL_SPACING) {
     private val viewModel: AccountListViewModel = scope.viewModel()
 
     private val heading = Label(strings.getString("account_list_title")).apply {
@@ -47,12 +48,13 @@ class AccountListScreen(scope: ScreenScope) : VBox(SPACING) {
     // Pushes the add account button to the end of the row.
     private val spacer = Region().apply { HBox.setHgrow(this, Priority.ALWAYS) }
 
-    private val controls = HBox(SPACING, groupingLabel, groupingComboBox, spacer, addAccountButton).apply {
+    private val controls = HBox(Spacing.CONTROL_SPACING).apply {
         alignment = Pos.CENTER_LEFT
+        children.setAll(groupingLabel, groupingComboBox, spacer, addAccountButton)
     }
 
     init {
-        padding = Insets(PADDING)
+        padding = Insets(Spacing.SCREEN_PADDING)
         children.setAll(heading, controls)
         scope.collect(viewModel.state, ::render)
     }
@@ -75,10 +77,5 @@ class AccountListScreen(scope: ScreenScope) : VBox(SPACING) {
 
         // The combo box isn't editable, so it never converts text back to a grouping.
         override fun fromString(string: String?): AccountGrouping? = null
-    }
-
-    private companion object {
-        const val SPACING = 8.0
-        const val PADDING = 16.0
     }
 }

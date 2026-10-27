@@ -2,6 +2,7 @@ package com.munzenberger.money.desktop.welcome
 
 import com.munzenberger.money.desktop.navigation.ScreenScope
 import com.munzenberger.money.desktop.strings
+import com.munzenberger.money.desktop.theme.Spacing
 import com.munzenberger.money.presentation.welcome.WelcomeError
 import com.munzenberger.money.presentation.welcome.WelcomeUiState
 import com.munzenberger.money.presentation.welcome.WelcomeViewModel
@@ -13,7 +14,7 @@ import javafx.scene.control.ProgressIndicator
 import javafx.scene.layout.VBox
 import javafx.stage.FileChooser
 
-class WelcomeScreen(scope: ScreenScope) : VBox(SPACING) {
+class WelcomeScreen(scope: ScreenScope) : VBox(Spacing.CONTROL_SPACING) {
     private val viewModel: WelcomeViewModel = scope.viewModel()
 
     private val openButton = Button(strings.getString("open_database_button_title")).apply {
@@ -92,7 +93,6 @@ class WelcomeScreen(scope: ScreenScope) : VBox(SPACING) {
         }
 
     private companion object {
-        const val SPACING = 8.0
         const val MONEY_DATABASE_FILE_EXTENSION = "mdb"
     }
 }
