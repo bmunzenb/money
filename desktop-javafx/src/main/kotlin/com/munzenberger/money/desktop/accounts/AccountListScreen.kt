@@ -1,6 +1,7 @@
 package com.munzenberger.money.desktop.accounts
 
 import com.munzenberger.money.core.account.AccountGrouping
+import com.munzenberger.money.desktop.components.ScreenHeading
 import com.munzenberger.money.desktop.navigation.ScreenScope
 import com.munzenberger.money.desktop.strings
 import com.munzenberger.money.desktop.theme.Spacing
@@ -23,9 +24,7 @@ import org.kordamp.ikonli.materialdesign2.MaterialDesignP
 class AccountListScreen(scope: ScreenScope) : VBox(Spacing.CONTROL_SPACING) {
     private val viewModel: AccountListViewModel = scope.viewModel()
 
-    private val heading = Label(strings.getString("account_list_title")).apply {
-        style = "-fx-font-size: 1.5em; -fx-font-weight: bold;"
-    }
+    private val heading = ScreenHeading(strings.getString("account_list_title"))
 
     // Choosing the grouping the state already has, as render does, leaves the ViewModel's grouping unchanged.
     private val groupingComboBox = ComboBox<AccountGrouping>().apply {
