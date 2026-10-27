@@ -70,7 +70,6 @@ class AppNavigationRail(scope: ScreenScope) : ListView<TopLevelDestination>() {
             }
         )
 
-    // Matches the icons desktop-material's TopLevelDestinationIcons uses.
     private val TopLevelDestination.icon: Ikon
         get() = when (this) {
             TopLevelDestination.Accounts -> MaterialDesignW.WALLET
