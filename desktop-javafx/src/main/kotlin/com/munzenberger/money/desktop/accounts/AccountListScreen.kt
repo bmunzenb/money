@@ -12,6 +12,7 @@ import javafx.geometry.Pos
 import javafx.scene.control.Button
 import javafx.scene.control.ComboBox
 import javafx.scene.control.Label
+import javafx.scene.control.TreeTableView
 import javafx.scene.layout.HBox
 import javafx.scene.layout.Priority
 import javafx.scene.layout.Region
@@ -52,9 +53,14 @@ class AccountListScreen(scope: ScreenScope) : VBox(Spacing.CONTROL_SPACING) {
         children.setAll(groupingLabel, groupingComboBox, spacer, addAccountButton)
     }
 
+    // Grows to fill the rest of the screen below the controls.
+    private val accountTable = TreeTableView<AccountListRow>().apply {
+        VBox.setVgrow(this, Priority.ALWAYS)
+    }
+
     init {
         padding = Insets(Spacing.SCREEN_PADDING)
-        children.setAll(heading, controls)
+        children.setAll(heading, controls, accountTable)
         scope.collect(viewModel.state, ::render)
     }
 
