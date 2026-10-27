@@ -11,7 +11,6 @@ dependencies {
     implementation(libs.kotlinx.coroutinesJavafx)
     implementation(libs.ikonli.javafx)
     implementation(libs.ikonli.materialdesign2.pack)
-    implementation(libs.atlantafx.base)
 }
 
 distributions.main {
