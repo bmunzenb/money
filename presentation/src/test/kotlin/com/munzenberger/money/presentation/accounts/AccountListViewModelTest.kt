@@ -15,6 +15,8 @@ import com.munzenberger.money.data.api.account.AccountTypeId
 import com.munzenberger.money.presentation.MoneyRepositoryControllerFixture
 import com.munzenberger.money.presentation.navigation.Navigator
 import com.munzenberger.money.presentation.navigation.Route
+import com.munzenberger.money.presentation.preferences.InMemoryPreferences
+import com.munzenberger.money.presentation.preferences.UserPreferences
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
@@ -33,6 +35,7 @@ class AccountListViewModelTest {
     private val navigator = Navigator()
     private val repository = mockk<MoneyRepository>()
     private val getAccountGroups = mockk<GetAccountGroupsUseCase>()
+    private val preferences = UserPreferences(InMemoryPreferences())
 
     private val accountType = AccountType(
         id = AccountTypeId(1),
@@ -44,12 +47,12 @@ class AccountListViewModelTest {
 
     private suspend fun viewModel(): AccountListViewModel {
         fixture.connect(repository)
-        return AccountListViewModel(fixture.controller, getAccountGroups, navigator)
+        return AccountListViewModel(fixture.controller, getAccountGroups, navigator, preferences)
     }
 
     @Test
     fun `state stays loading while no repository is open`() = runTest {
-        AccountListViewModel(fixture.controller, getAccountGroups, navigator).state.test {
+        AccountListViewModel(fixture.controller, getAccountGroups, navigator, preferences).state.test {
             assertEquals(AccountListUiState(groups = LoadState.Loading), awaitItem())
             expectNoEvents()
         }
@@ -66,6 +69,34 @@ class AccountListViewModelTest {
         }
 
         verify(exactly = 1) { getAccountGroups(repository, any()) }
+    }
+
+    @Test
+    fun `state starts with the saved grouping`() = runTest {
+        preferences.accountGrouping = AccountGrouping.Bank
+        every { getAccountGroups(any(), any()) } answers {
+            secondArg<Flow<AccountGrouping>>().map { grouping ->
+                assertEquals(AccountGrouping.Bank, grouping)
+                Result.success(emptyList())
+            }
+        }
+
+        viewModel().state.test {
+            assertEquals(AccountListUiState(grouping = AccountGrouping.Bank, groups = LoadState.Loading), awaitItem())
+            assertEquals(
+                AccountListUiState(grouping = AccountGrouping.Bank, groups = LoadState.Loaded(emptyList())),
+                awaitItem(),
+            )
+        }
+    }
+
+    @Test
+    fun `onGroupingChange saves the grouping`() = runTest {
+        every { getAccountGroups(any(), any()) } returns emptyFlow()
+
+        viewModel().onGroupingChange(AccountGrouping.AccountClass)
+
+        assertEquals(AccountGrouping.AccountClass, preferences.accountGrouping)
     }
 
     @Test
