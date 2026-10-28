@@ -1,7 +1,9 @@
+import kotlin.uuid.Uuid;
+
 CREATE TABLE TransferEntry (
-    id TEXT NOT NULL PRIMARY KEY,
-    transaction_id TEXT NOT NULL,
-    account_id TEXT NOT NULL,
+    id BLOB AS Uuid NOT NULL PRIMARY KEY,
+    transaction_id BLOB AS Uuid NOT NULL,
+    account_id BLOB AS Uuid NOT NULL,
     amount INTEGER NOT NULL,
     number TEXT,
     memo TEXT,

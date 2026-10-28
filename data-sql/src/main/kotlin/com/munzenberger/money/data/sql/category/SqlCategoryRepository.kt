@@ -14,7 +14,6 @@ import com.munzenberger.money.data.sql.requireOneRow
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlin.coroutines.CoroutineContext
-import kotlin.uuid.Uuid
 
 class SqlCategoryRepository(
     private val database: MoneyDatabase,
@@ -24,9 +23,9 @@ class SqlCategoryRepository(
     override val categories: Flow<List<Category>> = database.categoryQueries
         .selectAll { id, name, parentId, memo, typeId, typeValue ->
             Category(
-                id = CategoryId(Uuid.parse(id)),
+                id = CategoryId(id),
                 name = name,
-                parentId = parentId?.let { CategoryId(Uuid.parse(it)) },
+                parentId = parentId?.let { CategoryId(it) },
                 type = CategoryType(
                     id = CategoryTypeId(typeId),
                     value = CategoryTypeConstant.valueOf(typeValue),
@@ -39,9 +38,9 @@ class SqlCategoryRepository(
 
     override fun add(category: Category) {
         database.categoryQueries.insert(
-            id = category.id.value.toString(),
+            id = category.id.value,
             name = category.name,
-            parent_id = category.parentId?.value?.toString(),
+            parent_id = category.parentId?.value,
             type_id = category.type.id.value,
             memo = category.memo,
         )
@@ -50,14 +49,14 @@ class SqlCategoryRepository(
     override fun update(category: Category) {
         database.categoryQueries.update(
             name = category.name,
-            parent_id = category.parentId?.value?.toString(),
+            parent_id = category.parentId?.value,
             type_id = category.type.id.value,
             memo = category.memo,
-            id = category.id.value.toString(),
+            id = category.id.value,
         ).requireOneRow { "No category with id ${category.id.value}" }
     }
 
     override fun removeById(categoryId: CategoryId) {
-        database.categoryQueries.deleteById(categoryId.value.toString())
+        database.categoryQueries.deleteById(categoryId.value)
     }
 }

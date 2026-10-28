@@ -14,7 +14,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.datetime.LocalDate
 import kotlin.coroutines.CoroutineContext
-import kotlin.uuid.Uuid
 
 class SqlStatementRepository(
     private val database: MoneyDatabase,
@@ -23,7 +22,7 @@ class SqlStatementRepository(
 
     override suspend fun statementsByAccountId(accountId: AccountId): Flow<List<Statement>> =
         database.statementQueries
-            .selectByAccountId(accountId.value.toString()) {
+            .selectByAccountId(accountId.value) {
                 id,
                 accountIdValue,
                 closingDate,
@@ -32,8 +31,8 @@ class SqlStatementRepository(
                 isReconciled,
                 ->
                 Statement(
-                    id = StatementId(Uuid.parse(id)),
-                    accountId = AccountId(Uuid.parse(accountIdValue)),
+                    id = StatementId(id),
+                    accountId = AccountId(accountIdValue),
                     closingDate = LocalDate.fromEpochDays(closingDate),
                     startingBalance = Money(startingBalance),
                     endingBalance = Money(endingBalance),
@@ -45,8 +44,8 @@ class SqlStatementRepository(
 
     override fun add(statement: Statement) {
         database.statementQueries.insert(
-            id = statement.id.id.toString(),
-            account_id = statement.accountId.value.toString(),
+            id = statement.id.id,
+            account_id = statement.accountId.value,
             closing_date = statement.closingDate.toEpochDays(),
             starting_balance = statement.startingBalance.value,
             ending_balance = statement.endingBalance.value,
@@ -56,16 +55,16 @@ class SqlStatementRepository(
 
     override fun update(statement: Statement) {
         database.statementQueries.update(
-            account_id = statement.accountId.value.toString(),
+            account_id = statement.accountId.value,
             closing_date = statement.closingDate.toEpochDays(),
             starting_balance = statement.startingBalance.value,
             ending_balance = statement.endingBalance.value,
             is_reconciled = statement.isReconciled,
-            id = statement.id.id.toString(),
+            id = statement.id.id,
         ).requireOneRow { "No statement with id ${statement.id.id}" }
     }
 
     override fun removeById(statementId: StatementId) {
-        database.statementQueries.deleteById(statementId.id.toString())
+        database.statementQueries.deleteById(statementId.id)
     }
 }

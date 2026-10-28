@@ -1,7 +1,9 @@
+import kotlin.uuid.Uuid;
+
 CREATE TABLE Category (
-    id TEXT NOT NULL PRIMARY KEY,
+    id BLOB AS Uuid NOT NULL PRIMARY KEY,
     name TEXT NOT NULL,
-    parent_id TEXT,
+    parent_id BLOB AS Uuid,
     type_id INTEGER NOT NULL,
     memo TEXT,
     FOREIGN KEY (parent_id) REFERENCES Category (id),

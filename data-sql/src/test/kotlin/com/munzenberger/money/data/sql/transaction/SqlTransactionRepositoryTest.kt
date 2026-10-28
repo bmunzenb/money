@@ -19,6 +19,7 @@ import com.munzenberger.money.data.api.transaction.TransactionStatusConstant
 import com.munzenberger.money.data.api.transaction.TransactionStatusId
 import com.munzenberger.money.data.api.transaction.remove
 import com.munzenberger.money.data.sql.MoneyDatabase
+import com.munzenberger.money.data.sql.createMoneyDatabase
 import com.munzenberger.money.data.sql.account.SqlAccountRepository
 import com.munzenberger.money.data.sql.createTestDatabase
 import com.munzenberger.money.data.sql.createTestJdbcDriver
@@ -78,7 +79,7 @@ class SqlTransactionRepositoryTest {
                 QueryResult.Value(cursor.getLong(0)!!)
             },
             parameters = 1,
-        ) { bindString(0, transactionId.value.toString()) }.value
+        ) { bindBytes(0, transactionId.value.toByteArray()) }.value
 
     @Test
     fun `transactionsByAccountId emits empty list when no transactions exist`() = runTest {
@@ -340,7 +341,7 @@ class SqlTransactionRepositoryTest {
         val dispatcher = UnconfinedTestDispatcher(testScheduler)
         val driver = createTestJdbcDriver()
         MoneyDatabase.Schema.create(driver)
-        val database = MoneyDatabase(driver)
+        val database = createMoneyDatabase(driver)
         val accountId = createAccount(database, dispatcher)
         val clock = FixedClock(Instant.fromEpochMilliseconds(1_700_000_000_123))
         val repository = SqlTransactionRepository(database, dispatcher, clock)
@@ -354,7 +355,7 @@ class SqlTransactionRepositoryTest {
         val dispatcher = UnconfinedTestDispatcher(testScheduler)
         val driver = createTestJdbcDriver()
         MoneyDatabase.Schema.create(driver)
-        val database = MoneyDatabase(driver)
+        val database = createMoneyDatabase(driver)
         val accountId = createAccount(database, dispatcher)
         val clock = FixedClock(Instant.fromEpochMilliseconds(1_700_000_000_123))
         val repository = SqlTransactionRepository(database, dispatcher, clock)

@@ -1,11 +1,12 @@
 import kotlin.Boolean;
+import kotlin.uuid.Uuid;
 
 CREATE TABLE Account (
-    id TEXT NOT NULL PRIMARY KEY,
+    id BLOB AS Uuid NOT NULL PRIMARY KEY,
     name TEXT NOT NULL,
     number TEXT,
     account_type_id INTEGER NOT NULL,
-    bank_id TEXT,
+    bank_id BLOB AS Uuid,
     initial_balance INTEGER NOT NULL,
     memo TEXT,
     is_closed INTEGER AS Boolean NOT NULL,

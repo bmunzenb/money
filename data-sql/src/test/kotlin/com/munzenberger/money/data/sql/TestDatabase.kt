@@ -15,5 +15,5 @@ fun createTestJdbcDriver() = LogSqliteDriver(
 fun createTestDatabase(): MoneyDatabase {
     val driver = createTestJdbcDriver()
     MoneyDatabase.Schema.create(driver)
-    return MoneyDatabase(driver)
+    return createMoneyDatabase(driver)
 }

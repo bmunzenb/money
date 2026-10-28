@@ -1,8 +1,9 @@
 import kotlin.Boolean;
+import kotlin.uuid.Uuid;
 
 CREATE TABLE Statement (
-    id TEXT NOT NULL PRIMARY KEY,
-    account_id TEXT NOT NULL,
+    id BLOB AS Uuid NOT NULL PRIMARY KEY,
+    account_id BLOB AS Uuid NOT NULL,
     closing_date INTEGER NOT NULL,
     starting_balance INTEGER NOT NULL,
     ending_balance INTEGER NOT NULL,

@@ -18,7 +18,6 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.datetime.LocalDate
 import kotlin.coroutines.CoroutineContext
 import kotlin.time.Clock
-import kotlin.uuid.Uuid
 
 class SqlTransactionRepository(
     private val database: MoneyDatabase,
@@ -28,7 +27,7 @@ class SqlTransactionRepository(
 
     override suspend fun transactionsByAccountId(accountId: AccountId): Flow<List<Transaction>> =
         database.transactionQueries
-            .selectByAccountId(accountId.value.toString()) {
+            .selectByAccountId(accountId.value) {
                 id,
                 accountIdValue,
                 payeeId,
@@ -39,9 +38,9 @@ class SqlTransactionRepository(
                 statusValue,
                 ->
                 Transaction(
-                    id = TransactionId(Uuid.parse(id)),
-                    accountId = AccountId(Uuid.parse(accountIdValue)),
-                    payeeId = payeeId?.let { PayeeId(Uuid.parse(it)) },
+                    id = TransactionId(id),
+                    accountId = AccountId(accountIdValue),
+                    payeeId = payeeId?.let { PayeeId(it) },
                     date = LocalDate.fromEpochDays(date),
                     number = number,
                     memo = memo,
@@ -56,9 +55,9 @@ class SqlTransactionRepository(
 
     override fun add(transaction: Transaction) {
         database.transactionQueries.insert(
-            id = transaction.id.value.toString(),
-            account_id = transaction.accountId.value.toString(),
-            payee_id = transaction.payeeId?.value?.toString(),
+            id = transaction.id.value,
+            account_id = transaction.accountId.value,
+            payee_id = transaction.payeeId?.value,
             date = transaction.date.toEpochDays(),
             number = transaction.number,
             memo = transaction.memo,
@@ -69,17 +68,17 @@ class SqlTransactionRepository(
 
     override fun update(transaction: Transaction) {
         database.transactionQueries.update(
-            account_id = transaction.accountId.value.toString(),
-            payee_id = transaction.payeeId?.value?.toString(),
+            account_id = transaction.accountId.value,
+            payee_id = transaction.payeeId?.value,
             date = transaction.date.toEpochDays(),
             number = transaction.number,
             memo = transaction.memo,
             status_id = transaction.status.id.value,
-            id = transaction.id.value.toString(),
+            id = transaction.id.value,
         ).requireOneRow { "No transaction with id ${transaction.id.value}" }
     }
 
     override fun removeById(transactionId: TransactionId) {
-        database.transactionQueries.deleteById(transactionId.value.toString())
+        database.transactionQueries.deleteById(transactionId.value)
     }
 }

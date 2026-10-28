@@ -26,21 +26,21 @@ class SqlTransferEntryRepository(
 
     override suspend fun transferEntriesByTransactionId(transactionId: TransactionId): Flow<List<TransferEntry>> =
         database.transferEntryQueries
-            .selectByTransactionId(transactionId.value.toString(), ::mapTransferEntry)
+            .selectByTransactionId(transactionId.value, ::mapTransferEntry)
             .asFlow()
             .mapToList(context)
 
     override suspend fun transferEntriesByAccountId(accountId: AccountId): Flow<List<TransferEntry>> =
         database.transferEntryQueries
-            .selectByAccountId(accountId.value.toString(), ::mapTransferEntry)
+            .selectByAccountId(accountId.value, ::mapTransferEntry)
             .asFlow()
             .mapToList(context)
 
     override fun add(transferEntry: TransferEntry) {
         database.transferEntryQueries.insert(
-            id = transferEntry.id.id.toString(),
-            transaction_id = transferEntry.transactionId.value.toString(),
-            account_id = transferEntry.accountId.value.toString(),
+            id = transferEntry.id.id,
+            transaction_id = transferEntry.transactionId.value,
+            account_id = transferEntry.accountId.value,
             amount = transferEntry.amount.value,
             number = transferEntry.number,
             memo = transferEntry.memo,
@@ -51,25 +51,25 @@ class SqlTransferEntryRepository(
 
     override fun update(transferEntry: TransferEntry) {
         database.transferEntryQueries.update(
-            transaction_id = transferEntry.transactionId.value.toString(),
-            account_id = transferEntry.accountId.value.toString(),
+            transaction_id = transferEntry.transactionId.value,
+            account_id = transferEntry.accountId.value,
             amount = transferEntry.amount.value,
             number = transferEntry.number,
             memo = transferEntry.memo,
             status_id = transferEntry.status.id.value,
             order_in_transaction = transferEntry.orderInTransaction.toLong(),
-            id = transferEntry.id.id.toString(),
+            id = transferEntry.id.id,
         ).requireOneRow { "No transfer entry with id ${transferEntry.id.id}" }
     }
 
     override fun removeById(transferEntryId: TransferEntryId) {
-        database.transferEntryQueries.deleteById(transferEntryId.id.toString())
+        database.transferEntryQueries.deleteById(transferEntryId.id)
     }
 
     private fun mapTransferEntry(
-        id: String,
-        transactionId: String,
-        accountId: String,
+        id: Uuid,
+        transactionId: Uuid,
+        accountId: Uuid,
         amount: Long,
         number: String?,
         memo: String?,
@@ -77,9 +77,9 @@ class SqlTransferEntryRepository(
         statusValue: String,
         orderInTransaction: Long,
     ) = TransferEntry(
-        id = TransferEntryId(Uuid.parse(id)),
-        transactionId = TransactionId(Uuid.parse(transactionId)),
-        accountId = AccountId(Uuid.parse(accountId)),
+        id = TransferEntryId(id),
+        transactionId = TransactionId(transactionId),
+        accountId = AccountId(accountId),
         amount = Money(amount),
         number = number,
         memo = memo,

@@ -19,7 +19,6 @@ import com.munzenberger.money.data.sql.requireOneRow
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlin.coroutines.CoroutineContext
-import kotlin.uuid.Uuid
 
 class SqlAccountRepository(
     private val database: MoneyDatabase,
@@ -32,7 +31,7 @@ class SqlAccountRepository(
                 typeId, typeValue, typeClassId, typeClassValue,
             ->
             Account(
-                id = AccountId(Uuid.parse(id)),
+                id = AccountId(id),
                 name = name,
                 number = number,
                 accountType = AccountType(
@@ -43,7 +42,7 @@ class SqlAccountRepository(
                     ),
                     value = AccountTypeConstant.valueOf(typeValue),
                 ),
-                bankId = bankId?.let { BankId(Uuid.parse(it)) },
+                bankId = bankId?.let { BankId(it) },
                 initialBalance = Money(initialBalance),
                 memo = memo,
                 isClosed = isClosed,
@@ -54,11 +53,11 @@ class SqlAccountRepository(
 
     override fun add(account: Account) {
         database.accountQueries.insert(
-            id = account.id.value.toString(),
+            id = account.id.value,
             name = account.name,
             number = account.number,
             account_type_id = account.accountType.id.value,
-            bank_id = account.bankId?.value?.toString(),
+            bank_id = account.bankId?.value,
             initial_balance = account.initialBalance.value,
             memo = account.memo,
             is_closed = account.isClosed,
@@ -70,15 +69,15 @@ class SqlAccountRepository(
             name = account.name,
             number = account.number,
             account_type_id = account.accountType.id.value,
-            bank_id = account.bankId?.value?.toString(),
+            bank_id = account.bankId?.value,
             initial_balance = account.initialBalance.value,
             memo = account.memo,
             is_closed = account.isClosed,
-            id = account.id.value.toString(),
+            id = account.id.value,
         ).requireOneRow { "No account with id ${account.id.value}" }
     }
 
     override fun removeById(accountId: AccountId) {
-        database.accountQueries.deleteById(accountId.value.toString())
+        database.accountQueries.deleteById(accountId.value)
     }
 }

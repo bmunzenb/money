@@ -37,7 +37,7 @@ class SqlRegisterRepository(
 ) : RegisterRepository {
 
     override fun registerEntriesForAccount(accountId: AccountId): Flow<List<RegisterEntry>> {
-        val id = accountId.value.toString()
+        val id = accountId.value
         return combine(
             database.registerQueries.selectInitialBalance(id).asFlow().mapToOneOrNull(context),
             transactionRows(id),
@@ -58,7 +58,7 @@ class SqlRegisterRepository(
         }
     }
 
-    private fun transactionRows(accountId: String): Flow<List<TransactionRow>> =
+    private fun transactionRows(accountId: Uuid): Flow<List<TransactionRow>> =
         database.registerQueries
             .selectTransactions(accountId) {
                 transactionId,
@@ -73,7 +73,7 @@ class SqlRegisterRepository(
                 ->
                 TransactionRow(
                     transactionId = transactionId,
-                    payeeId = payeeId?.let { PayeeId(Uuid.parse(it)) },
+                    payeeId = payeeId?.let { PayeeId(it) },
                     payeeName = payeeName,
                     date = LocalDate.fromEpochDays(date),
                     created = created,
@@ -85,7 +85,7 @@ class SqlRegisterRepository(
             .asFlow()
             .mapToList(context)
 
-    private fun categoryEntryRows(accountId: String): Flow<List<EntryRow>> =
+    private fun categoryEntryRows(accountId: Uuid): Flow<List<EntryRow>> =
         database.registerQueries
             .selectCategoryEntries(accountId) {
                 categoryEntryId,
@@ -101,10 +101,10 @@ class SqlRegisterRepository(
                     transactionId = transactionId,
                     orderInTransaction = orderInTransaction,
                     entry = RegisterEntry.Transaction.Entry.Category(
-                        categoryEntryId = CategoryEntryId(Uuid.parse(categoryEntryId)),
-                        categoryId = CategoryId(Uuid.parse(categoryId)),
+                        categoryEntryId = CategoryEntryId(categoryEntryId),
+                        categoryId = CategoryId(categoryId),
                         categoryName = categoryName,
-                        parentCategoryId = parentCategoryId?.let { CategoryId(Uuid.parse(it)) },
+                        parentCategoryId = parentCategoryId?.let { CategoryId(it) },
                         parentCategoryName = parentCategoryName,
                         amount = Money(amount),
                     ),
@@ -113,7 +113,7 @@ class SqlRegisterRepository(
             .asFlow()
             .mapToList(context)
 
-    private fun transferEntryRows(accountId: String): Flow<List<EntryRow>> =
+    private fun transferEntryRows(accountId: Uuid): Flow<List<EntryRow>> =
         database.registerQueries
             .selectTransferEntries(accountId) {
                 transferEntryId,
@@ -127,8 +127,8 @@ class SqlRegisterRepository(
                     transactionId = transactionId,
                     orderInTransaction = orderInTransaction,
                     entry = RegisterEntry.Transaction.Entry.Transfer(
-                        transferEntryId = TransferEntryId(Uuid.parse(transferEntryId)),
-                        accountId = AccountId(Uuid.parse(transferAccountId)),
+                        transferEntryId = TransferEntryId(transferEntryId),
+                        accountId = AccountId(transferAccountId),
                         accountName = accountName,
                         amount = Money(amount),
                     ),
@@ -137,7 +137,7 @@ class SqlRegisterRepository(
             .asFlow()
             .mapToList(context)
 
-    private fun transferRows(accountId: String): Flow<List<TransferRow>> =
+    private fun transferRows(accountId: Uuid): Flow<List<TransferRow>> =
         database.registerQueries
             .selectTransfers(accountId) {
                 transferEntryId,
@@ -154,8 +154,8 @@ class SqlRegisterRepository(
                 accountName,
                 ->
                 TransferRow(
-                    transferEntryId = TransferEntryId(Uuid.parse(transferEntryId)),
-                    payeeId = payeeId?.let { PayeeId(Uuid.parse(it)) },
+                    transferEntryId = TransferEntryId(transferEntryId),
+                    payeeId = payeeId?.let { PayeeId(it) },
                     payeeName = payeeName,
                     date = LocalDate.fromEpochDays(date),
                     created = created,
@@ -164,7 +164,7 @@ class SqlRegisterRepository(
                     number = number,
                     memo = memo,
                     status = transactionStatus(statusId, statusValue),
-                    accountId = AccountId(Uuid.parse(accountIdValue)),
+                    accountId = AccountId(accountIdValue),
                     accountName = accountName,
                 )
             }
@@ -208,7 +208,7 @@ class SqlRegisterRepository(
     )
 
     private data class TransactionRow(
-        val transactionId: String,
+        val transactionId: Uuid,
         val payeeId: PayeeId?,
         val payeeName: String?,
         val date: LocalDate,
@@ -225,7 +225,7 @@ class SqlRegisterRepository(
                 amount = amount,
                 toEntry = { balance ->
                     RegisterEntry.Transaction(
-                        transactionId = TransactionId(Uuid.parse(transactionId)),
+                        transactionId = TransactionId(transactionId),
                         payeeId = payeeId,
                         payeeName = payeeName,
                         date = date,
@@ -242,7 +242,7 @@ class SqlRegisterRepository(
     }
 
     private data class EntryRow(
-        val transactionId: String,
+        val transactionId: Uuid,
         val orderInTransaction: Long,
         val entry: RegisterEntry.Transaction.Entry,
     )
