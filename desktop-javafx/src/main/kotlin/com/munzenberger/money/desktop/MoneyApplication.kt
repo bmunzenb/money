@@ -1,9 +1,9 @@
 package com.munzenberger.money.desktop
 
 import com.munzenberger.money.desktop.navigation.ScreenScope
+import com.munzenberger.money.desktop.preferences.WindowBounds
+import com.munzenberger.money.desktop.preferences.windowBounds
 import com.munzenberger.money.presentation.preferences.UserPreferences
-import com.munzenberger.money.presentation.preferences.WindowBounds
-import com.munzenberger.money.presentation.preferences.windowBounds
 import javafx.animation.Animation
 import javafx.animation.PauseTransition
 import javafx.application.Application
