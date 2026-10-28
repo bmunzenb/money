@@ -62,7 +62,7 @@ class SqlMoneyRepository private constructor(
     constructor(
         name: String,
         driver: SqlDriver,
-        database: MoneyDatabase = MoneyDatabase(driver),
+        database: MoneyDatabase = createMoneyDatabase(driver),
         context: CoroutineContext = Dispatchers.IO,
     ) : this(name, driver, database, context, SqlTableRepositories(database, context))
 

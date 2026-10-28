@@ -11,7 +11,6 @@ import com.munzenberger.money.data.sql.requireOneRow
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlin.coroutines.CoroutineContext
-import kotlin.uuid.Uuid
 
 class SqlBankRepository(
     private val database: MoneyDatabase,
@@ -21,7 +20,7 @@ class SqlBankRepository(
     override val banks: Flow<List<Bank>> = database.bankQueries
         .selectAll { id, name, memo ->
             Bank(
-                id = BankId(Uuid.parse(id)),
+                id = BankId(id),
                 name = name,
                 memo = memo,
             )
@@ -31,7 +30,7 @@ class SqlBankRepository(
 
     override fun add(bank: Bank) {
         database.bankQueries.insert(
-            id = bank.id.value.toString(),
+            id = bank.id.value,
             name = bank.name,
             memo = bank.memo,
         )
@@ -41,11 +40,11 @@ class SqlBankRepository(
         database.bankQueries.update(
             name = bank.name,
             memo = bank.memo,
-            id = bank.id.value.toString(),
+            id = bank.id.value,
         ).requireOneRow { "No bank with id ${bank.id.value}" }
     }
 
     override fun removeById(bankId: BankId) {
-        database.bankQueries.deleteById(bankId.value.toString())
+        database.bankQueries.deleteById(bankId.value)
     }
 }

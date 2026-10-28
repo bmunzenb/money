@@ -3,11 +3,12 @@ package com.munzenberger.money.data.api.transaction
 import com.munzenberger.money.data.api.Money
 import com.munzenberger.money.data.api.account.AccountId
 import kotlinx.serialization.Serializable
+import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 
 @Serializable
 @JvmInline
-value class TransferEntryId(val id: Uuid = Uuid.random())
+value class TransferEntryId @OptIn(ExperimentalUuidApi::class) constructor(val id: Uuid = Uuid.generateV7())
 
 data class TransferEntry(
     val id: TransferEntryId = TransferEntryId(),

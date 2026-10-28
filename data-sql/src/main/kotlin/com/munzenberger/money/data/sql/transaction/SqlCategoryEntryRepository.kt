@@ -23,21 +23,21 @@ class SqlCategoryEntryRepository(
 
     override suspend fun categoryEntriesByTransactionId(transactionId: TransactionId): Flow<List<CategoryEntry>> =
         database.categoryEntryQueries
-            .selectByTransactionId(transactionId.value.toString(), ::mapCategoryEntry)
+            .selectByTransactionId(transactionId.value, ::mapCategoryEntry)
             .asFlow()
             .mapToList(context)
 
     override suspend fun categoryEntriesByCategoryId(categoryId: CategoryId): Flow<List<CategoryEntry>> =
         database.categoryEntryQueries
-            .selectByCategoryId(categoryId.value.toString(), ::mapCategoryEntry)
+            .selectByCategoryId(categoryId.value, ::mapCategoryEntry)
             .asFlow()
             .mapToList(context)
 
     override fun add(categoryEntry: CategoryEntry) {
         database.categoryEntryQueries.insert(
-            id = categoryEntry.id.value.toString(),
-            transaction_id = categoryEntry.transactionId.value.toString(),
-            category_id = categoryEntry.categoryId.value.toString(),
+            id = categoryEntry.id.value,
+            transaction_id = categoryEntry.transactionId.value,
+            category_id = categoryEntry.categoryId.value,
             amount = categoryEntry.amount.value,
             memo = categoryEntry.memo,
             order_in_transaction = categoryEntry.orderInTransaction.toLong(),
@@ -46,30 +46,30 @@ class SqlCategoryEntryRepository(
 
     override fun update(categoryEntry: CategoryEntry) {
         database.categoryEntryQueries.update(
-            transaction_id = categoryEntry.transactionId.value.toString(),
-            category_id = categoryEntry.categoryId.value.toString(),
+            transaction_id = categoryEntry.transactionId.value,
+            category_id = categoryEntry.categoryId.value,
             amount = categoryEntry.amount.value,
             memo = categoryEntry.memo,
             order_in_transaction = categoryEntry.orderInTransaction.toLong(),
-            id = categoryEntry.id.value.toString(),
+            id = categoryEntry.id.value,
         ).requireOneRow { "No category entry with id ${categoryEntry.id.value}" }
     }
 
     override fun removeById(categoryEntryId: CategoryEntryId) {
-        database.categoryEntryQueries.deleteById(categoryEntryId.value.toString())
+        database.categoryEntryQueries.deleteById(categoryEntryId.value)
     }
 
     private fun mapCategoryEntry(
-        id: String,
-        transactionId: String,
-        categoryId: String,
+        id: Uuid,
+        transactionId: Uuid,
+        categoryId: Uuid,
         amount: Long,
         memo: String?,
         orderInTransaction: Long,
     ) = CategoryEntry(
-        id = CategoryEntryId(Uuid.parse(id)),
-        transactionId = TransactionId(Uuid.parse(transactionId)),
-        categoryId = CategoryId(Uuid.parse(categoryId)),
+        id = CategoryEntryId(id),
+        transactionId = TransactionId(transactionId),
+        categoryId = CategoryId(categoryId),
         amount = Money(amount),
         memo = memo,
         orderInTransaction = orderInTransaction.toInt(),

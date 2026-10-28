@@ -5,11 +5,12 @@ import com.munzenberger.money.data.api.payee.PayeeId
 import com.munzenberger.money.data.api.today
 import kotlinx.datetime.LocalDate
 import kotlinx.serialization.Serializable
+import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 
 @Serializable
 @JvmInline
-value class TransactionId(val value: Uuid = Uuid.random())
+value class TransactionId @OptIn(ExperimentalUuidApi::class) constructor(val value: Uuid = Uuid.generateV7())
 
 data class Transaction(
     val id: TransactionId = TransactionId(),

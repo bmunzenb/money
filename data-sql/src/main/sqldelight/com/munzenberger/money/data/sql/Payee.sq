@@ -1,5 +1,7 @@
+import kotlin.uuid.Uuid;
+
 CREATE TABLE Payee (
-    id TEXT NOT NULL PRIMARY KEY,
+    id BLOB AS Uuid NOT NULL PRIMARY KEY,
     name TEXT NOT NULL,
     memo TEXT
 );

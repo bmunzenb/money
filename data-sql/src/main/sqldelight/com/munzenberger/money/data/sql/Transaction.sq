@@ -1,7 +1,9 @@
+import kotlin.uuid.Uuid;
+
 CREATE TABLE "Transaction" (
-    id TEXT NOT NULL PRIMARY KEY,
-    account_id TEXT NOT NULL,
-    payee_id TEXT,
+    id BLOB AS Uuid NOT NULL PRIMARY KEY,
+    account_id BLOB AS Uuid NOT NULL,
+    payee_id BLOB AS Uuid,
     date INTEGER NOT NULL,
     number TEXT,
     memo TEXT,

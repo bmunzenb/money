@@ -11,7 +11,6 @@ import com.munzenberger.money.data.sql.requireOneRow
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlin.coroutines.CoroutineContext
-import kotlin.uuid.Uuid
 
 class SqlPayeeRepository(
     private val database: MoneyDatabase,
@@ -21,7 +20,7 @@ class SqlPayeeRepository(
     override val payees: Flow<List<Payee>> = database.payeeQueries
         .selectAll { id, name, memo ->
             Payee(
-                id = PayeeId(Uuid.parse(id)),
+                id = PayeeId(id),
                 name = name,
                 memo = memo,
             )
@@ -31,7 +30,7 @@ class SqlPayeeRepository(
 
     override fun add(payee: Payee) {
         database.payeeQueries.insert(
-            id = payee.id.value.toString(),
+            id = payee.id.value,
             name = payee.name,
             memo = payee.memo,
         )
@@ -41,11 +40,11 @@ class SqlPayeeRepository(
         database.payeeQueries.update(
             name = payee.name,
             memo = payee.memo,
-            id = payee.id.value.toString(),
+            id = payee.id.value,
         ).requireOneRow { "No payee with id ${payee.id.value}" }
     }
 
     override fun removeById(payeeId: PayeeId) {
-        database.payeeQueries.deleteById(payeeId.value.toString())
+        database.payeeQueries.deleteById(payeeId.value)
     }
 }

@@ -1,7 +1,9 @@
+import kotlin.uuid.Uuid;
+
 CREATE TABLE CategoryEntry (
-    id TEXT NOT NULL PRIMARY KEY,
-    transaction_id TEXT NOT NULL,
-    category_id TEXT NOT NULL,
+    id BLOB AS Uuid NOT NULL PRIMARY KEY,
+    transaction_id BLOB AS Uuid NOT NULL,
+    category_id BLOB AS Uuid NOT NULL,
     amount INTEGER NOT NULL,
     memo TEXT,
     order_in_transaction INTEGER NOT NULL,
