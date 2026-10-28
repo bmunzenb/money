@@ -46,10 +46,7 @@ class AccountListScreen(scope: ScreenScope) : VBox(Spacing.CONTROL_SPACING), Koi
         labelFor = groupingComboBox
     }
 
-    private val addAccountButton = Button(
-        strings.getString("add_account_button_title"),
-        FontIcon(MaterialDesignP.PLUS),
-    ).apply {
+    private val addAccountButton = Button(strings.getString("add_account_button_title")).apply {
         setOnAction { viewModel.onAddAccountClick() }
     }
 
@@ -61,11 +58,11 @@ class AccountListScreen(scope: ScreenScope) : VBox(Spacing.CONTROL_SPACING), Koi
         children.setAll(groupingLabel, groupingComboBox, spacer, addAccountButton)
     }
 
-    private val nameColumn = column("name", "account_name_column_title", ALIGN_LEFT)
+    private val nameColumn = column("name", "account_name_column_title")
 
-    private val numberColumn = column("number", "account_number_column_title", ALIGN_LEFT)
+    private val numberColumn = column("number", "account_number_column_title")
 
-    private val balanceColumn = column("balance", "balance_column_title", ALIGN_RIGHT)
+    private val balanceColumn = column("balance", "balance_column_title")
 
     // The columns stretch to fill the table's width. They start at the same width, so they share it equally.
     // Resizing a column takes the space from the balance column only, leaving the others as they are.
@@ -96,10 +93,9 @@ class AccountListScreen(scope: ScreenScope) : VBox(Spacing.CONTROL_SPACING), Koi
 
     // The id identifies the column's saved width. The alignment is a style class that styles.css uses to align the
     // column's header and cells.
-    private fun column(id: String, titleKey: String, alignment: String) =
+    private fun column(id: String, titleKey: String) =
         TreeTableColumn<AccountListRow, String>(strings.getString(titleKey)).apply {
             this.id = id
-            styleClass += alignment
         }
 
     private object AccountGroupingConverter : StringConverter<AccountGrouping>() {
@@ -119,8 +115,6 @@ class AccountListScreen(scope: ScreenScope) : VBox(Spacing.CONTROL_SPACING), Koi
     }
 
     private companion object {
-        const val ALIGN_LEFT = "align-left"
-        const val ALIGN_RIGHT = "align-right"
         val COLUMN_WIDTHS_KEY = columnWidthsKey("account.list.column.widths")
     }
 }
