@@ -31,7 +31,10 @@ class MoneyApplication : Application(), KoinComponent {
         this.stage = stage
         stage.title = strings.getString("app_title")
         appScreen = AppScreen(appScope)
-        stage.scene = Scene(appScreen, DEFAULT_WIDTH, DEFAULT_HEIGHT)
+        stage.scene = Scene(appScreen, DEFAULT_WIDTH, DEFAULT_HEIGHT).apply {
+            val styleSheet = MoneyApplication::class.java.getResource("styles.css")
+            stylesheets += checkNotNull(styleSheet).toExternalForm()
+        }
         restoreBounds(stage)
         stage.show()
         saveBoundsOnChange(stage)

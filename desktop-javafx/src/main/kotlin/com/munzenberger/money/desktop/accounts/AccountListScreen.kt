@@ -12,6 +12,7 @@ import javafx.geometry.Pos
 import javafx.scene.control.Button
 import javafx.scene.control.ComboBox
 import javafx.scene.control.Label
+import javafx.scene.control.TreeTableColumn
 import javafx.scene.control.TreeTableView
 import javafx.scene.layout.HBox
 import javafx.scene.layout.Priority
@@ -53,9 +54,18 @@ class AccountListScreen(scope: ScreenScope) : VBox(Spacing.CONTROL_SPACING) {
         children.setAll(groupingLabel, groupingComboBox, spacer, addAccountButton)
     }
 
-    // Grows to fill the rest of the screen below the controls.
+    private val nameColumn = column("account_name_column_title", ALIGN_LEFT)
+
+    private val numberColumn = column("account_number_column_title", ALIGN_LEFT)
+
+    private val balanceColumn = column("balance_column_title", ALIGN_RIGHT)
+
+    // The columns stretch to fill the table's width. They start at the same width, so they share it equally.
+    // Resizing a column takes the space from the balance column only, leaving the others as they are.
     private val accountTable = TreeTableView<AccountListRow>().apply {
-        VBox.setVgrow(this, Priority.ALWAYS)
+        setVgrow(this, Priority.ALWAYS)
+        columns.setAll(nameColumn, numberColumn, balanceColumn)
+        columnResizePolicy = TreeTableView.CONSTRAINED_RESIZE_POLICY_LAST_COLUMN
     }
 
     // Stays at the bottom of the screen, since the table above it takes the rest of the height. It shows only
@@ -76,6 +86,12 @@ class AccountListScreen(scope: ScreenScope) : VBox(Spacing.CONTROL_SPACING) {
         groupingComboBox.value = state.grouping
     }
 
+    // The alignment is a style class that styles.css uses to align the column's header and cells.
+    private fun column(titleKey: String, alignment: String) =
+        TreeTableColumn<AccountListRow, String>(strings.getString(titleKey)).apply {
+            styleClass += alignment
+        }
+
     private object AccountGroupingConverter : StringConverter<AccountGrouping>() {
         override fun toString(grouping: AccountGrouping?): String = grouping?.let {
             strings.getString(
@@ -90,5 +106,10 @@ class AccountListScreen(scope: ScreenScope) : VBox(Spacing.CONTROL_SPACING) {
 
         // The combo box isn't editable, so it never converts text back to a grouping.
         override fun fromString(string: String?): AccountGrouping? = null
+    }
+
+    private companion object {
+        const val ALIGN_LEFT = "align-left"
+        const val ALIGN_RIGHT = "align-right"
     }
 }
