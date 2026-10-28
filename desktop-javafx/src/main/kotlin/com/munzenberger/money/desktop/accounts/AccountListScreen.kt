@@ -22,10 +22,8 @@ import javafx.scene.layout.Priority
 import javafx.scene.layout.Region
 import javafx.scene.layout.VBox
 import javafx.util.StringConverter
-import org.kordamp.ikonli.javafx.FontIcon
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
-import org.kordamp.ikonli.materialdesign2.MaterialDesignP
 
 /** Lists the accounts, with a heading and a row of controls to group them and add a new one. */
 class AccountListScreen(scope: ScreenScope) : VBox(Spacing.CONTROL_SPACING), KoinComponent {
@@ -91,8 +89,7 @@ class AccountListScreen(scope: ScreenScope) : VBox(Spacing.CONTROL_SPACING), Koi
         groupingComboBox.value = state.grouping
     }
 
-    // The id identifies the column's saved width. The alignment is a style class that styles.css uses to align the
-    // column's header and cells.
+    // The id identifies the column's saved width.
     private fun column(id: String, titleKey: String) =
         TreeTableColumn<AccountListRow, String>(strings.getString(titleKey)).apply {
             this.id = id
