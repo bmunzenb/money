@@ -1,7 +1,7 @@
 package com.munzenberger.money.desktop.components
 
-import com.munzenberger.money.data.api.preferences.MoneyPreferences
-import com.munzenberger.money.data.api.preferences.PreferenceKey
+import com.munzenberger.money.presentation.preferences.PreferenceKey
+import com.munzenberger.money.presentation.preferences.UserPreferences
 import javafx.animation.Animation
 import javafx.animation.PauseTransition
 import javafx.beans.InvalidationListener
@@ -25,7 +25,7 @@ fun columnLayoutKey(name: String) =
  * change. Each column is stored by its id, so a column without a saved layout keeps its default width and goes after
  * the saved columns.
  */
-fun <S> TreeTableView<S>.saveColumnLayout(preferences: MoneyPreferences, key: PreferenceKey<List<ColumnLayout>>) {
+fun <S> TreeTableView<S>.saveColumnLayout(preferences: UserPreferences, key: PreferenceKey<List<ColumnLayout>>) {
     val saved = preferences[key]
     val savedIndexes = saved.withIndex().associate { (index, layout) -> layout.id to index }
     val savedWidths = saved.associate { it.id to it.width }

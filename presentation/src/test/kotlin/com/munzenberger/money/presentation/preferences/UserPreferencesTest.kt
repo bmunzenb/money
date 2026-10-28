@@ -1,7 +1,6 @@
 package com.munzenberger.money.presentation.preferences
 
 import app.cash.turbine.test
-import com.munzenberger.money.data.api.preferences.PreferenceKey
 import kotlinx.coroutines.test.runTest
 import kotlinx.serialization.builtins.serializer
 import java.util.prefs.AbstractPreferences
