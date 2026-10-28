@@ -1,6 +1,10 @@
 package com.munzenberger.money.desktop.accounts
 
+import com.munzenberger.money.core.account.AccountGroup
 import com.munzenberger.money.core.account.AccountGrouping
+import com.munzenberger.money.data.api.account.Account
+import com.munzenberger.money.data.api.account.AccountClassConstant
+import com.munzenberger.money.data.api.account.AccountTypeConstant
 import com.munzenberger.money.desktop.components.ScreenHeading
 import com.munzenberger.money.desktop.components.columnLayoutKey
 import com.munzenberger.money.desktop.components.saveColumnLayout
@@ -9,12 +13,16 @@ import com.munzenberger.money.desktop.strings
 import com.munzenberger.money.desktop.theme.Spacing
 import com.munzenberger.money.presentation.accounts.AccountListUiState
 import com.munzenberger.money.presentation.accounts.AccountListViewModel
+import com.munzenberger.money.presentation.accounts.loadedOrEmpty
+import com.munzenberger.money.presentation.accounts.maskAccountNumber
 import com.munzenberger.money.presentation.preferences.UserPreferences
+import javafx.beans.property.ReadOnlyStringWrapper
 import javafx.geometry.Insets
 import javafx.geometry.Pos
 import javafx.scene.control.Button
 import javafx.scene.control.ComboBox
 import javafx.scene.control.Label
+import javafx.scene.control.TreeItem
 import javafx.scene.control.TreeTableColumn
 import javafx.scene.control.TreeTableView
 import javafx.scene.layout.HBox
@@ -56,16 +64,21 @@ class AccountListScreen(scope: ScreenScope) : VBox(Spacing.CONTROL_SPACING), Koi
         children.setAll(groupingLabel, groupingComboBox, spacer, addAccountButton)
     }
 
-    private val nameColumn = column("name", "account_name_column_title")
+    private val nameColumn = column("name", "account_name_column_title", groupValue = { it.title() }) { it.name }
 
-    private val numberColumn = column("number", "account_number_column_title")
+    private val numberColumn = column("number", "account_number_column_title") { maskAccountNumber(it.number) }
 
-    private val balanceColumn = column("balance", "balance_column_title")
+    // Empty until account balances are available.
+    private val balanceColumn = column("balance", "balance_column_title") { "" }
 
     // The columns stretch to fill the table's width. They start at the same width, so they share it equally.
     // Resizing a column takes the space from the last column only, leaving the others as they are.
-    private val accountTable = TreeTableView<AccountListRow>().apply {
+    // Each group is a top-level row under the hidden root, with its accounts' rows under it.
+    private val accountTable = TreeTableView<AccountListRow>(TreeItem()).apply {
         setVgrow(this, Priority.ALWAYS)
+        isShowRoot = false
+        // Keeps the disclosure arrow beside the group's title when the user moves the columns.
+        treeColumn = nameColumn
         columns.setAll(nameColumn, numberColumn, balanceColumn)
         columnResizePolicy = TreeTableView.CONSTRAINED_RESIZE_POLICY_LAST_COLUMN
         saveColumnLayout(preferences, COLUMN_LAYOUT_KEY)
@@ -85,14 +98,42 @@ class AccountListScreen(scope: ScreenScope) : VBox(Spacing.CONTROL_SPACING), Koi
         scope.collect(viewModel.state, ::render)
     }
 
+    // The groups last shown in the table, so a state that changes only the grouping doesn't rebuild the rows.
+    private var renderedGroups: List<AccountGroup>? = null
+
     private fun render(state: AccountListUiState) {
         groupingComboBox.value = state.grouping
+
+        val groups = state.groups.loadedOrEmpty
+        if (groups != renderedGroups) {
+            renderedGroups = groups
+            accountTable.root.children.setAll(groups.map(::groupItem))
+        }
     }
 
-    // The id identifies the column's saved layout.
-    private fun column(id: String, titleKey: String) =
+    private fun groupItem(group: AccountGroup) =
+        TreeItem<AccountListRow>(AccountListRow.GroupRow(group)).apply {
+            isExpanded = true
+            children.setAll(group.accounts.map { TreeItem(AccountListRow.AccountRow(it)) })
+        }
+
+    // The id identifies the column's saved layout. A group's row is empty in the columns without a group value.
+    private fun column(
+        id: String,
+        titleKey: String,
+        groupValue: (AccountGroup) -> String = { "" },
+        accountValue: (Account) -> String,
+    ) =
         TreeTableColumn<AccountListRow, String>(strings.getString(titleKey)).apply {
             this.id = id
+            setCellValueFactory { features ->
+                val value = when (val row = features.value?.value) {
+                    is AccountListRow.GroupRow -> groupValue(row.group)
+                    is AccountListRow.AccountRow -> accountValue(row.account)
+                    null -> ""
+                }
+                ReadOnlyStringWrapper(value)
+            }
         }
 
     private object AccountGroupingConverter : StringConverter<AccountGrouping>() {
@@ -114,4 +155,25 @@ class AccountListScreen(scope: ScreenScope) : VBox(Spacing.CONTROL_SPACING), Koi
     private companion object {
         val COLUMN_LAYOUT_KEY = columnLayoutKey("account.list.columns")
     }
+}
+
+private fun AccountGroup.title(): String = when (this) {
+    is AccountGroup.All -> strings.getString("account_group_all_title")
+    is AccountGroup.ByAccountType -> strings.getString(
+        when (accountType.value) {
+            AccountTypeConstant.Savings -> "account_type_savings"
+            AccountTypeConstant.Checking -> "account_type_checking"
+            AccountTypeConstant.Asset -> "account_type_asset"
+            AccountTypeConstant.Cash -> "account_type_cash"
+            AccountTypeConstant.Credit -> "account_type_credit"
+            AccountTypeConstant.Loan -> "account_type_loan"
+        }
+    )
+    is AccountGroup.ByAccountClass -> strings.getString(
+        when (accountClass.value) {
+            AccountClassConstant.Assets -> "account_class_assets"
+            AccountClassConstant.Liabilities -> "account_class_liabilities"
+        }
+    )
+    is AccountGroup.ByBank -> bank?.name ?: strings.getString("account_group_no_bank_title")
 }

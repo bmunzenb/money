@@ -1,0 +1,16 @@
+/* Alternates the row colors of tree tables, as Modena does for lists and tables. */
+.tree-table-row-cell:odd {
+    -fx-background: -fx-control-inner-background-alt;
+}
+
+/*
+ * Modena's selected row colors, repeated here since this stylesheet overrides Modena's regardless of specificity, so
+ * the odd rows' color above would hide the selection. These are more specific than it, so they win within this file.
+ */
+.tree-table-row-cell:filled:selected {
+    -fx-background: -fx-selection-bar-non-focused;
+}
+
+.tree-table-view:focused > .virtual-flow > .clipped-container > .sheet > .tree-table-row-cell:filled:selected {
+    -fx-background: -fx-selection-bar;
+}
