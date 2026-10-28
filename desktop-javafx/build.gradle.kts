@@ -29,10 +29,11 @@ javafx {
 
 application {
     mainClass = "com.munzenberger.money.desktop.MainKt"
-    applicationDefaultJvmArgs = listOf("--enable-native-access=javafx.graphics")
+    applicationDefaultJvmArgs = listOf("--enable-native-access=javafx.graphics,ALL-UNNAMED")
 }
 
 tasks.named<JavaExec>("run") {
+    jvmArgs(application.applicationDefaultJvmArgs)
     rootProject.file("logging.local.properties").takeIf { it.exists() }?.let {
         jvmArgs("-Djava.util.logging.config.file=${it.absolutePath}")
     }
