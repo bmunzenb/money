@@ -2,11 +2,14 @@ package com.munzenberger.money.desktop.accounts
 
 import com.munzenberger.money.core.account.AccountGrouping
 import com.munzenberger.money.desktop.components.ScreenHeading
+import com.munzenberger.money.desktop.components.columnWidthsKey
+import com.munzenberger.money.desktop.components.saveColumnWidths
 import com.munzenberger.money.desktop.navigation.ScreenScope
 import com.munzenberger.money.desktop.strings
 import com.munzenberger.money.desktop.theme.Spacing
 import com.munzenberger.money.presentation.accounts.AccountListUiState
 import com.munzenberger.money.presentation.accounts.AccountListViewModel
+import com.munzenberger.money.presentation.preferences.UserPreferences
 import javafx.geometry.Insets
 import javafx.geometry.Pos
 import javafx.scene.control.Button
@@ -20,11 +23,15 @@ import javafx.scene.layout.Region
 import javafx.scene.layout.VBox
 import javafx.util.StringConverter
 import org.kordamp.ikonli.javafx.FontIcon
+import org.koin.core.component.KoinComponent
+import org.koin.core.component.inject
 import org.kordamp.ikonli.materialdesign2.MaterialDesignP
 
 /** Lists the accounts, with a heading and a row of controls to group them and add a new one. */
-class AccountListScreen(scope: ScreenScope) : VBox(Spacing.CONTROL_SPACING) {
+class AccountListScreen(scope: ScreenScope) : VBox(Spacing.CONTROL_SPACING), KoinComponent {
     private val viewModel: AccountListViewModel = scope.viewModel()
+
+    private val preferences: UserPreferences by inject()
 
     private val heading = ScreenHeading(strings.getString("account_list_title"))
 
@@ -54,11 +61,11 @@ class AccountListScreen(scope: ScreenScope) : VBox(Spacing.CONTROL_SPACING) {
         children.setAll(groupingLabel, groupingComboBox, spacer, addAccountButton)
     }
 
-    private val nameColumn = column("account_name_column_title", ALIGN_LEFT)
+    private val nameColumn = column("name", "account_name_column_title", ALIGN_LEFT)
 
-    private val numberColumn = column("account_number_column_title", ALIGN_LEFT)
+    private val numberColumn = column("number", "account_number_column_title", ALIGN_LEFT)
 
-    private val balanceColumn = column("balance_column_title", ALIGN_RIGHT)
+    private val balanceColumn = column("balance", "balance_column_title", ALIGN_RIGHT)
 
     // The columns stretch to fill the table's width. They start at the same width, so they share it equally.
     // Resizing a column takes the space from the balance column only, leaving the others as they are.
@@ -66,6 +73,7 @@ class AccountListScreen(scope: ScreenScope) : VBox(Spacing.CONTROL_SPACING) {
         setVgrow(this, Priority.ALWAYS)
         columns.setAll(nameColumn, numberColumn, balanceColumn)
         columnResizePolicy = TreeTableView.CONSTRAINED_RESIZE_POLICY_LAST_COLUMN
+        saveColumnWidths(preferences, COLUMN_WIDTHS_KEY)
     }
 
     // Stays at the bottom of the screen, since the table above it takes the rest of the height. It shows only
@@ -86,9 +94,11 @@ class AccountListScreen(scope: ScreenScope) : VBox(Spacing.CONTROL_SPACING) {
         groupingComboBox.value = state.grouping
     }
 
-    // The alignment is a style class that styles.css uses to align the column's header and cells.
-    private fun column(titleKey: String, alignment: String) =
+    // The id identifies the column's saved width. The alignment is a style class that styles.css uses to align the
+    // column's header and cells.
+    private fun column(id: String, titleKey: String, alignment: String) =
         TreeTableColumn<AccountListRow, String>(strings.getString(titleKey)).apply {
+            this.id = id
             styleClass += alignment
         }
 
@@ -111,5 +121,6 @@ class AccountListScreen(scope: ScreenScope) : VBox(Spacing.CONTROL_SPACING) {
     private companion object {
         const val ALIGN_LEFT = "align-left"
         const val ALIGN_RIGHT = "align-right"
+        val COLUMN_WIDTHS_KEY = columnWidthsKey("account.list.column.widths")
     }
 }
