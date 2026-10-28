@@ -59,4 +59,10 @@ class SqlMoneyRepositoryConnector(
             MoneyRepositoryConnectionStatus.Failed(e)
         }
     }
+
+    companion object {
+        /** Returns a connector to a new, empty in-memory database, which is discarded when it's closed. */
+        fun inMemory(context: CoroutineContext = Dispatchers.IO): SqlMoneyRepositoryConnector =
+            SqlMoneyRepositoryConnector(JdbcSqliteDriver.IN_MEMORY, context)
+    }
 }

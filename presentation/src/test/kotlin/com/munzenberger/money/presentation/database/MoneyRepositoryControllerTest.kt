@@ -42,11 +42,12 @@ class MoneyRepositoryControllerTest {
             coEvery { connect() } returns status
         }
 
-    // Each open/create call uses the next connector, in order.
+    // Each open/create/demo call uses the next connector, in order.
     private fun controller(vararg connectors: MoneyRepositoryConnector): MoneyRepositoryController {
         val remaining = ArrayDeque(connectors.toList())
         return MoneyRepositoryController(
             connectorFactory = { remaining.removeFirst() },
+            demoConnectorFactory = { remaining.removeFirst() },
             context = EmptyCoroutineContext,
         )
     }
@@ -147,6 +148,35 @@ class MoneyRepositoryControllerTest {
         controller.createDatabase(existing)
 
         assertFalse(existedAtCreate)
+    }
+
+    @Test
+    fun testOpenDemoCreatesDatabaseAndSetsRepositoryWhenReady() = runTest {
+        val repository = mockk<MoneyRepository>()
+        val connector = connector(MoneyRepositoryConnectionStatus.Ready(repository))
+        val controller = controller(connector)
+
+        controller.openDemo()
+
+        coVerify(exactly = 1) { connector.create() }
+        coVerify(exactly = 0) { connector.connect() }
+        assertSame(repository, controller.moneyRepository.value)
+    }
+
+    @Test
+    fun testOpenDemoReplacesAndClosesExistingRepository() = runTest {
+        val first = mockk<MoneyRepository>(relaxUnitFun = true)
+        val second = mockk<MoneyRepository>()
+        val controller = controller(
+            connector(MoneyRepositoryConnectionStatus.Ready(first)),
+            connector(MoneyRepositoryConnectionStatus.Ready(second)),
+        )
+
+        controller.openDatabase(file)
+        controller.openDemo()
+
+        verify(exactly = 1) { first.close() }
+        assertSame(second, controller.moneyRepository.value)
     }
 
     @Test

@@ -20,6 +20,7 @@ class MoneyRepositoryControllerFixture {
         connectorFactory = { file ->
             repositories[file]?.let(::StubConnector) ?: SqlMoneyRepositoryConnector(file)
         },
+        demoConnectorFactory = { SqlMoneyRepositoryConnector.inMemory(EmptyCoroutineContext) },
         context = EmptyCoroutineContext,
     )
 

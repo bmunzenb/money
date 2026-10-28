@@ -17,6 +17,7 @@ import kotlin.coroutines.CoroutineContext
 
 class MoneyRepositoryController(
     private val connectorFactory: (File) -> MoneyRepositoryConnector,
+    private val demoConnectorFactory: () -> MoneyRepositoryConnector,
     private val context: CoroutineContext = Dispatchers.IO,
 ) {
     private val moneyRepositoryFlow = MutableStateFlow<MoneyRepository?>(null)
@@ -33,6 +34,12 @@ class MoneyRepositoryController(
     suspend fun openDatabase(file: File): MoneyRepositoryConnectionStatus = withContext(context) {
         close()
         connectorFactory(file).connect().also { applyConnectionStatus(it) }
+    }
+
+    /** Opens a new, empty in-memory database, which is discarded when it's closed. */
+    suspend fun openDemo(): MoneyRepositoryConnectionStatus = withContext(context) {
+        close()
+        demoConnectorFactory().create().also { applyConnectionStatus(it) }
     }
 
     fun close() {
