@@ -1,13 +1,17 @@
 package com.munzenberger.money.presentation.database
 
 import app.cash.turbine.test
+import com.munzenberger.money.core.demo.PopulateDemoDataResult
+import com.munzenberger.money.core.demo.PopulateDemoDataUseCase
 import com.munzenberger.money.data.api.MoneyRepository
+import com.munzenberger.money.presentation.MoneyRepositoryControllerFixture
 import com.munzenberger.money.data.api.MoneyRepositoryConnectionStatus
 import com.munzenberger.money.data.api.MoneyRepositoryConnector
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk
 import io.mockk.verify
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.runTest
@@ -17,8 +21,10 @@ import kotlin.test.AfterTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
+import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertSame
+import kotlin.test.assertTrue
 
 class MoneyRepositoryControllerTest {
 
@@ -36,6 +42,10 @@ class MoneyRepositoryControllerTest {
             tempFiles.add(it)
         }
 
+    private val populateDemoData = mockk<PopulateDemoDataUseCase> {
+        coEvery { this@mockk(any()) } returns PopulateDemoDataResult.Success
+    }
+
     private fun connector(status: MoneyRepositoryConnectionStatus) =
         mockk<MoneyRepositoryConnector> {
             coEvery { create() } returns status
@@ -48,6 +58,7 @@ class MoneyRepositoryControllerTest {
         return MoneyRepositoryController(
             connectorFactory = { remaining.removeFirst() },
             demoConnectorFactory = { remaining.removeFirst() },
+            populateDemoData = populateDemoData,
             context = EmptyCoroutineContext,
         )
     }
@@ -161,6 +172,49 @@ class MoneyRepositoryControllerTest {
         coVerify(exactly = 1) { connector.create() }
         coVerify(exactly = 0) { connector.connect() }
         assertSame(repository, controller.moneyRepository.value)
+    }
+
+    @Test
+    fun testOpenDemoPopulatesDemoDataBeforeSettingRepository() = runTest {
+        val repository = mockk<MoneyRepository>()
+        val controller = controller(connector(MoneyRepositoryConnectionStatus.Ready(repository)))
+        coEvery { populateDemoData(repository) } answers {
+            assertNull(controller.moneyRepository.value)
+            PopulateDemoDataResult.Success
+        }
+
+        controller.openDemo()
+
+        coVerify(exactly = 1) { populateDemoData(repository) }
+        assertSame(repository, controller.moneyRepository.value)
+    }
+
+    @Test
+    fun testOpenDemoOpensInMemoryDatabaseWithBanksAndAccounts() = runTest {
+        val controller = MoneyRepositoryControllerFixture().controller
+
+        controller.openDemo()
+
+        val repository = assertNotNull(controller.moneyRepository.value)
+        val banks = repository.banks.first()
+        val accounts = repository.accounts.first()
+        assertTrue(banks.isNotEmpty())
+        assertTrue(banks.all { bank -> accounts.any { it.bankId == bank.id } })
+        controller.close()
+    }
+
+    @Test
+    fun testOpenDemoFailsAndClosesRepositoryWhenPopulatingFails() = runTest {
+        val repository = mockk<MoneyRepository>(relaxUnitFun = true)
+        val error = IllegalStateException("write failed")
+        coEvery { populateDemoData(repository) } returns PopulateDemoDataResult.Failure(error)
+        val controller = controller(connector(MoneyRepositoryConnectionStatus.Ready(repository)))
+
+        val status = controller.openDemo()
+
+        assertEquals(MoneyRepositoryConnectionStatus.Failed(error), status)
+        verify(exactly = 1) { repository.close() }
+        assertNull(controller.moneyRepository.value)
     }
 
     @Test
