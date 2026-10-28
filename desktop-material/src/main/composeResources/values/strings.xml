@@ -7,6 +7,8 @@
     <string name="open_database_dialog_title">Open Money Database</string>
     <string name="create_database_error_message">Unable to create the database. Please try again.</string>
     <string name="open_database_error_message">Unable to open the database. Please try again.</string>
+    <string name="open_demo_button_title">Explore a demo database</string>
+    <string name="open_demo_error_message">Unable to open the demo database. Please try again.</string>
     <string name="default_file_name">My Money</string>
     <string name="account_list_title">Accounts</string>
     <string name="account_list_empty_message">No accounts</string>

@@ -12,4 +12,5 @@ data class WelcomeUiState(
 enum class WelcomeError {
     CreateDatabaseFailed,
     OpenDatabaseFailed,
+    OpenDemoFailed,
 }

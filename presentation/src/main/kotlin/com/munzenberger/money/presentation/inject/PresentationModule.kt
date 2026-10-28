@@ -3,6 +3,7 @@ package com.munzenberger.money.presentation.inject
 import com.munzenberger.money.core.account.CreateAccountUseCase
 import com.munzenberger.money.core.account.GetAccountGroupsUseCase
 import com.munzenberger.money.core.account.UpdateAccountUseCase
+import com.munzenberger.money.core.demo.PopulateDemoDataUseCase
 import com.munzenberger.money.data.sql.SqlMoneyRepositoryConnector
 import com.munzenberger.money.presentation.AppViewModel
 import com.munzenberger.money.presentation.accounts.AccountFormViewModel
@@ -19,13 +20,20 @@ import org.koin.core.module.dsl.viewModel
 import org.koin.dsl.module
 
 val presentationModule = module {
-    single { MoneyRepositoryController(connectorFactory = { file -> SqlMoneyRepositoryConnector(file) }) }
+    single {
+        MoneyRepositoryController(
+            fileConnectorFactory = { file -> SqlMoneyRepositoryConnector(file) },
+            demoConnectorFactory = { SqlMoneyRepositoryConnector.inMemory() },
+            populateDemoData = get(),
+        )
+    }
     single { Navigator() }
     single { UserPreferences() }
 
     factory { CreateAccountUseCase() }
     factory { GetAccountGroupsUseCase() }
     factory { UpdateAccountUseCase() }
+    factory { PopulateDemoDataUseCase() }
 
     viewModel { AppViewModel(get(), get()) }
     viewModel { WelcomeViewModel(get()) }

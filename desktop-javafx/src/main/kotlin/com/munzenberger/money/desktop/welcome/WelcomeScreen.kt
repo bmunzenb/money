@@ -25,20 +25,25 @@ class WelcomeScreen(scope: ScreenScope) : VBox(Spacing.CONTROL_SPACING) {
         setOnAction { createDatabase() }
     }
 
+    private val demoButton = Button(strings.getString("open_demo_button_title")).apply {
+        setOnAction { viewModel.openDemo() }
+    }
+
     private val progressIndicator = ProgressIndicator()
 
     private var errorAlert: Alert? = null
 
     init {
         alignment = Pos.CENTER
-        children.setAll(openButton, createButton, progressIndicator)
+        children.setAll(openButton, createButton, demoButton, progressIndicator)
         scope.collect(viewModel.state, ::render)
     }
 
-    // While loading, shows only the progress indicator, so neither button can start another operation.
+    // While loading, shows only the progress indicator, so no button can start another operation.
     private fun render(state: WelcomeUiState) {
         openButton.setShown(!state.isLoading)
         createButton.setShown(!state.isLoading)
+        demoButton.setShown(!state.isLoading)
         progressIndicator.setShown(state.isLoading)
 
         val error = state.error
@@ -90,6 +95,7 @@ class WelcomeScreen(scope: ScreenScope) : VBox(Spacing.CONTROL_SPACING) {
         get() = when (this) {
             WelcomeError.CreateDatabaseFailed -> "create_database_error_message"
             WelcomeError.OpenDatabaseFailed -> "open_database_error_message"
+            WelcomeError.OpenDemoFailed -> "open_demo_error_message"
         }
 
     private companion object {

@@ -1,5 +1,7 @@
 package com.munzenberger.money.presentation.database
 
+import com.munzenberger.money.core.demo.PopulateDemoDataResult
+import com.munzenberger.money.core.demo.PopulateDemoDataUseCase
 import com.munzenberger.money.core.resultFlow
 import com.munzenberger.money.data.api.MoneyRepository
 import com.munzenberger.money.data.api.MoneyRepositoryConnectionStatus
@@ -16,7 +18,9 @@ import java.io.File
 import kotlin.coroutines.CoroutineContext
 
 class MoneyRepositoryController(
-    private val connectorFactory: (File) -> MoneyRepositoryConnector,
+    private val fileConnectorFactory: (File) -> MoneyRepositoryConnector,
+    private val demoConnectorFactory: () -> MoneyRepositoryConnector,
+    private val populateDemoData: PopulateDemoDataUseCase,
     private val context: CoroutineContext = Dispatchers.IO,
 ) {
     private val moneyRepositoryFlow = MutableStateFlow<MoneyRepository?>(null)
@@ -27,12 +31,30 @@ class MoneyRepositoryController(
         if (file.exists()) {
             file.delete()
         }
-        connectorFactory(file).create().also { applyConnectionStatus(it) }
+        fileConnectorFactory(file).create().also { applyConnectionStatus(it) }
     }
 
     suspend fun openDatabase(file: File): MoneyRepositoryConnectionStatus = withContext(context) {
         close()
-        connectorFactory(file).connect().also { applyConnectionStatus(it) }
+        fileConnectorFactory(file).connect().also { applyConnectionStatus(it) }
+    }
+
+    /**
+     * Opens a new in-memory database populated with demo data, which is discarded when it's closed. The
+     * repository is only published once its demo data is written; if that fails, it's closed and the result is
+     * [MoneyRepositoryConnectionStatus.Failed].
+     */
+    suspend fun openDemo(): MoneyRepositoryConnectionStatus = withContext(context) {
+        close()
+        val status = demoConnectorFactory().create()
+        if (status is MoneyRepositoryConnectionStatus.Ready) {
+            val result = populateDemoData(status.moneyRepository)
+            if (result is PopulateDemoDataResult.Failure) {
+                status.moneyRepository.close()
+                return@withContext MoneyRepositoryConnectionStatus.Failed(result.cause)
+            }
+        }
+        status.also { applyConnectionStatus(it) }
     }
 
     fun close() {

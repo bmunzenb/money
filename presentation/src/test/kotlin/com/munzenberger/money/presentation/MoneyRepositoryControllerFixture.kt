@@ -1,5 +1,6 @@
 package com.munzenberger.money.presentation
 
+import com.munzenberger.money.core.demo.PopulateDemoDataUseCase
 import com.munzenberger.money.data.api.MoneyRepository
 import com.munzenberger.money.data.api.MoneyRepositoryConnectionStatus
 import com.munzenberger.money.data.api.MoneyRepositoryConnector
@@ -17,9 +18,11 @@ class MoneyRepositoryControllerFixture {
     private val repositories = mutableMapOf<File, MoneyRepository>()
 
     val controller = MoneyRepositoryController(
-        connectorFactory = { file ->
+        fileConnectorFactory = { file ->
             repositories[file]?.let(::StubConnector) ?: SqlMoneyRepositoryConnector(file)
         },
+        demoConnectorFactory = { SqlMoneyRepositoryConnector.inMemory(EmptyCoroutineContext) },
+        populateDemoData = PopulateDemoDataUseCase(),
         context = EmptyCoroutineContext,
     )
 
