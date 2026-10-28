@@ -18,7 +18,7 @@ import java.io.File
 import kotlin.coroutines.CoroutineContext
 
 class MoneyRepositoryController(
-    private val connectorFactory: (File) -> MoneyRepositoryConnector,
+    private val fileConnectorFactory: (File) -> MoneyRepositoryConnector,
     private val demoConnectorFactory: () -> MoneyRepositoryConnector,
     private val populateDemoData: PopulateDemoDataUseCase,
     private val context: CoroutineContext = Dispatchers.IO,
@@ -31,12 +31,12 @@ class MoneyRepositoryController(
         if (file.exists()) {
             file.delete()
         }
-        connectorFactory(file).create().also { applyConnectionStatus(it) }
+        fileConnectorFactory(file).create().also { applyConnectionStatus(it) }
     }
 
     suspend fun openDatabase(file: File): MoneyRepositoryConnectionStatus = withContext(context) {
         close()
-        connectorFactory(file).connect().also { applyConnectionStatus(it) }
+        fileConnectorFactory(file).connect().also { applyConnectionStatus(it) }
     }
 
     /**

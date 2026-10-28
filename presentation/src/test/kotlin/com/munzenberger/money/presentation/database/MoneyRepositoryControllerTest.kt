@@ -56,7 +56,7 @@ class MoneyRepositoryControllerTest {
     private fun controller(vararg connectors: MoneyRepositoryConnector): MoneyRepositoryController {
         val remaining = ArrayDeque(connectors.toList())
         return MoneyRepositoryController(
-            connectorFactory = { remaining.removeFirst() },
+            fileConnectorFactory = { remaining.removeFirst() },
             demoConnectorFactory = { remaining.removeFirst() },
             populateDemoData = populateDemoData,
             context = EmptyCoroutineContext,

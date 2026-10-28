@@ -22,7 +22,7 @@ import org.koin.dsl.module
 val presentationModule = module {
     single {
         MoneyRepositoryController(
-            connectorFactory = { file -> SqlMoneyRepositoryConnector(file) },
+            fileConnectorFactory = { file -> SqlMoneyRepositoryConnector(file) },
             demoConnectorFactory = { SqlMoneyRepositoryConnector.inMemory() },
             populateDemoData = get(),
         )
