@@ -1,0 +1,12 @@
+/* Aligns a table column's header and cells, for columns with the align-left or align-right style class. */
+.column-header.align-left .label,
+.table-cell.align-left,
+.tree-table-cell.align-left {
+    -fx-alignment: center-left;
+}
+
+.column-header.align-right .label,
+.table-cell.align-right,
+.tree-table-cell.align-right {
+    -fx-alignment: center-right;
+}

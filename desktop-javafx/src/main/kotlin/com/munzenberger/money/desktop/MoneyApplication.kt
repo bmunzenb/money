@@ -1,9 +1,9 @@
 package com.munzenberger.money.desktop
 
 import com.munzenberger.money.desktop.navigation.ScreenScope
+import com.munzenberger.money.desktop.preferences.WindowBounds
+import com.munzenberger.money.desktop.preferences.windowBounds
 import com.munzenberger.money.presentation.preferences.UserPreferences
-import com.munzenberger.money.presentation.preferences.WindowBounds
-import com.munzenberger.money.presentation.preferences.windowBounds
 import javafx.animation.Animation
 import javafx.animation.PauseTransition
 import javafx.application.Application
@@ -31,7 +31,10 @@ class MoneyApplication : Application(), KoinComponent {
         this.stage = stage
         stage.title = strings.getString("app_title")
         appScreen = AppScreen(appScope)
-        stage.scene = Scene(appScreen, DEFAULT_WIDTH, DEFAULT_HEIGHT)
+        stage.scene = Scene(appScreen, DEFAULT_WIDTH, DEFAULT_HEIGHT).apply {
+            val styleSheet = MoneyApplication::class.java.getResource("styles.css")
+            stylesheets += checkNotNull(styleSheet).toExternalForm()
+        }
         restoreBounds(stage)
         stage.show()
         saveBoundsOnChange(stage)

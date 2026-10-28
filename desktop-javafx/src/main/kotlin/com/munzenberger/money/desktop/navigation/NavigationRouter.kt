@@ -1,5 +1,6 @@
 package com.munzenberger.money.desktop.navigation
 
+import com.munzenberger.money.desktop.accounts.AccountListScreen
 import com.munzenberger.money.desktop.welcome.WelcomeScreen
 import com.munzenberger.money.presentation.navigation.Route
 import javafx.scene.Node
@@ -10,7 +11,7 @@ import javafx.scene.layout.StackPane
 val navigationRouter: (route: Route, scope: ScreenScope) -> Node = { route, scope ->
     when (route) {
         Route.Welcome -> WelcomeScreen(scope)
-        Route.AccountList -> placeholderScreen(route)
+        Route.AccountList -> AccountListScreen(scope)
         Route.NewAccount -> placeholderScreen(route)
         is Route.EditAccount -> placeholderScreen(route)
         Route.CategoryList -> placeholderScreen(route)
