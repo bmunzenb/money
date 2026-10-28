@@ -9,6 +9,7 @@ import com.munzenberger.money.presentation.database.MoneyRepositoryController
 import com.munzenberger.money.presentation.database.flow
 import com.munzenberger.money.presentation.navigation.Navigator
 import com.munzenberger.money.presentation.navigation.Route
+import com.munzenberger.money.presentation.preferences.UserPreferences
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.combine
@@ -19,9 +20,10 @@ class AccountListViewModel(
     repositoryController: MoneyRepositoryController,
     getAccountGroups: GetAccountGroupsUseCase,
     private val navigator: Navigator,
+    private val preferences: UserPreferences,
 ) : ViewModel() {
 
-    private val grouping = MutableStateFlow(AccountGrouping.None)
+    private val grouping = MutableStateFlow(preferences.accountGrouping)
 
     // The null result lets the selected grouping show before the first groups arrive; combine can
     // skip it when they arrive at once, so the state also starts with loading.
@@ -37,6 +39,7 @@ class AccountListViewModel(
 
     fun onGroupingChange(grouping: AccountGrouping) {
         this.grouping.value = grouping
+        preferences.accountGrouping = grouping
     }
 
     fun onAddAccountClick() {
