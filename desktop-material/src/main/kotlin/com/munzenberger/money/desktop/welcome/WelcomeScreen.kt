@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.NoteAdd
 import androidx.compose.material.icons.filled.FolderOpen
+import androidx.compose.material.icons.filled.Science
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
@@ -31,6 +32,8 @@ import money.desktop_material.generated.resources.create_database_button_title
 import money.desktop_material.generated.resources.create_database_error_message
 import money.desktop_material.generated.resources.open_database_button_title
 import money.desktop_material.generated.resources.open_database_error_message
+import money.desktop_material.generated.resources.open_demo_button_title
+import money.desktop_material.generated.resources.open_demo_error_message
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 
@@ -43,7 +46,8 @@ fun WelcomeScreen(viewModel: WelcomeViewModel = koinViewModel()) {
     WelcomeScreenContent(
         state = state,
         onCreateDatabaseClick = createDatabase,
-        onOpenDatabaseClick = openDatabase
+        onOpenDatabaseClick = openDatabase,
+        onOpenDemoClick = viewModel::openDemo,
     )
 }
 
@@ -51,7 +55,8 @@ fun WelcomeScreen(viewModel: WelcomeViewModel = koinViewModel()) {
 private fun WelcomeScreenContent(
     state: WelcomeUiState,
     onCreateDatabaseClick: () -> Unit,
-    onOpenDatabaseClick: () -> Unit
+    onOpenDatabaseClick: () -> Unit,
+    onOpenDemoClick: () -> Unit,
 ) {
     Column(
         verticalArrangement = Arrangement.Center,
@@ -81,6 +86,16 @@ private fun WelcomeScreenContent(
                     Spacer(modifier = Modifier.size(ButtonDefaults.IconSpacing))
                     Text(text = stringResource(Res.string.open_database_button_title))
                 }
+
+                TextButton(onClick = onOpenDemoClick) {
+                    Icon(
+                        imageVector = Icons.Filled.Science,
+                        contentDescription = null,
+                        modifier = Modifier.size(ButtonDefaults.IconSize),
+                    )
+                    Spacer(modifier = Modifier.size(ButtonDefaults.IconSpacing))
+                    Text(text = stringResource(Res.string.open_demo_button_title))
+                }
             }
 
             state.error?.let { error ->
@@ -89,6 +104,7 @@ private fun WelcomeScreenContent(
                         when (error) {
                             WelcomeError.CreateDatabaseFailed -> Res.string.create_database_error_message
                             WelcomeError.OpenDatabaseFailed -> Res.string.open_database_error_message
+                            WelcomeError.OpenDemoFailed -> Res.string.open_demo_error_message
                         }
                     ),
                     color = MoneyTheme.colorScheme.error
@@ -105,7 +121,8 @@ private fun WelcomeScreenPreview() {
         WelcomeScreenContent(
             state = WelcomeUiState(),
             onCreateDatabaseClick = {},
-            onOpenDatabaseClick = {}
+            onOpenDatabaseClick = {},
+            onOpenDemoClick = {},
         )
     }
 }
@@ -117,7 +134,8 @@ private fun WelcomeScreenLoadingPreview() {
         WelcomeScreenContent(
             state = WelcomeUiState(isLoading = true),
             onCreateDatabaseClick = {},
-            onOpenDatabaseClick = {}
+            onOpenDatabaseClick = {},
+            onOpenDemoClick = {},
         )
     }
 }
@@ -129,7 +147,8 @@ private fun WelcomeScreenErrorPreview() {
         WelcomeScreenContent(
             state = WelcomeUiState(error = WelcomeError.CreateDatabaseFailed),
             onCreateDatabaseClick = {},
-            onOpenDatabaseClick = {}
+            onOpenDatabaseClick = {},
+            onOpenDemoClick = {},
         )
     }
 }

@@ -26,6 +26,10 @@ class WelcomeViewModel(
         connect(WelcomeError.OpenDatabaseFailed) { repositoryController.openDatabase(file) }
     }
 
+    fun openDemo() {
+        connect(WelcomeError.OpenDemoFailed) { repositoryController.openDemo() }
+    }
+
     fun dismissError() {
         stateFlow.update { it.copy(error = null) }
     }

@@ -5,6 +5,8 @@ import com.munzenberger.money.data.api.MoneyRepository
 import com.munzenberger.money.data.api.MoneyRepositoryConnectionStatus
 import com.munzenberger.money.data.sql.SqlMoneyRepositoryConnector
 import com.munzenberger.money.presentation.MoneyRepositoryControllerFixture
+import com.munzenberger.money.presentation.database.MoneyRepositoryController
+import io.mockk.coEvery
 import io.mockk.mockk
 import io.mockk.verify
 import kotlinx.coroutines.flow.first
@@ -15,6 +17,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
+import kotlin.test.assertTrue
 
 class WelcomeViewModelTest {
 
@@ -89,6 +92,56 @@ class WelcomeViewModelTest {
             controller.moneyRepository.first { it != null }
             assertEquals(WelcomeUiState(isLoading = true), viewModel.state.value)
             expectNoEvents()
+        }
+    }
+
+    @Test
+    fun `state stays loading after the demo database is opened successfully`() = runTest {
+        val viewModel = WelcomeViewModel(controller)
+
+        viewModel.state.test {
+            assertEquals(WelcomeUiState(), awaitItem())
+
+            viewModel.openDemo()
+
+            assertEquals(WelcomeUiState(isLoading = true), awaitItem())
+
+            // The screen is about to be replaced, so it keeps showing progress instead of its buttons.
+            controller.moneyRepository.first { it != null }
+            assertEquals(WelcomeUiState(isLoading = true), viewModel.state.value)
+            expectNoEvents()
+        }
+    }
+
+    @Test
+    fun `state shows an error when opening the demo database fails`() = runTest {
+        val controller = mockk<MoneyRepositoryController> {
+            coEvery { openDemo() } returns MoneyRepositoryConnectionStatus.Failed(IllegalStateException())
+        }
+        val viewModel = WelcomeViewModel(controller)
+
+        viewModel.state.test {
+            assertEquals(WelcomeUiState(), awaitItem())
+
+            viewModel.openDemo()
+
+            assertEquals(WelcomeUiState(isLoading = true), awaitItem())
+            assertEquals(WelcomeUiState(error = WelcomeError.OpenDemoFailed), awaitItem())
+        }
+    }
+
+    @Test
+    fun `connects to a demo database with banks and accounts when the demo is opened`() = runTest {
+        val viewModel = WelcomeViewModel(controller)
+
+        controller.moneyRepository.test {
+            assertNull(awaitItem())
+
+            viewModel.openDemo()
+
+            val repository = assertNotNull(awaitItem())
+            assertTrue(repository.banks.first().isNotEmpty())
+            assertTrue(repository.accounts.first().isNotEmpty())
         }
     }
 
