@@ -7,7 +7,7 @@ import kotlinx.serialization.Serializable
 value class AccountTypeId(val value: Long)
 
 enum class AccountTypeConstant {
-    Savings, Checking, Asset, Cash, Credit, Loan
+    Savings, Checking, Credit, Loan, Asset, Cash
 }
 
 data class AccountType(
