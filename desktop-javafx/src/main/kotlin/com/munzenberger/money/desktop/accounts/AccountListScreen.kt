@@ -2,8 +2,8 @@ package com.munzenberger.money.desktop.accounts
 
 import com.munzenberger.money.core.account.AccountGrouping
 import com.munzenberger.money.desktop.components.ScreenHeading
-import com.munzenberger.money.desktop.components.columnWidthsKey
-import com.munzenberger.money.desktop.components.saveColumnWidths
+import com.munzenberger.money.desktop.components.columnLayoutKey
+import com.munzenberger.money.desktop.components.saveColumnLayout
 import com.munzenberger.money.desktop.navigation.ScreenScope
 import com.munzenberger.money.desktop.strings
 import com.munzenberger.money.desktop.theme.Spacing
@@ -63,12 +63,12 @@ class AccountListScreen(scope: ScreenScope) : VBox(Spacing.CONTROL_SPACING), Koi
     private val balanceColumn = column("balance", "balance_column_title")
 
     // The columns stretch to fill the table's width. They start at the same width, so they share it equally.
-    // Resizing a column takes the space from the balance column only, leaving the others as they are.
+    // Resizing a column takes the space from the last column only, leaving the others as they are.
     private val accountTable = TreeTableView<AccountListRow>().apply {
         setVgrow(this, Priority.ALWAYS)
         columns.setAll(nameColumn, numberColumn, balanceColumn)
         columnResizePolicy = TreeTableView.CONSTRAINED_RESIZE_POLICY_LAST_COLUMN
-        saveColumnWidths(preferences, COLUMN_WIDTHS_KEY)
+        saveColumnLayout(preferences, COLUMN_LAYOUT_KEY)
     }
 
     // Stays at the bottom of the screen, since the table above it takes the rest of the height. It shows only
@@ -89,7 +89,7 @@ class AccountListScreen(scope: ScreenScope) : VBox(Spacing.CONTROL_SPACING), Koi
         groupingComboBox.value = state.grouping
     }
 
-    // The id identifies the column's saved width.
+    // The id identifies the column's saved layout.
     private fun column(id: String, titleKey: String) =
         TreeTableColumn<AccountListRow, String>(strings.getString(titleKey)).apply {
             this.id = id
@@ -112,6 +112,6 @@ class AccountListScreen(scope: ScreenScope) : VBox(Spacing.CONTROL_SPACING), Koi
     }
 
     private companion object {
-        val COLUMN_WIDTHS_KEY = columnWidthsKey("account.list.column.widths")
+        val COLUMN_LAYOUT_KEY = columnLayoutKey("account.list.columns")
     }
 }
