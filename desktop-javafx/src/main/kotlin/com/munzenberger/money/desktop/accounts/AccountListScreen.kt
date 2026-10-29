@@ -71,7 +71,7 @@ class AccountListScreen(scope: ScreenScope) : VBox(Spacing.CONTROL_SPACING), Koi
     }
 
     private val nameColumn = column("name", "account_name_column_title", groupValue = { it.title() }) { it.name }
-        .apply { setCellFactory { AccountNameCell() } }
+        .apply { setCellFactory { AccountNameCell(viewModel::onAccountClick) } }
 
     private val numberColumn = column("number", "account_number_column_title") { maskAccountNumber(it.number) }
 
@@ -187,11 +187,16 @@ class AccountListScreen(scope: ScreenScope) : VBox(Spacing.CONTROL_SPACING), Koi
         }
 
     /** Shows an account's name as a link, and a group's or subtotal's name as text. */
-    private class AccountNameCell : TreeTableCell<AccountListRow, String>() {
-        // Following the link does nothing yet. It never shows as visited, since the cell reuses it for other accounts.
+    private class AccountNameCell(
+        private val onAccountClick: (Account) -> Unit,
+    ) : TreeTableCell<AccountListRow, String>() {
+        // Opens the account in the cell's row. It never shows as visited, since the cell reuses it for other accounts.
         private val link = Hyperlink().apply {
             padding = Insets.EMPTY
-            setOnAction { isVisited = false }
+            setOnAction {
+                isVisited = false
+                (tableRow?.item as? AccountListRow.AccountRow)?.let { onAccountClick(it.account) }
+            }
         }
 
         override fun updateItem(item: String?, empty: Boolean) {
@@ -236,16 +241,7 @@ private fun TreeItem<AccountListRow>.accountType(): AccountTypeConstant? =
 
 private fun AccountGroup.title(): String = when (this) {
     is AccountGroup.All -> strings.getString("account_group_all_title")
-    is AccountGroup.ByAccountType -> strings.getString(
-        when (accountType.value) {
-            AccountTypeConstant.Savings -> "account_type_savings"
-            AccountTypeConstant.Checking -> "account_type_checking"
-            AccountTypeConstant.Asset -> "account_type_asset"
-            AccountTypeConstant.Cash -> "account_type_cash"
-            AccountTypeConstant.Credit -> "account_type_credit"
-            AccountTypeConstant.Loan -> "account_type_loan"
-        }
-    )
+    is AccountGroup.ByAccountType -> accountType.value.label
     is AccountGroup.ByAccountClass -> strings.getString(
         when (accountClass.value) {
             AccountClassConstant.Assets -> "account_class_assets"
