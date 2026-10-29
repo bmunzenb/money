@@ -3,6 +3,12 @@
     -fx-background: derive(-fx-control-inner-background, -10%);
 }
 
+/* The account list's group and subtotal rows' cells inherit the bold font. */
+.tree-table-row-cell:group,
+.tree-table-row-cell:subtotal {
+    -fx-font-weight: bold;
+}
+
 /*
  * Modena's selected row colors, repeated here since this stylesheet overrides Modena's regardless of specificity, so
  * the group rows' color above would hide the selection. These are more specific than it, so they win within this file.

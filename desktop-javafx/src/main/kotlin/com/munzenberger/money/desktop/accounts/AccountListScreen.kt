@@ -89,12 +89,13 @@ class AccountListScreen(scope: ScreenScope) : VBox(Spacing.CONTROL_SPACING), Koi
         treeColumn = nameColumn
         columns.setAll(nameColumn, numberColumn, balanceColumn)
         columnResizePolicy = TreeTableView.CONSTRAINED_RESIZE_POLICY_LAST_COLUMN
-        // Marks the groups' rows so the stylesheet can set them apart from their accounts' rows.
+        // Marks the groups' and subtotals' rows so the stylesheet can set them apart from the accounts' rows.
         setRowFactory {
             object : TreeTableRow<AccountListRow>() {
                 override fun updateItem(item: AccountListRow?, empty: Boolean) {
                     super.updateItem(item, empty)
                     pseudoClassStateChanged(GROUP_PSEUDO_CLASS, item is AccountListRow.GroupRow)
+                    pseudoClassStateChanged(SUBTOTAL_PSEUDO_CLASS, item is AccountListRow.SubtotalRow)
                 }
             }
         }
@@ -197,6 +198,7 @@ class AccountListScreen(scope: ScreenScope) : VBox(Spacing.CONTROL_SPACING), Koi
     private companion object {
         val COLUMN_LAYOUT_KEY = columnLayoutKey("account.list.columns")
         val GROUP_PSEUDO_CLASS: PseudoClass = PseudoClass.getPseudoClass("group")
+        val SUBTOTAL_PSEUDO_CLASS: PseudoClass = PseudoClass.getPseudoClass("subtotal")
     }
 }
 
