@@ -72,12 +72,15 @@ class AccountListScreen(scope: ScreenScope) : VBox(Spacing.CONTROL_SPACING), Koi
 
     private val numberColumn = column("number", "account_number_column_title") { maskAccountNumber(it.number) }
 
-    // Empty until account balances are available, apart from the subtotals' labels.
+    // Empty until account balances are available, apart from the subtotals' labels. The column's style applies to its
+    // cells, aligning their content to the right.
     private val balanceColumn = column(
         "balance",
         "balance_column_title",
         subtotalValue = { strings.getString("subtotal_label") },
-    ) { "" }
+    ) { "" }.apply {
+        style = "-fx-alignment: CENTER-RIGHT;"
+    }
 
     // The columns stretch to fill the table's width. They start at the same width, so they share it equally.
     // Resizing a column takes the space from the last column only, leaving the others as they are.
