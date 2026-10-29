@@ -17,6 +17,7 @@ import com.munzenberger.money.presentation.accounts.loadedOrEmpty
 import com.munzenberger.money.presentation.accounts.maskAccountNumber
 import com.munzenberger.money.presentation.preferences.UserPreferences
 import javafx.beans.property.ReadOnlyStringWrapper
+import javafx.css.PseudoClass
 import javafx.geometry.Insets
 import javafx.geometry.Pos
 import javafx.scene.control.Button
@@ -24,6 +25,7 @@ import javafx.scene.control.ComboBox
 import javafx.scene.control.Label
 import javafx.scene.control.TreeItem
 import javafx.scene.control.TreeTableColumn
+import javafx.scene.control.TreeTableRow
 import javafx.scene.control.TreeTableView
 import javafx.scene.layout.HBox
 import javafx.scene.layout.Priority
@@ -81,6 +83,15 @@ class AccountListScreen(scope: ScreenScope) : VBox(Spacing.CONTROL_SPACING), Koi
         treeColumn = nameColumn
         columns.setAll(nameColumn, numberColumn, balanceColumn)
         columnResizePolicy = TreeTableView.CONSTRAINED_RESIZE_POLICY_LAST_COLUMN
+        // Marks the groups' rows so the stylesheet can set them apart from their accounts' rows.
+        setRowFactory {
+            object : TreeTableRow<AccountListRow>() {
+                override fun updateItem(item: AccountListRow?, empty: Boolean) {
+                    super.updateItem(item, empty)
+                    pseudoClassStateChanged(GROUP_PSEUDO_CLASS, item is AccountListRow.GroupRow)
+                }
+            }
+        }
         saveColumnLayout(preferences, COLUMN_LAYOUT_KEY)
     }
 
@@ -154,6 +165,7 @@ class AccountListScreen(scope: ScreenScope) : VBox(Spacing.CONTROL_SPACING), Koi
 
     private companion object {
         val COLUMN_LAYOUT_KEY = columnLayoutKey("account.list.columns")
+        val GROUP_PSEUDO_CLASS: PseudoClass = PseudoClass.getPseudoClass("group")
     }
 }
 
