@@ -87,7 +87,8 @@ class AccountListScreen(scope: ScreenScope) : VBox(Spacing.CONTROL_SPACING), Koi
 
     // The columns stretch to fill the table's width. They start at the same width, so they share it equally.
     // Resizing a column takes the space from the last column only, leaving the others as they are.
-    // Each group is a top-level row under the hidden root, with its accounts' rows and then its subtotal's row under it.
+    // Each group is a top-level row under the hidden root, with its accounts' rows and then its subtotal's row under
+    // it.
     private val accountTable = TreeTableView<AccountListRow>(TreeItem()).apply {
         setVgrow(this, Priority.ALWAYS)
         isShowRoot = false
