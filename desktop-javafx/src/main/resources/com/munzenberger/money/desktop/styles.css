@@ -25,3 +25,23 @@
 .tree-table-row-cell:filled:selected .hyperlink {
     -fx-text-fill: -fx-text-background-color;
 }
+
+/* A form field's message about its invalid value, or about data it couldn't load. */
+.error-message {
+    -fx-text-fill: #c62828;
+}
+
+/* Outlines an invalid form field in the error color, focused or not. */
+.text-field:error,
+.combo-box-base:error {
+    -fx-text-box-border: #c62828;
+    -fx-focus-color: #c62828;
+    -fx-faint-focus-color: #c6282822;
+}
+
+/* A scroll pane without Modena's border, focus ring or background, so its content sits directly on the screen. */
+.borderless-scroll-pane,
+.borderless-scroll-pane > .viewport {
+    -fx-background-color: transparent;
+    -fx-padding: 0;
+}
