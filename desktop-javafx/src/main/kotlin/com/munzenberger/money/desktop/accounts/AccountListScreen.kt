@@ -23,8 +23,10 @@ import javafx.geometry.Insets
 import javafx.geometry.Pos
 import javafx.scene.control.Button
 import javafx.scene.control.ComboBox
+import javafx.scene.control.Hyperlink
 import javafx.scene.control.Label
 import javafx.scene.control.TreeItem
+import javafx.scene.control.TreeTableCell
 import javafx.scene.control.TreeTableColumn
 import javafx.scene.control.TreeTableRow
 import javafx.scene.control.TreeTableView
@@ -69,6 +71,7 @@ class AccountListScreen(scope: ScreenScope) : VBox(Spacing.CONTROL_SPACING), Koi
     }
 
     private val nameColumn = column("name", "account_name_column_title", groupValue = { it.title() }) { it.name }
+        .apply { setCellFactory { AccountNameCell() } }
 
     private val numberColumn = column("number", "account_number_column_title") { maskAccountNumber(it.number) }
 
@@ -181,6 +184,27 @@ class AccountListScreen(scope: ScreenScope) : VBox(Spacing.CONTROL_SPACING), Koi
                 ReadOnlyStringWrapper(value)
             }
         }
+
+    /** Shows an account's name as a link, and a group's or subtotal's name as text. */
+    private class AccountNameCell : TreeTableCell<AccountListRow, String>() {
+        // Following the link does nothing yet. It never shows as visited, since the cell reuses it for other accounts.
+        private val link = Hyperlink().apply {
+            padding = Insets.EMPTY
+            setOnAction { isVisited = false }
+        }
+
+        override fun updateItem(item: String?, empty: Boolean) {
+            super.updateItem(item, empty)
+            if (!empty && tableRow?.item is AccountListRow.AccountRow) {
+                link.text = item
+                text = null
+                graphic = link
+            } else {
+                text = if (empty) null else item
+                graphic = null
+            }
+        }
+    }
 
     private object AccountGroupingConverter : StringConverter<AccountGrouping>() {
         override fun toString(grouping: AccountGrouping?): String = grouping?.let {

@@ -20,3 +20,8 @@
 .tree-table-view:focused > .virtual-flow > .clipped-container > .sheet > .tree-table-row-cell:filled:selected {
     -fx-background: -fx-selection-bar;
 }
+
+/* Gives links in a selected row the row's text color, as Modena does for the row's text, so they show on the selection. */
+.tree-table-row-cell:filled:selected .hyperlink {
+    -fx-text-fill: -fx-text-background-color;
+}
