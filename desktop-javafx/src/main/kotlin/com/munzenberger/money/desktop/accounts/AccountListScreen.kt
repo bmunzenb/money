@@ -47,11 +47,15 @@ class AccountListScreen(scope: ScreenScope) : VBox(Spacing.CONTROL_SPACING), Koi
 
     private val heading = ScreenHeading(strings.getString("account_list_title"))
 
-    // Choosing the grouping the state already has, as render does, leaves the ViewModel's grouping unchanged.
+    // Choosing the grouping the state already has, as render does, leaves the ViewModel's grouping unchanged. A new
+    // grouping clears the table's selection, since the selected row moves to another group or goes away.
     private val groupingComboBox = ComboBox<AccountGrouping>().apply {
         items.setAll(AccountGrouping.entries)
         converter = AccountGroupingConverter
-        setOnAction { value?.let(viewModel::onGroupingChange) }
+        setOnAction {
+            accountTable.selectionModel.clearSelection()
+            value?.let(viewModel::onGroupingChange)
+        }
     }
 
     private val groupingLabel = Label(strings.getString("account_grouping_label")).apply {
