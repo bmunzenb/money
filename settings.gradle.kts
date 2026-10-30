@@ -32,7 +32,6 @@ plugins {
     id("org.gradle.toolchains.foojay-resolver-convention") version "1.0.0"
 }
 
-include(":desktop-material")
 include(":desktop-javafx")
 include(":presentation")
 include(":data-api")

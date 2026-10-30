@@ -1,26 +1,23 @@
 # AGENTS.md
 
-Conventions for working in this repo. This is a Kotlin JVM project with a Compose Desktop app module
-(`desktop-material`). The Material theme (`MoneyTheme`, color scheme, typography, shapes, spacing) and all
-Material dependencies live in `desktop-material` (`desktop-material/.../desktop/theme/`), so `presentation` stays free of
-Material.
+Conventions for working in this repo. This is a Kotlin JVM project with a JavaFX desktop app module
+(`desktop-javafx`).
 
 The UI-independent presentation layer lives in `presentation`: ViewModels and their UI states,
 `Navigator` and the `Route` keys, `TopLevelDestination`, `MoneyRepositoryController`, the Koin
-`PresentationModule`, and their tests. `desktop-material` holds the Compose UI (screens, components, `App.kt`,
-`Main.kt`, `navigationRouter`), its string resources and composable helpers such as the database file
-pickers, and depends on `presentation`, so another UI module can reuse the same presentation layer. Both modules group code by the same feature subpackages:
-`com.munzenberger.money.presentation.<feature>` in `presentation` and
-`com.munzenberger.money.desktop.<feature>` in `desktop-material`. Keep Material, Compose Resources, composables
-and other UI-toolkit types out of `presentation`: it has no Compose or Navigation3 dependencies, only the plain
-`lifecycle-viewmodel` and `koin-core-viewmodel`, and UI modules declare their own Compose, Navigation3 and
-Koin-Compose dependencies. UI state carries plain values (e.g. an enum such as
-`WelcomeError`) that the UI module maps to its own strings, rather than string resources.
+`PresentationModule`, and their tests. `desktop-javafx` holds the JavaFX UI (screens, components, `AppScreen`,
+`MoneyApplication`, `Main.kt`, `navigationRouter`), its string resources and stylesheet, and depends on
+`presentation`, so another UI module can reuse the same presentation layer. Both modules group code by the same
+feature subpackages: `com.munzenberger.money.presentation.<feature>` in `presentation` and
+`com.munzenberger.money.desktop.<feature>` in `desktop-javafx`. Keep UI-toolkit types out of `presentation`: it
+depends only on the plain `lifecycle-viewmodel` and `koin-core-viewmodel`, and UI modules declare their own
+toolkit dependencies. UI state carries plain values (e.g. an enum such as `WelcomeError`) that the UI module maps
+to its own strings, rather than string resources.
 
-## Navigation (Navigation3)
+## Navigation
 
 Routes are defined in `presentation/src/main/kotlin/com/munzenberger/money/presentation/navigation/Route.kt`,
-and wired to screens in `desktop-material/src/main/kotlin/com/munzenberger/money/desktop/navigation/NavigationRouter.kt`:
+and wired to screens in `desktop-javafx/src/main/kotlin/com/munzenberger/money/desktop/navigation/NavigationRouter.kt`:
 
 ```kotlin
 @Serializable
@@ -32,25 +29,27 @@ sealed interface Route {
     data object AccountList : Route
 }
 
-// desktop-material
-val navigationRouter = entryProvider<Route> {
-    entry<Route.Welcome> { WelcomeScreen() }
-    entry<Route.AccountList> { AccountListScreen() }
+// desktop-javafx
+val navigationRouter: (route: Route, scope: ScreenScope) -> Node = { route, scope ->
+    when (route) {
+        Route.Welcome -> WelcomeScreen(scope)
+        Route.AccountList -> AccountListScreen(scope)
+    }
 }
 ```
 
 - Each route is a `@Serializable data object` (or `data class` if it needs args) nested in the
-  `Route` sealed interface. `Route` is a plain Kotlin type, not a Navigation3 `NavKey`, so `presentation`
-  doesn't depend on Navigation3 types; `NavDisplay` accepts any key type.
-- Wire each route to its composable with `entry<Route.X> { XScreen() }` inside `navigationRouter`.
-- Screen composables live in their own subpackage under
-  `desktop-material/src/main/kotlin/com/munzenberger/money/desktop/<screenName>/`, e.g. `welcome/WelcomeScreen.kt`,
+  `Route` sealed interface. `Route` is a plain Kotlin type with no UI-toolkit dependencies.
+- Map each route to its screen in `navigationRouter`'s exhaustive `when`, so adding a `Route` fails to compile
+  until it's mapped. A route without a screen yet uses `placeholderScreen(route)`.
+- Screens live in their own subpackage under
+  `desktop-javafx/src/main/kotlin/com/munzenberger/money/desktop/<screenName>/`, e.g. `welcome/WelcomeScreen.kt`,
   `accounts/AccountListScreen.kt`.
 
 The back stack is owned by the `Navigator` singleton
 (`presentation/src/main/kotlin/com/munzenberger/money/presentation/navigation/Navigator.kt`, registered with
 `single { Navigator() }` in `PresentationModule`). It exposes the back stack as a plain
-`backStack: StateFlow<List<Route>>` (starting at `Route.Welcome`), with no Navigation3 or Compose types, and
+`backStack: StateFlow<List<Route>>` (starting at `Route.Welcome`), with no UI-toolkit types, and
 `currentRoute: StateFlow<Route?>` (the top of the stack). ViewModels take `Navigator` as a constructor
 dependency and navigate through `navigate { ... }`, which applies the change to a mutable copy of the back
 stack, publishes it, and updates `currentRoute` to its new top, so both `backStack.value` and
@@ -67,43 +66,36 @@ navigator.navigate { removeLast() }
 Reading `navigator.backStack.value` is fine, but prefer `currentRoute` when you only need the top route.
 
 Top-level destinations are listed in the `TopLevelDestination` enum
-(`presentation/.../presentation/rail/TopLevelDestination.kt`: route; its icon and label are mapped in
-`desktop-material/.../desktop/rail/TopLevelDestinationIcons.kt` and `TopLevelDestinationLabels.kt`) and shown in the Material 3
-Expressive `WideNavigationRail` in `rail/AppNavigationRail.kt`, which the user can collapse or expand.
-`AppNavigationRailViewModel` selects the top-most top-level destination in the back stack (so a
-screen pushed on top, like `NewAccount` over `AccountList`, keeps its parent selected) and switches destinations by
-replacing the stack (`clear(); add(route)`), not pushing onto it, so peers don't build up back history. To
-add a top-level screen, add a `Route`, its `entry`, a `TopLevelDestination` entry, and its icon and label.
+(`presentation/.../presentation/rail/TopLevelDestination.kt`) and shown, with their icons and labels, in
+`desktop-javafx/.../desktop/rail/AppNavigationRail.kt`. `AppNavigationRailViewModel` selects the top-most
+top-level destination in the back stack (so a screen pushed on top, like `NewAccount` over `AccountList`, keeps
+its parent selected) and switches destinations by replacing the stack (`clear(); add(route)`), not pushing onto
+it, so peers don't build up back history. To add a top-level screen, add a `Route`, map it in
+`navigationRouter`, and add a `TopLevelDestination` entry with its icon and label.
 
-`App.kt` (the root composable) injects the `Navigator` with `koinInject()`, collects
-`navigator.backStack` with `collectAsState()`, and hands it and `navigationRouter` to the single `NavDisplay`.
-Since that list is read-only, `NavDisplay`'s `onBack` pops through `navigator.navigate { ... }` (never
-below the last route); otherwise `App.kt` doesn't apply navigation itself. `NavDisplay` is given `rememberSaveableStateHolderNavEntryDecorator()` and
-`rememberViewModelStoreNavEntryDecorator()` (in that order), so each back stack entry has its own
-`ViewModelStoreOwner`: a screen's `koinViewModel()` is scoped to its entry and cleared when the entry is
-popped, and navigating to the screen again starts with a fresh ViewModel. App-wide reactive navigation lives in `AppViewModel` (`presentation/.../presentation/AppViewModel.kt`):
-in `init` it collects `MoneyRepositoryController.moneyRepository` and does
-`navigator.navigate { clear(); add(...) }` to `AccountList`/`Welcome` depending on whether a
-repository is open. It also exposes `state: StateFlow<AppUiState>` (`isRepositoryConnected`), which
-`App.kt` uses to decide whether to show `AppNavigationRail` beside the `NavDisplay`. Put new app-lifetime reactive navigation in
+`NavigationHost` (`desktop-javafx/.../desktop/navigation/NavigationHost.kt`) collects `navigator.backStack`,
+builds each entry's node with `navigationRouter`, and gives each entry a `ScreenScope`
+(`navigation/ScreenScope.kt`). `ScreenScope` holds that entry's `ViewModelStore`: `scope.viewModel<XViewModel>()`
+resolves the ViewModel from Koin, and `scope.collect(viewModel.state) { ... }` updates nodes on the FX thread.
+The scope is closed (clearing its ViewModels and cancelling its collectors) when the entry is popped, so
+navigating to the screen again starts with a fresh ViewModel. `kotlinx-coroutines-javafx` supplies
+`Dispatchers.Main` for `viewModelScope`.
+
+`MoneyApplication` handles only the stage (title, scene size, stylesheet, saved window bounds); the scene's root
+is `AppScreen` (`desktop-javafx/.../desktop/AppScreen.kt`), which holds the `AppViewModel` and the
+`NavigationHost`, and shows `AppToolbar` and `AppNavigationRail` beside it while a repository is open.
+`MoneyApplication` creates `AppScreen` with an app-lifetime `ScreenScope` in `start`, and closes both in `stop`.
+
+App-wide reactive navigation lives in `AppViewModel` (`presentation/.../presentation/AppViewModel.kt`): in
+`init` it collects `MoneyRepositoryController.moneyRepository` and does `navigator.navigate { clear(); add(...) }`
+to `AccountList`/`Welcome` depending on whether a repository is open. It also exposes
+`state: StateFlow<AppUiState>` (`isRepositoryConnected`). Put new app-lifetime reactive navigation in
 `AppViewModel`.
-
-`desktop-javafx` uses the same `Navigator` and ViewModels without Navigation3. `NavigationHost`
-(`desktop-javafx/.../desktop/navigation/NavigationHost.kt`) is its `NavDisplay`: it collects `navigator.backStack`,
-builds each entry's node with `navigationRouter` (`desktop-javafx/.../desktop/navigation/NavigationRouter.kt`, an
-exhaustive `when` over `Route`; every route shows a placeholder until it has a JavaFX screen), and gives each entry a `ScreenScope`. `ScreenScope` holds that entry's
-`ViewModelStore`: `scope.viewModel<XViewModel>()` resolves the ViewModel from Koin, and
-`scope.collect(viewModel.state) { ... }` updates nodes on the FX thread. The scope is closed (clearing its
-ViewModels) when the entry is popped. `kotlinx-coroutines-javafx` supplies `Dispatchers.Main` for `viewModelScope`. `MoneyApplication` handles only the
-stage (title, scene size, saved window bounds); the scene's root is `AppScreen`
-(`desktop-javafx/.../desktop/AppScreen.kt`), the JavaFX counterpart of `App.kt`, which holds the `AppViewModel` and
-the `NavigationHost`. `MoneyApplication` creates `AppScreen` with an app-lifetime `ScreenScope` in `start`, and
-closes both in `stop`.
 
 ## ViewModels
 
 Each screen that needs one has its own `ViewModel`, defined in `presentation` under the same feature subpackage as
-the screen composable, e.g. `welcome/WelcomeViewModel.kt`, `accounts/AccountListViewModel.kt`. It extends
+the screen, e.g. `welcome/WelcomeViewModel.kt`, `accounts/AccountListViewModel.kt`. It extends
 `androidx.lifecycle.ViewModel` and takes any dependencies (singletons like `MoneyRepositoryController`)
 as constructor params:
 
@@ -131,143 +123,35 @@ val presentationModule = module {
 }
 ```
 
-The public screen composable takes the ViewModel as a default parameter injected with `koinViewModel()`,
-collects its state, and immediately delegates to the stateless `XScreenContent` composable (see
-Compose previews below) — the ViewModel itself never leaks past the top-level `XScreen` function:
+A screen takes its `ScreenScope`, gets its ViewModel from it, and renders each state it collects:
 
 ```kotlin
-@Composable
-fun AccountListScreen(viewModel: AccountListViewModel = koinViewModel()) {
-    val state by viewModel.state.collectAsState(initial = AccountListUiState.Loading)
+class WelcomeScreen(scope: ScreenScope) : VBox(Spacing.CONTROL_SPACING) {
+    private val viewModel: WelcomeViewModel = scope.viewModel()
 
-    AccountListScreenContent(state = state)
-}
-```
-
-Requires `org.koin.compose.viewmodel.koinViewModel` import. A screen with no state/behavior yet can
-still take an empty `ViewModel` — this keeps the wiring in place so behavior can be added to the
-ViewModel later without changing the composable's shape.
-
-## Compose previews
-
-Follow the pattern in `WelcomeScreen.kt` / `AccountListScreen.kt`:
-
-```kotlin
-@Preview
-@Composable
-private fun XScreenPreview() {
-    PreviewThemed {
-        XScreenContent(/* stub callbacks/params */)
+    init {
+        scope.collect(viewModel.state, ::render)
     }
-}
-```
 
-- `PreviewThemed` (`com.munzenberger.money.desktop.theme.PreviewThemed`) wraps the preview content in
-  the app theme, on a full-size box filled with the theme's background color.
-- The preview function is `private`, named `<Screen>Preview`, and placed at the bottom of the same
-  file as the screen.
-- If the real screen composable takes a Koin-injected ViewModel (e.g.
-  `fun WelcomeScreen(viewModel: WelcomeViewModel = koinViewModel())`), extract a stateless
-  `private fun XScreenContent(...)` composable that takes plain params/lambdas, and preview that
-  instead of the ViewModel-backed entry point.
-- If the screen has no ViewModel/params, the preview can call it directly.
-
-## List screens
-
-List screens put their title and primary action (e.g. "New account") in `ListScreenHeader`
-(`desktop-material/.../desktop/components/ListScreenHeader.kt`), fixed above the list. The list goes in a
-`weight(1f)` container below it, so only the list scrolls and the action stays visible:
-
-```kotlin
-Column(modifier = Modifier.fillMaxSize()) {
-    ListScreenHeader(
-        title = stringResource(Res.string.account_list_title),
-        actionLabel = stringResource(Res.string.add_account_button_title),
-        onActionClick = onAddAccountClick,
-    )
-
-    Box(modifier = Modifier.weight(1f)) {
-        AccountListBody(state = state)
-    }
-}
-```
-
-The Categories and Payees screens follow this pattern. A screen with other controls above its list, like
-the Accounts screen's "Group by" dropdown, can instead use the title-only `ListScreenHeader(title)` and
-put the action in a row with those controls, using `ListScreenActionButton` (from the same file) so it
-looks the same.
-
-## Scrolling
-
-Every scrollable area shows a scrollbar. Instead of a bare `LazyColumn` or
-`Column(Modifier.verticalScroll(...))`, use `ScrollableLazyColumn` or `ScrollableColumn`
-(`desktop-material/.../desktop/components/Scrollables.kt`). They overlay a theme-tinted `VerticalScrollbar` on the
-end edge. Pass the padding to `ScrollableColumn`'s `contentPadding` so the scrollbar sits in the end
-gutter instead of over the content.
-
-## Text fields
-
-Use Material's `OutlinedTextField`, which also works as the anchor of an `ExposedDropdownMenuBox`. For
-the options in those menus, use Material's `DropdownMenuItem` with
-`contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding`, so the option text lines up with the
-field's text.
-
-## Form sections
-
-Group related fields of a form in a `FormSectionCard`
-(`desktop-material/.../desktop/components/FormSectionCard.kt`): an outlined card on `surfaceContainerLowest` with a `titleMedium` heading. Its
-content is a `Column` that spaces the fields `MoneyTheme.spacing.small` apart:
-
-```kotlin
-FormSectionCard(title = stringResource(Res.string.account_section_title)) {
-    NameField(name = state.name, onNameChange = onNameChange)
-    AccountTypeField(/* ... */)
-}
-```
-
-## Detail screens
-
-Screens pushed on top of another screen (e.g. `NewAccount` over `AccountList`) start with
-`DetailScreenHeader` (`desktop-material/.../desktop/components/DetailScreenHeader.kt`): a back button followed by
-the title. Its back arrow lines up with `ListScreenHeader`'s title. Wire `onBackClick` to a ViewModel
-function that does `navigator.navigate { removeLast() }`:
-
-```kotlin
-Column(modifier = Modifier.fillMaxSize()) {
-    DetailScreenHeader(
-        title = stringResource(Res.string.new_account_title),
-        onBackClick = onBackClick,
-    )
-
-    // screen content
+    private fun render(state: WelcomeUiState) { /* ... */ }
 }
 ```
 
 ## String resources
 
-Strings live in `desktop-material/src/main/composeResources/values/strings.xml` (standard Android-style
-`strings.xml`, one module-wide file — not per-screen):
+Strings live in `desktop-javafx/src/main/resources/com/munzenberger/money/desktop/strings.properties`
+(one module-wide file — not per-screen), and are read through the `strings` `ResourceBundle` in `Strings.kt`:
 
-```xml
-<string name="account_list_title">Accounts</string>
+```properties
+account_list_title=Accounts
+```
+
+```kotlin
+Label(strings.getString("account_list_title"))
 ```
 
 - Naming: snake_case, often suffixed by role (`_button_title`, `_dialog_title`), or a plain
   descriptive name when not tied to a specific widget (e.g. `app_title`, `default_file_name`).
-- No `translatable`/`formatted` attributes or comments are currently used — keep entries plain.
-- Usage in Compose code:
-
-  ```kotlin
-  import money.desktop_material.generated.resources.Res
-  import money.desktop_material.generated.resources.account_list_title
-  import org.jetbrains.compose.resources.stringResource
-
-  Text(text = stringResource(Res.string.account_list_title))
-  ```
-
-- The `Res.string.<name>` accessor is generated by the Compose Resources Gradle plugin from
-  `strings.xml` — no manual codegen step needed, but a build may be required for the IDE/compiler to
-  pick up a newly added entry.
 
 ## Data writes
 
