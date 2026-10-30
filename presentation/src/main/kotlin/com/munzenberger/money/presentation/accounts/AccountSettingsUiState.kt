@@ -3,6 +3,7 @@ package com.munzenberger.money.presentation.accounts
 import com.munzenberger.money.data.api.account.Account
 import com.munzenberger.money.data.api.account.AccountType
 import com.munzenberger.money.data.api.bank.Bank
+import java.util.Currency
 
 /** The account form, for adding a new account or editing an existing one. */
 data class AccountSettingsUiState(
@@ -26,8 +27,8 @@ data class AccountSettingsUiState(
     val number: String = "",
     /** The text in the initial balance field. Blank means a zero balance. */
     val initialBalance: String = "",
-    /** The symbol of the initial balance's currency, shown before the amount (e.g. "$"). */
-    val currencySymbol: String,
+    /** The initial balance's currency. */
+    val currency: Currency,
     val memo: String = "",
     /**
      * Whether [initialBalance] should be shown as invalid; only set once the user leaves the field or

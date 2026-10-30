@@ -250,10 +250,10 @@ class AccountSettingsViewModelTest {
     }
 
     @Test
-    fun `currency symbol is the default currency's symbol`() {
+    fun `currency is the default currency`() {
         val viewModel = viewModel()
 
-        assertEquals("$", viewModel.state.value.currencySymbol)
+        assertEquals(Money.DEFAULT_CURRENCY, viewModel.state.value.currency)
     }
 
     @Test

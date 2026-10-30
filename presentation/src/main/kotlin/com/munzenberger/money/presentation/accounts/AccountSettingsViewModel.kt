@@ -40,7 +40,7 @@ class AccountSettingsViewModel(
     private val _state = MutableStateFlow(
         AccountSettingsUiState(
             existingAccount = accountId?.let { LoadState.Loading },
-            currencySymbol = Money.DEFAULT_CURRENCY.symbol,
+            currency = Money.DEFAULT_CURRENCY,
         )
     )
     val state: StateFlow<AccountSettingsUiState> = _state.asStateFlow()
