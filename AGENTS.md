@@ -152,6 +152,19 @@ Label(strings.getString("account_list_title"))
 
 - Naming: snake_case, often suffixed by role (`_button_title`, `_dialog_title`), or a plain
   descriptive name when not tied to a specific widget (e.g. `app_title`, `default_file_name`).
+- Text built from values keeps its format in the string, with `MessageFormat` placeholders (`{0}`, `{1}`, …)
+  so a translation can reorder them, and is filled in with the `strings.getString(key, args...)` extension
+  from `Strings.kt`, rather than concatenated in code:
+
+  ```properties
+  account_currency_value={0} ({1})
+  ```
+
+  ```kotlin
+  strings.getString("account_currency_value", currency.displayName, currency.currencyCode)
+  ```
+
+  `MessageFormat` treats a single quote as an escape, so write an apostrophe as `''` in a formatted string.
 
 ## Data writes
 

@@ -5,6 +5,7 @@ import com.munzenberger.money.data.api.account.AccountType
 import com.munzenberger.money.desktop.components.AutoCompleteComboBox
 import com.munzenberger.money.desktop.components.ScreenHeading
 import com.munzenberger.money.desktop.components.setShown
+import com.munzenberger.money.desktop.getString
 import com.munzenberger.money.desktop.navigation.ScreenScope
 import com.munzenberger.money.desktop.strings
 import com.munzenberger.money.desktop.theme.Spacing
@@ -228,7 +229,11 @@ class AccountSettingsScreen(scope: ScreenScope, accountId: AccountId?) : VBox(Sp
 
         numberField.setTextIfChanged(state.number)
 
-        currencyField.text = state.currency.displayName
+        currencyField.text = strings.getString(
+            "account_currency_value",
+            state.currency.displayName,
+            state.currency.currencyCode,
+        )
 
         initialBalanceField.setTextIfChanged(state.initialBalance)
         initialBalanceField.setError(state.isInitialBalanceError)
