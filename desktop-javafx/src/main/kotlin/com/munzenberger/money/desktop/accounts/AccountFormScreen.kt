@@ -32,7 +32,6 @@ import javafx.scene.layout.ColumnConstraints
 import javafx.scene.layout.GridPane
 import javafx.scene.layout.HBox
 import javafx.scene.layout.Priority
-import javafx.scene.layout.Region
 import javafx.scene.layout.StackPane
 import javafx.scene.layout.VBox
 import javafx.util.StringConverter
@@ -106,9 +105,9 @@ class AccountFormScreen(scope: ScreenScope, accountId: AccountId?) : VBox(Spacin
         // The labels' column is as wide as its widest label, never shrinking to cut one off. The fields take the rest.
         columnConstraints.setAll(
             ColumnConstraints().apply {
-                minWidth = Region.USE_PREF_SIZE
-                prefWidth = Region.USE_COMPUTED_SIZE
-                maxWidth = Region.USE_PREF_SIZE
+                minWidth = USE_PREF_SIZE
+                prefWidth = USE_COMPUTED_SIZE
+                maxWidth = USE_PREF_SIZE
                 hgrow = Priority.NEVER
             },
             ColumnConstraints().apply { hgrow = Priority.ALWAYS },
