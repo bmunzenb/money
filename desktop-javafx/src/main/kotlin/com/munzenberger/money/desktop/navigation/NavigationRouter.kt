@@ -9,14 +9,14 @@ import javafx.scene.control.Label
 import javafx.scene.layout.StackPane
 
 // Exhaustive, so adding a Route fails to compile until it's mapped to a screen here.
-val navigationRouter: (route: Route, scope: ScreenScope) -> Node = { route, scope ->
+val navigationRouter: (route: Route, scope: ScreenScope) -> Destination = { route, scope ->
     when (route) {
-        Route.Welcome -> WelcomeScreen(scope)
-        Route.AccountList -> AccountListScreen(scope)
-        Route.NewAccount -> AccountFormScreen(scope, accountId = null)
-        is Route.EditAccount -> AccountFormScreen(scope, route.accountId)
-        Route.CategoryList -> placeholderScreen(route)
-        Route.PayeeList -> placeholderScreen(route)
+        Route.Welcome -> Destination.Screen(WelcomeScreen(scope))
+        Route.AccountList -> Destination.Screen(AccountListScreen(scope))
+        Route.NewAccount -> Destination.Screen(AccountFormScreen(scope, accountId = null))
+        is Route.EditAccount -> Destination.Screen(AccountFormScreen(scope, route.accountId))
+        Route.CategoryList -> Destination.Screen(placeholderScreen(route))
+        Route.PayeeList -> Destination.Screen(placeholderScreen(route))
     }
 }
 
