@@ -1,7 +1,7 @@
 package com.munzenberger.money.desktop.navigation
 
 import androidx.navigation3.runtime.entryProvider
-import com.munzenberger.money.desktop.accounts.AccountFormScreen
+import com.munzenberger.money.desktop.accounts.AccountSettingsScreen
 import com.munzenberger.money.desktop.accounts.AccountListScreen
 import com.munzenberger.money.desktop.categories.CategoryListScreen
 import com.munzenberger.money.desktop.payees.PayeeListScreen
@@ -18,11 +18,11 @@ val navigationRouter = entryProvider<Route> {
     }
 
     entry<Route.NewAccount> {
-        AccountFormScreen()
+        AccountSettingsScreen()
     }
 
-    entry<Route.EditAccount> {
-        AccountFormScreen(accountId = it.accountId)
+    entry<Route.AccountSettings> {
+        AccountSettingsScreen(accountId = it.accountId)
     }
 
     entry<Route.CategoryList> {

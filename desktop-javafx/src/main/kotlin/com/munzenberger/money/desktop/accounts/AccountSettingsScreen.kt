@@ -8,8 +8,8 @@ import com.munzenberger.money.desktop.components.setShown
 import com.munzenberger.money.desktop.navigation.ScreenScope
 import com.munzenberger.money.desktop.strings
 import com.munzenberger.money.desktop.theme.Spacing
-import com.munzenberger.money.presentation.accounts.AccountFormUiState
-import com.munzenberger.money.presentation.accounts.AccountFormViewModel
+import com.munzenberger.money.presentation.accounts.AccountSettingsUiState
+import com.munzenberger.money.presentation.accounts.AccountSettingsViewModel
 import com.munzenberger.money.presentation.accounts.LoadState
 import com.munzenberger.money.presentation.accounts.SaveState
 import com.munzenberger.money.presentation.accounts.loadedOrEmpty
@@ -25,6 +25,7 @@ import javafx.scene.control.ComboBox
 import javafx.scene.control.Label
 import javafx.scene.control.ProgressIndicator
 import javafx.scene.control.ScrollPane
+import javafx.scene.control.Separator
 import javafx.scene.control.TextArea
 import javafx.scene.control.TextField
 import javafx.scene.control.TextInputControl
@@ -32,15 +33,14 @@ import javafx.scene.layout.ColumnConstraints
 import javafx.scene.layout.GridPane
 import javafx.scene.layout.HBox
 import javafx.scene.layout.Priority
-import javafx.scene.layout.Region
 import javafx.scene.layout.StackPane
 import javafx.scene.layout.VBox
 import javafx.util.StringConverter
 import org.koin.core.parameter.parametersOf
 
 /** Adds a new account, or edits the account with [accountId] if there is one. */
-class AccountFormScreen(scope: ScreenScope, accountId: AccountId?) : VBox(Spacing.CONTROL_SPACING) {
-    private val viewModel: AccountFormViewModel = scope.viewModel { parametersOf(accountId) }
+class AccountSettingsScreen(scope: ScreenScope, accountId: AccountId?) : VBox(Spacing.CONTROL_SPACING) {
+    private val viewModel: AccountSettingsViewModel = scope.viewModel { parametersOf(accountId) }
 
     private val heading = ScreenHeading(
         strings.getString(if (accountId == null) "new_account_title" else "edit_account_title")
@@ -106,13 +106,14 @@ class AccountFormScreen(scope: ScreenScope, accountId: AccountId?) : VBox(Spacin
         // The labels' column is as wide as its widest label, never shrinking to cut one off. The fields take the rest.
         columnConstraints.setAll(
             ColumnConstraints().apply {
-                minWidth = Region.USE_PREF_SIZE
-                prefWidth = Region.USE_COMPUTED_SIZE
-                maxWidth = Region.USE_PREF_SIZE
+                minWidth = USE_PREF_SIZE
+                prefWidth = USE_COMPUTED_SIZE
+                maxWidth = USE_PREF_SIZE
                 hgrow = Priority.NEVER
             },
             ColumnConstraints().apply { hgrow = Priority.ALWAYS },
         )
+        addSection("account_section_title")
         addField("account_name_label", nameField, VBox(ERROR_SPACING, nameField, nameError))
         addField(
             "account_type_label",
@@ -124,13 +125,19 @@ class AccountFormScreen(scope: ScreenScope, accountId: AccountId?) : VBox(Spacin
             bankComboBox,
             VBox(ERROR_SPACING, withProgress(bankComboBox, banksProgress), banksError),
         )
+        // A new account is always open, so it can only be closed once it exists. The row is left out rather than
+        // hidden, since the grid would still put a gap around an empty row.
+        if (accountId != null) {
+            add(closedCheckBox, 1, rowCount)
+        }
+        addSection("balance_and_reference_section_title")
         addField("account_number_label", numberField, numberField)
         addField(
             "initial_balance_label",
             initialBalanceField,
             VBox(ERROR_SPACING, withPrefix(currencySymbolLabel, initialBalanceField), initialBalanceError),
         )
-        add(closedCheckBox, 1, rowCount)
+        addSection("additional_information_section_title")
         addField("comments_label", commentsArea, commentsArea)
     }
 
@@ -186,7 +193,7 @@ class AccountFormScreen(scope: ScreenScope, accountId: AccountId?) : VBox(Spacin
         scope.collect(viewModel.state, ::render)
     }
 
-    private fun render(state: AccountFormUiState) {
+    private fun render(state: AccountSettingsUiState) {
         form.setShown(state.isFormReady)
         loadingProgress.setShown(state.existingAccount is LoadState.Loading)
         loadError.setShown(state.existingAccount is LoadState.Error)
@@ -215,11 +222,10 @@ class AccountFormScreen(scope: ScreenScope, accountId: AccountId?) : VBox(Spacin
 
         commentsArea.setTextIfChanged(state.memo)
 
-        closedCheckBox.setShown(state.isEditing)
         closedCheckBox.isSelected = state.isClosed
     }
 
-    private fun renderAccountType(state: AccountFormUiState) {
+    private fun renderAccountType(state: AccountSettingsUiState) {
         val accountTypes = state.accountTypes.loadedOrEmpty
         if (accountTypeComboBox.items != accountTypes) {
             accountTypeComboBox.items.setAll(accountTypes)
@@ -243,7 +249,7 @@ class AccountFormScreen(scope: ScreenScope, accountId: AccountId?) : VBox(Spacin
     }
 
     // The field can still take a new bank's name while the existing banks load, or if they fail to.
-    private fun renderBank(state: AccountFormUiState) {
+    private fun renderBank(state: AccountSettingsUiState) {
         val bankNames = state.banks.loadedOrEmpty.map { it.name }
         if (bankComboBox.items != bankNames) {
             bankComboBox.items.setAll(bankNames)
@@ -251,6 +257,14 @@ class AccountFormScreen(scope: ScreenScope, accountId: AccountId?) : VBox(Spacin
         bankComboBox.editor.setTextIfChanged(state.bankName)
         banksProgress.setShown(state.banks is LoadState.Loading)
         banksError.setShown(state.banks is LoadState.Error)
+    }
+
+    // Adds a row with the section's title over a separator, spanning both columns.
+    private fun GridPane.addSection(titleKey: String) {
+        val title = Label(strings.getString(titleKey)).apply { styleClass += "form-section-title" }
+        val heading = VBox(Spacing.CONTROL_SPACING, title, Separator())
+        heading.padding = Insets(Spacing.SMALL, 0.0, 0.0, 0.0)
+        add(heading, 0, rowCount, 2, 1)
     }
 
     // Adds a row with the label for the field, and the node holding the field and anything that goes with it.

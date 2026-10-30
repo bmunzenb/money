@@ -21,6 +21,15 @@
     -fx-background: -fx-selection-bar;
 }
 
+/*
+ * Links in a darker shade of the selection color, which is the same as Modena's link color, and always underlined, so
+ * they look like links before they're hovered. These win over Modena's hovered, pressed and visited links too.
+ */
+.hyperlink {
+    -fx-text-fill: derive(-fx-selection-bar, -35%);
+    -fx-underline: true;
+}
+
 /* Gives links in a selected row the row's text color, as Modena does for the row's text, so they show on the selection. */
 .tree-table-row-cell:filled:selected .hyperlink {
     -fx-text-fill: -fx-text-background-color;
@@ -37,6 +46,11 @@
     -fx-text-box-border: #c62828;
     -fx-focus-color: #c62828;
     -fx-faint-focus-color: #c6282822;
+}
+
+/* The title of a group of related fields in a form. */
+.form-section-title {
+    -fx-font-weight: bold;
 }
 
 /* A scroll pane without Modena's border, focus ring or background, so its content sits directly on the screen. */

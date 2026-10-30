@@ -25,8 +25,8 @@ import com.munzenberger.money.data.api.bank.Bank
 import com.munzenberger.money.desktop.components.DetailScreenHeader
 import com.munzenberger.money.desktop.theme.MoneyTheme
 import com.munzenberger.money.desktop.theme.PreviewThemed
-import com.munzenberger.money.presentation.accounts.AccountFormUiState
-import com.munzenberger.money.presentation.accounts.AccountFormViewModel
+import com.munzenberger.money.presentation.accounts.AccountSettingsUiState
+import com.munzenberger.money.presentation.accounts.AccountSettingsViewModel
 import com.munzenberger.money.presentation.accounts.LoadState
 import com.munzenberger.money.presentation.accounts.SaveState
 import money.desktop_material.generated.resources.Res
@@ -39,13 +39,13 @@ import org.koin.core.parameter.parametersOf
 
 /** Adds a new account, or edits the account with [accountId] if there is one. */
 @Composable
-fun AccountFormScreen(
+fun AccountSettingsScreen(
     accountId: AccountId? = null,
-    viewModel: AccountFormViewModel = koinViewModel { parametersOf(accountId) },
+    viewModel: AccountSettingsViewModel = koinViewModel { parametersOf(accountId) },
 ) {
     val state by viewModel.state.collectAsState()
 
-    AccountFormScreenContent(
+    AccountSettingsScreenContent(
         state = state,
         onNameChange = viewModel::onNameChange,
         onAccountTypeChange = viewModel::onAccountTypeChange,
@@ -62,8 +62,8 @@ fun AccountFormScreen(
 }
 
 @Composable
-private fun AccountFormScreenContent(
-    state: AccountFormUiState,
+private fun AccountSettingsScreenContent(
+    state: AccountSettingsUiState,
     onNameChange: (String) -> Unit,
     onAccountTypeChange: (AccountType) -> Unit,
     onBankNameChange: (String) -> Unit,
@@ -125,10 +125,10 @@ private fun AccountFormScreenContent(
 
 @Preview
 @Composable
-private fun AccountFormScreenPreview() {
+private fun AccountSettingsScreenPreview() {
     PreviewThemed {
-        AccountFormScreenPreviewContent(
-            state = AccountFormUiState(
+        AccountSettingsScreenPreviewContent(
+            state = AccountSettingsUiState(
                 currencySymbol = "$",
                 accountTypes = LoadState.Loaded(emptyList()),
                 banks = LoadState.Loaded(emptyList()),
@@ -139,18 +139,18 @@ private fun AccountFormScreenPreview() {
 
 @Preview
 @Composable
-private fun AccountFormScreenLoadingPreview() {
+private fun AccountSettingsScreenLoadingPreview() {
     PreviewThemed {
-        AccountFormScreenPreviewContent(state = AccountFormUiState(currencySymbol = "$"))
+        AccountSettingsScreenPreviewContent(state = AccountSettingsUiState(currencySymbol = "$"))
     }
 }
 
 @Preview
 @Composable
-private fun AccountFormScreenErrorPreview() {
+private fun AccountSettingsScreenErrorPreview() {
     PreviewThemed {
-        AccountFormScreenPreviewContent(
-            state = AccountFormUiState(
+        AccountSettingsScreenPreviewContent(
+            state = AccountSettingsUiState(
                 accountTypes = LoadState.Error,
                 banks = LoadState.Error,
                 currencySymbol = "$",
@@ -161,10 +161,10 @@ private fun AccountFormScreenErrorPreview() {
 
 @Preview
 @Composable
-private fun AccountFormScreenValidationErrorPreview() {
+private fun AccountSettingsScreenValidationErrorPreview() {
     PreviewThemed {
-        AccountFormScreenPreviewContent(
-            state = AccountFormUiState(
+        AccountSettingsScreenPreviewContent(
+            state = AccountSettingsUiState(
                 currencySymbol = "$",
                 accountTypes = LoadState.Loaded(emptyList()),
                 banks = LoadState.Loaded(emptyList()),
@@ -179,10 +179,10 @@ private fun AccountFormScreenValidationErrorPreview() {
 
 @Preview
 @Composable
-private fun AccountFormScreenSavingPreview() {
+private fun AccountSettingsScreenSavingPreview() {
     PreviewThemed {
-        AccountFormScreenPreviewContent(
-            state = AccountFormUiState(
+        AccountSettingsScreenPreviewContent(
+            state = AccountSettingsUiState(
                 name = "Checking",
                 currencySymbol = "$",
                 accountTypes = LoadState.Loaded(emptyList()),
@@ -195,10 +195,10 @@ private fun AccountFormScreenSavingPreview() {
 
 @Preview
 @Composable
-private fun AccountFormScreenSaveFailedPreview() {
+private fun AccountSettingsScreenSaveFailedPreview() {
     PreviewThemed {
-        AccountFormScreenPreviewContent(
-            state = AccountFormUiState(
+        AccountSettingsScreenPreviewContent(
+            state = AccountSettingsUiState(
                 name = "Checking",
                 currencySymbol = "$",
                 accountTypes = LoadState.Loaded(emptyList()),
@@ -211,15 +211,15 @@ private fun AccountFormScreenSaveFailedPreview() {
 
 @Preview
 @Composable
-private fun AccountFormScreenEditPreview() {
+private fun AccountSettingsScreenEditPreview() {
     val checking = AccountType(
         id = AccountTypeId(2),
         accountClass = AccountClass(id = AccountClassId(1), value = AccountClassConstant.Assets),
         value = AccountTypeConstant.Checking,
     )
     PreviewThemed {
-        AccountFormScreenPreviewContent(
-            state = AccountFormUiState(
+        AccountSettingsScreenPreviewContent(
+            state = AccountSettingsUiState(
                 existingAccount = LoadState.Loaded(Account(name = "Checking", accountType = checking)),
                 name = "Checking",
                 accountType = checking,
@@ -235,17 +235,17 @@ private fun AccountFormScreenEditPreview() {
 
 @Preview
 @Composable
-private fun AccountFormScreenEditLoadErrorPreview() {
+private fun AccountSettingsScreenEditLoadErrorPreview() {
     PreviewThemed {
-        AccountFormScreenPreviewContent(
-            state = AccountFormUiState(existingAccount = LoadState.Error, currencySymbol = "$")
+        AccountSettingsScreenPreviewContent(
+            state = AccountSettingsUiState(existingAccount = LoadState.Error, currencySymbol = "$")
         )
     }
 }
 
 @Composable
-private fun AccountFormScreenPreviewContent(state: AccountFormUiState) {
-    AccountFormScreenContent(
+private fun AccountSettingsScreenPreviewContent(state: AccountSettingsUiState) {
+    AccountSettingsScreenContent(
         state = state,
         onNameChange = {},
         onAccountTypeChange = {},

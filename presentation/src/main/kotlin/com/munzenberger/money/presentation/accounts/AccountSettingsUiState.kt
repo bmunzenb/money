@@ -5,7 +5,7 @@ import com.munzenberger.money.data.api.account.AccountType
 import com.munzenberger.money.data.api.bank.Bank
 
 /** The account form, for adding a new account or editing an existing one. */
-data class AccountFormUiState(
+data class AccountSettingsUiState(
     /**
      * The account being edited, as it was when the form was filled in from it, or null when adding a new
      * account. The fields can't be shown until it's loaded.

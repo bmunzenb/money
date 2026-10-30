@@ -6,7 +6,7 @@ import com.munzenberger.money.core.account.UpdateAccountUseCase
 import com.munzenberger.money.core.demo.PopulateDemoDataUseCase
 import com.munzenberger.money.data.sql.SqlMoneyRepositoryConnector
 import com.munzenberger.money.presentation.AppViewModel
-import com.munzenberger.money.presentation.accounts.AccountFormViewModel
+import com.munzenberger.money.presentation.accounts.AccountSettingsViewModel
 import com.munzenberger.money.presentation.accounts.AccountListViewModel
 import com.munzenberger.money.presentation.categories.CategoryListViewModel
 import com.munzenberger.money.presentation.database.MoneyRepositoryController
@@ -38,7 +38,7 @@ val presentationModule = module {
     viewModel { AppViewModel(get(), get()) }
     viewModel { WelcomeViewModel(get()) }
     viewModel { AccountListViewModel(get(), get(), get(), get()) }
-    viewModel { params -> AccountFormViewModel(params.getOrNull(), get(), get(), get(), get()) }
+    viewModel { params -> AccountSettingsViewModel(params.getOrNull(), get(), get(), get(), get()) }
     viewModel { CategoryListViewModel(get()) }
     viewModel { PayeeListViewModel(get()) }
     viewModel { AppNavigationRailViewModel(get()) }

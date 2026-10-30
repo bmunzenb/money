@@ -15,7 +15,7 @@ sealed interface Route {
     data object NewAccount : Route
 
     @Serializable
-    data class EditAccount(val accountId: AccountId) : Route
+    data class AccountSettings(val accountId: AccountId) : Route
 
     @Serializable
     data object CategoryList : Route

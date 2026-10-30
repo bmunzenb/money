@@ -210,6 +210,6 @@ class AccountListViewModelTest {
 
         viewModel().onAccountClick(account)
 
-        assertEquals(listOf(Route.AccountList, Route.EditAccount(account.id)), navigator.backStack.value)
+        assertEquals(listOf(Route.AccountList, Route.AccountSettings(account.id)), navigator.backStack.value)
     }
 }
