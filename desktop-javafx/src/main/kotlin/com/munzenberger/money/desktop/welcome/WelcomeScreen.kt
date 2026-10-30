@@ -1,5 +1,6 @@
 package com.munzenberger.money.desktop.welcome
 
+import com.munzenberger.money.desktop.components.setShown
 import com.munzenberger.money.desktop.navigation.ScreenScope
 import com.munzenberger.money.desktop.strings
 import com.munzenberger.money.desktop.theme.Spacing
@@ -7,7 +8,6 @@ import com.munzenberger.money.presentation.welcome.WelcomeError
 import com.munzenberger.money.presentation.welcome.WelcomeUiState
 import com.munzenberger.money.presentation.welcome.WelcomeViewModel
 import javafx.geometry.Pos
-import javafx.scene.Node
 import javafx.scene.control.Alert
 import javafx.scene.control.Button
 import javafx.scene.control.ProgressIndicator
@@ -83,12 +83,6 @@ class WelcomeScreen(scope: ScreenScope) : VBox(Spacing.CONTROL_SPACING) {
             )
         }
         chooser.showSaveDialog(scene.window)?.let(viewModel::createDatabase)
-    }
-
-    // Hidden nodes also give up their space in the layout.
-    private fun Node.setShown(shown: Boolean) {
-        isVisible = shown
-        isManaged = shown
     }
 
     private val WelcomeError.messageKey: String

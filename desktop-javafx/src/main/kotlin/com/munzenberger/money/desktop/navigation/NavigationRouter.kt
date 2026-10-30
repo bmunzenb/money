@@ -1,5 +1,6 @@
 package com.munzenberger.money.desktop.navigation
 
+import com.munzenberger.money.desktop.accounts.AccountFormScreen
 import com.munzenberger.money.desktop.accounts.AccountListScreen
 import com.munzenberger.money.desktop.welcome.WelcomeScreen
 import com.munzenberger.money.presentation.navigation.Route
@@ -12,8 +13,8 @@ val navigationRouter: (route: Route, scope: ScreenScope) -> Node = { route, scop
     when (route) {
         Route.Welcome -> WelcomeScreen(scope)
         Route.AccountList -> AccountListScreen(scope)
-        Route.NewAccount -> placeholderScreen(route)
-        is Route.EditAccount -> placeholderScreen(route)
+        Route.NewAccount -> AccountFormScreen(scope, accountId = null)
+        is Route.EditAccount -> AccountFormScreen(scope, route.accountId)
         Route.CategoryList -> placeholderScreen(route)
         Route.PayeeList -> placeholderScreen(route)
     }
