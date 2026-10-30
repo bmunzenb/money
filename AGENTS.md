@@ -66,12 +66,12 @@ navigator.navigate { removeLast() }
 Reading `navigator.backStack.value` is fine, but prefer `currentRoute` when you only need the top route.
 
 Top-level destinations are listed in the `TopLevelDestination` enum
-(`presentation/.../presentation/rail/TopLevelDestination.kt`) and shown, with their icons and labels, in
+(`presentation/.../presentation/rail/TopLevelDestination.kt`) and shown by their labels in
 `desktop-javafx/.../desktop/rail/AppNavigationRail.kt`. `AppNavigationRailViewModel` selects the top-most
 top-level destination in the back stack (so a screen pushed on top, like `NewAccount` over `AccountList`, keeps
 its parent selected) and switches destinations by replacing the stack (`clear(); add(route)`), not pushing onto
 it, so peers don't build up back history. To add a top-level screen, add a `Route`, map it in
-`navigationRouter`, and add a `TopLevelDestination` entry with its icon and label.
+`navigationRouter`, and add a `TopLevelDestination` entry with its label.
 
 `NavigationHost` (`desktop-javafx/.../desktop/navigation/NavigationHost.kt`) collects `navigator.backStack`,
 builds each entry's node with `navigationRouter`, and gives each entry a `ScreenScope`
