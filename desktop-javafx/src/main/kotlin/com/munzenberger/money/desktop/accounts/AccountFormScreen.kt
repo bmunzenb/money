@@ -2,6 +2,7 @@ package com.munzenberger.money.desktop.accounts
 
 import com.munzenberger.money.data.api.account.AccountId
 import com.munzenberger.money.data.api.account.AccountType
+import com.munzenberger.money.desktop.components.AutoCompleteComboBox
 import com.munzenberger.money.desktop.components.ScreenHeading
 import com.munzenberger.money.desktop.components.setShown
 import com.munzenberger.money.desktop.navigation.ScreenScope
@@ -65,8 +66,7 @@ class AccountFormScreen(scope: ScreenScope, accountId: AccountId?) : VBox(Spacin
 
     // Holds the banks' names, so the user can pick an existing bank or type a new one. The ViewModel matches the text
     // to an existing bank, so picking one from the list, which sets the text, selects that bank.
-    private val bankComboBox = ComboBox<String>().apply {
-        isEditable = true
+    private val bankComboBox = AutoCompleteComboBox<String>().apply {
         maxWidth = Double.MAX_VALUE
         editor.textProperty().addListener { _, _, bankName -> viewModel.onBankNameChange(bankName) }
     }
