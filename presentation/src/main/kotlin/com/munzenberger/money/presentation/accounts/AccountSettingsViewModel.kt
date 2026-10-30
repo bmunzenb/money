@@ -29,7 +29,7 @@ import kotlinx.coroutines.launch
  */
 // One handler per field, so the function count grows with the form.
 @Suppress("TooManyFunctions")
-class AccountFormViewModel(
+class AccountSettingsViewModel(
     private val accountId: AccountId?,
     private val repositoryController: MoneyRepositoryController,
     private val navigator: Navigator,
@@ -38,12 +38,12 @@ class AccountFormViewModel(
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(
-        AccountFormUiState(
+        AccountSettingsUiState(
             existingAccount = accountId?.let { LoadState.Loading },
             currencySymbol = Money.DEFAULT_CURRENCY.symbol,
         )
     )
-    val state: StateFlow<AccountFormUiState> = _state.asStateFlow()
+    val state: StateFlow<AccountSettingsUiState> = _state.asStateFlow()
 
     init {
         viewModelScope.launch {
@@ -181,7 +181,7 @@ private fun List<Bank>.matching(bankName: String): Bank? {
     return if (name.isEmpty()) null else firstOrNull { it.name.equals(name, ignoreCase = true) }
 }
 
-private fun AccountFormUiState.filledInFrom(account: Account, bank: Bank?) = copy(
+private fun AccountSettingsUiState.filledInFrom(account: Account, bank: Bank?) = copy(
     existingAccount = LoadState.Loaded(account),
     name = account.name,
     accountType = account.accountType,
@@ -193,7 +193,7 @@ private fun AccountFormUiState.filledInFrom(account: Account, bank: Bank?) = cop
     isClosed = account.isClosed,
 )
 
-private fun AccountFormUiState.toAccountInput() = AccountInput(
+private fun AccountSettingsUiState.toAccountInput() = AccountInput(
     name = name,
     accountType = accountType,
     bankName = bankName,

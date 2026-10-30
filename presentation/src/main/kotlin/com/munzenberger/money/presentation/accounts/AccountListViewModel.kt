@@ -47,6 +47,6 @@ class AccountListViewModel(
     }
 
     fun onAccountClick(account: Account) {
-        navigator.navigate { add(Route.EditAccount(account.id)) }
+        navigator.navigate { add(Route.AccountSettings(account.id)) }
     }
 }

@@ -15,7 +15,7 @@ import com.munzenberger.money.desktop.components.FormDefaults
 import com.munzenberger.money.desktop.components.FormSectionCard
 import com.munzenberger.money.desktop.components.ScrollableColumn
 import com.munzenberger.money.desktop.theme.MoneyTheme
-import com.munzenberger.money.presentation.accounts.AccountFormUiState
+import com.munzenberger.money.presentation.accounts.AccountSettingsUiState
 import money.desktop_material.generated.resources.Res
 import money.desktop_material.generated.resources.account_section_title
 import money.desktop_material.generated.resources.additional_information_section_title
@@ -29,7 +29,7 @@ import org.jetbrains.compose.resources.stringResource
 /** The account form's fields, grouped into sections, followed by its buttons. */
 @Composable
 internal fun AccountFormBody(
-    state: AccountFormUiState,
+    state: AccountSettingsUiState,
     enabled: Boolean,
     onNameChange: (String) -> Unit,
     onAccountTypeChange: (AccountType) -> Unit,
@@ -105,7 +105,7 @@ internal fun AccountFormBody(
 /** The account's name, type, and financial institution. */
 @Composable
 private fun AccountSection(
-    state: AccountFormUiState,
+    state: AccountSettingsUiState,
     enabled: Boolean,
     onNameChange: (String) -> Unit,
     onAccountTypeChange: (AccountType) -> Unit,

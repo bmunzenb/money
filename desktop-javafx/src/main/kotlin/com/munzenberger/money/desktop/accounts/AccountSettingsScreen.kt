@@ -8,8 +8,8 @@ import com.munzenberger.money.desktop.components.setShown
 import com.munzenberger.money.desktop.navigation.ScreenScope
 import com.munzenberger.money.desktop.strings
 import com.munzenberger.money.desktop.theme.Spacing
-import com.munzenberger.money.presentation.accounts.AccountFormUiState
-import com.munzenberger.money.presentation.accounts.AccountFormViewModel
+import com.munzenberger.money.presentation.accounts.AccountSettingsUiState
+import com.munzenberger.money.presentation.accounts.AccountSettingsViewModel
 import com.munzenberger.money.presentation.accounts.LoadState
 import com.munzenberger.money.presentation.accounts.SaveState
 import com.munzenberger.money.presentation.accounts.loadedOrEmpty
@@ -39,8 +39,8 @@ import javafx.util.StringConverter
 import org.koin.core.parameter.parametersOf
 
 /** Adds a new account, or edits the account with [accountId] if there is one. */
-class AccountFormScreen(scope: ScreenScope, accountId: AccountId?) : VBox(Spacing.CONTROL_SPACING) {
-    private val viewModel: AccountFormViewModel = scope.viewModel { parametersOf(accountId) }
+class AccountSettingsScreen(scope: ScreenScope, accountId: AccountId?) : VBox(Spacing.CONTROL_SPACING) {
+    private val viewModel: AccountSettingsViewModel = scope.viewModel { parametersOf(accountId) }
 
     private val heading = ScreenHeading(
         strings.getString(if (accountId == null) "new_account_title" else "edit_account_title")
@@ -193,7 +193,7 @@ class AccountFormScreen(scope: ScreenScope, accountId: AccountId?) : VBox(Spacin
         scope.collect(viewModel.state, ::render)
     }
 
-    private fun render(state: AccountFormUiState) {
+    private fun render(state: AccountSettingsUiState) {
         form.setShown(state.isFormReady)
         loadingProgress.setShown(state.existingAccount is LoadState.Loading)
         loadError.setShown(state.existingAccount is LoadState.Error)
@@ -225,7 +225,7 @@ class AccountFormScreen(scope: ScreenScope, accountId: AccountId?) : VBox(Spacin
         closedCheckBox.isSelected = state.isClosed
     }
 
-    private fun renderAccountType(state: AccountFormUiState) {
+    private fun renderAccountType(state: AccountSettingsUiState) {
         val accountTypes = state.accountTypes.loadedOrEmpty
         if (accountTypeComboBox.items != accountTypes) {
             accountTypeComboBox.items.setAll(accountTypes)
@@ -249,7 +249,7 @@ class AccountFormScreen(scope: ScreenScope, accountId: AccountId?) : VBox(Spacin
     }
 
     // The field can still take a new bank's name while the existing banks load, or if they fail to.
-    private fun renderBank(state: AccountFormUiState) {
+    private fun renderBank(state: AccountSettingsUiState) {
         val bankNames = state.banks.loadedOrEmpty.map { it.name }
         if (bankComboBox.items != bankNames) {
             bankComboBox.items.setAll(bankNames)

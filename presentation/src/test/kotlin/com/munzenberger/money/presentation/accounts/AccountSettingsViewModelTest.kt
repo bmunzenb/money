@@ -44,7 +44,7 @@ import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 @OptIn(ExperimentalCoroutinesApi::class)
-class AccountFormViewModelTest {
+class AccountSettingsViewModelTest {
 
     private val navigator = Navigator()
     private val fixture = MoneyRepositoryControllerFixture()
@@ -52,7 +52,7 @@ class AccountFormViewModelTest {
     private val updateAccount = mockk<UpdateAccountUseCase>()
 
     private fun viewModel(accountId: AccountId? = null) =
-        AccountFormViewModel(accountId, fixture.controller, navigator, createAccount, updateAccount)
+        AccountSettingsViewModel(accountId, fixture.controller, navigator, createAccount, updateAccount)
 
     private val assets = AccountClass(id = AccountClassId(1), value = AccountClassConstant.Assets)
     private val savings = AccountType(id = AccountTypeId(1), accountClass = assets, value = AccountTypeConstant.Savings)
@@ -634,7 +634,7 @@ class AccountFormViewModelTest {
     @Test
     fun `saving an existing account updates it with the form's values`() = runTest {
         coEvery { updateAccount(any(), any(), any(), any()) } returns SaveAccountResult.Success(existingAccount)
-        navigator.navigate { clear(); add(Route.AccountList); add(Route.EditAccount(existingAccount.id)) }
+        navigator.navigate { clear(); add(Route.AccountList); add(Route.AccountSettings(existingAccount.id)) }
         val viewModel = viewModel(existingAccount.id)
         fixture.connect(
             repository(
