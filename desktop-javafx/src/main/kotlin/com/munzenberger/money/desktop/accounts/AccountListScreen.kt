@@ -112,18 +112,21 @@ class AccountListScreen(scope: ScreenScope) : VBox(Spacing.CONTROL_SPACING), Koi
         }
         saveColumnLayout(preferences, COLUMN_LAYOUT_KEY)
         // Sorts the groups, and the accounts in each group, by the sorted columns, keeping each group's subtotal
-        // last. Account type groups stay in the order of their constants instead. With no sorted columns, the rows
-        // keep their order, as with the default sort policy.
+        // last. Account type and account class groups stay in the order of their constants instead. With no sorted
+        // columns, the rows keep their order, as with the default sort policy.
         sortPolicy = Callback { table ->
             table.comparator?.let { comparator ->
-                val subtotalLast = compareBy<TreeItem<AccountListRow>> { it.value is AccountListRow.SubtotalRow }
-                    .then(comparator)
                 val groupOrder = if (table.root.children.all { it.accountType() != null }) {
                     compareBy { it.accountType() }
+                } else if (table.root.children.all { it.accountClass() != null }) {
+                    compareBy { it.accountClass() }
                 } else {
                     comparator
                 }
                 FXCollections.sort(table.root.children, groupOrder)
+
+                val subtotalLast = compareBy<TreeItem<AccountListRow>> { it.value is AccountListRow.SubtotalRow }
+                    .then(comparator)
                 table.root.children.forEach { FXCollections.sort(it.children, subtotalLast) }
             }
             true
@@ -242,6 +245,10 @@ class AccountListScreen(scope: ScreenScope) : VBox(Spacing.CONTROL_SPACING), Koi
 // The account type of an account type group's row, or null for any other row.
 private fun TreeItem<AccountListRow>.accountType(): AccountTypeConstant? =
     ((value as? AccountListRow.GroupRow)?.group as? AccountGroup.ByAccountType)?.accountType?.value
+
+// The account class of an account class group's row, or null for any other row.
+private fun TreeItem<AccountListRow>.accountClass(): AccountClassConstant? =
+    ((value as? AccountListRow.GroupRow)?.group as? AccountGroup.ByAccountClass)?.accountClass?.value
 
 private fun AccountGroup.title(): String = when (this) {
     is AccountGroup.All -> strings.getString("account_group_all_title")

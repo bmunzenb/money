@@ -25,6 +25,7 @@ import javafx.scene.control.ComboBox
 import javafx.scene.control.Label
 import javafx.scene.control.ProgressIndicator
 import javafx.scene.control.ScrollPane
+import javafx.scene.control.Separator
 import javafx.scene.control.TextArea
 import javafx.scene.control.TextField
 import javafx.scene.control.TextInputControl
@@ -112,6 +113,7 @@ class AccountFormScreen(scope: ScreenScope, accountId: AccountId?) : VBox(Spacin
             },
             ColumnConstraints().apply { hgrow = Priority.ALWAYS },
         )
+        addSection("account_section_title")
         addField("account_name_label", nameField, VBox(ERROR_SPACING, nameField, nameError))
         addField(
             "account_type_label",
@@ -123,13 +125,19 @@ class AccountFormScreen(scope: ScreenScope, accountId: AccountId?) : VBox(Spacin
             bankComboBox,
             VBox(ERROR_SPACING, withProgress(bankComboBox, banksProgress), banksError),
         )
+        // A new account is always open, so it can only be closed once it exists. The row is left out rather than
+        // hidden, since the grid would still put a gap around an empty row.
+        if (accountId != null) {
+            add(closedCheckBox, 1, rowCount)
+        }
+        addSection("balance_and_reference_section_title")
         addField("account_number_label", numberField, numberField)
         addField(
             "initial_balance_label",
             initialBalanceField,
             VBox(ERROR_SPACING, withPrefix(currencySymbolLabel, initialBalanceField), initialBalanceError),
         )
-        add(closedCheckBox, 1, rowCount)
+        addSection("additional_information_section_title")
         addField("comments_label", commentsArea, commentsArea)
     }
 
@@ -214,7 +222,6 @@ class AccountFormScreen(scope: ScreenScope, accountId: AccountId?) : VBox(Spacin
 
         commentsArea.setTextIfChanged(state.memo)
 
-        closedCheckBox.setShown(state.isEditing)
         closedCheckBox.isSelected = state.isClosed
     }
 
@@ -250,6 +257,14 @@ class AccountFormScreen(scope: ScreenScope, accountId: AccountId?) : VBox(Spacin
         bankComboBox.editor.setTextIfChanged(state.bankName)
         banksProgress.setShown(state.banks is LoadState.Loading)
         banksError.setShown(state.banks is LoadState.Error)
+    }
+
+    // Adds a row with the section's title over a separator, spanning both columns.
+    private fun GridPane.addSection(titleKey: String) {
+        val title = Label(strings.getString(titleKey)).apply { styleClass += "form-section-title" }
+        val heading = VBox(Spacing.CONTROL_SPACING, title, Separator())
+        heading.padding = Insets(Spacing.SMALL, 0.0, 0.0, 0.0)
+        add(heading, 0, rowCount, 2, 1)
     }
 
     // Adds a row with the label for the field, and the node holding the field and anything that goes with it.

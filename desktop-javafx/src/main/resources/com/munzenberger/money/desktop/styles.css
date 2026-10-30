@@ -39,6 +39,11 @@
     -fx-faint-focus-color: #c6282822;
 }
 
+/* The title of a group of related fields in a form. */
+.form-section-title {
+    -fx-font-weight: bold;
+}
+
 /* A scroll pane without Modena's border, focus ring or background, so its content sits directly on the screen. */
 .borderless-scroll-pane,
 .borderless-scroll-pane > .viewport {
