@@ -79,12 +79,13 @@ class AccountSettingsScreen(scope: ScreenScope, accountId: AccountId?) : VBox(Sp
         textProperty().addListener { _, _, number -> viewModel.onNumberChange(number) }
     }
 
-    private val currencySymbolLabel = Label()
+    private val currencyField = Label()
 
     // Reformats the amount, or shows it as invalid, once the user leaves the field.
     private val initialBalanceField = TextField().apply {
         textProperty().addListener { _, _, balance -> viewModel.onInitialBalanceChange(balance) }
         focusedProperty().addListener { _, _, focused -> if (!focused) viewModel.onInitialBalanceFocusLost() }
+        maxWidth = INITIAL_BALANCE_FIELD_MAX_WIDTH
     }
 
     private val initialBalanceError = errorLabel("initial_balance_error_message")
@@ -102,7 +103,9 @@ class AccountSettingsScreen(scope: ScreenScope, accountId: AccountId?) : VBox(Sp
     private val fields = GridPane().apply {
         hgap = Spacing.MEDIUM
         vgap = Spacing.MEDIUM
-        maxWidth = FORM_MAX_WIDTH
+        // Keeps the fields clear of the scroll bar when it shows.
+        padding = FORM_END_PADDING
+        maxWidth = FORM_MAX_WIDTH + FORM_END_PADDING.right
         // The labels' column is as wide as its widest label, never shrinking to cut one off. The fields take the rest.
         columnConstraints.setAll(
             ColumnConstraints().apply {
@@ -133,9 +136,15 @@ class AccountSettingsScreen(scope: ScreenScope, accountId: AccountId?) : VBox(Sp
         addSection("balance_and_reference_section_title")
         addField("account_number_label", numberField, numberField)
         addField(
+            "account_currency_label",
+            currencyField,
+            currencyField,
+            Insets.EMPTY,
+        )
+        addField(
             "initial_balance_label",
             initialBalanceField,
-            VBox(ERROR_SPACING, withPrefix(currencySymbolLabel, initialBalanceField), initialBalanceError),
+            VBox(ERROR_SPACING, initialBalanceField, initialBalanceError),
         )
         addSection("additional_information_section_title")
         addField("comments_label", commentsArea, commentsArea)
@@ -170,8 +179,12 @@ class AccountSettingsScreen(scope: ScreenScope, accountId: AccountId?) : VBox(Sp
         buttons.setAll(saveButton, cancelButton)
     }
 
+    // As wide as the fields' grid, with the same end padding, so the buttons line up with the end of the fields
+    // however wide the grid is.
     private val footer = HBox(Spacing.CONTROL_SPACING, savingProgress, buttonBar).apply {
         alignment = Pos.CENTER_RIGHT
+        padding = FORM_END_PADDING
+        maxWidthProperty().bind(fields.widthProperty())
     }
 
     private val form = VBox(Spacing.CONTROL_SPACING, fieldsScrollPane, saveError, footer)
@@ -215,7 +228,8 @@ class AccountSettingsScreen(scope: ScreenScope, accountId: AccountId?) : VBox(Sp
 
         numberField.setTextIfChanged(state.number)
 
-        currencySymbolLabel.text = state.currencySymbol
+        currencyField.text = state.currency.displayName
+
         initialBalanceField.setTextIfChanged(state.initialBalance)
         initialBalanceField.setError(state.isInitialBalanceError)
         initialBalanceError.setShown(state.isInitialBalanceError)
@@ -267,23 +281,24 @@ class AccountSettingsScreen(scope: ScreenScope, accountId: AccountId?) : VBox(Sp
         add(heading, 0, rowCount, 2, 1)
     }
 
-    // Adds a row with the label for the field, and the node holding the field and anything that goes with it.
-    private fun GridPane.addField(labelKey: String, field: Node, fieldNode: Node) {
+    // Adds a row with the label for the field, and the node holding the field and anything that goes with it. The
+    // default label padding lines up the label's text with the text inside a control such as a text field; a field
+    // that's plain text, with no padding of its own, takes no label padding instead.
+    private fun GridPane.addField(
+        labelKey: String,
+        field: Node,
+        fieldNode: Node,
+        labelPadding: Insets = Insets(LABEL_TOP_PADDING, 0.0, 0.0, 0.0),
+    ) {
         val row = rowCount
         val label = Label(strings.getString(labelKey)).apply { labelFor = field }
         GridPane.setValignment(label, VPos.TOP)
-        // Lines up the label's text with the text in the field beside it.
-        label.padding = Insets(LABEL_TOP_PADDING, 0.0, 0.0, 0.0)
+        label.padding = labelPadding
         add(label, 0, row)
         add(fieldNode, 1, row)
     }
 
     private fun withProgress(field: Node, progress: Node) = HBox(Spacing.CONTROL_SPACING, field, progress).apply {
-        alignment = Pos.CENTER_LEFT
-        HBox.setHgrow(field, Priority.ALWAYS)
-    }
-
-    private fun withPrefix(prefix: Node, field: Node) = HBox(Spacing.CONTROL_SPACING, prefix, field).apply {
         alignment = Pos.CENTER_LEFT
         HBox.setHgrow(field, Priority.ALWAYS)
     }
@@ -296,7 +311,9 @@ class AccountSettingsScreen(scope: ScreenScope, accountId: AccountId?) : VBox(Sp
     }
 
     private companion object {
-        const val FORM_MAX_WIDTH = 560.0
+        const val FORM_MAX_WIDTH = 400.0
+        const val INITIAL_BALANCE_FIELD_MAX_WIDTH = 150.0
+        val FORM_END_PADDING = Insets(0.0, Spacing.MEDIUM, 0.0, 0.0)
         const val ERROR_SPACING = 4.0
         const val LABEL_TOP_PADDING = 4.0
         const val SMALL_PROGRESS_SIZE = 16.0
