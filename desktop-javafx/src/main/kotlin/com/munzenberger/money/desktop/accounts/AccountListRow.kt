@@ -3,7 +3,7 @@ package com.munzenberger.money.desktop.accounts
 import com.munzenberger.money.core.account.AccountGroup
 import com.munzenberger.money.data.api.account.Account
 
-/** A row of the account list's table: a group, with a row for each of its accounts and then its subtotal under it. */
+/** A row of the account list's table: a group, then a row for each of its accounts, then its subtotal. */
 sealed interface AccountListRow {
     data class GroupRow(val group: AccountGroup) : AccountListRow
 
