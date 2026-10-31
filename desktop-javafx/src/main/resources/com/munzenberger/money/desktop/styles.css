@@ -1,11 +1,11 @@
 /* Sets the account list's group rows apart from their accounts' rows. */
-.tree-table-row-cell:group {
+.table-row-cell:group {
     -fx-background: derive(-fx-control-inner-background, -10%);
 }
 
 /* The account list's group and subtotal rows' cells inherit the bold font. */
-.tree-table-row-cell:group,
-.tree-table-row-cell:subtotal {
+.table-row-cell:group,
+.table-row-cell:subtotal {
     -fx-font-weight: bold;
 }
 
@@ -13,11 +13,11 @@
  * Modena's selected row colors, repeated here since this stylesheet overrides Modena's regardless of specificity, so
  * the group rows' color above would hide the selection. These are more specific than it, so they win within this file.
  */
-.tree-table-row-cell:filled:selected {
+.table-row-cell:filled:selected {
     -fx-background: -fx-selection-bar-non-focused;
 }
 
-.tree-table-view:focused > .virtual-flow > .clipped-container > .sheet > .tree-table-row-cell:filled:selected {
+.table-view:focused > .virtual-flow > .clipped-container > .sheet > .table-row-cell:filled:selected {
     -fx-background: -fx-selection-bar;
 }
 
@@ -31,7 +31,7 @@
 }
 
 /* Gives links in a selected row the row's text color, as Modena does for the row's text, so they show on the selection. */
-.tree-table-row-cell:filled:selected .hyperlink {
+.table-row-cell:filled:selected .hyperlink {
     -fx-text-fill: -fx-text-background-color;
 }
 

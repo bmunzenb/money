@@ -25,17 +25,17 @@ import javafx.scene.control.Button
 import javafx.scene.control.ComboBox
 import javafx.scene.control.Hyperlink
 import javafx.scene.control.Label
-import javafx.scene.control.TreeItem
-import javafx.scene.control.TreeTableCell
-import javafx.scene.control.TreeTableColumn
-import javafx.scene.control.TreeTableRow
-import javafx.scene.control.TreeTableView
+import javafx.scene.control.TableCell
+import javafx.scene.control.TableColumn
+import javafx.scene.control.TableRow
+import javafx.scene.control.TableView
 import javafx.scene.layout.HBox
 import javafx.scene.layout.Priority
 import javafx.scene.layout.Region
 import javafx.scene.layout.VBox
 import javafx.util.Callback
 import javafx.util.StringConverter
+import java.util.IdentityHashMap
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 
@@ -74,35 +74,37 @@ class AccountListScreen(scope: ScreenScope) : VBox(Spacing.CONTROL_SPACING), Koi
         children.setAll(groupingLabel, groupingComboBox, spacer, addAccountButton)
     }
 
-    private val nameColumn = column("name", "account_name_column_title", groupValue = { it.title() }) { it.name }
-        .apply { setCellFactory { AccountNameCell(viewModel::onAccountClick) } }
+    private val nameColumn = column(
+        id = "name",
+        titleKey = "account_name_column_title",
+        groupValue = { it.title() },
+        accountValue = { it.name }
+    ).apply { setCellFactory { AccountNameCell(viewModel::onAccountClick) } }
 
-    private val numberColumn = column("number", "account_number_column_title") { maskAccountNumber(it.number) }
+    private val numberColumn = column(
+        id = "number",
+        titleKey = "account_number_column_title",
+        accountValue = { maskAccountNumber(it.number) }
+    )
 
-    // Empty until account balances are available, apart from the subtotals' labels. The column's style applies to its
-    // cells, aligning their content to the right.
     private val balanceColumn = column(
-        "balance",
-        "balance_column_title",
-        subtotalValue = { strings.getString("subtotal_label") },
-    ) { "" }.apply {
+        id = "balance",
+        titleKey = "balance_column_title",
+        subtotalValue = { strings.getString("subtotal_label") }
+    ).apply {
         style = "-fx-alignment: CENTER-RIGHT;"
     }
 
     // The columns stretch to fill the table's width. They start at the same width, so they share it equally.
     // Resizing a column takes the space from the last column only, leaving the others as they are.
-    // Each group is a top-level row under the hidden root, with its accounts' rows and then its subtotal's row under
-    // it.
-    private val accountTable = TreeTableView<AccountListRow>(TreeItem()).apply {
+    // Each group's rows follow one another: the group's row, then its accounts' rows, then its subtotal's row.
+    private val accountTable = TableView<AccountListRow>().apply {
         setVgrow(this, Priority.ALWAYS)
-        isShowRoot = false
-        // Keeps the disclosure arrow beside the group's title when the user moves the columns.
-        treeColumn = nameColumn
+        columnResizePolicy = TableView.CONSTRAINED_RESIZE_POLICY_LAST_COLUMN
         columns.setAll(nameColumn, numberColumn, balanceColumn)
-        columnResizePolicy = TreeTableView.CONSTRAINED_RESIZE_POLICY_LAST_COLUMN
         // Marks the groups' and subtotals' rows so the stylesheet can set them apart from the accounts' rows.
         setRowFactory {
-            object : TreeTableRow<AccountListRow>() {
+            object : TableRow<AccountListRow>() {
                 override fun updateItem(item: AccountListRow?, empty: Boolean) {
                     super.updateItem(item, empty)
                     pseudoClassStateChanged(GROUP_PSEUDO_CLASS, item is AccountListRow.GroupRow)
@@ -111,23 +113,25 @@ class AccountListScreen(scope: ScreenScope) : VBox(Spacing.CONTROL_SPACING), Koi
             }
         }
         saveColumnLayout(preferences, COLUMN_LAYOUT_KEY)
-        // Sorts the groups, and the accounts in each group, by the sorted columns, keeping each group's subtotal
-        // last. Account type and account class groups stay in the order of their constants instead. With no sorted
-        // columns, the rows keep their order, as with the default sort policy.
+        // Sorts the groups, and the accounts in each group, by the sorted columns, keeping each group's row first and
+        // its subtotal's row last. Account type and account class groups stay in the order of their constants instead.
+        // With no sorted columns, the rows keep their order, as with the default sort policy.
         sortPolicy = Callback { table ->
             table.comparator?.let { comparator ->
-                val groupOrder = if (table.root.children.all { it.accountType() != null }) {
-                    compareBy { it.accountType() }
-                } else if (table.root.children.all { it.accountClass() != null }) {
-                    compareBy { it.accountClass() }
-                } else {
-                    comparator
+                val sections = table.items.sections()
+                val sectionOrder: Comparator<List<AccountListRow>> = when {
+                    sections.all { it.first().accountType() != null } -> compareBy { it.first().accountType() }
+                    sections.all { it.first().accountClass() != null } -> compareBy { it.first().accountClass() }
+                    else -> compareBy(comparator) { it.first() }
                 }
-                FXCollections.sort(table.root.children, groupOrder)
+                val rowOrder = compareBy<AccountListRow> { it.sectionPosition() }.then(comparator)
+                val sorted = sections.sortedWith(sectionOrder).flatMap { it.sortedWith(rowOrder) }
 
-                val subtotalLast = compareBy<TreeItem<AccountListRow>> { it.value is AccountListRow.SubtotalRow }
-                    .then(comparator)
-                table.root.children.forEach { FXCollections.sort(it.children, subtotalLast) }
+                // Sorts the items in place, rather than replacing them, so the table keeps its selection, as with the
+                // default sort policy.
+                val positions = IdentityHashMap<AccountListRow, Int>()
+                sorted.forEachIndexed { index, row -> positions[row] = index }
+                FXCollections.sort(table.items, compareBy { positions.getValue(it) })
             }
             true
         }
@@ -156,47 +160,35 @@ class AccountListScreen(scope: ScreenScope) : VBox(Spacing.CONTROL_SPACING), Koi
         val groups = state.groups.loadedOrEmpty
         if (groups != renderedGroups) {
             renderedGroups = groups
-            accountTable.root.children.setAll(groups.map(::groupItem))
+            accountTable.items.setAll(groups.flatMap { it.rows() })
             // The sort policy doesn't sort new rows by itself.
             accountTable.sort()
         }
     }
 
-    private fun groupItem(group: AccountGroup) =
-        TreeItem<AccountListRow>(AccountListRow.GroupRow(group)).apply {
-            isExpanded = true
-            children.setAll(
-                group.accounts.map { TreeItem<AccountListRow>(AccountListRow.AccountRow(it)) } +
-                    TreeItem(AccountListRow.SubtotalRow(group))
-            )
-        }
-
-    // The id identifies the column's saved layout. A group's and a subtotal's rows are empty in the columns without
-    // a group or subtotal value.
     private fun column(
         id: String,
         titleKey: String,
         groupValue: (AccountGroup) -> String = { "" },
         subtotalValue: (AccountGroup) -> String = { "" },
-        accountValue: (Account) -> String,
-    ) =
-        TreeTableColumn<AccountListRow, String>(strings.getString(titleKey)).apply {
-            this.id = id
-            setCellValueFactory { features ->
-                val value = when (val row = features.value?.value) {
+        accountValue: (Account) -> String = { "" },
+    ) = TableColumn<AccountListRow, String>(strings.getString(titleKey)).apply {
+        this.id = id
+        setCellValueFactory { features ->
+                val value = when (val row = features.value) {
                     is AccountListRow.GroupRow -> groupValue(row.group)
                     is AccountListRow.AccountRow -> accountValue(row.account)
                     is AccountListRow.SubtotalRow -> subtotalValue(row.group)
                     null -> ""
                 }
                 ReadOnlyStringWrapper(value)
-            }
         }
+    }
 
     /** Shows an account's name as a link, and a group's or subtotal's name as text. */
     private class AccountNameCell(
         private val onAccountClick: (Account) -> Unit,
-    ) : TreeTableCell<AccountListRow, String>() {
+    ) : TableCell<AccountListRow, String>() {
         // Opens the account in the cell's row. It never shows as visited, since the cell reuses it for other accounts.
         private val link = Hyperlink().apply {
             padding = Insets.EMPTY
@@ -242,13 +234,44 @@ class AccountListScreen(scope: ScreenScope) : VBox(Spacing.CONTROL_SPACING), Koi
     }
 }
 
+// A group's rows: its group row, then its accounts' rows, then its subtotal's row. The all accounts group has only its
+// accounts' rows.
+private fun AccountGroup.rows(): List<AccountListRow> {
+    val accountRows = accounts.map(AccountListRow::AccountRow)
+    return if (this is AccountGroup.All) {
+        accountRows
+    } else {
+        listOf(AccountListRow.GroupRow(this)) + accountRows + AccountListRow.SubtotalRow(this)
+    }
+}
+
+// Splits the rows into their groups' sections: each group's row, then its accounts' rows, then its subtotal's row. The
+// all accounts group has no group or subtotal row, so its section is just its accounts' rows.
+private fun List<AccountListRow>.sections(): List<List<AccountListRow>> {
+    val sections = mutableListOf<MutableList<AccountListRow>>()
+    forEach { row ->
+        if (row is AccountListRow.GroupRow || sections.isEmpty()) {
+            sections += mutableListOf<AccountListRow>()
+        }
+        sections.last() += row
+    }
+    return sections
+}
+
+// Where the row goes in its group's section: the group's row first, then its accounts' rows, then its subtotal's row.
+private fun AccountListRow.sectionPosition(): Int = when (this) {
+    is AccountListRow.GroupRow -> 0
+    is AccountListRow.AccountRow -> 1
+    is AccountListRow.SubtotalRow -> 2
+}
+
 // The account type of an account type group's row, or null for any other row.
-private fun TreeItem<AccountListRow>.accountType(): AccountTypeConstant? =
-    ((value as? AccountListRow.GroupRow)?.group as? AccountGroup.ByAccountType)?.accountType?.value
+private fun AccountListRow.accountType(): AccountTypeConstant? =
+    ((this as? AccountListRow.GroupRow)?.group as? AccountGroup.ByAccountType)?.accountType?.value
 
 // The account class of an account class group's row, or null for any other row.
-private fun TreeItem<AccountListRow>.accountClass(): AccountClassConstant? =
-    ((value as? AccountListRow.GroupRow)?.group as? AccountGroup.ByAccountClass)?.accountClass?.value
+private fun AccountListRow.accountClass(): AccountClassConstant? =
+    ((this as? AccountListRow.GroupRow)?.group as? AccountGroup.ByAccountClass)?.accountClass?.value
 
 private fun AccountGroup.title(): String = when (this) {
     is AccountGroup.All -> strings.getString("account_group_all_title")
