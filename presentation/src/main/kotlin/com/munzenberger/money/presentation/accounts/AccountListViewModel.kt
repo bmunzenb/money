@@ -42,7 +42,7 @@ class AccountListViewModel(
         preferences.accountGrouping = grouping
     }
 
-    fun onAddAccountClick() {
+    fun onNewAccountClick() {
         navigator.navigate { add(Route.NewAccount) }
     }
 

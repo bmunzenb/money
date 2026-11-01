@@ -66,16 +66,16 @@ class AccountListScreen(scope: ScreenScope) : VBox(Spacing.CONTROL_SPACING), Koi
         labelFor = groupingComboBox
     }
 
-    private val addAccountButton = Button(strings.getString("add_account_button_title")).apply {
-        setOnAction { viewModel.onAddAccountClick() }
+    private val newAccountButton = Button(strings.getString("new_account_button_title")).apply {
+        setOnAction { viewModel.onNewAccountClick() }
     }
 
-    // Pushes the add account button to the end of the row.
+    // Pushes the new account button to the end of the row.
     private val spacer = Region().apply { HBox.setHgrow(this, Priority.ALWAYS) }
 
     private val controls = HBox(Spacing.CONTROL_SPACING).apply {
         alignment = Pos.CENTER_LEFT
-        children.setAll(groupingLabel, groupingComboBox, spacer, addAccountButton)
+        children.setAll(groupingLabel, groupingComboBox, spacer, newAccountButton)
     }
 
     private val nameColumn = column(
@@ -113,7 +113,7 @@ class AccountListScreen(scope: ScreenScope) : VBox(Spacing.CONTROL_SPACING), Koi
     private val emptyMessage = Hyperlink(strings.getString("account_list_empty_message")).apply {
         setOnAction {
             isVisited = false
-            viewModel.onAddAccountClick()
+            viewModel.onNewAccountClick()
         }
     }
 

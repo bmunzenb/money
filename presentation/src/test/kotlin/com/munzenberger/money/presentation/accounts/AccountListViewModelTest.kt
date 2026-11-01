@@ -193,11 +193,11 @@ class AccountListViewModelTest {
     }
 
     @Test
-    fun `onAddAccountClick pushes the new account route`() = runTest {
+    fun `onNewAccountClick pushes the new account route`() = runTest {
         every { getAccountGroups(any(), any()) } returns emptyFlow()
         navigator.navigate { clear(); add(Route.AccountList) }
 
-        viewModel().onAddAccountClick()
+        viewModel().onNewAccountClick()
 
         assertEquals(listOf(Route.AccountList, Route.NewAccount), navigator.backStack.value)
     }
