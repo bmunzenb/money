@@ -15,6 +15,7 @@ val navigationRouter: (route: Route, scope: ScreenScope) -> Node = { route, scop
         Route.AccountList -> AccountListScreen(scope)
         Route.NewAccount -> AccountSettingsScreen(scope, accountId = null)
         is Route.AccountSettings -> AccountSettingsScreen(scope, route.accountId)
+        is Route.TransactionList -> placeholderScreen(route)
         Route.CategoryList -> placeholderScreen(route)
         Route.PayeeList -> placeholderScreen(route)
     }
