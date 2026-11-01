@@ -13,6 +13,7 @@ import com.munzenberger.money.desktop.strings
 import com.munzenberger.money.desktop.theme.Spacing
 import com.munzenberger.money.presentation.accounts.AccountListUiState
 import com.munzenberger.money.presentation.accounts.AccountListViewModel
+import com.munzenberger.money.presentation.accounts.LoadState
 import com.munzenberger.money.presentation.accounts.loadedOrEmpty
 import com.munzenberger.money.presentation.accounts.maskAccountNumber
 import com.munzenberger.money.presentation.preferences.UserPreferences
@@ -25,6 +26,7 @@ import javafx.scene.control.Button
 import javafx.scene.control.ComboBox
 import javafx.scene.control.Hyperlink
 import javafx.scene.control.Label
+import javafx.scene.control.ProgressIndicator
 import javafx.scene.control.TableCell
 import javafx.scene.control.TableColumn
 import javafx.scene.control.TableRow
@@ -95,6 +97,24 @@ class AccountListScreen(scope: ScreenScope) : VBox(Spacing.CONTROL_SPACING), Koi
         style = "-fx-alignment: CENTER-RIGHT;"
     }
 
+    // The table's placeholder while the groups load.
+    private val loadingProgress = ProgressIndicator()
+
+    // The table's placeholder when the groups fail to load.
+    private val loadErrorMessage = Label(strings.getString("account_list_load_error_message")).apply {
+        styleClass += "error-message"
+        isWrapText = true
+    }
+
+    // The table's placeholder when the groups have loaded with no accounts.
+    // It never shows as visited, so it looks the same each time the table is empty.
+    private val emptyMessage = Hyperlink(strings.getString("account_list_empty_message")).apply {
+        setOnAction {
+            isVisited = false
+            viewModel.onAddAccountClick()
+        }
+    }
+
     // The columns stretch to fill the table's width. They start at the same width, so they share it equally.
     // Resizing a column takes the space from the last column only, leaving the others as they are.
     // Each group's rows follow one another: the group's row, then its accounts' rows, then its subtotal's row.
@@ -156,6 +176,14 @@ class AccountListScreen(scope: ScreenScope) : VBox(Spacing.CONTROL_SPACING), Koi
 
     private fun render(state: AccountListUiState) {
         groupingComboBox.value = state.grouping
+
+        accountTable.placeholder = when (state.groups) {
+            LoadState.Loading -> loadingProgress
+            LoadState.Error -> loadErrorMessage
+            is LoadState.Loaded -> emptyMessage
+        }
+
+        totalBalance.isVisible = state.groups.loadedOrEmpty.isNotEmpty()
 
         val groups = state.groups.loadedOrEmpty
         if (groups != renderedGroups) {
