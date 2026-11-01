@@ -212,4 +212,15 @@ class AccountListViewModelTest {
 
         assertEquals(listOf(Route.AccountList, Route.TransactionList(account.id)), navigator.backStack.value)
     }
+
+    @Test
+    fun `onAccountSettingsClick pushes the account settings route for the account`() = runTest {
+        every { getAccountGroups(any(), any()) } returns emptyFlow()
+        navigator.navigate { clear(); add(Route.AccountList) }
+        val account = account("Checking")
+
+        viewModel().onAccountSettingsClick(account)
+
+        assertEquals(listOf(Route.AccountList, Route.AccountSettings(account.id)), navigator.backStack.value)
+    }
 }

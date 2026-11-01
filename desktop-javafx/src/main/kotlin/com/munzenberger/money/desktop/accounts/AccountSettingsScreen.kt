@@ -44,7 +44,7 @@ class AccountSettingsScreen(scope: ScreenScope, accountId: AccountId?) : VBox(Sp
     private val viewModel: AccountSettingsViewModel = scope.viewModel { parametersOf(accountId) }
 
     private val heading = ScreenHeading(
-        strings.getString(if (accountId == null) "new_account_title" else "edit_account_title")
+        strings.getString(if (accountId == null) "new_account_title" else "account_settings_title")
     )
 
     private val nameField = TextField().apply {
