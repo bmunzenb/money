@@ -22,4 +22,7 @@ sealed interface Route {
 
     @Serializable
     data object PayeeList : Route
+
+    @Serializable
+    data class TransactionList(val accountId: AccountId) : Route
 }

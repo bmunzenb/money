@@ -24,8 +24,10 @@ import javafx.geometry.Insets
 import javafx.geometry.Pos
 import javafx.scene.control.Button
 import javafx.scene.control.ComboBox
+import javafx.scene.control.ContextMenu
 import javafx.scene.control.Hyperlink
 import javafx.scene.control.Label
+import javafx.scene.control.MenuItem
 import javafx.scene.control.ProgressIndicator
 import javafx.scene.control.TableCell
 import javafx.scene.control.TableColumn
@@ -64,16 +66,16 @@ class AccountListScreen(scope: ScreenScope) : VBox(Spacing.CONTROL_SPACING), Koi
         labelFor = groupingComboBox
     }
 
-    private val addAccountButton = Button(strings.getString("add_account_button_title")).apply {
-        setOnAction { viewModel.onAddAccountClick() }
+    private val newAccountButton = Button(strings.getString("new_account_button_title")).apply {
+        setOnAction { viewModel.onNewAccountClick() }
     }
 
-    // Pushes the add account button to the end of the row.
+    // Pushes the new account button to the end of the row.
     private val spacer = Region().apply { HBox.setHgrow(this, Priority.ALWAYS) }
 
     private val controls = HBox(Spacing.CONTROL_SPACING).apply {
         alignment = Pos.CENTER_LEFT
-        children.setAll(groupingLabel, groupingComboBox, spacer, addAccountButton)
+        children.setAll(groupingLabel, groupingComboBox, spacer, newAccountButton)
     }
 
     private val nameColumn = column(
@@ -111,7 +113,7 @@ class AccountListScreen(scope: ScreenScope) : VBox(Spacing.CONTROL_SPACING), Koi
     private val emptyMessage = Hyperlink(strings.getString("account_list_empty_message")).apply {
         setOnAction {
             isVisited = false
-            viewModel.onAddAccountClick()
+            viewModel.onNewAccountClick()
         }
     }
 
@@ -122,13 +124,26 @@ class AccountListScreen(scope: ScreenScope) : VBox(Spacing.CONTROL_SPACING), Koi
         setVgrow(this, Priority.ALWAYS)
         columnResizePolicy = TableView.CONSTRAINED_RESIZE_POLICY_LAST_COLUMN
         columns.setAll(nameColumn, numberColumn, balanceColumn)
-        // Marks the groups' and subtotals' rows so the stylesheet can set them apart from the accounts' rows.
+        // Marks the groups' and subtotals' rows so the stylesheet can set them apart from the accounts' rows, and gives
+        // the accounts' rows a context menu.
         setRowFactory {
             object : TableRow<AccountListRow>() {
+                // Edits the account in the row. The row reuses it for whichever account it shows.
+                private val accountContextMenu = ContextMenu(
+                    MenuItem(strings.getString("account_settings_menu_item_title")).apply {
+                        setOnAction {
+                            (item as? AccountListRow.AccountRow)?.let {
+                                viewModel.onAccountSettingsClick(it.account)
+                            }
+                        }
+                    }
+                )
+
                 override fun updateItem(item: AccountListRow?, empty: Boolean) {
                     super.updateItem(item, empty)
                     pseudoClassStateChanged(GROUP_PSEUDO_CLASS, item is AccountListRow.GroupRow)
                     pseudoClassStateChanged(SUBTOTAL_PSEUDO_CLASS, item is AccountListRow.SubtotalRow)
+                    contextMenu = if (item is AccountListRow.AccountRow) accountContextMenu else null
                 }
             }
         }

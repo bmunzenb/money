@@ -193,22 +193,33 @@ class AccountListViewModelTest {
     }
 
     @Test
-    fun `onAddAccountClick pushes the new account route`() = runTest {
+    fun `onNewAccountClick pushes the new account route`() = runTest {
         every { getAccountGroups(any(), any()) } returns emptyFlow()
         navigator.navigate { clear(); add(Route.AccountList) }
 
-        viewModel().onAddAccountClick()
+        viewModel().onNewAccountClick()
 
         assertEquals(listOf(Route.AccountList, Route.NewAccount), navigator.backStack.value)
     }
 
     @Test
-    fun `onAccountClick pushes the edit account route for the account`() = runTest {
+    fun `onAccountClick pushes the transaction list route for the account`() = runTest {
         every { getAccountGroups(any(), any()) } returns emptyFlow()
         navigator.navigate { clear(); add(Route.AccountList) }
         val account = account("Checking")
 
         viewModel().onAccountClick(account)
+
+        assertEquals(listOf(Route.AccountList, Route.TransactionList(account.id)), navigator.backStack.value)
+    }
+
+    @Test
+    fun `onAccountSettingsClick pushes the account settings route for the account`() = runTest {
+        every { getAccountGroups(any(), any()) } returns emptyFlow()
+        navigator.navigate { clear(); add(Route.AccountList) }
+        val account = account("Checking")
+
+        viewModel().onAccountSettingsClick(account)
 
         assertEquals(listOf(Route.AccountList, Route.AccountSettings(account.id)), navigator.backStack.value)
     }
