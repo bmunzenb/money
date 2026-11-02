@@ -33,6 +33,7 @@ import javafx.scene.control.TableCell
 import javafx.scene.control.TableColumn
 import javafx.scene.control.TableRow
 import javafx.scene.control.TableView
+import javafx.scene.input.KeyCode
 import javafx.scene.input.MouseButton
 import javafx.scene.layout.HBox
 import javafx.scene.layout.Priority
@@ -158,6 +159,15 @@ class AccountListScreen(scope: ScreenScope) : VBox(Spacing.CONTROL_SPACING), Koi
                         (item as? AccountListRow.AccountRow)?.account?.isClosed == true,
                     )
                     contextMenu = if (item is AccountListRow.AccountRow) accountContextMenu else null
+                }
+            }
+        }
+        // Opens the selected account on Enter, as a double click does.
+        setOnKeyPressed { event ->
+            if (event.code == KeyCode.ENTER) {
+                (selectionModel.selectedItem as? AccountListRow.AccountRow)?.let {
+                    viewModel.onAccountClick(it.account)
+                    event.consume()
                 }
             }
         }
