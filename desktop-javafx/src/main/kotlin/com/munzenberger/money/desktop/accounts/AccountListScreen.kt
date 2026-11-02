@@ -125,8 +125,9 @@ class AccountListScreen(scope: ScreenScope) : VBox(Spacing.CONTROL_SPACING), Koi
         setVgrow(this, Priority.ALWAYS)
         columnResizePolicy = TableView.CONSTRAINED_RESIZE_POLICY_LAST_COLUMN
         columns.setAll(nameColumn, numberColumn, balanceColumn)
-        // Marks the groups' and subtotals' rows so the stylesheet can set them apart from the accounts' rows, and gives
-        // the accounts' rows a context menu and opens their account on a double-click.
+        // Marks the groups' and subtotals' rows so the stylesheet can set them apart from the accounts' rows, and the
+        // closed accounts' rows so it can dim them. Gives the accounts' rows a context menu and opens their account on a
+        // double click.
         setRowFactory {
             object : TableRow<AccountListRow>() {
                 // Edits the account in the row. The row reuses it for whichever account it shows.
@@ -152,6 +153,10 @@ class AccountListScreen(scope: ScreenScope) : VBox(Spacing.CONTROL_SPACING), Koi
                     super.updateItem(item, empty)
                     pseudoClassStateChanged(GROUP_PSEUDO_CLASS, item is AccountListRow.GroupRow)
                     pseudoClassStateChanged(SUBTOTAL_PSEUDO_CLASS, item is AccountListRow.SubtotalRow)
+                    pseudoClassStateChanged(
+                        CLOSED_PSEUDO_CLASS,
+                        (item as? AccountListRow.AccountRow)?.account?.isClosed == true,
+                    )
                     contextMenu = if (item is AccountListRow.AccountRow) accountContextMenu else null
                 }
             }
@@ -283,6 +288,7 @@ class AccountListScreen(scope: ScreenScope) : VBox(Spacing.CONTROL_SPACING), Koi
         val COLUMN_LAYOUT_KEY = columnLayoutKey("account.list.columns")
         val GROUP_PSEUDO_CLASS: PseudoClass = PseudoClass.getPseudoClass("group")
         val SUBTOTAL_PSEUDO_CLASS: PseudoClass = PseudoClass.getPseudoClass("subtotal")
+        val CLOSED_PSEUDO_CLASS: PseudoClass = PseudoClass.getPseudoClass("closed")
     }
 }
 
