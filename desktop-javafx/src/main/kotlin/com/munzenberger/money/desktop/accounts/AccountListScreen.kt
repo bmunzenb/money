@@ -126,8 +126,8 @@ class AccountListScreen(scope: ScreenScope) : VBox(Spacing.CONTROL_SPACING), Koi
         columnResizePolicy = TableView.CONSTRAINED_RESIZE_POLICY_LAST_COLUMN
         columns.setAll(nameColumn, numberColumn, balanceColumn)
         // Marks the groups' and subtotals' rows so the stylesheet can set them apart from the accounts' rows, and the
-        // closed accounts' rows so it can dim them. Gives the accounts' rows a context menu and opens their account on a
-        // double click.
+        // closed accounts' rows so it can dim them. Gives the accounts' rows a context menu and opens their account on
+        // a double click.
         setRowFactory {
             object : TableRow<AccountListRow>() {
                 // Edits the account in the row. The row reuses it for whichever account it shows.
