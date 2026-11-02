@@ -5,7 +5,7 @@ import com.munzenberger.money.core.demo.PopulateDemoDataUseCase
 import com.munzenberger.money.core.resultFlow
 import com.munzenberger.money.data.api.MoneyRepository
 import com.munzenberger.money.data.api.MoneyRepositoryConnectionStatus
-import com.munzenberger.money.data.api.MoneyRepositoryConnector
+import com.munzenberger.money.data.api.MoneyRepositoryConnectorFactory
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
@@ -22,8 +22,7 @@ import java.nio.file.Files
 import kotlin.coroutines.CoroutineContext
 
 class MoneyRepositoryController(
-    private val fileConnectorFactory: (File) -> MoneyRepositoryConnector,
-    private val demoConnectorFactory: () -> MoneyRepositoryConnector,
+    private val connectorFactory: MoneyRepositoryConnectorFactory,
     private val populateDemoData: PopulateDemoDataUseCase,
     private val context: CoroutineContext = Dispatchers.IO,
 ) {
@@ -39,11 +38,11 @@ class MoneyRepositoryController(
         } catch (e: IOException) {
             return@connect MoneyRepositoryConnectionStatus.Failed(e)
         }
-        fileConnectorFactory(file).create()
+        connectorFactory.file(file).create()
     }
 
     suspend fun openDatabase(file: File): MoneyRepositoryConnectionStatus = connect {
-        fileConnectorFactory(file).connect()
+        connectorFactory.file(file).connect()
     }
 
     /**
@@ -52,7 +51,7 @@ class MoneyRepositoryController(
      * [MoneyRepositoryConnectionStatus.Failed].
      */
     suspend fun openDemo(): MoneyRepositoryConnectionStatus = connect {
-        val status = demoConnectorFactory().create()
+        val status = connectorFactory.inMemory().create()
         if (status is MoneyRepositoryConnectionStatus.Ready) populateDemo(status) else status
     }
 

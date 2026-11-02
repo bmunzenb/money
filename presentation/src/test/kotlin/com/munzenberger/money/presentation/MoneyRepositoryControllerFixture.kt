@@ -4,7 +4,8 @@ import com.munzenberger.money.core.demo.PopulateDemoDataUseCase
 import com.munzenberger.money.data.api.MoneyRepository
 import com.munzenberger.money.data.api.MoneyRepositoryConnectionStatus
 import com.munzenberger.money.data.api.MoneyRepositoryConnector
-import com.munzenberger.money.data.sql.SqlMoneyRepositoryConnector
+import com.munzenberger.money.data.api.MoneyRepositoryConnectorFactory
+import com.munzenberger.money.data.sql.SqlMoneyRepositoryConnectorFactory
 import com.munzenberger.money.presentation.database.MoneyRepositoryController
 import java.io.File
 import kotlin.coroutines.EmptyCoroutineContext
@@ -16,12 +17,13 @@ import kotlin.coroutines.EmptyCoroutineContext
 class MoneyRepositoryControllerFixture {
 
     private val repositories = mutableMapOf<File, MoneyRepository>()
+    private val sqlConnectorFactory = SqlMoneyRepositoryConnectorFactory(EmptyCoroutineContext)
 
     val controller = MoneyRepositoryController(
-        fileConnectorFactory = { file ->
-            repositories[file]?.let(::StubConnector) ?: SqlMoneyRepositoryConnector(file)
+        connectorFactory = object : MoneyRepositoryConnectorFactory by sqlConnectorFactory {
+            override fun file(file: File) =
+                repositories[file]?.let(::StubConnector) ?: sqlConnectorFactory.file(file)
         },
-        demoConnectorFactory = { SqlMoneyRepositoryConnector.inMemory(EmptyCoroutineContext) },
         populateDemoData = PopulateDemoDataUseCase(),
         context = EmptyCoroutineContext,
     )

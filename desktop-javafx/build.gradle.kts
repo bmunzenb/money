@@ -8,6 +8,7 @@ plugins {
 
 dependencies {
     implementation(projects.presentation)
+    implementation(projects.dataSql)
 
     implementation(libs.kotlinx.coroutinesJavafx)
     implementation(libs.ikonli.javafx)

@@ -7,6 +7,7 @@ import com.munzenberger.money.data.api.MoneyRepository
 import com.munzenberger.money.presentation.MoneyRepositoryControllerFixture
 import com.munzenberger.money.data.api.MoneyRepositoryConnectionStatus
 import com.munzenberger.money.data.api.MoneyRepositoryConnector
+import com.munzenberger.money.data.api.MoneyRepositoryConnectorFactory
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk
@@ -66,8 +67,10 @@ class MoneyRepositoryControllerTest {
     private fun controller(vararg connectors: MoneyRepositoryConnector): MoneyRepositoryController {
         val remaining = ArrayDeque(connectors.toList())
         return MoneyRepositoryController(
-            fileConnectorFactory = { remaining.removeFirst() },
-            demoConnectorFactory = { remaining.removeFirst() },
+            connectorFactory = object : MoneyRepositoryConnectorFactory {
+                override fun file(file: File) = remaining.removeFirst()
+                override fun inMemory() = remaining.removeFirst()
+            },
             populateDemoData = populateDemoData,
             context = EmptyCoroutineContext,
         )
