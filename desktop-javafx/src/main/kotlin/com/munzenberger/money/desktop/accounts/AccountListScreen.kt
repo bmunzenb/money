@@ -194,14 +194,14 @@ class AccountListScreen(scope: ScreenScope) : VBox(Spacing.CONTROL_SPACING), Koi
         children.setAll(Label(strings.getString("total_balance_label")))
     }
 
+    // The groups last shown in the table, so a state that changes only the grouping doesn't rebuild the rows.
+    private var renderedGroups: List<AccountGroup>? = null
+
     init {
         padding = Insets(Spacing.SCREEN_PADDING)
         children.setAll(heading, controls, accountTable, totalBalance)
         scope.collect(viewModel.state, ::render)
     }
-
-    // The groups last shown in the table, so a state that changes only the grouping doesn't rebuild the rows.
-    private var renderedGroups: List<AccountGroup>? = null
 
     private fun render(state: AccountListUiState) {
         groupingComboBox.value = state.grouping
