@@ -186,8 +186,10 @@ class SqlRegisterRepository(
         } + transfers.map { it.toRegisterRow() }
 
         var balance = initialBalance
+        // Rows written in the same millisecond tie on created, so the id breaks the tie and keeps the order, and
+        // the running balance, the same every time.
         return rows
-            .sortedWith(compareBy<RegisterRow>({ it.date }, { it.created }))
+            .sortedWith(compareBy({ it.date }, { it.created }, { it.id }))
             .map { row ->
                 balance += row.amount
                 row.toEntry(balance)
@@ -201,6 +203,7 @@ class SqlRegisterRepository(
 
     /** A register entry before its balance is known. */
     private class RegisterRow(
+        val id: Uuid,
         val date: LocalDate,
         val created: Long,
         val amount: Money,
@@ -220,6 +223,7 @@ class SqlRegisterRepository(
         fun toRegisterRow(entries: List<RegisterEntry.Transaction.Entry>): RegisterRow {
             val amount = entries.fold(Money(0)) { sum, entry -> sum + entry.amount }
             return RegisterRow(
+                id = transactionId,
                 date = date,
                 created = created,
                 amount = amount,
@@ -261,6 +265,7 @@ class SqlRegisterRepository(
         val accountName: String,
     ) {
         fun toRegisterRow() = RegisterRow(
+            id = transferEntryId.id,
             date = date,
             created = created,
             amount = amount,

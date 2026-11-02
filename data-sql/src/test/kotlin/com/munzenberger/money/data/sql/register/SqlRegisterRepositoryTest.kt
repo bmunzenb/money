@@ -17,6 +17,7 @@ import com.munzenberger.money.data.api.payee.Payee
 import com.munzenberger.money.data.api.register.RegisterEntry
 import com.munzenberger.money.data.api.transaction.CategoryEntry
 import com.munzenberger.money.data.api.transaction.Transaction
+import com.munzenberger.money.data.api.transaction.TransactionId
 import com.munzenberger.money.data.api.transaction.TransactionStatus
 import com.munzenberger.money.data.api.transaction.TransactionStatusConstant
 import com.munzenberger.money.data.api.transaction.TransactionStatusId
@@ -70,18 +71,27 @@ class SqlRegisterRepositoryTest {
         override fun now(): Instant = Instant.fromEpochMilliseconds(millis++)
     }
 
-    private class Fixture(val database: MoneyDatabase, val dispatcher: CoroutineDispatcher) {
+    /** Always returns the same instant, so every transaction is created in the same millisecond. */
+    private object FixedClock : Clock {
+        override fun now(): Instant = Instant.fromEpochMilliseconds(1_700_000_000_000)
+    }
+
+    private class Fixture(
+        val database: MoneyDatabase,
+        val dispatcher: CoroutineDispatcher,
+        clock: Clock = SteppingClock(),
+    ) {
         val accounts = SqlAccountRepository(database, dispatcher)
         val payees = SqlPayeeRepository(database, dispatcher)
         val categories = SqlCategoryRepository(database, dispatcher)
-        val transactions = SqlTransactionRepository(database, dispatcher, SteppingClock())
+        val transactions = SqlTransactionRepository(database, dispatcher, clock)
         val categoryEntries = SqlCategoryEntryRepository(database, dispatcher)
         val transferEntries = SqlTransferEntryRepository(database, dispatcher)
         val repository = SqlRegisterRepository(database, dispatcher)
     }
 
-    private fun TestScope.createFixture(): Fixture =
-        Fixture(createTestDatabase(), UnconfinedTestDispatcher(testScheduler))
+    private fun TestScope.createFixture(clock: Clock = SteppingClock()): Fixture =
+        Fixture(createTestDatabase(), UnconfinedTestDispatcher(testScheduler), clock)
 
     private fun Fixture.createAccount(name: String = "Checking", initialBalance: Money = Money(0)): Account =
         Account(name = name, accountType = checking, initialBalance = initialBalance).also { accounts.add(it) }
@@ -91,6 +101,7 @@ class SqlRegisterRepositoryTest {
 
     private fun Fixture.createTransaction(
         account: Account,
+        id: TransactionId = TransactionId(),
         date: LocalDate = LocalDate(2024, 1, 15),
         payee: Payee? = null,
         number: String? = null,
@@ -98,6 +109,7 @@ class SqlRegisterRepositoryTest {
         status: TransactionStatus = unreconciled,
     ): Transaction =
         Transaction(
+            id = id,
             accountId = account.id,
             payeeId = payee?.id,
             date = date,
@@ -343,6 +355,27 @@ class SqlRegisterRepositoryTest {
             listOf(Money(1200), Money(1150), Money(1450), Money(1050)),
             register.map { it.balance },
         )
+    }
+
+    @Test
+    fun `entries created in the same millisecond on the same date are ordered by id`() = runTest {
+        val fixture = createFixture(clock = FixedClock)
+        val account = fixture.createAccount()
+        val category = fixture.createCategory("Misc")
+        val (lowerId, higherId) = List(2) { TransactionId() }.sortedBy { it.value }
+
+        // Added in the reverse of id order, so the order they're read back in doesn't decide it.
+        val higher = fixture.createTransaction(account, id = higherId)
+        fixture.addCategoryEntry(higher, category, amount = -50)
+        val lower = fixture.createTransaction(account, id = lowerId)
+        fixture.addCategoryEntry(lower, category, amount = 200)
+
+        val register = fixture.register(account)
+        assertEquals(
+            listOf(lowerId, higherId),
+            register.map { (it as RegisterEntry.Transaction).transactionId },
+        )
+        assertEquals(listOf(Money(200), Money(150)), register.map { it.balance })
     }
 
     @Test
