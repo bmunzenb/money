@@ -33,8 +33,11 @@ import com.munzenberger.money.data.sql.transaction.SqlTransferEntryRepository
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.toList
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
+import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import kotlinx.datetime.LocalDate
 import kotlin.test.Test
@@ -411,5 +414,24 @@ class SqlRegisterRepositoryTest {
         val entry = flow.first().single() as RegisterEntry.Transaction
         assertEquals("Market", entry.payeeName)
         assertEquals("Food", (entry.entries.single() as RegisterEntry.Transaction.Entry.Category).categoryName)
+    }
+
+    @Test
+    fun `register never emits a transaction without the entries written with it`() = runTest {
+        val fixture = createFixture()
+        val account = fixture.createAccount(initialBalance = Money(1000))
+        val category = fixture.createCategory("Groceries")
+        val emissions = mutableListOf<List<RegisterEntry>>()
+        backgroundScope.launch(fixture.dispatcher) {
+            fixture.repository.registerEntriesForAccount(account.id).toList(emissions)
+        }
+
+        fixture.database.transaction {
+            val transaction = fixture.createTransaction(account)
+            fixture.addCategoryEntry(transaction, category, amount = -100)
+        }
+        advanceUntilIdle()
+
+        assertEquals(listOf(emptyList(), listOf(Money(900))), emissions.map { it.map(RegisterEntry::balance) })
     }
 }
