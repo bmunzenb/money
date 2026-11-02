@@ -13,8 +13,12 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import java.io.File
+import java.io.IOException
+import java.nio.file.Files
 import kotlin.coroutines.CoroutineContext
 
 class MoneyRepositoryController(
@@ -26,17 +30,20 @@ class MoneyRepositoryController(
     private val moneyRepositoryFlow = MutableStateFlow<MoneyRepository?>(null)
     val moneyRepository = moneyRepositoryFlow.asStateFlow()
 
-    suspend fun createDatabase(file: File): MoneyRepositoryConnectionStatus = withContext(context) {
-        close()
-        if (file.exists()) {
-            file.delete()
+    // Lets one open or create run at a time, so overlapping calls can't each publish a repository and leak one.
+    private val mutex = Mutex()
+
+    suspend fun createDatabase(file: File): MoneyRepositoryConnectionStatus = connect {
+        try {
+            Files.deleteIfExists(file.toPath())
+        } catch (e: IOException) {
+            return@connect MoneyRepositoryConnectionStatus.Failed(e)
         }
-        fileConnectorFactory(file).create().also { applyConnectionStatus(it) }
+        fileConnectorFactory(file).create()
     }
 
-    suspend fun openDatabase(file: File): MoneyRepositoryConnectionStatus = withContext(context) {
-        close()
-        fileConnectorFactory(file).connect().also { applyConnectionStatus(it) }
+    suspend fun openDatabase(file: File): MoneyRepositoryConnectionStatus = connect {
+        fileConnectorFactory(file).connect()
     }
 
     /**
@@ -44,17 +51,36 @@ class MoneyRepositoryController(
      * repository is only published once its demo data is written; if that fails, it's closed and the result is
      * [MoneyRepositoryConnectionStatus.Failed].
      */
-    suspend fun openDemo(): MoneyRepositoryConnectionStatus = withContext(context) {
-        close()
+    suspend fun openDemo(): MoneyRepositoryConnectionStatus = connect {
         val status = demoConnectorFactory().create()
-        if (status is MoneyRepositoryConnectionStatus.Ready) {
+        if (status is MoneyRepositoryConnectionStatus.Ready) populateDemo(status) else status
+    }
+
+    // Closes the repository if its demo data isn't written, including when populating throws or is cancelled.
+    private suspend fun populateDemo(
+        status: MoneyRepositoryConnectionStatus.Ready,
+    ): MoneyRepositoryConnectionStatus {
+        var populated = false
+        try {
             val result = populateDemoData(status.moneyRepository)
             if (result is PopulateDemoDataResult.Failure) {
-                status.moneyRepository.close()
-                return@withContext MoneyRepositoryConnectionStatus.Failed(result.cause)
+                return MoneyRepositoryConnectionStatus.Failed(result.cause)
             }
+            populated = true
+            return status
+        } finally {
+            if (!populated) status.moneyRepository.close()
         }
-        status.also { applyConnectionStatus(it) }
+    }
+
+    // Closes the open repository, then publishes the one [open] returns if it's ready.
+    private suspend fun connect(
+        open: suspend () -> MoneyRepositoryConnectionStatus,
+    ): MoneyRepositoryConnectionStatus = withContext(context) {
+        mutex.withLock {
+            close()
+            open().also { applyConnectionStatus(it) }
+        }
     }
 
     fun close() {
