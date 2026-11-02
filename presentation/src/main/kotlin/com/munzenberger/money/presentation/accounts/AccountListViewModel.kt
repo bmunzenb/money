@@ -41,7 +41,10 @@ class AccountListViewModel(
         initialValue = AccountListUiState(grouping = grouping.value),
     )
 
+    // The screen reports the grouping it shows from the state, so the grouping it already has is ignored rather than
+    // saved again.
     fun onGroupingChange(grouping: AccountGrouping) {
+        if (grouping == this.grouping.value) return
         this.grouping.value = grouping
         preferences.accountGrouping = grouping
     }
