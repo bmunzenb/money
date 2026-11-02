@@ -33,6 +33,7 @@ import javafx.scene.control.TableCell
 import javafx.scene.control.TableColumn
 import javafx.scene.control.TableRow
 import javafx.scene.control.TableView
+import javafx.scene.input.KeyCode
 import javafx.scene.input.MouseButton
 import javafx.scene.layout.HBox
 import javafx.scene.layout.Priority
@@ -161,6 +162,15 @@ class AccountListScreen(scope: ScreenScope) : VBox(Spacing.CONTROL_SPACING), Koi
                 }
             }
         }
+        // Opens the selected account on Enter, as a double click does.
+        setOnKeyPressed { event ->
+            if (event.code == KeyCode.ENTER) {
+                (selectionModel.selectedItem as? AccountListRow.AccountRow)?.let {
+                    viewModel.onAccountClick(it.account)
+                    event.consume()
+                }
+            }
+        }
         saveColumnLayout(preferences, COLUMN_LAYOUT_KEY)
         // Sorts the groups, and the accounts in each group, by the sorted columns, keeping each group's row first and
         // its subtotal's row last. Account type and account class groups stay in the order of their constants instead.
@@ -194,14 +204,14 @@ class AccountListScreen(scope: ScreenScope) : VBox(Spacing.CONTROL_SPACING), Koi
         children.setAll(Label(strings.getString("total_balance_label")))
     }
 
+    // The groups last shown in the table, so a state that changes only the grouping doesn't rebuild the rows.
+    private var renderedGroups: List<AccountGroup>? = null
+
     init {
         padding = Insets(Spacing.SCREEN_PADDING)
         children.setAll(heading, controls, accountTable, totalBalance)
         scope.collect(viewModel.state, ::render)
     }
-
-    // The groups last shown in the table, so a state that changes only the grouping doesn't rebuild the rows.
-    private var renderedGroups: List<AccountGroup>? = null
 
     private fun render(state: AccountListUiState) {
         groupingComboBox.value = state.grouping

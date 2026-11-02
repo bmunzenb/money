@@ -54,7 +54,8 @@ class AccountListViewModelTest {
     private val navigator = Navigator()
     private val repository = mockk<MoneyRepository>()
     private val getAccountGroups = mockk<GetAccountGroupsUseCase>()
-    private val preferences = UserPreferences(InMemoryPreferences())
+    private val preferencesNode = InMemoryPreferences()
+    private val preferences = UserPreferences(preferencesNode)
 
     private val accountType = AccountType(
         id = AccountTypeId(1),
@@ -118,6 +119,15 @@ class AccountListViewModelTest {
         viewModel().onGroupingChange(AccountGrouping.AccountClass)
 
         assertEquals(AccountGrouping.AccountClass, preferences.accountGrouping)
+    }
+
+    @Test
+    fun `onGroupingChange doesn't save the current grouping`() = runTest {
+        every { getAccountGroups(any(), any()) } returns emptyFlow()
+
+        viewModel().onGroupingChange(AccountGrouping.None)
+
+        assertEquals(emptyList(), preferencesNode.keys().toList())
     }
 
     @Test
