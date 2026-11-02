@@ -10,6 +10,14 @@
 }
 
 /*
+ * Dims the account list's closed accounts' rows. It dims the cells rather than the row, so the row's background and
+ * selection keep their color, and it dims the account name's link too.
+ */
+.table-row-cell:closed > .table-cell {
+    -fx-opacity: 0.5;
+}
+
+/*
  * Modena's selected row colors, repeated here since this stylesheet overrides Modena's regardless of specificity, so
  * the group rows' color above would hide the selection. These are more specific than it, so they win within this file.
  */
