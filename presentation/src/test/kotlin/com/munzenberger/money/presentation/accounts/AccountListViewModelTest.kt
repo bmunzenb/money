@@ -20,16 +20,35 @@ import com.munzenberger.money.presentation.preferences.UserPreferences
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.test.StandardTestDispatcher
+import kotlinx.coroutines.test.resetMain
+import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
+import kotlinx.coroutines.test.setMain
+import kotlin.test.AfterTest
+import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
+@OptIn(ExperimentalCoroutinesApi::class)
 class AccountListViewModelTest {
+
+    @BeforeTest
+    fun setUp() {
+        Dispatchers.setMain(StandardTestDispatcher())
+    }
+
+    @AfterTest
+    fun tearDown() {
+        Dispatchers.resetMain()
+    }
 
     private val fixture = MoneyRepositoryControllerFixture()
     private val navigator = Navigator()
@@ -54,6 +73,7 @@ class AccountListViewModelTest {
     fun `state stays loading while no repository is open`() = runTest {
         AccountListViewModel(fixture.controller, getAccountGroups, navigator, preferences).state.test {
             assertEquals(AccountListUiState(groups = LoadState.Loading), awaitItem())
+            runCurrent()
             expectNoEvents()
         }
 
@@ -66,6 +86,7 @@ class AccountListViewModelTest {
 
         viewModel().state.test {
             assertEquals(AccountListUiState(grouping = AccountGrouping.None, groups = LoadState.Loading), awaitItem())
+            runCurrent()
         }
 
         verify(exactly = 1) { getAccountGroups(repository, any()) }
@@ -155,6 +176,7 @@ class AccountListViewModelTest {
 
             // The new grouping may show over the old groups until they're regrouped.
             viewModel.onGroupingChange(AccountGrouping.AccountType)
+            runCurrent()
             assertEquals(
                 AccountListUiState(grouping = AccountGrouping.AccountType, groups = LoadState.Loaded(byType)),
                 expectMostRecentItem(),
