@@ -3,6 +3,7 @@ package com.munzenberger.money.desktop
 import com.munzenberger.money.desktop.navigation.ScreenScope
 import com.munzenberger.money.desktop.preferences.WindowBounds
 import com.munzenberger.money.desktop.preferences.windowBounds
+import com.munzenberger.money.presentation.database.MoneyRepositoryController
 import com.munzenberger.money.presentation.preferences.UserPreferences
 import javafx.animation.Animation
 import javafx.animation.PauseTransition
@@ -17,6 +18,7 @@ import org.koin.core.component.inject
 
 class MoneyApplication : Application(), KoinComponent {
     private val preferences: UserPreferences by inject()
+    private val repositoryController: MoneyRepositoryController by inject()
 
     // Holds AppScreen's app-lifetime ViewModels.
     private val appScope = ScreenScope()
@@ -43,6 +45,8 @@ class MoneyApplication : Application(), KoinComponent {
     override fun stop() {
         appScreen.close()
         appScope.close()
+        // After the screens are closed, so AppViewModel doesn't navigate to Welcome as the database closes.
+        repositoryController.close()
 
         if (saveBoundsDelay.status == Animation.Status.RUNNING) {
             saveBoundsDelay.stop()
