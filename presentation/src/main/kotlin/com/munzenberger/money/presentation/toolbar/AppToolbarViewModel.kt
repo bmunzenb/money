@@ -21,9 +21,8 @@ class AppToolbarViewModel(
             initialValue = uiState(navigator.backStack.value),
         )
 
-    // Never pops the last route, so there's always a screen to show.
     fun onBackClick() {
-        navigator.navigate { if (size > 1) removeAt(lastIndex) }
+        navigator.back()
     }
 
     private fun uiState(backStack: List<Route>) = AppToolbarUiState(canNavigateBack = backStack.size > 1)

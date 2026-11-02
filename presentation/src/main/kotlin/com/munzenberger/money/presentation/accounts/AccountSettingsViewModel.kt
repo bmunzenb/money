@@ -16,6 +16,7 @@ import com.munzenberger.money.data.api.bank.Bank
 import com.munzenberger.money.presentation.database.MoneyRepositoryController
 import com.munzenberger.money.presentation.database.resultFlow
 import com.munzenberger.money.presentation.navigation.Navigator
+import com.munzenberger.money.presentation.navigation.Route
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -24,18 +25,24 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 /**
- * The account form. With an [accountId], it edits that account, starting from its saved values; without
- * one, it adds a new account.
+ * The account form, shown at [route]. For [Route.AccountSettings], it edits that account, starting from its saved
+ * values; for [Route.NewAccount], it adds a new account.
  */
 // One handler per field, so the function count grows with the form.
 @Suppress("TooManyFunctions")
 class AccountSettingsViewModel(
-    private val accountId: AccountId?,
+    // This screen's route, so going back only pops this screen, even if a save finishes after the user has left it.
+    private val route: Route.AccountFormRoute,
     private val repositoryController: MoneyRepositoryController,
     private val navigator: Navigator,
     private val createAccount: CreateAccountUseCase,
     private val updateAccount: UpdateAccountUseCase,
 ) : ViewModel() {
+
+    private val accountId: AccountId? = when (route) {
+        Route.NewAccount -> null
+        is Route.AccountSettings -> route.accountId
+    }
 
     private val _state = MutableStateFlow(
         AccountSettingsUiState(
@@ -153,7 +160,7 @@ class AccountSettingsViewModel(
                 updateAccount(repository, accountId, input, current.isClosed)
             }
             when (result) {
-                is SaveAccountResult.Success -> navigator.navigate { removeLast() }
+                is SaveAccountResult.Success -> navigator.back(from = route)
                 is SaveAccountResult.Invalid -> _state.update {
                     it.copy(
                         isNameError = AccountInputError.BlankName in result.errors,
@@ -168,7 +175,7 @@ class AccountSettingsViewModel(
     }
 
     fun onBackClick() {
-        navigator.navigate { removeLast() }
+        navigator.back(from = route)
     }
 }
 

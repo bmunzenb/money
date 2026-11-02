@@ -59,9 +59,12 @@ stack, publishes it, and updates `currentRoute` to its new top, so both `backSta
 navigator.navigate { add(Route.AccountList) }
 // or, to replace the stack rather than push onto it:
 navigator.navigate { clear(); add(Route.AccountList) }
-// back:
-navigator.navigate { removeLast() }
 ```
+
+To go back, call `navigator.back(from = route)` with the screen's own route: it pops only that route, so a screen
+that goes back after the user has left it (such as when a save finishes) doesn't pop another screen, and it never
+pops the last route. `navigator.back()` pops whatever is on top, for back actions not tied to a screen, like the
+toolbar's.
 
 Reading `navigator.backStack.value` is fine, but prefer `currentRoute` when you only need the top route.
 
