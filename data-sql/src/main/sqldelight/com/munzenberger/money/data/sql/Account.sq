@@ -39,3 +39,29 @@ UPDATE Account SET name = ?, number = ?, account_type_id = ?, bank_id = ?, initi
 
 deleteById:
 DELETE FROM Account WHERE id = ?;
+
+-- The account's initial balance, plus the category and transfer entries of its own transactions, minus the
+-- transfer entries of other accounts' transactions that move money into or out of it (a transfer entry's
+-- amount is from its parent transaction's account's view). No row when the account doesn't exist.
+selectBalance:
+SELECT
+    Account.initial_balance
+    + (
+        SELECT coalesce(sum(CategoryEntry.amount), 0)
+        FROM CategoryEntry
+        JOIN "Transaction" AS t ON CategoryEntry.transaction_id = t.id
+        WHERE t.account_id = Account.id
+    )
+    + (
+        SELECT coalesce(sum(TransferEntry.amount), 0)
+        FROM TransferEntry
+        JOIN "Transaction" AS t ON TransferEntry.transaction_id = t.id
+        WHERE t.account_id = Account.id
+    )
+    - (
+        SELECT coalesce(sum(TransferEntry.amount), 0)
+        FROM TransferEntry
+        WHERE TransferEntry.account_id = Account.id
+    ) AS balance
+FROM Account
+WHERE Account.id = ?;

@@ -2,6 +2,7 @@ package com.munzenberger.money.data.sql.account
 
 import app.cash.sqldelight.coroutines.asFlow
 import app.cash.sqldelight.coroutines.mapToList
+import app.cash.sqldelight.coroutines.mapToOneNotNull
 import com.munzenberger.money.data.api.Money
 import com.munzenberger.money.data.api.account.Account
 import com.munzenberger.money.data.api.account.AccountClass
@@ -18,6 +19,7 @@ import com.munzenberger.money.data.sql.MoneyDatabase
 import com.munzenberger.money.data.sql.requireOneRow
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 import kotlin.coroutines.CoroutineContext
 
 class SqlAccountRepository(
@@ -50,6 +52,17 @@ class SqlAccountRepository(
         }
         .asFlow()
         .mapToList(context)
+
+    /**
+     * Emits the balance of [accountId]: its initial balance plus the entries of its own transactions, minus
+     * the transfer entries of other accounts' transactions that move money into or out of it. Emits nothing
+     * while the account doesn't exist.
+     */
+    override fun accountBalance(accountId: AccountId): Flow<Money> = database.accountQueries
+        .selectBalance(accountId.value)
+        .asFlow()
+        .mapToOneNotNull(context)
+        .map { Money(it) }
 
     override fun add(account: Account) {
         database.accountQueries.insert(
