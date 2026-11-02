@@ -51,8 +51,8 @@ class AccountSettingsViewModelTest {
     private val createAccount = mockk<CreateAccountUseCase>()
     private val updateAccount = mockk<UpdateAccountUseCase>()
 
-    private fun viewModel(accountId: AccountId? = null) =
-        AccountSettingsViewModel(accountId, fixture.controller, navigator, createAccount, updateAccount)
+    private fun viewModel(route: Route.AccountFormRoute = Route.NewAccount) =
+        AccountSettingsViewModel(route, fixture.controller, navigator, createAccount, updateAccount)
 
     private val assets = AccountClass(id = AccountClassId(1), value = AccountClassConstant.Assets)
     private val savings = AccountType(id = AccountTypeId(1), accountClass = assets, value = AccountTypeConstant.Savings)
@@ -501,6 +501,21 @@ class AccountSettingsViewModelTest {
     }
 
     @Test
+    fun `a save that finishes after leaving the screen doesn't pop another screen`() = runTest {
+        val result = CompletableDeferred<SaveAccountResult>()
+        coEvery { createAccount(any(), any()) } coAnswers { result.await() }
+        navigator.navigate { clear(); add(Route.AccountList); add(Route.NewAccount) }
+        fixture.connect(repository())
+        val viewModel = viewModel()
+
+        viewModel.onSaveClick()
+        navigator.navigate { clear(); add(Route.CategoryList) }
+        result.complete(SaveAccountResult.Success(Account(name = "Checking", accountType = checking)))
+
+        assertEquals(listOf(Route.CategoryList), navigator.backStack.value)
+    }
+
+    @Test
     fun `a failed save can be retried`() = runTest {
         coEvery { createAccount(any(), any()) } returns SaveAccountResult.Failure(IllegalStateException("write failed"))
         fixture.connect(repository())
@@ -524,7 +539,7 @@ class AccountSettingsViewModelTest {
 
     @Test
     fun `an existing account is loading until a repository is connected`() {
-        val viewModel = viewModel(existingAccount.id)
+        val viewModel = viewModel(Route.AccountSettings(existingAccount.id))
 
         assertEquals(LoadState.Loading, viewModel.state.value.existingAccount)
         assertTrue(viewModel.state.value.isEditing)
@@ -533,7 +548,7 @@ class AccountSettingsViewModelTest {
 
     @Test
     fun `an existing account fills in the form`() = runTest {
-        val viewModel = viewModel(existingAccount.id)
+        val viewModel = viewModel(Route.AccountSettings(existingAccount.id))
 
         fixture.connect(
             repository(
@@ -559,7 +574,7 @@ class AccountSettingsViewModelTest {
     @Test
     fun `a closed existing account fills in the form as closed`() = runTest {
         val account = existingAccount.copy(isClosed = true)
-        val viewModel = viewModel(account.id)
+        val viewModel = viewModel(Route.AccountSettings(account.id))
 
         fixture.connect(repository(banks = flowOf(listOf(firstBank)), accounts = flowOf(listOf(account))))
 
@@ -569,7 +584,7 @@ class AccountSettingsViewModelTest {
     @Test
     fun `an existing account without optional values fills them in blank`() = runTest {
         val account = Account(name = "Cash", accountType = savings)
-        val viewModel = viewModel(account.id)
+        val viewModel = viewModel(Route.AccountSettings(account.id))
 
         fixture.connect(repository(accounts = flowOf(listOf(account))))
 
@@ -583,7 +598,7 @@ class AccountSettingsViewModelTest {
 
     @Test
     fun `an existing account is an error when it isn't found`() = runTest {
-        val viewModel = viewModel(AccountId())
+        val viewModel = viewModel(Route.AccountSettings(AccountId()))
 
         fixture.connect(repository(accounts = flowOf(listOf(existingAccount))))
 
@@ -593,7 +608,7 @@ class AccountSettingsViewModelTest {
 
     @Test
     fun `an existing account is an error when the accounts can't be loaded`() = runTest {
-        val viewModel = viewModel(existingAccount.id)
+        val viewModel = viewModel(Route.AccountSettings(existingAccount.id))
 
         fixture.connect(repository(accounts = failingFlow()))
 
@@ -602,7 +617,7 @@ class AccountSettingsViewModelTest {
 
     @Test
     fun `an existing account is an error when the banks can't be loaded`() = runTest {
-        val viewModel = viewModel(existingAccount.id)
+        val viewModel = viewModel(Route.AccountSettings(existingAccount.id))
 
         fixture.connect(repository(banks = failingFlow(), accounts = flowOf(listOf(existingAccount))))
 
@@ -612,7 +627,7 @@ class AccountSettingsViewModelTest {
     @Test
     fun `later changes to an existing account don't overwrite the form`() = runTest {
         val accounts = MutableStateFlow(listOf(existingAccount))
-        val viewModel = viewModel(existingAccount.id)
+        val viewModel = viewModel(Route.AccountSettings(existingAccount.id))
         fixture.connect(repository(banks = flowOf(listOf(firstBank)), accounts = accounts))
         viewModel.onNameChange("Household")
 
@@ -623,7 +638,7 @@ class AccountSettingsViewModelTest {
 
     @Test
     fun `onSaveClick is ignored until an existing account is loaded`() {
-        val viewModel = viewModel(existingAccount.id)
+        val viewModel = viewModel(Route.AccountSettings(existingAccount.id))
 
         viewModel.onSaveClick()
 
@@ -635,7 +650,7 @@ class AccountSettingsViewModelTest {
     fun `saving an existing account updates it with the form's values`() = runTest {
         coEvery { updateAccount(any(), any(), any(), any()) } returns SaveAccountResult.Success(existingAccount)
         navigator.navigate { clear(); add(Route.AccountList); add(Route.AccountSettings(existingAccount.id)) }
-        val viewModel = viewModel(existingAccount.id)
+        val viewModel = viewModel(Route.AccountSettings(existingAccount.id))
         fixture.connect(
             repository(
                 accountTypes = flowOf(listOf(checking)),
@@ -669,7 +684,7 @@ class AccountSettingsViewModelTest {
 
     @Test
     fun `onIsClosedChange updates whether the account is closed`() = runTest {
-        val viewModel = viewModel(existingAccount.id)
+        val viewModel = viewModel(Route.AccountSettings(existingAccount.id))
         fixture.connect(repository(banks = flowOf(listOf(firstBank)), accounts = flowOf(listOf(existingAccount))))
 
         viewModel.onIsClosedChange(true)
@@ -682,7 +697,7 @@ class AccountSettingsViewModelTest {
     @Test
     fun `saving a closed existing account updates it as closed`() = runTest {
         coEvery { updateAccount(any(), any(), any(), any()) } returns SaveAccountResult.Success(existingAccount)
-        val viewModel = viewModel(existingAccount.id)
+        val viewModel = viewModel(Route.AccountSettings(existingAccount.id))
         fixture.connect(repository(banks = flowOf(listOf(firstBank)), accounts = flowOf(listOf(existingAccount))))
         viewModel.onIsClosedChange(true)
 
@@ -700,7 +715,7 @@ class AccountSettingsViewModelTest {
     fun `invalid fields are marked as errors when saving an existing account`() = runTest {
         coEvery { updateAccount(any(), any(), any(), any()) } returns
             SaveAccountResult.Invalid(setOf(AccountInputError.BlankName))
-        val viewModel = viewModel(existingAccount.id)
+        val viewModel = viewModel(Route.AccountSettings(existingAccount.id))
         fixture.connect(repository(banks = flowOf(listOf(firstBank)), accounts = flowOf(listOf(existingAccount))))
         viewModel.onNameChange("")
 

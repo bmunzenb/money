@@ -11,11 +11,15 @@ sealed interface Route {
     @Serializable
     data object AccountList : Route
 
+    /** A route to the account form: [NewAccount] adds an account, and [AccountSettings] edits one. */
     @Serializable
-    data object NewAccount : Route
+    sealed interface AccountFormRoute : Route
 
     @Serializable
-    data class AccountSettings(val accountId: AccountId) : Route
+    data object NewAccount : AccountFormRoute
+
+    @Serializable
+    data class AccountSettings(val accountId: AccountId) : AccountFormRoute
 
     @Serializable
     data object CategoryList : Route

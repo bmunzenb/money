@@ -1,6 +1,5 @@
 package com.munzenberger.money.desktop.accounts
 
-import com.munzenberger.money.data.api.account.AccountId
 import com.munzenberger.money.data.api.account.AccountType
 import com.munzenberger.money.desktop.components.AutoCompleteComboBox
 import com.munzenberger.money.desktop.components.ScreenHeading
@@ -14,6 +13,7 @@ import com.munzenberger.money.presentation.accounts.AccountSettingsViewModel
 import com.munzenberger.money.presentation.accounts.LoadState
 import com.munzenberger.money.presentation.accounts.SaveState
 import com.munzenberger.money.presentation.accounts.loadedOrEmpty
+import com.munzenberger.money.presentation.navigation.Route
 import javafx.css.PseudoClass
 import javafx.geometry.Insets
 import javafx.geometry.Pos
@@ -39,12 +39,14 @@ import javafx.scene.layout.VBox
 import javafx.util.StringConverter
 import org.koin.core.parameter.parametersOf
 
-/** Adds a new account, or edits the account with [accountId] if there is one. */
-class AccountSettingsScreen(scope: ScreenScope, accountId: AccountId?) : VBox(Spacing.CONTROL_SPACING) {
-    private val viewModel: AccountSettingsViewModel = scope.viewModel { parametersOf(accountId) }
+/** Adds a new account at [Route.NewAccount], or edits an existing one at [Route.AccountSettings]. */
+class AccountSettingsScreen(scope: ScreenScope, route: Route.AccountFormRoute) : VBox(Spacing.CONTROL_SPACING) {
+    private val viewModel: AccountSettingsViewModel = scope.viewModel { parametersOf(route) }
+
+    private val isExistingAccount = route is Route.AccountSettings
 
     private val heading = ScreenHeading(
-        strings.getString(if (accountId == null) "new_account_title" else "account_settings_title")
+        strings.getString(if (isExistingAccount) "account_settings_title" else "new_account_title")
     )
 
     private val nameField = TextField().apply {
@@ -131,7 +133,7 @@ class AccountSettingsScreen(scope: ScreenScope, accountId: AccountId?) : VBox(Sp
         )
         // A new account is always open, so it can only be closed once it exists. The row is left out rather than
         // hidden, since the grid would still put a gap around an empty row.
-        if (accountId != null) {
+        if (isExistingAccount) {
             add(closedCheckBox, 1, rowCount)
         }
         addSection("balance_and_reference_section_title")

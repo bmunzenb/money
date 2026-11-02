@@ -1,8 +1,7 @@
 package com.munzenberger.money.data.sql.register
 
+import app.cash.sqldelight.Query
 import app.cash.sqldelight.coroutines.asFlow
-import app.cash.sqldelight.coroutines.mapToList
-import app.cash.sqldelight.coroutines.mapToOneOrNull
 import com.munzenberger.money.data.api.Money
 import com.munzenberger.money.data.api.account.AccountId
 import com.munzenberger.money.data.api.category.CategoryId
@@ -18,7 +17,11 @@ import com.munzenberger.money.data.api.transaction.TransferEntryId
 import com.munzenberger.money.data.sql.MoneyDatabase
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.conflate
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.merge
+import kotlinx.coroutines.withContext
 import kotlinx.datetime.LocalDate
 import kotlin.coroutines.CoroutineContext
 import kotlin.uuid.Uuid
@@ -36,29 +39,45 @@ class SqlRegisterRepository(
     private val context: CoroutineContext = Dispatchers.IO,
 ) : RegisterRepository {
 
+    // Each query only signals a change, and every change rereads all of them in one transaction. Combining
+    // their separate flows instead would emit as each one rereads, such as a new transaction before its entries.
     override fun registerEntriesForAccount(accountId: AccountId): Flow<List<RegisterEntry>> {
         val id = accountId.value
-        return combine(
-            database.registerQueries.selectInitialBalance(id).asFlow().mapToOneOrNull(context),
-            transactionRows(id),
-            categoryEntryRows(id),
-            transferEntryRows(id),
-            transferRows(id),
-        ) { initialBalance, transactions, categoryEntries, transferEntries, transfers ->
+        return merge(
+            initialBalance(id).asFlow(),
+            transactionRows(id).asFlow(),
+            categoryEntryRows(id).asFlow(),
+            transferEntryRows(id).asFlow(),
+            transferRows(id).asFlow(),
+        )
+            // A commit that changes several of the queries signals each of them; signals that arrive during a
+            // reread are conflated into one more reread, and identical results are dropped.
+            .conflate()
+            .map { readRegister(id) }
+            .distinctUntilChanged()
+    }
+
+    private suspend fun readRegister(accountId: Uuid): List<RegisterEntry> = withContext(context) {
+        database.transactionWithResult {
+            val initialBalance = initialBalance(accountId).executeAsOneOrNull()
             if (initialBalance == null) {
                 emptyList()
             } else {
                 buildRegister(
                     initialBalance = Money(initialBalance),
-                    transactions = transactions,
-                    entries = categoryEntries + transferEntries,
-                    transfers = transfers,
+                    transactions = transactionRows(accountId).executeAsList(),
+                    entries = categoryEntryRows(accountId).executeAsList() +
+                        transferEntryRows(accountId).executeAsList(),
+                    transfers = transferRows(accountId).executeAsList(),
                 )
             }
         }
     }
 
-    private fun transactionRows(accountId: Uuid): Flow<List<TransactionRow>> =
+    private fun initialBalance(accountId: Uuid): Query<Long> =
+        database.registerQueries.selectInitialBalance(accountId)
+
+    private fun transactionRows(accountId: Uuid): Query<TransactionRow> =
         database.registerQueries
             .selectTransactions(accountId) {
                 transactionId,
@@ -82,10 +101,8 @@ class SqlRegisterRepository(
                     status = transactionStatus(statusId, statusValue),
                 )
             }
-            .asFlow()
-            .mapToList(context)
 
-    private fun categoryEntryRows(accountId: Uuid): Flow<List<EntryRow>> =
+    private fun categoryEntryRows(accountId: Uuid): Query<EntryRow> =
         database.registerQueries
             .selectCategoryEntries(accountId) {
                 categoryEntryId,
@@ -110,10 +127,8 @@ class SqlRegisterRepository(
                     ),
                 )
             }
-            .asFlow()
-            .mapToList(context)
 
-    private fun transferEntryRows(accountId: Uuid): Flow<List<EntryRow>> =
+    private fun transferEntryRows(accountId: Uuid): Query<EntryRow> =
         database.registerQueries
             .selectTransferEntries(accountId) {
                 transferEntryId,
@@ -134,10 +149,8 @@ class SqlRegisterRepository(
                     ),
                 )
             }
-            .asFlow()
-            .mapToList(context)
 
-    private fun transferRows(accountId: Uuid): Flow<List<TransferRow>> =
+    private fun transferRows(accountId: Uuid): Query<TransferRow> =
         database.registerQueries
             .selectTransfers(accountId) {
                 transferEntryId,
@@ -168,8 +181,6 @@ class SqlRegisterRepository(
                     accountName = accountName,
                 )
             }
-            .asFlow()
-            .mapToList(context)
 
     private fun buildRegister(
         initialBalance: Money,
@@ -186,8 +197,10 @@ class SqlRegisterRepository(
         } + transfers.map { it.toRegisterRow() }
 
         var balance = initialBalance
+        // Rows written in the same millisecond tie on created, so the id breaks the tie and keeps the order, and
+        // the running balance, the same every time.
         return rows
-            .sortedWith(compareBy<RegisterRow>({ it.date }, { it.created }))
+            .sortedWith(compareBy({ it.date }, { it.created }, { it.id }))
             .map { row ->
                 balance += row.amount
                 row.toEntry(balance)
@@ -201,6 +214,7 @@ class SqlRegisterRepository(
 
     /** A register entry before its balance is known. */
     private class RegisterRow(
+        val id: Uuid,
         val date: LocalDate,
         val created: Long,
         val amount: Money,
@@ -220,6 +234,7 @@ class SqlRegisterRepository(
         fun toRegisterRow(entries: List<RegisterEntry.Transaction.Entry>): RegisterRow {
             val amount = entries.fold(Money(0)) { sum, entry -> sum + entry.amount }
             return RegisterRow(
+                id = transactionId,
                 date = date,
                 created = created,
                 amount = amount,
@@ -261,6 +276,7 @@ class SqlRegisterRepository(
         val accountName: String,
     ) {
         fun toRegisterRow() = RegisterRow(
+            id = transferEntryId.id,
             date = date,
             created = created,
             amount = amount,

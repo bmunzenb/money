@@ -11,21 +11,31 @@ import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk
 import io.mockk.verify
+import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.joinAll
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import java.io.File
+import java.io.IOException
+import java.nio.file.Files
 import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.test.AfterTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
+import kotlin.test.assertIs
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertSame
 import kotlin.test.assertTrue
 
+@OptIn(ExperimentalCoroutinesApi::class)
 class MoneyRepositoryControllerTest {
 
     private val file = File("money-test.db")
@@ -162,6 +172,47 @@ class MoneyRepositoryControllerTest {
     }
 
     @Test
+    fun testCreateDatabaseFailsWithoutCreatingWhenExistingFileCantBeDeleted() = runTest {
+        // A directory that isn't empty can't be deleted.
+        val directory = Files.createTempDirectory("money-test").toFile()
+        val child = File(directory, "child").apply { createNewFile() }
+        tempFiles += listOf(child, directory)
+        val connector = connector(MoneyRepositoryConnectionStatus.Ready(mockk()))
+        val controller = controller(connector)
+
+        val status = controller.createDatabase(directory)
+
+        assertIs<IOException>(assertIs<MoneyRepositoryConnectionStatus.Failed>(status).error)
+        coVerify(exactly = 0) { connector.create() }
+        assertNull(controller.moneyRepository.value)
+    }
+
+    @Test
+    fun testOverlappingOpensCloseTheFirstRepository() = runTest {
+        val first = mockk<MoneyRepository>(relaxUnitFun = true)
+        val second = mockk<MoneyRepository>()
+        val firstConnected = CompletableDeferred<Unit>()
+        val slowConnector = mockk<MoneyRepositoryConnector> {
+            coEvery { connect() } coAnswers {
+                firstConnected.await()
+                MoneyRepositoryConnectionStatus.Ready(first)
+            }
+        }
+        val controller = controller(slowConnector, connector(MoneyRepositoryConnectionStatus.Ready(second)))
+
+        val opens = listOf(
+            launch { controller.openDatabase(file) },
+            launch { controller.openDatabase(file) },
+        )
+        runCurrent()
+        firstConnected.complete(Unit)
+        opens.joinAll()
+
+        verify(exactly = 1) { first.close() }
+        assertSame(second, controller.moneyRepository.value)
+    }
+
+    @Test
     fun testOpenDemoCreatesDatabaseAndSetsRepositoryWhenReady() = runTest {
         val repository = mockk<MoneyRepository>()
         val connector = connector(MoneyRepositoryConnectionStatus.Ready(repository))
@@ -213,6 +264,18 @@ class MoneyRepositoryControllerTest {
         val status = controller.openDemo()
 
         assertEquals(MoneyRepositoryConnectionStatus.Failed(error), status)
+        verify(exactly = 1) { repository.close() }
+        assertNull(controller.moneyRepository.value)
+    }
+
+    @Test
+    fun testOpenDemoClosesRepositoryWhenPopulatingThrows() = runTest {
+        val repository = mockk<MoneyRepository>(relaxUnitFun = true)
+        coEvery { populateDemoData(repository) } throws IllegalStateException("unexpected")
+        val controller = controller(connector(MoneyRepositoryConnectionStatus.Ready(repository)))
+
+        assertFailsWith<IllegalStateException> { controller.openDemo() }
+
         verify(exactly = 1) { repository.close() }
         assertNull(controller.moneyRepository.value)
     }
