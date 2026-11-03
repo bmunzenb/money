@@ -12,7 +12,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlin.coroutines.CoroutineContext
 
-class SqlBankRepository(
+internal class SqlBankRepository(
     private val database: MoneyDatabase,
     private val context: CoroutineContext = Dispatchers.IO,
 ) : BankRepository, BankWriter {

@@ -26,7 +26,7 @@ sealed class SqlMoneyRepositoryConnector(
     protected abstract val action: String
 
     /** Builds a repository on [driver]. */
-    protected abstract fun repository(driver: SqlDriver): SqlMoneyRepository
+    internal abstract fun repository(driver: SqlDriver): SqlMoneyRepository
 
     private fun openDriver(): SqlDriver =
         LogSqliteDriver(
@@ -56,7 +56,7 @@ sealed class SqlMoneyRepositoryConnector(
     }
 
     /** Creates the schema on [driver] and builds a repository on it. */
-    protected fun createRepository(driver: SqlDriver): SqlMoneyRepository {
+    internal fun createRepository(driver: SqlDriver): SqlMoneyRepository {
         val database = createMoneyDatabase(driver)
         // In one transaction, so a failure partway through doesn't leave a partial schema behind.
         database.transaction { MoneyDatabase.Schema.create(driver) }

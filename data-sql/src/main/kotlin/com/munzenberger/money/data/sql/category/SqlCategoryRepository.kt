@@ -5,9 +5,6 @@ import app.cash.sqldelight.coroutines.mapToList
 import com.munzenberger.money.data.api.category.Category
 import com.munzenberger.money.data.api.category.CategoryId
 import com.munzenberger.money.data.api.category.CategoryRepository
-import com.munzenberger.money.data.api.category.CategoryType
-import com.munzenberger.money.data.api.category.CategoryTypeConstant
-import com.munzenberger.money.data.api.category.CategoryTypeId
 import com.munzenberger.money.data.api.category.CategoryWriter
 import com.munzenberger.money.data.sql.MoneyDatabase
 import com.munzenberger.money.data.sql.requireOneRow
@@ -15,7 +12,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlin.coroutines.CoroutineContext
 
-class SqlCategoryRepository(
+internal class SqlCategoryRepository(
     private val database: MoneyDatabase,
     private val context: CoroutineContext = Dispatchers.IO,
 ) : CategoryRepository, CategoryWriter {
@@ -26,10 +23,7 @@ class SqlCategoryRepository(
                 id = CategoryId(id),
                 name = name,
                 parentId = parentId?.let { CategoryId(it) },
-                type = CategoryType(
-                    id = CategoryTypeId(typeId),
-                    value = CategoryTypeConstant.valueOf(typeValue),
-                ),
+                type = categoryType(typeId, typeValue),
                 memo = memo,
             )
         }

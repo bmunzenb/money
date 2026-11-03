@@ -7,9 +7,6 @@ import com.munzenberger.money.data.api.payee.PayeeId
 import com.munzenberger.money.data.api.transaction.Transaction
 import com.munzenberger.money.data.api.transaction.TransactionId
 import com.munzenberger.money.data.api.transaction.TransactionRepository
-import com.munzenberger.money.data.api.transaction.TransactionStatus
-import com.munzenberger.money.data.api.transaction.TransactionStatusConstant
-import com.munzenberger.money.data.api.transaction.TransactionStatusId
 import com.munzenberger.money.data.api.transaction.TransactionWriter
 import com.munzenberger.money.data.sql.MoneyDatabase
 import com.munzenberger.money.data.sql.requireOneRow
@@ -19,7 +16,7 @@ import kotlinx.datetime.LocalDate
 import kotlin.coroutines.CoroutineContext
 import kotlin.time.Clock
 
-class SqlTransactionRepository(
+internal class SqlTransactionRepository(
     private val database: MoneyDatabase,
     private val context: CoroutineContext = Dispatchers.IO,
     private val clock: Clock = Clock.System,
@@ -44,10 +41,7 @@ class SqlTransactionRepository(
                     date = LocalDate.fromEpochDays(date),
                     number = number,
                     memo = memo,
-                    status = TransactionStatus(
-                        id = TransactionStatusId(statusId),
-                        value = TransactionStatusConstant.valueOf(statusValue),
-                    ),
+                    status = transactionStatus(statusId, statusValue),
                 )
             }
             .asFlow()

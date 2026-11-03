@@ -5,14 +5,8 @@ import app.cash.sqldelight.coroutines.mapToList
 import app.cash.sqldelight.coroutines.mapToOneNotNull
 import com.munzenberger.money.data.api.Money
 import com.munzenberger.money.data.api.account.Account
-import com.munzenberger.money.data.api.account.AccountClass
-import com.munzenberger.money.data.api.account.AccountClassConstant
-import com.munzenberger.money.data.api.account.AccountClassId
 import com.munzenberger.money.data.api.account.AccountId
 import com.munzenberger.money.data.api.account.AccountRepository
-import com.munzenberger.money.data.api.account.AccountType
-import com.munzenberger.money.data.api.account.AccountTypeConstant
-import com.munzenberger.money.data.api.account.AccountTypeId
 import com.munzenberger.money.data.api.account.AccountWriter
 import com.munzenberger.money.data.api.bank.BankId
 import com.munzenberger.money.data.sql.MoneyDatabase
@@ -22,7 +16,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlin.coroutines.CoroutineContext
 
-class SqlAccountRepository(
+internal class SqlAccountRepository(
     private val database: MoneyDatabase,
     private val context: CoroutineContext = Dispatchers.IO,
 ) : AccountRepository, AccountWriter {
@@ -36,14 +30,7 @@ class SqlAccountRepository(
                 id = AccountId(id),
                 name = name,
                 number = number,
-                accountType = AccountType(
-                    id = AccountTypeId(typeId),
-                    accountClass = AccountClass(
-                        id = AccountClassId(typeClassId),
-                        value = AccountClassConstant.valueOf(typeClassValue),
-                    ),
-                    value = AccountTypeConstant.valueOf(typeValue),
-                ),
+                accountType = accountType(typeId, typeValue, typeClassId, typeClassValue),
                 bankId = bankId?.let { BankId(it) },
                 initialBalance = Money(initialBalance),
                 memo = memo,

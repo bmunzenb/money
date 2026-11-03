@@ -23,18 +23,10 @@ import com.munzenberger.money.data.api.transaction.TransactionStatusRepository
 import com.munzenberger.money.data.api.transaction.TransactionWriter
 import com.munzenberger.money.data.api.transaction.TransferEntryRepository
 import com.munzenberger.money.data.api.transaction.TransferEntryWriter
-import com.munzenberger.money.data.sql.account.SqlAccountRepository
 import com.munzenberger.money.data.sql.account.SqlAccountTypeRepository
-import com.munzenberger.money.data.sql.account.SqlStatementRepository
-import com.munzenberger.money.data.sql.bank.SqlBankRepository
-import com.munzenberger.money.data.sql.category.SqlCategoryRepository
 import com.munzenberger.money.data.sql.category.SqlCategoryTypeRepository
-import com.munzenberger.money.data.sql.payee.SqlPayeeRepository
 import com.munzenberger.money.data.sql.register.SqlRegisterRepository
-import com.munzenberger.money.data.sql.transaction.SqlCategoryEntryRepository
-import com.munzenberger.money.data.sql.transaction.SqlTransactionRepository
 import com.munzenberger.money.data.sql.transaction.SqlTransactionStatusRepository
-import com.munzenberger.money.data.sql.transaction.SqlTransferEntryRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.util.logging.Logger
@@ -42,7 +34,7 @@ import kotlin.coroutines.CoroutineContext
 
 private val logger = Logger.getLogger(SqlMoneyRepository::class.java.name)
 
-class SqlMoneyRepository private constructor(
+internal class SqlMoneyRepository private constructor(
     private val name: String,
     private val driver: SqlDriver,
     private val database: MoneyDatabase,
@@ -88,16 +80,4 @@ class SqlMoneyRepository private constructor(
         logger.info("Closing database: $name")
         driver.close()
     }
-}
-
-/** The repositories that both read and write, shared by [SqlMoneyRepository]'s reads and its writer. */
-internal class SqlTableRepositories(database: MoneyDatabase, context: CoroutineContext) {
-    val accounts = SqlAccountRepository(database, context)
-    val statements = SqlStatementRepository(database, context)
-    val banks = SqlBankRepository(database, context)
-    val categories = SqlCategoryRepository(database, context)
-    val payees = SqlPayeeRepository(database, context)
-    val categoryEntries = SqlCategoryEntryRepository(database, context)
-    val transactions = SqlTransactionRepository(database, context)
-    val transferEntries = SqlTransferEntryRepository(database, context)
 }

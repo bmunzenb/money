@@ -11,10 +11,9 @@ import com.munzenberger.money.data.api.register.RegisterRepository
 import com.munzenberger.money.data.api.transaction.CategoryEntryId
 import com.munzenberger.money.data.api.transaction.TransactionId
 import com.munzenberger.money.data.api.transaction.TransactionStatus
-import com.munzenberger.money.data.api.transaction.TransactionStatusConstant
-import com.munzenberger.money.data.api.transaction.TransactionStatusId
 import com.munzenberger.money.data.api.transaction.TransferEntryId
 import com.munzenberger.money.data.sql.MoneyDatabase
+import com.munzenberger.money.data.sql.transaction.transactionStatus
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.conflate
@@ -34,7 +33,7 @@ import kotlin.uuid.Uuid
  * parent transaction's date and created time). Each entry's balance is the account's initial balance
  * plus the amounts of every entry up to and including it.
  */
-class SqlRegisterRepository(
+internal class SqlRegisterRepository(
     private val database: MoneyDatabase,
     private val context: CoroutineContext = Dispatchers.IO,
 ) : RegisterRepository {
@@ -206,11 +205,6 @@ class SqlRegisterRepository(
                 row.toEntry(balance)
             }
     }
-
-    private fun transactionStatus(id: Long, value: String) = TransactionStatus(
-        id = TransactionStatusId(id),
-        value = TransactionStatusConstant.valueOf(value),
-    )
 
     /** A register entry before its balance is known. */
     private class RegisterRow(
