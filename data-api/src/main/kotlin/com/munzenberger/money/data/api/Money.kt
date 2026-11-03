@@ -69,6 +69,7 @@ data class Money(
          * it in whole fractional units (e.g. cents for USD).
          *
          * @throws NumberFormatException if [value] isn't entirely a number in [locale]'s format.
+         * @throws ArithmeticException if the amount is too large to fit in a [Money].
          */
         fun parse(
             value: String,
@@ -93,6 +94,24 @@ data class Money(
 
             return Money(units, currency)
         }
+
+        /**
+         * Parses [value] like [parse], or returns null if it isn't a valid amount or is too large to fit
+         * in a [Money].
+         */
+        fun parseOrNull(
+            value: String,
+            currency: Currency = DEFAULT_CURRENCY,
+            locale: Locale = Locale.getDefault(),
+        ): Money? =
+            try {
+                parse(value, currency, locale)
+            } catch (_: NumberFormatException) {
+                null
+            } catch (_: ArithmeticException) {
+                // Too large to fit in a Money.
+                null
+            }
     }
 }
 

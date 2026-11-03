@@ -72,6 +72,28 @@ class MoneyTest {
     }
 
     @Test
+    fun parseThrowsOnOverflow() {
+        assertFailsWith<ArithmeticException> { Money.parse("100000000000000000000", usd, Locale.US) }
+    }
+
+    @Test
+    fun parseOrNullParsesValidInput() {
+        assertEquals(Money(123456, usd), Money.parseOrNull("1,234.56", usd, Locale.US))
+    }
+
+    @Test
+    fun parseOrNullReturnsNullForInvalidInput() {
+        listOf("", "abc", "12abc", "1.2.3").forEach { input ->
+            assertEquals(null, Money.parseOrNull(input, usd, Locale.US), input)
+        }
+    }
+
+    @Test
+    fun parseOrNullReturnsNullOnOverflow() {
+        assertEquals(null, Money.parseOrNull("100000000000000000000", usd, Locale.US))
+    }
+
+    @Test
     fun toStringFormatsAsCurrency() {
         assertEquals("$1,234.56", Money(123456, usd).toString(Locale.US))
         assertEquals("-$12.34", Money(-1234, usd).toString(Locale.US))

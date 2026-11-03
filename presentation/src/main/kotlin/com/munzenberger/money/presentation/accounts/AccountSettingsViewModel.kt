@@ -7,7 +7,6 @@ import com.munzenberger.money.core.account.AccountInputError
 import com.munzenberger.money.core.account.CreateAccountUseCase
 import com.munzenberger.money.core.account.SaveAccountResult
 import com.munzenberger.money.core.account.UpdateAccountUseCase
-import com.munzenberger.money.core.account.parseInitialBalance
 import com.munzenberger.money.data.api.Money
 import com.munzenberger.money.data.api.account.Account
 import com.munzenberger.money.data.api.account.AccountId
@@ -116,14 +115,15 @@ class AccountSettingsViewModel(
             // Clear the error as soon as the text becomes valid, but don't show one while still typing.
             it.copy(
                 initialBalance = initialBalance,
-                isInitialBalanceError = it.isInitialBalanceError && parseInitialBalance(initialBalance) == null,
+                isInitialBalanceError = it.isInitialBalanceError &&
+                    initialBalance.isNotBlank() && Money.parseOrNull(initialBalance) == null,
             )
         }
     }
 
     fun onInitialBalanceFocusLost() {
         _state.update {
-            val money = parseInitialBalance(it.initialBalance)
+            val money = Money.parseOrNull(it.initialBalance)
             when {
                 it.initialBalance.isBlank() -> it.copy(initialBalance = "", isInitialBalanceError = false)
                 money == null -> it.copy(isInitialBalanceError = true)

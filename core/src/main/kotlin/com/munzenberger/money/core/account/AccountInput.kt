@@ -1,6 +1,5 @@
 package com.munzenberger.money.core.account
 
-import com.munzenberger.money.data.api.Money
 import com.munzenberger.money.data.api.account.AccountType
 import com.munzenberger.money.data.api.bank.Bank
 
@@ -25,20 +24,3 @@ enum class AccountInputError {
     InvalidInitialBalance,
 }
 
-/**
- * The amount in [initialBalance], formatted for the default locale; zero if it's blank, or null if it
- * isn't a valid amount.
- */
-fun parseInitialBalance(initialBalance: String): Money? =
-    if (initialBalance.isBlank()) {
-        Money(0)
-    } else {
-        try {
-            Money.parse(initialBalance)
-        } catch (_: NumberFormatException) {
-            null
-        } catch (_: ArithmeticException) {
-            // Too large to fit in a Money.
-            null
-        }
-    }

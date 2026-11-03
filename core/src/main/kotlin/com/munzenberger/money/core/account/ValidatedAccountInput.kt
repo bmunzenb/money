@@ -1,5 +1,6 @@
 package com.munzenberger.money.core.account
 
+import com.munzenberger.money.data.api.Money
 import com.munzenberger.money.data.api.account.Account
 import com.munzenberger.money.data.api.account.AccountId
 import com.munzenberger.money.data.api.bank.Bank
@@ -49,3 +50,10 @@ internal fun AccountInput.validate(accountId: AccountId, isClosed: Boolean): Val
 
     return ValidatedAccountInput.Valid(account, newBank)
 }
+
+/**
+ * The amount in [initialBalance], parsed for the default locale; zero if it's blank, or null if it isn't a
+ * valid amount.
+ */
+private fun parseInitialBalance(initialBalance: String): Money? =
+    if (initialBalance.isBlank()) Money(0) else Money.parseOrNull(initialBalance)
