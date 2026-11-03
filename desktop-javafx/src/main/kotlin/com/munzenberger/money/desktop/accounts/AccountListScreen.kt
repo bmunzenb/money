@@ -98,7 +98,7 @@ class AccountListScreen(scope: ScreenScope) : VBox(Spacing.CONTROL_SPACING), Koi
         titleKey = "balance_column_title",
         subtotalValue = { strings.getString("subtotal_label") }
     ).apply {
-        style = "-fx-alignment: CENTER-RIGHT;"
+        styleClass += "amount-column"
     }
 
     // The table's placeholder while the groups load.
@@ -200,7 +200,7 @@ class AccountListScreen(scope: ScreenScope) : VBox(Spacing.CONTROL_SPACING), Koi
     // the label until the total balance is available. Its labels inherit the bold font.
     private val totalBalance = HBox(Spacing.CONTROL_SPACING).apply {
         alignment = Pos.CENTER_RIGHT
-        style = "-fx-font-weight: bold;"
+        styleClass += "total-balance"
         children.setAll(Label(strings.getString("total_balance_label")))
     }
 
