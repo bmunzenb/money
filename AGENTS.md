@@ -12,8 +12,8 @@ feature subpackages: `com.munzenberger.money.presentation.<feature>` in `present
 `com.munzenberger.money.desktop.<feature>` in `desktop-javafx`. Keep UI-toolkit types out of `presentation`: it
 depends only on the plain `lifecycle-viewmodel` and `koin-core-viewmodel`, and UI modules declare their own
 toolkit dependencies. `presentation` also doesn't depend on a data implementation (only on `data-api`, through
-`core`): the app module depends on `data-sql` and binds its `MoneyRepositoryConnectorFactory` in Koin
-(`desktop-javafx`'s `Main.kt`), which `MoneyRepositoryController` uses to open databases. UI state carries plain values (e.g. an enum such as `WelcomeError`) that the UI module maps
+`core`): the app module depends on `data-sql` and binds a `MoneyRepositoryConnectorFactory` built from its connectors in Koin
+(`dataModule` in `desktop-javafx`'s `inject/DataModule.kt`), which `MoneyRepositoryController` uses to open databases. UI state carries plain values (e.g. an enum such as `WelcomeError`) that the UI module maps
 to its own strings, rather than string resources.
 
 ## Navigation

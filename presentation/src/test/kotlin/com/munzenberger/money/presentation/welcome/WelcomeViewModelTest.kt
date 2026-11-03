@@ -3,7 +3,7 @@ package com.munzenberger.money.presentation.welcome
 import app.cash.turbine.test
 import com.munzenberger.money.data.api.MoneyRepository
 import com.munzenberger.money.data.api.MoneyRepositoryConnectionStatus
-import com.munzenberger.money.data.sql.SqlMoneyRepositoryConnector
+import com.munzenberger.money.data.sql.NewFileSqlMoneyRepositoryConnector
 import com.munzenberger.money.presentation.MoneyRepositoryControllerFixture
 import com.munzenberger.money.presentation.database.MoneyRepositoryController
 import io.mockk.coEvery
@@ -75,7 +75,7 @@ class WelcomeViewModelTest {
     @Test
     fun `state stays loading after a database is opened successfully`() = runTest {
         val file = createTempFile()
-        val created = SqlMoneyRepositoryConnector(file).create()
+        val created = NewFileSqlMoneyRepositoryConnector(file).connect()
         check(created is MoneyRepositoryConnectionStatus.Ready)
         created.moneyRepository.close()
 
@@ -232,7 +232,7 @@ class WelcomeViewModelTest {
     @Test
     fun `connects to an existing database when it is opened`() = runTest {
         val file = createTempFile()
-        val created = SqlMoneyRepositoryConnector(file).create()
+        val created = NewFileSqlMoneyRepositoryConnector(file).connect()
         check(created is MoneyRepositoryConnectionStatus.Ready)
         created.moneyRepository.close()
 
@@ -250,7 +250,7 @@ class WelcomeViewModelTest {
     @Test
     fun `closes any open repository before opening a database`() = runTest {
         val file = createTempFile()
-        val created = SqlMoneyRepositoryConnector(file).create()
+        val created = NewFileSqlMoneyRepositoryConnector(file).connect()
         check(created is MoneyRepositoryConnectionStatus.Ready)
         created.moneyRepository.close()
 

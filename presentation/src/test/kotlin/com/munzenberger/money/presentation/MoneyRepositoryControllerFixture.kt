@@ -4,8 +4,10 @@ import com.munzenberger.money.core.demo.PopulateDemoDataUseCase
 import com.munzenberger.money.data.api.MoneyRepository
 import com.munzenberger.money.data.api.MoneyRepositoryConnectionStatus
 import com.munzenberger.money.data.api.MoneyRepositoryConnector
-import com.munzenberger.money.data.api.MoneyRepositoryConnectorFactory
-import com.munzenberger.money.data.sql.SqlMoneyRepositoryConnectorFactory
+import com.munzenberger.money.data.sql.ExistingFileSqlMoneyRepositoryConnector
+import com.munzenberger.money.data.sql.InMemorySqlMoneyRepositoryConnector
+import com.munzenberger.money.data.sql.NewFileSqlMoneyRepositoryConnector
+import com.munzenberger.money.presentation.database.MoneyRepositoryConnectorFactory
 import com.munzenberger.money.presentation.database.MoneyRepositoryController
 import java.io.File
 import kotlin.coroutines.EmptyCoroutineContext
@@ -17,12 +19,16 @@ import kotlin.coroutines.EmptyCoroutineContext
 class MoneyRepositoryControllerFixture {
 
     private val repositories = mutableMapOf<File, MoneyRepository>()
-    private val sqlConnectorFactory = SqlMoneyRepositoryConnectorFactory(EmptyCoroutineContext)
 
     val controller = MoneyRepositoryController(
-        connectorFactory = object : MoneyRepositoryConnectorFactory by sqlConnectorFactory {
-            override fun file(file: File) =
-                repositories[file]?.let(::StubConnector) ?: sqlConnectorFactory.file(file)
+        connectorFactory = object : MoneyRepositoryConnectorFactory {
+            override fun create(file: File) = NewFileSqlMoneyRepositoryConnector(file, EmptyCoroutineContext)
+
+            override fun open(file: File) =
+                repositories[file]?.let(::StubConnector)
+                    ?: ExistingFileSqlMoneyRepositoryConnector(file, EmptyCoroutineContext)
+
+            override fun createInMemory() = InMemorySqlMoneyRepositoryConnector(EmptyCoroutineContext)
         },
         populateDemoData = PopulateDemoDataUseCase(),
         context = EmptyCoroutineContext,
@@ -35,7 +41,6 @@ class MoneyRepositoryControllerFixture {
     }
 
     private class StubConnector(private val repository: MoneyRepository) : MoneyRepositoryConnector {
-        override suspend fun create() = MoneyRepositoryConnectionStatus.Ready(repository)
         override suspend fun connect() = MoneyRepositoryConnectionStatus.Ready(repository)
     }
 }
