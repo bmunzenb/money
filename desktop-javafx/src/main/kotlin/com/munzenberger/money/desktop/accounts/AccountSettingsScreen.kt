@@ -195,7 +195,8 @@ class AccountSettingsScreen(scope: ScreenScope, route: Route.AccountFormRoute) :
     // Shown in place of the form while the account being edited loads.
     private val loadingProgress = ProgressIndicator()
 
-    private val loadError = Label(strings.getString("account_load_error_message"))
+    // Shown in place of the form when the account being edited fails to load.
+    private val loadError = errorLabel("account_load_error_message")
 
     private val content = StackPane(form, loadingProgress, loadError).apply {
         alignment = Pos.TOP_LEFT
