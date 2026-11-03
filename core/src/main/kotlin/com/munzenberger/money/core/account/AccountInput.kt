@@ -16,11 +16,3 @@ data class AccountInput(
     val initialBalance: String,
     val memo: String,
 )
-
-/** Why an [AccountInput] can't be saved. Each error is for a single field. */
-enum class AccountInputError {
-    BlankName,
-    MissingAccountType,
-    InvalidInitialBalance,
-}
-
