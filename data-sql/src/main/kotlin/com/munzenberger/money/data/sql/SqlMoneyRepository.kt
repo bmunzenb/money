@@ -37,7 +37,10 @@ import com.munzenberger.money.data.sql.transaction.SqlTransactionStatusRepositor
 import com.munzenberger.money.data.sql.transaction.SqlTransferEntryRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import java.util.logging.Logger
 import kotlin.coroutines.CoroutineContext
+
+private val logger = Logger.getLogger(SqlMoneyRepository::class.java.name)
 
 class SqlMoneyRepository private constructor(
     private val name: String,

@@ -1,12 +1,14 @@
 package com.munzenberger.money.core.account
 
-import com.munzenberger.money.core.logger
 import com.munzenberger.money.data.api.MoneyRepository
 import com.munzenberger.money.data.api.MoneyWriter
 import com.munzenberger.money.data.api.account.Account
 import com.munzenberger.money.data.api.account.AccountId
 import java.util.logging.Level
+import java.util.logging.Logger
 import kotlin.coroutines.cancellation.CancellationException
+
+private val logger = Logger.getLogger("com.munzenberger.money.core.account.SaveAccount")
 
 /**
  * Validates [input] and, if it's valid, writes it to this repository as the account with [accountId],

@@ -1,6 +1,5 @@
 package com.munzenberger.money.core.demo
 
-import com.munzenberger.money.core.logger
 import com.munzenberger.money.data.api.Money
 import com.munzenberger.money.data.api.MoneyRepository
 import com.munzenberger.money.data.api.account.Account
@@ -9,7 +8,10 @@ import com.munzenberger.money.data.api.account.AccountTypeConstant
 import com.munzenberger.money.data.api.bank.Bank
 import kotlinx.coroutines.flow.first
 import java.util.logging.Level
+import java.util.logging.Logger
 import kotlin.coroutines.cancellation.CancellationException
+
+private val logger = Logger.getLogger(PopulateDemoDataUseCase::class.java.name)
 
 /**
  * Adds a handful of sample banks to the repository, each with a few accounts of varying account types, in
