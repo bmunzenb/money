@@ -44,7 +44,7 @@ class SqlStatementRepository(
 
     override fun add(statement: Statement) {
         database.statementQueries.insert(
-            id = statement.id.id,
+            id = statement.id.value,
             account_id = statement.accountId.value,
             closing_date = statement.closingDate.toEpochDays(),
             starting_balance = statement.startingBalance.value,
@@ -60,11 +60,11 @@ class SqlStatementRepository(
             starting_balance = statement.startingBalance.value,
             ending_balance = statement.endingBalance.value,
             is_reconciled = statement.isReconciled,
-            id = statement.id.id,
-        ).requireOneRow { "No statement with id ${statement.id.id}" }
+            id = statement.id.value,
+        ).requireOneRow { "No statement with id ${statement.id.value}" }
     }
 
     override fun removeById(statementId: StatementId) {
-        database.statementQueries.deleteById(statementId.id)
+        database.statementQueries.deleteById(statementId.value)
     }
 }

@@ -276,7 +276,7 @@ class SqlRegisterRepository(
         val accountName: String,
     ) {
         fun toRegisterRow() = RegisterRow(
-            id = transferEntryId.id,
+            id = transferEntryId.value,
             date = date,
             created = created,
             amount = amount,
