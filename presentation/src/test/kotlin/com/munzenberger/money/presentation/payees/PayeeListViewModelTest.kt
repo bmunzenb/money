@@ -4,6 +4,7 @@ import app.cash.turbine.test
 import com.munzenberger.money.data.api.MoneyRepository
 import com.munzenberger.money.data.api.payee.Payee
 import com.munzenberger.money.presentation.MoneyRepositoryControllerFixture
+import com.munzenberger.money.presentation.state.LoadState
 import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.flow.Flow
@@ -42,7 +43,7 @@ class PayeeListViewModelTest {
         viewModel.state.test {
             fixture.connect(repositoryWithPayees(flowOf(payees)))
 
-            assertEquals(PayeeListUiState.Content(payees = payees), awaitItem())
+            assertEquals(PayeeListUiState(payees = LoadState.Loaded(payees)), awaitItem())
         }
     }
 
@@ -56,10 +57,13 @@ class PayeeListViewModelTest {
 
         viewModel.state.test {
             fixture.connect(repositoryWithPayees(payeesFlow))
-            assertEquals(PayeeListUiState.Content(payees = listOf(groceryStore)), awaitItem())
+            assertEquals(PayeeListUiState(payees = LoadState.Loaded(listOf(groceryStore))), awaitItem())
 
             payeesFlow.value = listOf(groceryStore, electricCompany)
-            assertEquals(PayeeListUiState.Content(payees = listOf(groceryStore, electricCompany)), awaitItem())
+            assertEquals(
+                PayeeListUiState(payees = LoadState.Loaded(listOf(groceryStore, electricCompany))),
+                awaitItem(),
+            )
         }
     }
 
@@ -72,10 +76,10 @@ class PayeeListViewModelTest {
 
         viewModel.state.test {
             fixture.connect(repositoryWithPayees(flowOf(firstPayees)))
-            assertEquals(PayeeListUiState.Content(payees = firstPayees), awaitItem())
+            assertEquals(PayeeListUiState(payees = LoadState.Loaded(firstPayees)), awaitItem())
 
             fixture.connect(repositoryWithPayees(flowOf(secondPayees)))
-            assertEquals(PayeeListUiState.Content(payees = secondPayees), awaitItem())
+            assertEquals(PayeeListUiState(payees = LoadState.Loaded(secondPayees)), awaitItem())
         }
     }
 
@@ -87,7 +91,7 @@ class PayeeListViewModelTest {
         viewModel.state.test {
             fixture.connect(repositoryWithPayees(flow { throw IllegalStateException("query failed") }))
 
-            assertEquals(PayeeListUiState.Error, awaitItem())
+            assertEquals(PayeeListUiState(payees = LoadState.Error), awaitItem())
         }
     }
 
@@ -99,10 +103,10 @@ class PayeeListViewModelTest {
 
         viewModel.state.test {
             fixture.connect(repositoryWithPayees(flow { throw IllegalStateException("query failed") }))
-            assertEquals(PayeeListUiState.Error, awaitItem())
+            assertEquals(PayeeListUiState(payees = LoadState.Error), awaitItem())
 
             fixture.connect(repositoryWithPayees(flowOf(payees)))
-            assertEquals(PayeeListUiState.Content(payees = payees), awaitItem())
+            assertEquals(PayeeListUiState(payees = LoadState.Loaded(payees)), awaitItem())
         }
     }
 }

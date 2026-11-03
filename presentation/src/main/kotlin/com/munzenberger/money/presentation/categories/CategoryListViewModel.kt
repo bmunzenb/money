@@ -3,6 +3,7 @@ package com.munzenberger.money.presentation.categories
 import androidx.lifecycle.ViewModel
 import com.munzenberger.money.presentation.database.MoneyRepositoryController
 import com.munzenberger.money.presentation.database.resultFlow
+import com.munzenberger.money.presentation.state.toLoadState
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
@@ -11,12 +12,7 @@ class CategoryListViewModel(
 ) : ViewModel() {
 
     val state: Flow<CategoryListUiState> = repositoryController.resultFlow { it.categories }
-        .map { result ->
-            result.fold(
-                onSuccess = { categories -> CategoryListUiState.Content(categories = categories) },
-                onFailure = { CategoryListUiState.Error },
-            )
-        }
+        .map { CategoryListUiState(categories = it.toLoadState()) }
 
     fun onAddCategoryClick() {
         // Navigation to an add category screen will go here once that route exists.
