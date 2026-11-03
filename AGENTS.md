@@ -144,6 +144,11 @@ class WelcomeScreen(scope: ScreenScope) : VBox(Spacing.CONTROL_SPACING) {
 }
 ```
 
+A preference that changes what a screen shows, such as the account list's grouping, belongs to its ViewModel,
+which reads and writes it in `UserPreferences`. A preference that only changes how one UI lays it out, such as a
+table's column order and widths (`components/ColumnLayout.kt`) or the window's bounds
+(`preferences/WindowBounds.kt`), stays in the UI module, which gets `UserPreferences` from Koin directly.
+
 ## String resources
 
 Strings live in `desktop-javafx/src/main/resources/com/munzenberger/money/desktop/strings.properties`
