@@ -110,7 +110,6 @@ class AccountListScreen(scope: ScreenScope) : VBox(Spacing.CONTROL_SPACING), Koi
         totalBalance.render(state.balances.total)
 
         // A state that changes only the grouping leaves the table's rows as they are.
-        accountTable.setGroups(state.groups.loadedOrEmpty)
-        accountTable.setBalances(state.balances)
+        accountTable.show(state.groups.loadedOrEmpty, state.balances)
     }
 }

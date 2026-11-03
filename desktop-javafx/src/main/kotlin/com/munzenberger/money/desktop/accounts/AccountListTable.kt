@@ -103,21 +103,23 @@ class AccountListTable(
         }
     }
 
-    /** Shows [groups]' rows, sorted by the sorted columns, unless they're the groups already shown. */
-    fun setGroups(groups: List<AccountGroup>) {
-        if (groups != shownGroups) {
+    /**
+     * Shows [groups]' rows with [balances], sorted by the sorted columns. Groups that are already shown keep their
+     * rows, and the rows are sorted once, after both have been applied, only if either changed.
+     */
+    fun show(groups: List<AccountGroup>, balances: AccountBalances) {
+        val groupsChanged = groups != shownGroups
+        val balancesChanged = balances != this.balances.value
+        if (groupsChanged) {
             shownGroups = groups
             items.setAll(groups.flatMap { it.rows() })
-            // The sort policy doesn't sort new rows by itself.
-            sort()
         }
-    }
-
-    /** Shows [balances] in the balance column, unless they're the balances already shown. */
-    fun setBalances(balances: AccountBalances) {
-        if (balances != this.balances.value) {
+        if (balancesChanged) {
             this.balances.value = balances
-            // The rows' order changes with their balances when the table is sorted by them.
+        }
+        // The sort policy doesn't sort new rows by itself, and the rows' order changes with their balances when the
+        // table is sorted by them.
+        if (groupsChanged || balancesChanged) {
             sort()
         }
     }
