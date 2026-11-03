@@ -1,9 +1,8 @@
 plugins {
     application
-    alias(libs.plugins.kotlinJvm)
+    id("money.kotlin-conventions")
     alias(libs.plugins.kotlinSerialization)
     alias(libs.plugins.javafx)
-    alias(libs.plugins.detekt)
 }
 
 dependencies {
