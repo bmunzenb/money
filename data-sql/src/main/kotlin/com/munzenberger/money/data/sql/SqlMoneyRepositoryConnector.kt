@@ -10,8 +10,11 @@ import kotlinx.coroutines.withContext
 import java.io.File
 import java.util.Properties
 import java.util.logging.Level
+import java.util.logging.Logger
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.cancellation.CancellationException
+
+private val logger = Logger.getLogger(SqlMoneyRepositoryConnector::class.java.name)
 
 /** Connects to the SQLite database at [url], running its database work in [context]. */
 sealed class SqlMoneyRepositoryConnector(

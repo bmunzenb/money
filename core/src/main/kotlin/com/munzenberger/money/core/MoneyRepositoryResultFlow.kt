@@ -5,6 +5,9 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.map
 import java.util.logging.Level
+import java.util.logging.Logger
+
+private val logger = Logger.getLogger("com.munzenberger.money.core.MoneyRepositoryResultFlow")
 
 /**
  * Returns the flow of values selected from this [MoneyRepository] by [selector], each wrapped in a
@@ -17,6 +20,6 @@ fun <T> MoneyRepository.resultFlow(selector: (MoneyRepository) -> Flow<T>): Flow
     selector(this)
         .map { value -> Result.success(value) }
         .catch { e ->
-            this@resultFlow.logger.log(Level.WARNING, "Failed to read from the money repository", e)
+            logger.log(Level.WARNING, "Failed to read from the money repository", e)
             emit(Result.failure(e))
         }

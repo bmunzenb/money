@@ -1,9 +1,11 @@
 package com.munzenberger.money.presentation.preferences
 
-import com.munzenberger.money.presentation.logger
 import kotlinx.serialization.json.Json
 import java.util.logging.Level
+import java.util.logging.Logger
 import java.util.prefs.Preferences
+
+private val logger = Logger.getLogger(UserPreferences::class.java.name)
 
 /**
  * The user's preferences, stored in a [java.util.prefs.Preferences] [node], with each value encoded
