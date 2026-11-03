@@ -10,10 +10,10 @@ import com.munzenberger.money.desktop.strings
 import com.munzenberger.money.desktop.theme.Spacing
 import com.munzenberger.money.presentation.accounts.AccountSettingsUiState
 import com.munzenberger.money.presentation.accounts.AccountSettingsViewModel
-import com.munzenberger.money.presentation.accounts.LoadState
 import com.munzenberger.money.presentation.accounts.SaveState
-import com.munzenberger.money.presentation.accounts.loadedOrEmpty
 import com.munzenberger.money.presentation.navigation.Route
+import com.munzenberger.money.presentation.state.LoadState
+import com.munzenberger.money.presentation.state.loadedOrEmpty
 import javafx.css.PseudoClass
 import javafx.geometry.Insets
 import javafx.geometry.Pos

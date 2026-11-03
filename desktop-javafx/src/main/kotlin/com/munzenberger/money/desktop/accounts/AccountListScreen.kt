@@ -13,10 +13,10 @@ import com.munzenberger.money.desktop.strings
 import com.munzenberger.money.desktop.theme.Spacing
 import com.munzenberger.money.presentation.accounts.AccountListUiState
 import com.munzenberger.money.presentation.accounts.AccountListViewModel
-import com.munzenberger.money.presentation.accounts.LoadState
-import com.munzenberger.money.presentation.accounts.loadedOrEmpty
 import com.munzenberger.money.presentation.accounts.maskAccountNumber
 import com.munzenberger.money.presentation.preferences.UserPreferences
+import com.munzenberger.money.presentation.state.LoadState
+import com.munzenberger.money.presentation.state.loadedOrEmpty
 import javafx.beans.property.ReadOnlyStringWrapper
 import javafx.collections.FXCollections
 import javafx.css.PseudoClass

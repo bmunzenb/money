@@ -1,4 +1,4 @@
-package com.munzenberger.money.presentation.accounts
+package com.munzenberger.money.presentation.state
 
 /** The state of data a screen loads from the repository, such as the options for a dropdown. */
 sealed interface LoadState<out T> {

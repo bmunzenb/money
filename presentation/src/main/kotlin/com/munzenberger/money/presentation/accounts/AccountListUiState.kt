@@ -2,6 +2,7 @@ package com.munzenberger.money.presentation.accounts
 
 import com.munzenberger.money.core.account.AccountGroup
 import com.munzenberger.money.core.account.AccountGrouping
+import com.munzenberger.money.presentation.state.LoadState
 
 data class AccountListUiState(
     val grouping: AccountGrouping = AccountGrouping.None,

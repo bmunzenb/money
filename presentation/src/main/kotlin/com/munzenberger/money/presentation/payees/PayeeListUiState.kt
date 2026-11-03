@@ -1,9 +1,8 @@
 package com.munzenberger.money.presentation.payees
 
 import com.munzenberger.money.data.api.payee.Payee
+import com.munzenberger.money.presentation.state.LoadState
 
-sealed interface PayeeListUiState {
-    data object Loading : PayeeListUiState
-    data object Error : PayeeListUiState
-    data class Content(val payees: List<Payee> = emptyList()) : PayeeListUiState
-}
+data class PayeeListUiState(
+    val payees: LoadState<List<Payee>> = LoadState.Loading,
+)

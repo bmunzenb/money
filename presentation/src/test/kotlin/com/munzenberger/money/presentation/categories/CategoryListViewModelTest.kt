@@ -7,6 +7,7 @@ import com.munzenberger.money.data.api.category.CategoryType
 import com.munzenberger.money.data.api.category.CategoryTypeConstant
 import com.munzenberger.money.data.api.category.CategoryTypeId
 import com.munzenberger.money.presentation.MoneyRepositoryControllerFixture
+import com.munzenberger.money.presentation.state.LoadState
 import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.flow.Flow
@@ -50,7 +51,7 @@ class CategoryListViewModelTest {
         viewModel.state.test {
             fixture.connect(repositoryWithCategories(flowOf(categories)))
 
-            assertEquals(CategoryListUiState.Content(categories = categories), awaitItem())
+            assertEquals(CategoryListUiState(categories = LoadState.Loaded(categories)), awaitItem())
         }
     }
 
@@ -64,10 +65,10 @@ class CategoryListViewModelTest {
 
         viewModel.state.test {
             fixture.connect(repositoryWithCategories(categoriesFlow))
-            assertEquals(CategoryListUiState.Content(categories = listOf(groceries)), awaitItem())
+            assertEquals(CategoryListUiState(categories = LoadState.Loaded(listOf(groceries))), awaitItem())
 
             categoriesFlow.value = listOf(groceries, rent)
-            assertEquals(CategoryListUiState.Content(categories = listOf(groceries, rent)), awaitItem())
+            assertEquals(CategoryListUiState(categories = LoadState.Loaded(listOf(groceries, rent))), awaitItem())
         }
     }
 
@@ -80,10 +81,10 @@ class CategoryListViewModelTest {
 
         viewModel.state.test {
             fixture.connect(repositoryWithCategories(flowOf(firstCategories)))
-            assertEquals(CategoryListUiState.Content(categories = firstCategories), awaitItem())
+            assertEquals(CategoryListUiState(categories = LoadState.Loaded(firstCategories)), awaitItem())
 
             fixture.connect(repositoryWithCategories(flowOf(secondCategories)))
-            assertEquals(CategoryListUiState.Content(categories = secondCategories), awaitItem())
+            assertEquals(CategoryListUiState(categories = LoadState.Loaded(secondCategories)), awaitItem())
         }
     }
 
@@ -95,7 +96,7 @@ class CategoryListViewModelTest {
         viewModel.state.test {
             fixture.connect(repositoryWithCategories(flow { throw IllegalStateException("query failed") }))
 
-            assertEquals(CategoryListUiState.Error, awaitItem())
+            assertEquals(CategoryListUiState(categories = LoadState.Error), awaitItem())
         }
     }
 
@@ -107,10 +108,10 @@ class CategoryListViewModelTest {
 
         viewModel.state.test {
             fixture.connect(repositoryWithCategories(flow { throw IllegalStateException("query failed") }))
-            assertEquals(CategoryListUiState.Error, awaitItem())
+            assertEquals(CategoryListUiState(categories = LoadState.Error), awaitItem())
 
             fixture.connect(repositoryWithCategories(flowOf(categories)))
-            assertEquals(CategoryListUiState.Content(categories = categories), awaitItem())
+            assertEquals(CategoryListUiState(categories = LoadState.Loaded(categories)), awaitItem())
         }
     }
 }

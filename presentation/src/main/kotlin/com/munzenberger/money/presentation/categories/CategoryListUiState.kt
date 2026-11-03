@@ -1,9 +1,8 @@
 package com.munzenberger.money.presentation.categories
 
 import com.munzenberger.money.data.api.category.Category
+import com.munzenberger.money.presentation.state.LoadState
 
-sealed interface CategoryListUiState {
-    data object Loading : CategoryListUiState
-    data object Error : CategoryListUiState
-    data class Content(val categories: List<Category> = emptyList()) : CategoryListUiState
-}
+data class CategoryListUiState(
+    val categories: LoadState<List<Category>> = LoadState.Loading,
+)
