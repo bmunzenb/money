@@ -2,7 +2,6 @@ package com.munzenberger.money.desktop.accounts
 
 import com.munzenberger.money.core.account.AccountGrouping
 import com.munzenberger.money.desktop.components.ScreenHeading
-import com.munzenberger.money.desktop.components.smallProgressIndicator
 import com.munzenberger.money.desktop.navigation.ScreenScope
 import com.munzenberger.money.desktop.strings
 import com.munzenberger.money.desktop.theme.Spacing
@@ -86,17 +85,9 @@ class AccountListScreen(scope: ScreenScope) : VBox(Spacing.CONTROL_SPACING), Koi
         setVgrow(this, Priority.ALWAYS)
     }
 
-    private val totalBalanceLabel = Label(strings.getString("total_balance_label"))
-
-    // The total balance's value while it loads, once it has, and when it can't be calculated.
-    private val totalBalanceProgress = smallProgressIndicator()
-    private val totalBalanceAmount = Label()
-    private val totalBalanceErrorMessage = balanceErrorMessage()
-
     // Stays at the bottom of the screen, since the table above it takes the rest of the height. Its labels inherit the
     // bold font.
-    private val totalBalance = HBox(Spacing.CONTROL_SPACING).apply {
-        alignment = Pos.CENTER_RIGHT
+    private val totalBalance = AccountBalanceView(strings.getString("total_balance_label")).apply {
         styleClass += "total-balance"
     }
 
@@ -116,14 +107,7 @@ class AccountListScreen(scope: ScreenScope) : VBox(Spacing.CONTROL_SPACING), Koi
         }
 
         totalBalance.isVisible = state.groups.loadedOrEmpty.isNotEmpty()
-        totalBalance.children.setAll(
-            totalBalanceLabel,
-            when (val total = state.balances.total) {
-                LoadState.Loading -> totalBalanceProgress
-                LoadState.Error -> totalBalanceErrorMessage
-                is LoadState.Loaded -> totalBalanceAmount.apply { text = total.value.toAccountString() }
-            },
-        )
+        totalBalance.render(state.balances.total)
 
         // A state that changes only the grouping leaves the table's rows as they are.
         accountTable.setGroups(state.groups.loadedOrEmpty)
