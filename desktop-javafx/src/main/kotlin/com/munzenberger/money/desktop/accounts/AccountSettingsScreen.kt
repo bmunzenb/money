@@ -2,8 +2,16 @@ package com.munzenberger.money.desktop.accounts
 
 import com.munzenberger.money.data.api.account.AccountType
 import com.munzenberger.money.desktop.components.AutoCompleteComboBox
+import com.munzenberger.money.desktop.components.FormFooter
+import com.munzenberger.money.desktop.components.FormGrid
+import com.munzenberger.money.desktop.components.LoadStateContainer
 import com.munzenberger.money.desktop.components.ScreenHeading
+import com.munzenberger.money.desktop.components.errorLabel
+import com.munzenberger.money.desktop.components.setError
 import com.munzenberger.money.desktop.components.setShown
+import com.munzenberger.money.desktop.components.setTextIfChanged
+import com.munzenberger.money.desktop.components.smallProgressIndicator
+import com.munzenberger.money.desktop.components.withProgress
 import com.munzenberger.money.desktop.getString
 import com.munzenberger.money.desktop.navigation.ScreenScope
 import com.munzenberger.money.desktop.strings
@@ -14,29 +22,17 @@ import com.munzenberger.money.presentation.accounts.SaveState
 import com.munzenberger.money.presentation.navigation.Route
 import com.munzenberger.money.presentation.state.LoadState
 import com.munzenberger.money.presentation.state.loadedOrEmpty
-import javafx.css.PseudoClass
 import javafx.geometry.Insets
-import javafx.geometry.Pos
-import javafx.geometry.VPos
-import javafx.scene.Node
 import javafx.scene.control.Button
 import javafx.scene.control.ButtonBar
 import javafx.scene.control.CheckBox
 import javafx.scene.control.ComboBox
 import javafx.scene.control.Label
-import javafx.scene.control.ProgressIndicator
 import javafx.scene.control.ScrollPane
-import javafx.scene.control.Separator
 import javafx.scene.control.TextArea
 import javafx.scene.control.TextField
-import javafx.scene.control.TextInputControl
-import javafx.scene.layout.ColumnConstraints
-import javafx.scene.layout.GridPane
-import javafx.scene.layout.HBox
 import javafx.scene.layout.Priority
-import javafx.scene.layout.StackPane
 import javafx.scene.layout.VBox
-import javafx.util.StringConverter
 import org.koin.core.parameter.parametersOf
 
 /** Adds a new account at [Route.NewAccount], or edits an existing one at [Route.AccountSettings]. */
@@ -54,7 +50,7 @@ class AccountSettingsScreen(scope: ScreenScope, route: Route.AccountFormRoute) :
         textProperty().addListener { _, _, name -> viewModel.onNameChange(name) }
     }
 
-    private val nameError = errorLabel("account_name_error_message")
+    private val nameError = errorLabel(strings.getString("account_name_error_message"))
 
     // Choosing the type the state already has, as render does, leaves the ViewModel's type unchanged.
     private val accountTypeComboBox = ComboBox<AccountType>().apply {
@@ -76,7 +72,7 @@ class AccountSettingsScreen(scope: ScreenScope, route: Route.AccountFormRoute) :
 
     private val banksProgress = smallProgressIndicator()
 
-    private val banksError = errorLabel("financial_institution_load_error_message")
+    private val banksError = errorLabel(strings.getString("financial_institution_load_error_message"))
 
     private val numberField = TextField().apply {
         textProperty().addListener { _, _, number -> viewModel.onNumberChange(number) }
@@ -91,7 +87,7 @@ class AccountSettingsScreen(scope: ScreenScope, route: Route.AccountFormRoute) :
         maxWidth = INITIAL_BALANCE_FIELD_MAX_WIDTH
     }
 
-    private val initialBalanceError = errorLabel("initial_balance_error_message")
+    private val initialBalanceError = errorLabel(strings.getString("initial_balance_error_message"))
 
     private val commentsArea = TextArea().apply {
         isWrapText = true
@@ -103,31 +99,16 @@ class AccountSettingsScreen(scope: ScreenScope, route: Route.AccountFormRoute) :
         selectedProperty().addListener { _, _, isClosed -> viewModel.onIsClosedChange(isClosed) }
     }
 
-    private val fields = GridPane().apply {
-        hgap = Spacing.MEDIUM
-        vgap = Spacing.MEDIUM
-        // Keeps the fields clear of the scroll bar when it shows.
-        padding = FORM_END_PADDING
-        maxWidth = FORM_MAX_WIDTH + FORM_END_PADDING.right
-        // The labels' column is as wide as its widest label, never shrinking to cut one off. The fields take the rest.
-        columnConstraints.setAll(
-            ColumnConstraints().apply {
-                minWidth = USE_PREF_SIZE
-                prefWidth = USE_COMPUTED_SIZE
-                maxWidth = USE_PREF_SIZE
-                hgrow = Priority.NEVER
-            },
-            ColumnConstraints().apply { hgrow = Priority.ALWAYS },
-        )
-        addSection("account_section_title")
-        addField("account_name_label", nameField, VBox(ERROR_SPACING, nameField, nameError))
+    private val fields = FormGrid().apply {
+        addSection(strings.getString("account_section_title"))
+        addField(strings.getString("account_name_label"), nameField, VBox(ERROR_SPACING, nameField, nameError))
         addField(
-            "account_type_label",
+            strings.getString("account_type_label"),
             accountTypeComboBox,
             VBox(ERROR_SPACING, withProgress(accountTypeComboBox, accountTypesProgress), accountTypeError),
         )
         addField(
-            "financial_institution_label",
+            strings.getString("financial_institution_label"),
             bankComboBox,
             VBox(ERROR_SPACING, withProgress(bankComboBox, banksProgress), banksError),
         )
@@ -136,21 +117,16 @@ class AccountSettingsScreen(scope: ScreenScope, route: Route.AccountFormRoute) :
         if (isExistingAccount) {
             add(closedCheckBox, 1, rowCount)
         }
-        addSection("balance_and_reference_section_title")
-        addField("account_number_label", numberField, numberField)
+        addSection(strings.getString("balance_and_reference_section_title"))
+        addField(strings.getString("account_number_label"), numberField)
+        addField(strings.getString("account_currency_label"), currencyField, labelPadding = Insets.EMPTY)
         addField(
-            "account_currency_label",
-            currencyField,
-            currencyField,
-            Insets.EMPTY,
-        )
-        addField(
-            "initial_balance_label",
+            strings.getString("initial_balance_label"),
             initialBalanceField,
             VBox(ERROR_SPACING, initialBalanceField, initialBalanceError),
         )
-        addSection("additional_information_section_title")
-        addField("comments_label", commentsArea, commentsArea)
+        addSection(strings.getString("additional_information_section_title"))
+        addField(strings.getString("comments_label"), commentsArea)
     }
 
     // Only the fields scroll, so the heading and the buttons stay visible.
@@ -160,9 +136,7 @@ class AccountSettingsScreen(scope: ScreenScope, route: Route.AccountFormRoute) :
         setVgrow(this, Priority.ALWAYS)
     }
 
-    private val saveError = errorLabel("save_account_error_message")
-
-    private val savingProgress = smallProgressIndicator()
+    private val saveError = errorLabel(strings.getString("save_account_error_message"))
 
     private val saveButton = Button(strings.getString("save_button_title")).apply {
         isDefaultButton = true
@@ -176,31 +150,12 @@ class AccountSettingsScreen(scope: ScreenScope, route: Route.AccountFormRoute) :
         setOnAction { viewModel.onBackClick() }
     }
 
-    // ButtonBar orders the buttons by their data for the platform, e.g. Cancel before Save on macOS and after it on
-    // Windows.
-    private val buttonBar = ButtonBar().apply {
-        buttons.setAll(saveButton, cancelButton)
-    }
-
-    // As wide as the fields' grid, with the same end padding, so the buttons line up with the end of the fields
-    // however wide the grid is.
-    private val footer = HBox(Spacing.CONTROL_SPACING, savingProgress, buttonBar).apply {
-        alignment = Pos.CENTER_RIGHT
-        padding = FORM_END_PADDING
-        maxWidthProperty().bind(fields.widthProperty())
-    }
+    private val footer = FormFooter(fields, saveButton, cancelButton)
 
     private val form = VBox(Spacing.CONTROL_SPACING, fieldsScrollPane, saveError, footer)
 
-    // Shown in place of the form while the account being edited loads.
-    private val loadingProgress = ProgressIndicator()
-
-    // Shown in place of the form when the account being edited fails to load.
-    private val loadError = errorLabel("account_load_error_message")
-
-    private val content = StackPane(form, loadingProgress, loadError).apply {
-        alignment = Pos.TOP_LEFT
-        StackPane.setAlignment(loadingProgress, Pos.CENTER)
+    // Shows the form once the account being edited loads.
+    private val content = LoadStateContainer(form, strings.getString("account_load_error_message")).apply {
         setVgrow(this, Priority.ALWAYS)
     }
 
@@ -211,16 +166,15 @@ class AccountSettingsScreen(scope: ScreenScope, route: Route.AccountFormRoute) :
     }
 
     private fun render(state: AccountSettingsUiState) {
-        form.setShown(state.isFormReady)
-        loadingProgress.setShown(state.existingAccount is LoadState.Loading)
-        loadError.setShown(state.existingAccount is LoadState.Error)
+        // A new account has nothing to load.
+        content.setLoadState(state.existingAccount ?: LoadState.Loaded(Unit))
 
         // The form is locked while saving, so what's saved is what's on screen.
         val isSaving = state.saveState == SaveState.Saving
         fields.isDisable = isSaving
         saveButton.isDisable = isSaving || !state.isFormReady
         cancelButton.isDisable = isSaving
-        savingProgress.setShown(isSaving)
+        footer.setProgressShown(isSaving)
         saveError.setShown(state.saveState == SaveState.Failed)
 
         nameField.setTextIfChanged(state.name)
@@ -281,68 +235,9 @@ class AccountSettingsScreen(scope: ScreenScope, route: Route.AccountFormRoute) :
         banksError.setShown(state.banks is LoadState.Error)
     }
 
-    // Adds a row with the section's title over a separator, spanning both columns.
-    private fun GridPane.addSection(titleKey: String) {
-        val title = Label(strings.getString(titleKey)).apply { styleClass += "form-section-title" }
-        val heading = VBox(Spacing.CONTROL_SPACING, title, Separator())
-        heading.padding = Insets(Spacing.SMALL, 0.0, 0.0, 0.0)
-        add(heading, 0, rowCount, 2, 1)
-    }
-
-    // Adds a row with the label for the field, and the node holding the field and anything that goes with it. The
-    // default label padding lines up the label's text with the text inside a control such as a text field; a field
-    // that's plain text, with no padding of its own, takes no label padding instead.
-    private fun GridPane.addField(
-        labelKey: String,
-        field: Node,
-        fieldNode: Node,
-        labelPadding: Insets = Insets(LABEL_TOP_PADDING, 0.0, 0.0, 0.0),
-    ) {
-        val row = rowCount
-        val label = Label(strings.getString(labelKey)).apply { labelFor = field }
-        GridPane.setValignment(label, VPos.TOP)
-        label.padding = labelPadding
-        add(label, 0, row)
-        add(fieldNode, 1, row)
-    }
-
-    private fun withProgress(field: Node, progress: Node) = HBox(Spacing.CONTROL_SPACING, field, progress).apply {
-        alignment = Pos.CENTER_LEFT
-        HBox.setHgrow(field, Priority.ALWAYS)
-    }
-
-    private object AccountTypeConverter : StringConverter<AccountType>() {
-        override fun toString(accountType: AccountType?): String = accountType?.value?.label.orEmpty()
-
-        // The combo box isn't editable, so it never converts text back to an account type.
-        override fun fromString(string: String?): AccountType? = null
-    }
-
     private companion object {
-        const val FORM_MAX_WIDTH = 400.0
         const val INITIAL_BALANCE_FIELD_MAX_WIDTH = 150.0
-        val FORM_END_PADDING = Insets(0.0, Spacing.MEDIUM, 0.0, 0.0)
         const val ERROR_SPACING = 4.0
-        const val LABEL_TOP_PADDING = 4.0
-        const val SMALL_PROGRESS_SIZE = 16.0
         const val COMMENTS_ROW_COUNT = 4
-        val ERROR_PSEUDO_CLASS: PseudoClass = PseudoClass.getPseudoClass("error")
-
-        fun errorLabel(messageKey: String? = null) = Label(messageKey?.let(strings::getString)).apply {
-            styleClass += "error-message"
-            isWrapText = true
-        }
-
-        fun smallProgressIndicator() = ProgressIndicator().apply {
-            setPrefSize(SMALL_PROGRESS_SIZE, SMALL_PROGRESS_SIZE)
-            setMaxSize(SMALL_PROGRESS_SIZE, SMALL_PROGRESS_SIZE)
-        }
-
-        // Setting the text the field already has would move the caret, so a field's own change isn't set back on it.
-        fun TextInputControl.setTextIfChanged(text: String) {
-            if (this.text != text) this.text = text
-        }
-
-        fun Node.setError(isError: Boolean) = pseudoClassStateChanged(ERROR_PSEUDO_CLASS, isError)
     }
 }
