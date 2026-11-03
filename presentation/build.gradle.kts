@@ -10,9 +10,9 @@ dependencies {
 
     api(libs.androidx.lifecycle.viewmodel)
     api(libs.koin.core.viewmodel)
-    implementation(projects.dataSql)
     implementation(libs.kotlinx.serializationJson)
 
+    testImplementation(projects.dataSql)
     testImplementation(libs.kotlin.test)
     testImplementation(libs.kotlinx.coroutinesTest)
     testImplementation(libs.turbine)

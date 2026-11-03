@@ -45,10 +45,6 @@ class WelcomeViewModel(
                 // The screen is about to be replaced, so it keeps showing progress instead of its buttons.
                 is MoneyRepositoryConnectionStatus.Ready -> WelcomeUiState(isLoading = true)
                 is MoneyRepositoryConnectionStatus.Failed -> WelcomeUiState(error = failure)
-                // Not yet supported; see MoneyRepositoryConnectionStatus.
-                is MoneyRepositoryConnectionStatus.RequiresMigration,
-                MoneyRepositoryConnectionStatus.UnsupportedVersion ->
-                    error("Unhandled connection status")
             }
         }
     }

@@ -58,16 +58,21 @@ class MoneyRepositoryControllerTest {
 
     private fun connector(status: MoneyRepositoryConnectionStatus) =
         mockk<MoneyRepositoryConnector> {
-            coEvery { create() } returns status
             coEvery { connect() } returns status
         }
+
+    // The connector factory methods the controller called, in order.
+    private val factoryCalls = mutableListOf<String>()
 
     // Each open/create/demo call uses the next connector, in order.
     private fun controller(vararg connectors: MoneyRepositoryConnector): MoneyRepositoryController {
         val remaining = ArrayDeque(connectors.toList())
         return MoneyRepositoryController(
-            fileConnectorFactory = { remaining.removeFirst() },
-            demoConnectorFactory = { remaining.removeFirst() },
+            connectorFactory = object : MoneyRepositoryConnectorFactory {
+                override fun create(file: File) = remaining.removeFirst().also { factoryCalls += "create" }
+                override fun open(file: File) = remaining.removeFirst().also { factoryCalls += "open" }
+                override fun createInMemory() = remaining.removeFirst().also { factoryCalls += "createInMemory" }
+            },
             populateDemoData = populateDemoData,
             context = EmptyCoroutineContext,
         )
@@ -75,7 +80,7 @@ class MoneyRepositoryControllerTest {
 
     @Test
     fun testInitialValueIsNull() {
-        val controller = controller(connector(MoneyRepositoryConnectionStatus.UnsupportedVersion))
+        val controller = controller()
 
         assertNull(controller.moneyRepository.value)
     }
@@ -98,7 +103,7 @@ class MoneyRepositoryControllerTest {
         controller.openDatabase(file)
 
         coVerify(exactly = 1) { connector.connect() }
-        coVerify(exactly = 0) { connector.create() }
+        assertEquals(listOf("open"), factoryCalls)
     }
 
     @Test
@@ -149,8 +154,8 @@ class MoneyRepositoryControllerTest {
 
         controller.createDatabase(file)
 
-        coVerify(exactly = 1) { connector.create() }
-        coVerify(exactly = 0) { connector.connect() }
+        coVerify(exactly = 1) { connector.connect() }
+        assertEquals(listOf("create"), factoryCalls)
         assertSame(repository, controller.moneyRepository.value)
     }
 
@@ -159,7 +164,7 @@ class MoneyRepositoryControllerTest {
         val existing = createTempFile()
         var existedAtCreate = true
         val connector = mockk<MoneyRepositoryConnector> {
-            coEvery { create() } answers {
+            coEvery { connect() } answers {
                 existedAtCreate = existing.exists()
                 MoneyRepositoryConnectionStatus.Ready(mockk())
             }
@@ -183,7 +188,8 @@ class MoneyRepositoryControllerTest {
         val status = controller.createDatabase(directory)
 
         assertIs<IOException>(assertIs<MoneyRepositoryConnectionStatus.Failed>(status).error)
-        coVerify(exactly = 0) { connector.create() }
+        coVerify(exactly = 0) { connector.connect() }
+        assertTrue(factoryCalls.isEmpty())
         assertNull(controller.moneyRepository.value)
     }
 
@@ -220,8 +226,8 @@ class MoneyRepositoryControllerTest {
 
         controller.openDemo()
 
-        coVerify(exactly = 1) { connector.create() }
-        coVerify(exactly = 0) { connector.connect() }
+        coVerify(exactly = 1) { connector.connect() }
+        assertEquals(listOf("createInMemory"), factoryCalls)
         assertSame(repository, controller.moneyRepository.value)
     }
 
@@ -319,7 +325,7 @@ class MoneyRepositoryControllerTest {
 
     @Test
     fun testCloseWithoutRepositoryStaysNull() {
-        val controller = controller(connector(MoneyRepositoryConnectionStatus.UnsupportedVersion))
+        val controller = controller()
 
         controller.close()
 
