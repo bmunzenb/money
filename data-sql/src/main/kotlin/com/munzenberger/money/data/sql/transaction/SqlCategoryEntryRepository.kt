@@ -21,13 +21,13 @@ class SqlCategoryEntryRepository(
     private val context: CoroutineContext = Dispatchers.IO,
 ) : CategoryEntryRepository, CategoryEntryWriter {
 
-    override suspend fun categoryEntriesByTransactionId(transactionId: TransactionId): Flow<List<CategoryEntry>> =
+    override fun categoryEntriesByTransactionId(transactionId: TransactionId): Flow<List<CategoryEntry>> =
         database.categoryEntryQueries
             .selectByTransactionId(transactionId.value, ::mapCategoryEntry)
             .asFlow()
             .mapToList(context)
 
-    override suspend fun categoryEntriesByCategoryId(categoryId: CategoryId): Flow<List<CategoryEntry>> =
+    override fun categoryEntriesByCategoryId(categoryId: CategoryId): Flow<List<CategoryEntry>> =
         database.categoryEntryQueries
             .selectByCategoryId(categoryId.value, ::mapCategoryEntry)
             .asFlow()

@@ -24,13 +24,13 @@ class SqlTransferEntryRepository(
     private val context: CoroutineContext = Dispatchers.IO,
 ) : TransferEntryRepository, TransferEntryWriter {
 
-    override suspend fun transferEntriesByTransactionId(transactionId: TransactionId): Flow<List<TransferEntry>> =
+    override fun transferEntriesByTransactionId(transactionId: TransactionId): Flow<List<TransferEntry>> =
         database.transferEntryQueries
             .selectByTransactionId(transactionId.value, ::mapTransferEntry)
             .asFlow()
             .mapToList(context)
 
-    override suspend fun transferEntriesByAccountId(accountId: AccountId): Flow<List<TransferEntry>> =
+    override fun transferEntriesByAccountId(accountId: AccountId): Flow<List<TransferEntry>> =
         database.transferEntryQueries
             .selectByAccountId(accountId.value, ::mapTransferEntry)
             .asFlow()

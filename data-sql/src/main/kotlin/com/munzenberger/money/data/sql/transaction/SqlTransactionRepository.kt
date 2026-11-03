@@ -25,7 +25,7 @@ class SqlTransactionRepository(
     private val clock: Clock = Clock.System,
 ) : TransactionRepository, TransactionWriter {
 
-    override suspend fun transactionsByAccountId(accountId: AccountId): Flow<List<Transaction>> =
+    override fun transactionsByAccountId(accountId: AccountId): Flow<List<Transaction>> =
         database.transactionQueries
             .selectByAccountId(accountId.value) {
                 id,

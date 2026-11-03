@@ -20,7 +20,7 @@ class SqlStatementRepository(
     private val context: CoroutineContext = Dispatchers.IO,
 ) : StatementRepository, StatementWriter {
 
-    override suspend fun statementsByAccountId(accountId: AccountId): Flow<List<Statement>> =
+    override fun statementsByAccountId(accountId: AccountId): Flow<List<Statement>> =
         database.statementQueries
             .selectByAccountId(accountId.value) {
                 id,
