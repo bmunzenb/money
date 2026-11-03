@@ -1,3 +1,19 @@
+/* The title at the top of a screen. */
+.screen-heading {
+    -fx-font-size: 1.5em;
+    -fx-font-weight: bold;
+}
+
+/* Right-aligns the cells of a column of amounts. The column's style classes are copied to its cells and header. */
+.table-cell.amount-column {
+    -fx-alignment: CENTER-RIGHT;
+}
+
+/* The account list's total balance. Its labels inherit the bold font. */
+.total-balance {
+    -fx-font-weight: bold;
+}
+
 /* Sets the account list's group rows apart from their accounts' rows. */
 .table-row-cell:group {
     -fx-background: derive(-fx-control-inner-background, -10%);

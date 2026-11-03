@@ -24,13 +24,13 @@ class SqlTransferEntryRepository(
     private val context: CoroutineContext = Dispatchers.IO,
 ) : TransferEntryRepository, TransferEntryWriter {
 
-    override suspend fun transferEntriesByTransactionId(transactionId: TransactionId): Flow<List<TransferEntry>> =
+    override fun transferEntriesByTransactionId(transactionId: TransactionId): Flow<List<TransferEntry>> =
         database.transferEntryQueries
             .selectByTransactionId(transactionId.value, ::mapTransferEntry)
             .asFlow()
             .mapToList(context)
 
-    override suspend fun transferEntriesByAccountId(accountId: AccountId): Flow<List<TransferEntry>> =
+    override fun transferEntriesByAccountId(accountId: AccountId): Flow<List<TransferEntry>> =
         database.transferEntryQueries
             .selectByAccountId(accountId.value, ::mapTransferEntry)
             .asFlow()
@@ -38,7 +38,7 @@ class SqlTransferEntryRepository(
 
     override fun add(transferEntry: TransferEntry) {
         database.transferEntryQueries.insert(
-            id = transferEntry.id.id,
+            id = transferEntry.id.value,
             transaction_id = transferEntry.transactionId.value,
             account_id = transferEntry.accountId.value,
             amount = transferEntry.amount.value,
@@ -58,12 +58,12 @@ class SqlTransferEntryRepository(
             memo = transferEntry.memo,
             status_id = transferEntry.status.id.value,
             order_in_transaction = transferEntry.orderInTransaction.toLong(),
-            id = transferEntry.id.id,
-        ).requireOneRow { "No transfer entry with id ${transferEntry.id.id}" }
+            id = transferEntry.id.value,
+        ).requireOneRow { "No transfer entry with id ${transferEntry.id.value}" }
     }
 
     override fun removeById(transferEntryId: TransferEntryId) {
-        database.transferEntryQueries.deleteById(transferEntryId.id)
+        database.transferEntryQueries.deleteById(transferEntryId.value)
     }
 
     private fun mapTransferEntry(

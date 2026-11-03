@@ -8,7 +8,7 @@ import kotlin.uuid.Uuid
 
 @Serializable
 @JvmInline
-value class TransferEntryId @OptIn(ExperimentalUuidApi::class) constructor(val id: Uuid = Uuid.generateV7())
+value class TransferEntryId @OptIn(ExperimentalUuidApi::class) constructor(val value: Uuid = Uuid.generateV7())
 
 data class TransferEntry(
     val id: TransferEntryId = TransferEntryId(),
