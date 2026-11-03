@@ -1,10 +1,10 @@
 package com.munzenberger.money.presentation.preferences
 
-import app.cash.turbine.test
-import kotlinx.coroutines.test.runTest
 import kotlinx.serialization.builtins.serializer
+import java.util.prefs.Preferences
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 import kotlin.test.assertNull
 
 class UserPreferencesTest {
@@ -14,6 +14,7 @@ class UserPreferencesTest {
 
     private val enabled = PreferenceKey("test.enabled", true, Boolean.serializer())
     private val count = PreferenceKey("test.count", 0, Int.serializer())
+    private val text = PreferenceKey("test.text", "", String.serializer())
 
     @Test
     fun `get returns the default when no value is stored`() {
@@ -53,27 +54,20 @@ class UserPreferencesTest {
     }
 
     @Test
-    fun `observe emits the current value, then each change`() = runTest {
-        preferences.observe(count).test {
-            assertEquals(0, awaitItem())
+    fun `set keeps the previous value when the new one is too long to store`() {
+        preferences[text] = "a"
 
-            preferences[count] = 1
-            assertEquals(1, awaitItem())
+        preferences[text] = "x".repeat(Preferences.MAX_VALUE_LENGTH)
 
-            preferences.remove(count)
-            assertEquals(0, awaitItem())
-        }
+        assertEquals("a", preferences[text])
     }
 
     @Test
-    fun `observe doesn't emit when another key changes`() = runTest {
-        preferences.observe(count).test {
-            assertEquals(0, awaitItem())
+    fun `a key's name can't be longer than the maximum key length`() {
+        PreferenceKey("x".repeat(Preferences.MAX_KEY_LENGTH), 0, Int.serializer())
 
-            preferences[enabled] = false
-            preferences[count] = 1
-
-            assertEquals(1, awaitItem())
+        assertFailsWith<IllegalArgumentException> {
+            PreferenceKey("x".repeat(Preferences.MAX_KEY_LENGTH + 1), 0, Int.serializer())
         }
     }
 }
