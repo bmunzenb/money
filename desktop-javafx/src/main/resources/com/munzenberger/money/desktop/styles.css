@@ -14,6 +14,11 @@
     -fx-font-weight: bold;
 }
 
+/* Shows a negative balance, subtotal, or total balance in the error color. */
+.balance-amount:negative {
+    -fx-text-fill: #c62828;
+}
+
 /* Sets the account list's group rows apart from their accounts' rows. */
 .table-row-cell:group {
     -fx-background: derive(-fx-control-inner-background, -10%);

@@ -5,8 +5,12 @@ import com.munzenberger.money.data.api.account.Account
 import com.munzenberger.money.desktop.components.columnLayoutKey
 import com.munzenberger.money.desktop.components.saveColumnLayout
 import com.munzenberger.money.desktop.strings
+import com.munzenberger.money.presentation.accounts.AccountBalances
 import com.munzenberger.money.presentation.accounts.maskAccountNumber
 import com.munzenberger.money.presentation.preferences.UserPreferences
+import com.munzenberger.money.presentation.state.LoadState
+import javafx.beans.binding.Bindings
+import javafx.beans.property.SimpleObjectProperty
 import javafx.beans.property.ReadOnlyStringWrapper
 import javafx.collections.FXCollections
 import javafx.css.PseudoClass
@@ -35,6 +39,9 @@ class AccountListTable(
     private val onAccountSettingsClick: (Account) -> Unit,
 ) : TableView<AccountListRow>() {
 
+    // The balances last shown. The balance column's cells observe it, so they update when it changes.
+    private val balances = SimpleObjectProperty(AccountBalances())
+
     private val nameColumn = column(
         id = "name",
         titleKey = "account_name_column_title",
@@ -48,12 +55,19 @@ class AccountListTable(
         accountValue = { maskAccountNumber(it.number) }
     )
 
-    private val balanceColumn = column(
-        id = "balance",
-        titleKey = "balance_column_title",
-        subtotalValue = { strings.getString("subtotal_label") }
+    // Shows each account's balance and each group's subtotal from the balances last shown, updating as they change.
+    // Sorting by it orders the loaded amounts, after the ones that haven't loaded.
+    private val balanceColumn = TableColumn<AccountListRow, BalanceCellValue?>(
+        strings.getString("balance_column_title")
     ).apply {
+        id = "balance"
         styleClass += "amount-column"
+        setCellValueFactory { features ->
+            val row = features.value
+            Bindings.createObjectBinding({ row?.balanceCellValue(balances.value) }, balances)
+        }
+        setCellFactory { AccountBalanceCell() }
+        comparator = compareBy(nullsFirst()) { (it?.balance as? LoadState.Loaded)?.value?.value }
     }
 
     // The groups last shown, so showing the same groups again doesn't rebuild the rows.
@@ -89,12 +103,23 @@ class AccountListTable(
         }
     }
 
-    /** Shows [groups]' rows, sorted by the sorted columns, unless they're the groups already shown. */
-    fun setGroups(groups: List<AccountGroup>) {
-        if (groups != shownGroups) {
+    /**
+     * Shows [groups]' rows with [balances], sorted by the sorted columns. Groups that are already shown keep their
+     * rows, and the rows are sorted once, after both have been applied, only if either changed.
+     */
+    fun show(groups: List<AccountGroup>, balances: AccountBalances) {
+        val groupsChanged = groups != shownGroups
+        val balancesChanged = balances != this.balances.value
+        if (groupsChanged) {
             shownGroups = groups
             items.setAll(groups.flatMap { it.rows() })
-            // The sort policy doesn't sort new rows by itself.
+        }
+        if (balancesChanged) {
+            this.balances.value = balances
+        }
+        // The sort policy doesn't sort new rows by itself, and the rows' order changes with their balances when the
+        // table is sorted by them.
+        if (groupsChanged || balancesChanged) {
             sort()
         }
     }
@@ -103,7 +128,6 @@ class AccountListTable(
         id: String,
         titleKey: String,
         groupValue: (AccountGroup) -> String = { "" },
-        subtotalValue: (AccountGroup) -> String = { "" },
         accountValue: (Account) -> String = { "" },
     ) = TableColumn<AccountListRow, String>(strings.getString(titleKey)).apply {
         this.id = id
@@ -111,7 +135,7 @@ class AccountListTable(
             val value = when (val row = features.value) {
                 is AccountListRow.GroupRow -> groupValue(row.group)
                 is AccountListRow.AccountRow -> accountValue(row.account)
-                is AccountListRow.SubtotalRow -> subtotalValue(row.group)
+                is AccountListRow.SubtotalRow -> ""
                 null -> ""
             }
             ReadOnlyStringWrapper(value)

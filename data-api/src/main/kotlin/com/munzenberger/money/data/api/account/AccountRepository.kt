@@ -6,5 +6,6 @@ import kotlinx.coroutines.flow.Flow
 interface AccountRepository {
     val accounts: Flow<List<Account>>
 
-    fun accountBalance(accountId: AccountId): Flow<Money>
+    /** The balance of each account, keyed by its id. */
+    val accountBalances: Flow<Map<AccountId, Money>>
 }

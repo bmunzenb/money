@@ -85,12 +85,10 @@ class AccountListScreen(scope: ScreenScope) : VBox(Spacing.CONTROL_SPACING), Koi
         setVgrow(this, Priority.ALWAYS)
     }
 
-    // Stays at the bottom of the screen, since the table above it takes the rest of the height. It shows only
-    // the label until the total balance is available. Its labels inherit the bold font.
-    private val totalBalance = HBox(Spacing.CONTROL_SPACING).apply {
-        alignment = Pos.CENTER_RIGHT
+    // Stays at the bottom of the screen, since the table above it takes the rest of the height. Its labels inherit the
+    // bold font.
+    private val totalBalance = AccountBalanceView(strings.getString("total_balance_label")).apply {
         styleClass += "total-balance"
-        children.setAll(Label(strings.getString("total_balance_label")))
     }
 
     init {
@@ -109,8 +107,9 @@ class AccountListScreen(scope: ScreenScope) : VBox(Spacing.CONTROL_SPACING), Koi
         }
 
         totalBalance.isVisible = state.groups.loadedOrEmpty.isNotEmpty()
+        totalBalance.render(state.balances.total)
 
         // A state that changes only the grouping leaves the table's rows as they are.
-        accountTable.setGroups(state.groups.loadedOrEmpty)
+        accountTable.show(state.groups.loadedOrEmpty, state.balances)
     }
 }

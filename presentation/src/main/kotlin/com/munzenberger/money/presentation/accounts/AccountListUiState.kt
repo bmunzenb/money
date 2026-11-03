@@ -7,4 +7,5 @@ import com.munzenberger.money.presentation.state.LoadState
 data class AccountListUiState(
     val grouping: AccountGrouping = AccountGrouping.None,
     val groups: LoadState<List<AccountGroup>> = LoadState.Loading,
+    val balances: AccountBalances = AccountBalances(),
 )
