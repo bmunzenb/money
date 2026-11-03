@@ -7,6 +7,12 @@ This is a Kotlin JVM project with a JavaFX desktop app.
 * [/data-api](./data-api/src) defines the repository interfaces, and [/data-sql](./data-sql/src)
   implements them with SQLDelight.
 
+### Requirements
+
+The project builds and runs on JDK 25, declared as a Gradle toolchain (`jvmToolchain(25)` in
+`build-logic`). Gradle itself needs JDK 17 or later to start; if JDK 25 isn't installed, Gradle downloads it
+automatically through the Foojay toolchain resolver.
+
 ### Running the app
 
 Use the run configurations provided by the run widget in your IDE's toolbar, or run `./gradlew :desktop-javafx:run`.
@@ -16,6 +22,7 @@ Use the run configurations provided by the run widget in your IDE's toolbar, or 
 Use the run button in your IDE's editor gutter, or run tests using Gradle tasks:
 
 - All tests: `./gradlew test`
+- All tests plus detekt static analysis, as CI runs them: `./gradlew check`
 
 ### Logging
 
