@@ -114,36 +114,36 @@ class SqlAccountRepositoryTest {
     }
 
     @Test
-    fun `accountBalance is the initial balance when the account has no transactions`() = runTest {
+    fun `accountBalances is the initial balance when the account has no transactions`() = runTest {
         val fixture = createBalanceFixture()
         val account = fixture.createAccount("Checking", initialBalance = 1000)
-        assertEquals(Money(1000), fixture.repository.accountBalance(account.id).first())
+        assertEquals(Money(1000), fixture.repository.accountBalances.first()[account.id])
     }
 
     @Test
-    fun `accountBalance adds the category entries of the account's transactions`() = runTest {
+    fun `accountBalances adds the category entries of the account's transactions`() = runTest {
         val fixture = createBalanceFixture()
         val account = fixture.createAccount("Checking", initialBalance = 1000)
         val first = fixture.createTransaction(account)
         fixture.addCategoryEntry(first, -250)
         fixture.addCategoryEntry(first, -50, order = 1)
         fixture.addCategoryEntry(fixture.createTransaction(account), 400)
-        assertEquals(Money(1100), fixture.repository.accountBalance(account.id).first())
+        assertEquals(Money(1100), fixture.repository.accountBalances.first()[account.id])
     }
 
     @Test
-    fun `accountBalance moves a transfer out of the paying account and into the receiving account`() = runTest {
+    fun `accountBalances moves a transfer out of the paying account and into the receiving account`() = runTest {
         val fixture = createBalanceFixture()
         val checkingAccount = fixture.createAccount("Checking", initialBalance = 1000)
         val savingsAccount = fixture.createAccount("Savings", initialBalance = 5000)
         // Checking pays 300 into savings: the entry's amount is from checking's view.
         fixture.addTransferEntry(fixture.createTransaction(checkingAccount), to = savingsAccount, amount = -300)
-        assertEquals(Money(700), fixture.repository.accountBalance(checkingAccount.id).first())
-        assertEquals(Money(5300), fixture.repository.accountBalance(savingsAccount.id).first())
+        assertEquals(Money(700), fixture.repository.accountBalances.first()[checkingAccount.id])
+        assertEquals(Money(5300), fixture.repository.accountBalances.first()[savingsAccount.id])
     }
 
     @Test
-    fun `accountBalance combines split transactions, incoming transfers, and the initial balance`() = runTest {
+    fun `accountBalances combines split transactions, incoming transfers, and the initial balance`() = runTest {
         val fixture = createBalanceFixture()
         val checkingAccount = fixture.createAccount("Checking", initialBalance = 1000)
         val savingsAccount = fixture.createAccount("Savings", initialBalance = 5000)
@@ -155,43 +155,54 @@ class SqlAccountRepositoryTest {
         val refund = fixture.createTransaction(savingsAccount)
         fixture.addTransferEntry(refund, to = checkingAccount, amount = -100)
         fixture.addCategoryEntry(refund, 25, order = 1)
-        assertEquals(Money(1000 - 200 - 300 + 100), fixture.repository.accountBalance(checkingAccount.id).first())
-        assertEquals(Money(5000 + 300 - 100 + 25), fixture.repository.accountBalance(savingsAccount.id).first())
+        assertEquals(Money(1000 - 200 - 300 + 100), fixture.repository.accountBalances.first()[checkingAccount.id])
+        assertEquals(Money(5000 + 300 - 100 + 25), fixture.repository.accountBalances.first()[savingsAccount.id])
     }
 
     @Test
-    fun `accountBalance ignores other accounts' transactions that don't transfer to it`() = runTest {
+    fun `accountBalances ignores other accounts' transactions that don't transfer to it`() = runTest {
         val fixture = createBalanceFixture()
         val checkingAccount = fixture.createAccount("Checking", initialBalance = 1000)
         val savingsAccount = fixture.createAccount("Savings")
         val otherAccount = fixture.createAccount("Other")
         fixture.addCategoryEntry(fixture.createTransaction(savingsAccount), -400)
         fixture.addTransferEntry(fixture.createTransaction(savingsAccount), to = otherAccount, amount = -100)
-        assertEquals(Money(1000), fixture.repository.accountBalance(checkingAccount.id).first())
+        assertEquals(Money(1000), fixture.repository.accountBalances.first()[checkingAccount.id])
     }
 
     @Test
-    fun `accountBalance emits again when an entry is added or the initial balance changes`() = runTest {
+    fun `accountBalances emits again when an entry is added or the initial balance changes`() = runTest {
         val fixture = createBalanceFixture()
         val account = fixture.createAccount("Checking", initialBalance = 1000)
-        val balances = mutableListOf<Money>()
+        val balances = mutableListOf<Map<AccountId, Money>>()
         backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
-            fixture.repository.accountBalance(account.id).toList(balances)
+            fixture.repository.accountBalances.toList(balances)
         }
         fixture.addCategoryEntry(fixture.createTransaction(account), -250)
         fixture.repository.update(account.copy(initialBalance = Money(2000)))
         // Any change to a table the query reads re-emits, even when the balance is unchanged.
-        assertEquals(listOf(Money(1000), Money(750), Money(1750)), balances.distinct())
+        assertEquals(
+            listOf(Money(1000), Money(750), Money(1750)),
+            balances.map { it[account.id] }.distinct(),
+        )
     }
 
     @Test
-    fun `accountBalance emits nothing for an unknown account`() = runTest {
+    fun `accountBalances has every account's balance`() = runTest {
         val fixture = createBalanceFixture()
-        val balances = mutableListOf<Money>()
-        backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
-            fixture.repository.accountBalance(AccountId()).toList(balances)
-        }
-        assertTrue(balances.isEmpty())
+        val checkingAccount = fixture.createAccount("Checking", initialBalance = 1000)
+        val savingsAccount = fixture.createAccount("Savings", initialBalance = 5000)
+        fixture.addCategoryEntry(fixture.createTransaction(checkingAccount), -250)
+        assertEquals(
+            mapOf(checkingAccount.id to Money(750), savingsAccount.id to Money(5000)),
+            fixture.repository.accountBalances.first(),
+        )
+    }
+
+    @Test
+    fun `accountBalances is empty when no accounts exist`() = runTest {
+        val fixture = createBalanceFixture()
+        assertTrue(fixture.repository.accountBalances.first().isEmpty())
     }
 
     @Test

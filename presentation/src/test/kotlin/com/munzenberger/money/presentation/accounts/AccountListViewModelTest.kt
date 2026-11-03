@@ -3,12 +3,15 @@ package com.munzenberger.money.presentation.accounts
 import app.cash.turbine.test
 import com.munzenberger.money.core.account.AccountGroup
 import com.munzenberger.money.core.account.AccountGrouping
+import com.munzenberger.money.core.account.GetAccountBalancesUseCase
 import com.munzenberger.money.core.account.GetAccountGroupsUseCase
+import com.munzenberger.money.data.api.Money
 import com.munzenberger.money.data.api.MoneyRepository
 import com.munzenberger.money.data.api.account.Account
 import com.munzenberger.money.data.api.account.AccountClass
 import com.munzenberger.money.data.api.account.AccountClassConstant
 import com.munzenberger.money.data.api.account.AccountClassId
+import com.munzenberger.money.data.api.account.AccountId
 import com.munzenberger.money.data.api.account.AccountType
 import com.munzenberger.money.data.api.account.AccountTypeConstant
 import com.munzenberger.money.data.api.account.AccountTypeId
@@ -24,6 +27,7 @@ import io.mockk.verify
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.flowOf
@@ -55,6 +59,9 @@ class AccountListViewModelTest {
     private val navigator = Navigator()
     private val repository = mockk<MoneyRepository>()
     private val getAccountGroups = mockk<GetAccountGroupsUseCase>()
+    private val getAccountBalances = mockk<GetAccountBalancesUseCase> {
+        every { this@mockk(any()) } returns emptyFlow()
+    }
     private val preferencesNode = InMemoryPreferences()
     private val preferences = UserPreferences(preferencesNode)
 
@@ -66,14 +73,18 @@ class AccountListViewModelTest {
 
     private fun account(name: String) = Account(name = name, accountType = accountType)
 
-    private suspend fun viewModel(): AccountListViewModel {
-        fixture.connect(repository)
-        return AccountListViewModel(fixture.controller, getAccountGroups, navigator, preferences)
+    // The state with the loaded groups, before their balances load.
+    private fun loaded(groups: List<AccountGroup>, grouping: AccountGrouping = AccountGrouping.None) =
+        AccountListUiState(grouping, LoadState.Loaded(groups), accountBalances(groups, null))
+
+    private suspend fun viewModel(connect: Boolean = true): AccountListViewModel {
+        if (connect) fixture.connect(repository)
+        return AccountListViewModel(fixture.controller, getAccountGroups, getAccountBalances, navigator, preferences)
     }
 
     @Test
     fun `state stays loading while no repository is open`() = runTest {
-        AccountListViewModel(fixture.controller, getAccountGroups, navigator, preferences).state.test {
+        viewModel(connect = false).state.test {
             assertEquals(AccountListUiState(groups = LoadState.Loading), awaitItem())
             runCurrent()
             expectNoEvents()
@@ -107,7 +118,7 @@ class AccountListViewModelTest {
         viewModel().state.test {
             assertEquals(AccountListUiState(grouping = AccountGrouping.Bank, groups = LoadState.Loading), awaitItem())
             assertEquals(
-                AccountListUiState(grouping = AccountGrouping.Bank, groups = LoadState.Loaded(emptyList())),
+                loaded(emptyList(), AccountGrouping.Bank),
                 awaitItem(),
             )
         }
@@ -139,7 +150,7 @@ class AccountListViewModelTest {
 
         viewModel().state.test {
             assertEquals(AccountListUiState(groups = LoadState.Loading), awaitItem())
-            assertEquals(AccountListUiState(groups = LoadState.Loaded(groups)), awaitItem())
+            assertEquals(loaded(groups), awaitItem())
         }
     }
 
@@ -152,10 +163,10 @@ class AccountListViewModelTest {
 
         viewModel().state.test {
             assertEquals(AccountListUiState(groups = LoadState.Loading), awaitItem())
-            assertEquals(AccountListUiState(groups = LoadState.Loaded(first)), awaitItem())
+            assertEquals(loaded(first), awaitItem())
 
             groupsFlow.value = Result.success(second)
-            assertEquals(AccountListUiState(groups = LoadState.Loaded(second)), awaitItem())
+            assertEquals(loaded(second), awaitItem())
         }
     }
 
@@ -171,6 +182,40 @@ class AccountListViewModelTest {
     }
 
     @Test
+    fun `state emits the balances of the account groups once they load`() = runTest {
+        val checking = account("Checking")
+        val savings = account("Savings")
+        val groups = listOf(AccountGroup.ByAccountType(accountType, listOf(checking, savings)))
+        val balances = MutableSharedFlow<Result<Map<AccountId, Money>>>()
+        every { getAccountGroups(any(), any()) } returns flowOf(Result.success(groups))
+        every { getAccountBalances(any()) } returns balances
+
+        viewModel().state.test {
+            runCurrent()
+            assertEquals(loaded(groups), expectMostRecentItem())
+
+            balances.emit(Result.success(mapOf(checking.id to Money(100), savings.id to Money(200))))
+            runCurrent()
+            assertEquals(
+                AccountListUiState(
+                    groups = LoadState.Loaded(groups),
+                    balances = AccountBalances(
+                        accounts = mapOf(
+                            checking.id to LoadState.Loaded(Money(100)),
+                            savings.id to LoadState.Loaded(Money(200)),
+                        ),
+                        subtotals = mapOf(groups.single() to LoadState.Loaded(Money(300))),
+                        total = LoadState.Loaded(Money(300)),
+                    ),
+                ),
+                expectMostRecentItem(),
+            )
+        }
+
+        verify(exactly = 1) { getAccountBalances(repository) }
+    }
+
+    @Test
     fun `onGroupingChange switches to the groups for the new grouping`() = runTest {
         val all = listOf(AccountGroup.All(listOf(account("Checking"))))
         val byType = listOf(AccountGroup.ByAccountType(accountType, listOf(account("Checking"))))
@@ -183,13 +228,13 @@ class AccountListViewModelTest {
 
         viewModel.state.test {
             assertEquals(AccountListUiState(groups = LoadState.Loading), awaitItem())
-            assertEquals(AccountListUiState(groups = LoadState.Loaded(all)), awaitItem())
+            assertEquals(loaded(all), awaitItem())
 
             // The new grouping may show over the old groups until they're regrouped.
             viewModel.onGroupingChange(AccountGrouping.AccountType)
             runCurrent()
             assertEquals(
-                AccountListUiState(grouping = AccountGrouping.AccountType, groups = LoadState.Loaded(byType)),
+                loaded(byType, AccountGrouping.AccountType),
                 expectMostRecentItem(),
             )
         }

@@ -1,12 +1,16 @@
 package com.munzenberger.money.desktop.accounts
 
 import com.munzenberger.money.core.account.AccountGroup
+import com.munzenberger.money.data.api.Money
 import com.munzenberger.money.data.api.account.Account
 import com.munzenberger.money.desktop.components.columnLayoutKey
 import com.munzenberger.money.desktop.components.saveColumnLayout
 import com.munzenberger.money.desktop.strings
+import com.munzenberger.money.presentation.accounts.AccountBalances
 import com.munzenberger.money.presentation.accounts.maskAccountNumber
 import com.munzenberger.money.presentation.preferences.UserPreferences
+import com.munzenberger.money.presentation.state.LoadState
+import javafx.beans.property.ReadOnlyObjectWrapper
 import javafx.beans.property.ReadOnlyStringWrapper
 import javafx.collections.FXCollections
 import javafx.css.PseudoClass
@@ -35,6 +39,9 @@ class AccountListTable(
     private val onAccountSettingsClick: (Account) -> Unit,
 ) : TableView<AccountListRow>() {
 
+    // The balances last shown, which the balance column's cells show.
+    private var balances = AccountBalances()
+
     private val nameColumn = column(
         id = "name",
         titleKey = "account_name_column_title",
@@ -48,12 +55,24 @@ class AccountListTable(
         accountValue = { maskAccountNumber(it.number) }
     )
 
-    private val balanceColumn = column(
-        id = "balance",
-        titleKey = "balance_column_title",
-        subtotalValue = { strings.getString("subtotal_label") }
+    // Shows each account's balance and each group's subtotal from the balances last shown. Sorting by it orders the
+    // loaded amounts, after the ones that haven't loaded.
+    private val balanceColumn = TableColumn<AccountListRow, LoadState<Money>?>(
+        strings.getString("balance_column_title")
     ).apply {
+        id = "balance"
         styleClass += "amount-column"
+        setCellValueFactory { features ->
+            val balance = when (val row = features.value) {
+                is AccountListRow.GroupRow -> null
+                is AccountListRow.AccountRow -> balances.balance(row.account)
+                is AccountListRow.SubtotalRow -> balances.subtotal(row.group)
+                null -> null
+            }
+            ReadOnlyObjectWrapper(balance)
+        }
+        setCellFactory { AccountBalanceCell() }
+        comparator = compareBy(nullsFirst()) { (it as? LoadState.Loaded)?.value?.value }
     }
 
     // The groups last shown, so showing the same groups again doesn't rebuild the rows.
@@ -99,11 +118,20 @@ class AccountListTable(
         }
     }
 
+    /** Shows [balances] in the balance column, unless they're the balances already shown. */
+    fun setBalances(balances: AccountBalances) {
+        if (balances != this.balances) {
+            this.balances = balances
+            refresh()
+            // The rows' order changes with their balances when the table is sorted by them.
+            sort()
+        }
+    }
+
     private fun column(
         id: String,
         titleKey: String,
         groupValue: (AccountGroup) -> String = { "" },
-        subtotalValue: (AccountGroup) -> String = { "" },
         accountValue: (Account) -> String = { "" },
     ) = TableColumn<AccountListRow, String>(strings.getString(titleKey)).apply {
         this.id = id
@@ -111,7 +139,7 @@ class AccountListTable(
             val value = when (val row = features.value) {
                 is AccountListRow.GroupRow -> groupValue(row.group)
                 is AccountListRow.AccountRow -> accountValue(row.account)
-                is AccountListRow.SubtotalRow -> subtotalValue(row.group)
+                is AccountListRow.SubtotalRow -> ""
                 null -> ""
             }
             ReadOnlyStringWrapper(value)
