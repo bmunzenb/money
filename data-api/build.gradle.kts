@@ -1,8 +1,7 @@
 plugins {
     `java-library`
-    alias(libs.plugins.kotlinJvm)
+    id("money.kotlin-conventions")
     alias(libs.plugins.kotlinSerialization)
-    alias(libs.plugins.detekt)
 }
 
 dependencies {
