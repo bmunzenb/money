@@ -15,7 +15,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.datetime.LocalDate
 import kotlin.coroutines.CoroutineContext
 
-class SqlStatementRepository(
+internal class SqlStatementRepository(
     private val database: MoneyDatabase,
     private val context: CoroutineContext = Dispatchers.IO,
 ) : StatementRepository, StatementWriter {

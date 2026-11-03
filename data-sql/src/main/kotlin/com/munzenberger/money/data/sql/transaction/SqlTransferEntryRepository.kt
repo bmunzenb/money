@@ -5,9 +5,6 @@ import app.cash.sqldelight.coroutines.mapToList
 import com.munzenberger.money.data.api.Money
 import com.munzenberger.money.data.api.account.AccountId
 import com.munzenberger.money.data.api.transaction.TransactionId
-import com.munzenberger.money.data.api.transaction.TransactionStatus
-import com.munzenberger.money.data.api.transaction.TransactionStatusConstant
-import com.munzenberger.money.data.api.transaction.TransactionStatusId
 import com.munzenberger.money.data.api.transaction.TransferEntry
 import com.munzenberger.money.data.api.transaction.TransferEntryId
 import com.munzenberger.money.data.api.transaction.TransferEntryRepository
@@ -19,7 +16,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlin.coroutines.CoroutineContext
 import kotlin.uuid.Uuid
 
-class SqlTransferEntryRepository(
+internal class SqlTransferEntryRepository(
     private val database: MoneyDatabase,
     private val context: CoroutineContext = Dispatchers.IO,
 ) : TransferEntryRepository, TransferEntryWriter {
@@ -83,10 +80,7 @@ class SqlTransferEntryRepository(
         amount = Money(amount),
         number = number,
         memo = memo,
-        status = TransactionStatus(
-            id = TransactionStatusId(statusId),
-            value = TransactionStatusConstant.valueOf(statusValue),
-        ),
+        status = transactionStatus(statusId, statusValue),
         orderInTransaction = orderInTransaction.toInt(),
     )
 }

@@ -16,7 +16,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlin.coroutines.CoroutineContext
 import kotlin.uuid.Uuid
 
-class SqlCategoryEntryRepository(
+internal class SqlCategoryEntryRepository(
     private val database: MoneyDatabase,
     private val context: CoroutineContext = Dispatchers.IO,
 ) : CategoryEntryRepository, CategoryEntryWriter {
