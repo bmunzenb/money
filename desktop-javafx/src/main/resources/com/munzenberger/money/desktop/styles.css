@@ -64,6 +64,16 @@
     -fx-text-fill: -fx-text-background-color;
 }
 
+/*
+ * Gives negative amounts and error messages in a focused table's selected row the row's text color too, rather than
+ * the error color, so they show on the selection. An unfocused table's light selection keeps the error color, which
+ * shows on it. Negative amounts keep their parentheses either way.
+ */
+.table-view:focused > .virtual-flow > .clipped-container > .sheet > .table-row-cell:filled:selected .balance-amount:negative,
+.table-view:focused > .virtual-flow > .clipped-container > .sheet > .table-row-cell:filled:selected .error-message {
+    -fx-text-fill: -fx-text-background-color;
+}
+
 /* A form field's message about its invalid value, or about data it couldn't load. */
 .error-message {
     -fx-text-fill: #c62828;
