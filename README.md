@@ -7,6 +7,17 @@ This is a Kotlin JVM project with a JavaFX desktop app.
 * [/data-api](./data-api/src) defines the repository interfaces, and [/data-sql](./data-sql/src)
   implements them with SQLDelight.
 
+Module dependencies (solid arrows are `api`, dashed arrows are `implementation`):
+
+```mermaid
+graph TD
+    desktop-javafx -.-> presentation
+    desktop-javafx -.-> data-sql
+    presentation --> core
+    core --> data-api
+    data-sql --> data-api
+```
+
 ### Requirements
 
 The project builds and runs on JDK 25, declared as a Gradle toolchain (`jvmToolchain(25)` in
