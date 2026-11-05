@@ -74,7 +74,7 @@ class AccountListViewModel(
     }
 
     fun onAccountClick(account: Account) {
-        navigator.navigate { add(Route.TransactionList(account.id)) }
+        navigator.navigate { add(Route.AccountRegister(account.id)) }
     }
 
     fun onAccountSettingsClick(account: Account) {

@@ -288,7 +288,7 @@ class AccountListViewModelTest {
 
         viewModel().onAccountClick(account)
 
-        assertEquals(listOf(Route.AccountList, Route.TransactionList(account.id)), navigator.backStack.value)
+        assertEquals(listOf(Route.AccountList, Route.AccountRegister(account.id)), navigator.backStack.value)
     }
 
     @Test
