@@ -49,7 +49,7 @@ class UpdateAccountUseCaseTest {
     private val updateAccount = UpdateAccountUseCase()
 
     @Test
-    fun testUpdatesTheAccountWithTheGivenId() = runTest {
+    fun `updates the account with the given id`() = runTest {
         val result = updateAccount(repository, accountId, validInput, isClosed = false)
 
         val account = slot<Account>()
@@ -60,7 +60,7 @@ class UpdateAccountUseCaseTest {
     }
 
     @Test
-    fun testUpdatesTheAccountAsOpen() = runTest {
+    fun `updates the account as open`() = runTest {
         updateAccount(repository, accountId, validInput, isClosed = false)
 
         val account = slot<Account>()
@@ -69,7 +69,7 @@ class UpdateAccountUseCaseTest {
     }
 
     @Test
-    fun testUpdatesTheAccountAsClosed() = runTest {
+    fun `updates the account as closed`() = runTest {
         updateAccount(repository, accountId, validInput, isClosed = true)
 
         val account = slot<Account>()

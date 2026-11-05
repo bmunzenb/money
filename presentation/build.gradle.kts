@@ -11,7 +11,6 @@ dependencies {
     api(libs.koin.core.viewmodel)
     implementation(libs.kotlinx.serializationJson)
 
-    testImplementation(projects.dataSql)
     testImplementation(libs.kotlin.test)
     testImplementation(libs.kotlinx.coroutinesTest)
     testImplementation(libs.turbine)

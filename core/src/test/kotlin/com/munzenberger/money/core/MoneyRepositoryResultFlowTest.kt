@@ -15,7 +15,7 @@ class MoneyRepositoryResultFlowTest {
     private val repository = mockk<MoneyRepository>()
 
     @Test
-    fun testResultFlowAppliesSelectorToRepository() = runTest {
+    fun `resultFlow applies selector to repository`() = runTest {
         repository.resultFlow { flowOf(it) }.test {
             assertSame(repository, awaitItem().getOrThrow())
             awaitComplete()
@@ -23,7 +23,7 @@ class MoneyRepositoryResultFlowTest {
     }
 
     @Test
-    fun testResultFlowEmitsSuccessFromSelectedFlow() = runTest {
+    fun `resultFlow emits success from selected flow`() = runTest {
         repository.resultFlow { flowOf(1, 2) }.test {
             assertEquals(Result.success(1), awaitItem())
             assertEquals(Result.success(2), awaitItem())
@@ -32,7 +32,7 @@ class MoneyRepositoryResultFlowTest {
     }
 
     @Test
-    fun testResultFlowEmitsFailureWhenSelectedFlowThrows() = runTest {
+    fun `resultFlow emits failure when selected flow throws`() = runTest {
         val error = IllegalStateException("query failed")
 
         repository.resultFlow<Int> { flow { throw error } }.test {

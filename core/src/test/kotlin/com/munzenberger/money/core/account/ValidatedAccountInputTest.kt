@@ -57,7 +57,7 @@ class ValidatedAccountInputTest {
         assertIs<ValidatedAccountInput.Valid>(validate(accountId, isClosed))
 
     @Test
-    fun testInvalidInputReportsEveryError() {
+    fun `invalid input reports every error`() {
         val result = validInput.copy(name = "  ", accountType = null, initialBalance = "12abc")
             .validate(accountId, isClosed = false)
 
@@ -74,29 +74,29 @@ class ValidatedAccountInputTest {
     }
 
     @Test
-    fun testInitialBalanceTooLargeIsInvalid() {
+    fun `initial balance too large is invalid`() {
         val result = validInput.copy(initialBalance = "999999999999999999999").validate(accountId, isClosed = false)
 
         assertEquals(ValidatedAccountInput.Invalid(setOf(AccountInputError.InvalidInitialBalance)), result)
     }
 
     @Test
-    fun testAccountHasTheGivenId() {
+    fun `account has the given id`() {
         assertEquals(accountId, validInput.validAccount().account.id)
     }
 
     @Test
-    fun testAccountIsOpenUnlessClosed() {
+    fun `account is open unless closed`() {
         assertFalse(validInput.validAccount(isClosed = false).account.isClosed)
     }
 
     @Test
-    fun testAccountIsClosedWhenClosed() {
+    fun `account is closed when closed`() {
         assertTrue(validInput.validAccount(isClosed = true).account.isClosed)
     }
 
     @Test
-    fun testTrimsValuesAndOmitsBlankOptionals() {
+    fun `trims values and omits blank optionals`() {
         val (account, newBank) = validInput.copy(name = "  Checking  ", number = "  ", memo = " \n ").validAccount()
 
         assertEquals("Checking", account.name)
@@ -109,7 +109,7 @@ class ValidatedAccountInputTest {
     }
 
     @Test
-    fun testKeepsOptionalValues() {
+    fun `keeps optional values`() {
         val (account) = validInput.copy(
             number = " 1234-5678 ",
             initialBalance = "-1,234.5",
@@ -122,7 +122,7 @@ class ValidatedAccountInputTest {
     }
 
     @Test
-    fun testUsesTheExistingBank() {
+    fun `uses the existing bank`() {
         val bank = Bank(name = "First Bank")
 
         val (account, newBank) = validInput.copy(bankName = "First Bank", bank = bank).validAccount()
@@ -132,7 +132,7 @@ class ValidatedAccountInputTest {
     }
 
     @Test
-    fun testNamesANewBankForTheAccount() {
+    fun `names a new bank for the account`() {
         val (account, newBank) = validInput.copy(bankName = "  New Bank  ").validAccount()
 
         assertNotNull(newBank)

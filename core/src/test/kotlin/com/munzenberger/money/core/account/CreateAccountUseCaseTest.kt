@@ -46,7 +46,7 @@ class CreateAccountUseCaseTest {
     private val createAccount = CreateAccountUseCase()
 
     @Test
-    fun testAddsTheAccount() = runTest {
+    fun `adds the account`() = runTest {
         val result = createAccount(repository, validInput)
 
         val account = slot<Account>()
@@ -56,7 +56,7 @@ class CreateAccountUseCaseTest {
     }
 
     @Test
-    fun testAddsTheAccountAsOpen() = runTest {
+    fun `adds the account as open`() = runTest {
         createAccount(repository, validInput)
 
         val account = slot<Account>()
@@ -65,7 +65,7 @@ class CreateAccountUseCaseTest {
     }
 
     @Test
-    fun testEachAccountGetsANewId() = runTest {
+    fun `each account gets a new id`() = runTest {
         createAccount(repository, validInput)
         createAccount(repository, validInput)
 

@@ -26,14 +26,14 @@ class GetAccountBalancesUseCaseTest {
     private val getAccountBalances = GetAccountBalancesUseCase()
 
     @Test
-    fun testEmitsTheBalances() = runTest {
+    fun `emits the balances`() = runTest {
         getAccountBalances(repository).test {
             assertEquals(Result.success(mapOf(everyday to Money(100), bills to Money(200))), awaitItem())
         }
     }
 
     @Test
-    fun testEmitsNewBalancesWhenTheyChange() = runTest {
+    fun `emits new balances when they change`() = runTest {
         getAccountBalances(repository).test {
             awaitItem()
 
@@ -44,7 +44,7 @@ class GetAccountBalancesUseCaseTest {
     }
 
     @Test
-    fun testEmitsFailureWhenBalancesFlowThrows() = runTest {
+    fun `emits failure when balances flow throws`() = runTest {
         val error = IllegalStateException("query failed")
         every { repository.accountBalances } returns flow { throw error }
 

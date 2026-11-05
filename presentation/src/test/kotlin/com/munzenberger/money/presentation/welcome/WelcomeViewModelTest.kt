@@ -3,48 +3,24 @@ package com.munzenberger.money.presentation.welcome
 import app.cash.turbine.test
 import com.munzenberger.money.data.api.MoneyRepository
 import com.munzenberger.money.data.api.MoneyRepositoryConnectionStatus
-import com.munzenberger.money.data.sql.NewFileSqlMoneyRepositoryConnector
 import com.munzenberger.money.presentation.MoneyRepositoryControllerFixture
 import com.munzenberger.money.presentation.database.MoneyRepositoryController
 import io.mockk.coEvery
+import io.mockk.coVerify
 import io.mockk.mockk
 import io.mockk.verify
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
-import java.io.File
-import kotlin.test.AfterTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
-import kotlin.test.assertTrue
+import kotlin.test.assertSame
 
 class WelcomeViewModelTest {
 
     private val fixture = MoneyRepositoryControllerFixture()
     private val controller = fixture.controller
-    private val tempFiles = mutableListOf<File>()
-    private val tempDirs = mutableListOf<File>()
-
-    @AfterTest
-    fun cleanup() {
-        tempFiles.forEach { it.delete() }
-        tempDirs.forEach { it.deleteRecursively() }
-    }
-
-    private fun createTempFile(): File =
-        File.createTempFile("money-test", ".db").also {
-            it.deleteOnExit()
-            tempFiles.add(it)
-        }
-
-    // Not a valid SQLite database: opening/creating a database at this path fails.
-    private fun createUnusableDatabasePath(): File =
-        File.createTempFile("money-test-dir", "").apply {
-            delete()
-            mkdirs()
-            File(this, "placeholder").createNewFile()
-        }.also { tempDirs.add(it) }
 
     @Test
     fun `state starts as idle`() = runTest {
@@ -55,7 +31,7 @@ class WelcomeViewModelTest {
 
     @Test
     fun `state stays loading after a database is created successfully`() = runTest {
-        val file = createTempFile()
+        val file = fixture.newFile()
         val viewModel = WelcomeViewModel(controller)
 
         viewModel.state.test {
@@ -74,11 +50,7 @@ class WelcomeViewModelTest {
 
     @Test
     fun `state stays loading after a database is opened successfully`() = runTest {
-        val file = createTempFile()
-        val created = NewFileSqlMoneyRepositoryConnector(file).connect()
-        check(created is MoneyRepositoryConnectionStatus.Ready)
-        created.moneyRepository.close()
-
+        val file = fixture.addDatabase()
         val viewModel = WelcomeViewModel(controller)
 
         viewModel.state.test {
@@ -131,7 +103,7 @@ class WelcomeViewModelTest {
     }
 
     @Test
-    fun `connects to a demo database with banks and accounts when the demo is opened`() = runTest {
+    fun `connects to a demo database populated with demo data when the demo is opened`() = runTest {
         val viewModel = WelcomeViewModel(controller)
 
         controller.moneyRepository.test {
@@ -140,20 +112,19 @@ class WelcomeViewModelTest {
             viewModel.openDemo()
 
             val repository = assertNotNull(awaitItem())
-            assertTrue(repository.banks.first().isNotEmpty())
-            assertTrue(repository.accounts.first().isNotEmpty())
+            coVerify(exactly = 1) { fixture.populateDemoData(repository) }
         }
     }
 
     @Test
     fun `state shows an error when creating a database fails`() = runTest {
-        val path = createUnusableDatabasePath()
+        val file = fixture.unusableFile()
         val viewModel = WelcomeViewModel(controller)
 
         viewModel.state.test {
             assertEquals(WelcomeUiState(), awaitItem())
 
-            viewModel.createDatabase(path)
+            viewModel.createDatabase(file)
 
             assertEquals(WelcomeUiState(isLoading = true), awaitItem())
             assertEquals(WelcomeUiState(error = WelcomeError.CreateDatabaseFailed), awaitItem())
@@ -162,13 +133,13 @@ class WelcomeViewModelTest {
 
     @Test
     fun `dismissing an error clears it`() = runTest {
-        val path = createUnusableDatabasePath()
+        val file = fixture.unusableFile()
         val viewModel = WelcomeViewModel(controller)
 
         viewModel.state.test {
             assertEquals(WelcomeUiState(), awaitItem())
 
-            viewModel.createDatabase(path)
+            viewModel.createDatabase(file)
             assertEquals(WelcomeUiState(isLoading = true), awaitItem())
             assertEquals(WelcomeUiState(error = WelcomeError.CreateDatabaseFailed), awaitItem())
 
@@ -180,17 +151,17 @@ class WelcomeViewModelTest {
 
     @Test
     fun `starting another operation clears an error`() = runTest {
-        val path = createUnusableDatabasePath()
+        val file = fixture.unusableFile()
         val viewModel = WelcomeViewModel(controller)
 
         viewModel.state.test {
             assertEquals(WelcomeUiState(), awaitItem())
 
-            viewModel.createDatabase(path)
+            viewModel.createDatabase(file)
             assertEquals(WelcomeUiState(isLoading = true), awaitItem())
             assertEquals(WelcomeUiState(error = WelcomeError.CreateDatabaseFailed), awaitItem())
 
-            viewModel.openDatabase(createTempFile())
+            viewModel.openDatabase(fixture.addDatabase())
 
             assertEquals(WelcomeUiState(isLoading = true), awaitItem())
             cancelAndIgnoreRemainingEvents()
@@ -199,7 +170,7 @@ class WelcomeViewModelTest {
 
     @Test
     fun `connects to a newly created database when a database is created`() = runTest {
-        val file = createTempFile()
+        val file = fixture.newFile()
         val viewModel = WelcomeViewModel(controller)
 
         controller.moneyRepository.test {
@@ -207,7 +178,8 @@ class WelcomeViewModelTest {
 
             viewModel.createDatabase(file)
 
-            assertNotNull(awaitItem())
+            val repository = assertNotNull(awaitItem())
+            assertSame(fixture.databaseAt(file), repository)
         }
     }
 
@@ -220,7 +192,7 @@ class WelcomeViewModelTest {
         controller.moneyRepository.test {
             assertEquals(repository, awaitItem())
 
-            viewModel.createDatabase(createTempFile())
+            viewModel.createDatabase(fixture.newFile())
 
             assertNull(awaitItem())
             assertNotNull(awaitItem())
@@ -231,11 +203,8 @@ class WelcomeViewModelTest {
 
     @Test
     fun `connects to an existing database when it is opened`() = runTest {
-        val file = createTempFile()
-        val created = NewFileSqlMoneyRepositoryConnector(file).connect()
-        check(created is MoneyRepositoryConnectionStatus.Ready)
-        created.moneyRepository.close()
-
+        val existing = mockk<MoneyRepository>()
+        val file = fixture.addDatabase(existing)
         val viewModel = WelcomeViewModel(controller)
 
         controller.moneyRepository.test {
@@ -243,17 +212,13 @@ class WelcomeViewModelTest {
 
             viewModel.openDatabase(file)
 
-            assertNotNull(awaitItem())
+            assertSame(existing, awaitItem())
         }
     }
 
     @Test
     fun `closes any open repository before opening a database`() = runTest {
-        val file = createTempFile()
-        val created = NewFileSqlMoneyRepositoryConnector(file).connect()
-        check(created is MoneyRepositoryConnectionStatus.Ready)
-        created.moneyRepository.close()
-
+        val file = fixture.addDatabase()
         val repository = mockk<MoneyRepository>(relaxUnitFun = true)
         fixture.connect(repository)
         val viewModel = WelcomeViewModel(controller)

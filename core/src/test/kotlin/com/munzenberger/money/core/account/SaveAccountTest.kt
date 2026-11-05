@@ -59,7 +59,7 @@ class SaveAccountTest {
         }
 
     @Test
-    fun testInvalidInputIsReportedWithoutWriting() = runTest {
+    fun `invalid input is reported without writing`() = runTest {
         val result = saveAccount(validInput.copy(name = ""))
 
         assertEquals(SaveAccountResult.Invalid(setOf(AccountInputError.BlankName)), result)
@@ -68,7 +68,7 @@ class SaveAccountTest {
     }
 
     @Test
-    fun testWritesTheValidatedAccount() = runTest {
+    fun `writes the validated account`() = runTest {
         val result = saveAccount(validInput.copy(name = "  Checking  "))
 
         val account = written.single()
@@ -79,14 +79,14 @@ class SaveAccountTest {
     }
 
     @Test
-    fun testWritesTheAccountAsClosed() = runTest {
+    fun `writes the account as closed`() = runTest {
         saveAccount(validInput, isClosed = true)
 
         assertTrue(written.single().isClosed)
     }
 
     @Test
-    fun testAddsANewBankBeforeWritingTheAccount() = runTest {
+    fun `adds a new bank before writing the account`() = runTest {
         saveAccount(validInput.copy(bankName = "New Bank"))
 
         val bank = slot<Bank>()
@@ -99,14 +99,14 @@ class SaveAccountTest {
     }
 
     @Test
-    fun testDoesNotAddAnExistingBank() = runTest {
+    fun `does not add an existing bank`() = runTest {
         saveAccount(validInput.copy(bankName = "First Bank", bank = Bank(name = "First Bank")))
 
         verify(exactly = 0) { writer.add(any<Bank>()) }
     }
 
     @Test
-    fun testFailsWhenTheTransactionThrows() = runTest {
+    fun `fails when the transaction throws`() = runTest {
         val error = IllegalStateException("write failed")
         coEvery { repository.transaction<Unit>(any()) } throws error
         val result = saveAccount(validInput)
