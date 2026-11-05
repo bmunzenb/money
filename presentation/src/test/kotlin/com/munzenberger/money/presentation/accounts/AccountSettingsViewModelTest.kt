@@ -24,6 +24,7 @@ import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.slot
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -31,6 +32,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
@@ -82,7 +84,11 @@ class AccountSettingsViewModelTest {
     ) = mockk<MoneyRepository>(relaxUnitFun = true) {
         every { this@mockk.accountTypes } returns accountTypes
         every { this@mockk.banks } returns banks
-        every { this@mockk.accounts } returns accounts
+        val accountId = slot<AccountId>()
+        every { accountById(capture(accountId)) } answers {
+            val id = accountId.captured
+            accounts.map { list -> list.firstOrNull { it.id == id } }
+        }
     }
 
     private fun <T> failingFlow(): Flow<T> = flow { error("query failed") }
@@ -608,7 +614,7 @@ class AccountSettingsViewModelTest {
     }
 
     @Test
-    fun `an existing account is an error when the accounts can't be loaded`() = runTest {
+    fun `an existing account is an error when it can't be loaded`() = runTest {
         val viewModel = viewModel(Route.AccountSettings(existingAccount.id))
 
         fixture.connect(repository(accounts = failingFlow()))

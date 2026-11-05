@@ -42,6 +42,7 @@ import kotlin.test.Test
 import kotlin.test.assertContains
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
+import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -408,5 +409,42 @@ class SqlAccountRepositoryTest {
         repository.add(account)
         repository.remove(account)
         assertTrue(repository.accounts.first().isEmpty())
+    }
+
+    @Test
+    fun `accountById emits null when no account has the id`() = runTest {
+        val repository = createRepository(UnconfinedTestDispatcher(testScheduler))
+        repository.add(Account(name = "Other", accountType = checking))
+        assertNull(repository.accountById(AccountId()).first())
+    }
+
+    @Test
+    fun `accountById emits the account with the id`() = runTest {
+        val repository = createRepository(UnconfinedTestDispatcher(testScheduler))
+        val account = Account(
+            name = "Checking",
+            number = "1234",
+            accountType = checking,
+            initialBalance = Money(1000),
+            memo = "Joint",
+        )
+        repository.add(account)
+        repository.add(Account(name = "Credit Card", accountType = credit))
+        assertEquals(account, repository.accountById(account.id).first())
+    }
+
+    @Test
+    fun `accountById re-emits when the account is updated and null when it's removed`() = runTest {
+        val repository = createRepository(UnconfinedTestDispatcher(testScheduler))
+        val account = Account(name = "Checking", accountType = checking)
+        repository.add(account)
+        val emissions = mutableListOf<Account?>()
+        backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
+            repository.accountById(account.id).toList(emissions)
+        }
+        val updated = account.copy(name = "Renamed", isClosed = true)
+        repository.update(updated)
+        repository.removeById(account.id)
+        assertEquals(listOf(account, updated, null), emissions)
     }
 }

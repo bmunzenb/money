@@ -2,6 +2,7 @@ package com.munzenberger.money.data.sql.account
 
 import app.cash.sqldelight.coroutines.asFlow
 import app.cash.sqldelight.coroutines.mapToList
+import app.cash.sqldelight.coroutines.mapToOneOrNull
 import com.munzenberger.money.data.api.Money
 import com.munzenberger.money.data.api.account.Account
 import com.munzenberger.money.data.api.account.AccountId
@@ -14,6 +15,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlin.coroutines.CoroutineContext
+import kotlin.uuid.Uuid
 
 internal class SqlAccountRepository(
     private val database: MoneyDatabase,
@@ -21,23 +23,14 @@ internal class SqlAccountRepository(
 ) : AccountRepository, AccountWriter {
 
     override val accounts: Flow<List<Account>> = database.accountQueries
-        .selectAll {
-                id, name, number, bankId, initialBalance, memo, isClosed,
-                typeId, typeValue, typeClassId, typeClassValue,
-            ->
-            Account(
-                id = AccountId(id),
-                name = name,
-                number = number,
-                accountType = accountType(typeId, typeValue, typeClassId, typeClassValue),
-                bankId = bankId?.let { BankId(it) },
-                initialBalance = Money(initialBalance),
-                memo = memo,
-                isClosed = isClosed,
-            )
-        }
+        .selectAll(::account)
         .asFlow()
         .mapToList(context)
+
+    override fun accountById(accountId: AccountId): Flow<Account?> = database.accountQueries
+        .selectById(accountId.value, ::account)
+        .asFlow()
+        .mapToOneOrNull(context)
 
     /**
      * Emits the balance of each account, keyed by its id: its initial balance plus the entries of its own
@@ -79,3 +72,28 @@ internal class SqlAccountRepository(
         database.accountQueries.deleteById(accountId.value)
     }
 }
+
+/** Maps a row of the `AccountWithType` view, which `selectAll` and `selectById` select from, to an [Account]. */
+@Suppress("LongParameterList")
+private fun account(
+    id: Uuid,
+    name: String,
+    number: String?,
+    bankId: Uuid?,
+    initialBalance: Long,
+    memo: String?,
+    isClosed: Boolean,
+    typeId: Long,
+    typeValue: String,
+    typeClassId: Long,
+    typeClassValue: String,
+) = Account(
+    id = AccountId(id),
+    name = name,
+    number = number,
+    accountType = accountType(typeId, typeValue, typeClassId, typeClassValue),
+    bankId = bankId?.let { BankId(it) },
+    initialBalance = Money(initialBalance),
+    memo = memo,
+    isClosed = isClosed,
+)

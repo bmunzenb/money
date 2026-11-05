@@ -78,9 +78,7 @@ class AccountSettingsViewModel(
      * name; without them, saving would drop the bank, so the account counts as not loaded.
      */
     private suspend fun loadExistingAccount(accountId: AccountId) {
-        val account = repositoryController.resultFlow { it.accounts }.first()
-            .map { accounts -> accounts.firstOrNull { it.id == accountId } }
-            .getOrNull()
+        val account = repositoryController.resultFlow { it.accountById(accountId) }.first().getOrNull()
         val banks = repositoryController.resultFlow { it.banks }.first().getOrNull()
 
         if (account == null || banks == null) {

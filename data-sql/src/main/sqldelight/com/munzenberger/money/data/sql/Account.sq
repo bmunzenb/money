@@ -14,7 +14,8 @@ CREATE TABLE Account (
     FOREIGN KEY (bank_id) REFERENCES Bank (id)
 );
 
-selectAll:
+-- Each account with its type and the type's class: the columns that selectAll and selectById map to an Account.
+CREATE VIEW AccountWithType AS
 SELECT
     Account.id AS id,
     Account.name AS name,
@@ -30,6 +31,12 @@ SELECT
 FROM Account
 JOIN AccountType ON Account.account_type_id = AccountType.id
 JOIN AccountClass ON AccountType.class_id = AccountClass.id;
+
+selectAll:
+SELECT * FROM AccountWithType;
+
+selectById:
+SELECT * FROM AccountWithType WHERE id = ?;
 
 insert:
 INSERT INTO Account (id, name, number, account_type_id, bank_id, initial_balance, memo, is_closed) VALUES (?, ?, ?, ?, ?, ?, ?, ?);
