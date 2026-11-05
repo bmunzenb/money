@@ -9,7 +9,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  build:
+  build-and-test-pull-request:
     runs-on: ubuntu-latest
 
     steps:
