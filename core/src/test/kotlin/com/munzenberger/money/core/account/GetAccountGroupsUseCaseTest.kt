@@ -58,7 +58,7 @@ class GetAccountGroupsUseCaseTest {
     private val getAccountGroups = GetAccountGroupsUseCase()
 
     @Test
-    fun testNoGroupingHasOneGroupWithAllAccountsSortedByName() = runTest {
+    fun `no grouping has one group with all accounts sorted by name`() = runTest {
         getAccountGroups(repository, flowOf(AccountGrouping.None)).test {
             assertEquals(
                 Result.success(listOf(AccountGroup.All(listOf(bills, everyday, rainyDay, visa)))),
@@ -68,7 +68,7 @@ class GetAccountGroupsUseCaseTest {
     }
 
     @Test
-    fun testNoGroupingWithNoAccountsHasNoGroups() = runTest {
+    fun `no grouping with no accounts has no groups`() = runTest {
         accounts.value = emptyList()
 
         getAccountGroups(repository, flowOf(AccountGrouping.None)).test {
@@ -77,7 +77,7 @@ class GetAccountGroupsUseCaseTest {
     }
 
     @Test
-    fun testGroupsByAccountTypeInConstantOrder() = runTest {
+    fun `groups by account type in constant order`() = runTest {
         getAccountGroups(repository, flowOf(AccountGrouping.AccountType)).test {
             assertEquals(
                 Result.success(
@@ -93,7 +93,7 @@ class GetAccountGroupsUseCaseTest {
     }
 
     @Test
-    fun testGroupsByAccountClassInConstantOrder() = runTest {
+    fun `groups by account class in constant order`() = runTest {
         getAccountGroups(repository, flowOf(AccountGrouping.AccountClass)).test {
             assertEquals(
                 Result.success(
@@ -108,7 +108,7 @@ class GetAccountGroupsUseCaseTest {
     }
 
     @Test
-    fun testGroupsByBankSortedByNameWithNoBankLast() = runTest {
+    fun `groups by bank sorted by name with no bank last`() = runTest {
         accounts.value += orphan
 
         getAccountGroups(repository, flowOf(AccountGrouping.Bank)).test {
@@ -126,7 +126,7 @@ class GetAccountGroupsUseCaseTest {
     }
 
     @Test
-    fun testGroupingWithNoAccountsHasNoGroups() = runTest {
+    fun `grouping with no accounts has no groups`() = runTest {
         accounts.value = emptyList()
 
         getAccountGroups(repository, flowOf(AccountGrouping.Bank)).test {
@@ -135,7 +135,7 @@ class GetAccountGroupsUseCaseTest {
     }
 
     @Test
-    fun testEmitsNewGroupsWhenAccountsChange() = runTest {
+    fun `emits new groups when accounts change`() = runTest {
         getAccountGroups(repository, flowOf(AccountGrouping.AccountClass)).test {
             awaitItem()
 
@@ -146,7 +146,7 @@ class GetAccountGroupsUseCaseTest {
     }
 
     @Test
-    fun testRegroupsWithoutReadingAccountsAgainWhenGroupingChanges() = runTest {
+    fun `regroups without reading accounts again when grouping changes`() = runTest {
         var accountReads = 0
         val counting = mockk<MoneyRepository> {
             every { accounts } returns this@GetAccountGroupsUseCaseTest.accounts.onStart { accountReads++ }
@@ -173,7 +173,7 @@ class GetAccountGroupsUseCaseTest {
     }
 
     @Test
-    fun testEmitsNewGroupsWhenBanksChange() = runTest {
+    fun `emits new groups when banks change`() = runTest {
         val renamed = acme.copy(name = "Zzz Bank")
 
         getAccountGroups(repository, flowOf(AccountGrouping.Bank)).test {
@@ -195,7 +195,7 @@ class GetAccountGroupsUseCaseTest {
     }
 
     @Test
-    fun testEmitsFailureWhenAccountsFlowThrows() = runTest {
+    fun `emits failure when accounts flow throws`() = runTest {
         val error = IllegalStateException("query failed")
         val failing = mockk<MoneyRepository> {
             every { accounts } returns flow { throw error }

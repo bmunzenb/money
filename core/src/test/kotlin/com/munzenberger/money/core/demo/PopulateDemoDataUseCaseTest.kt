@@ -46,7 +46,7 @@ class PopulateDemoDataUseCaseTest {
     private val populateDemoData = PopulateDemoDataUseCase()
 
     @Test
-    fun testAddsSeveralBanksEachWithAFewAccounts() = runTest {
+    fun `adds several banks each with a few accounts`() = runTest {
         val result = populateDemoData(repository)
 
         assertEquals(PopulateDemoDataResult.Success, result)
@@ -57,7 +57,7 @@ class PopulateDemoDataUseCaseTest {
     }
 
     @Test
-    fun testEveryAccountBelongsToAnAddedBank() = runTest {
+    fun `every account belongs to an added bank`() = runTest {
         populateDemoData(repository)
 
         val bankIds = banks.map { it.id }.toSet()
@@ -65,7 +65,7 @@ class PopulateDemoDataUseCaseTest {
     }
 
     @Test
-    fun testAccountsUseVaryingTypesFromTheRepository() = runTest {
+    fun `accounts use varying types from the repository`() = runTest {
         populateDemoData(repository)
 
         assertTrue(accounts.all { it.accountType in accountTypes })
@@ -73,7 +73,7 @@ class PopulateDemoDataUseCaseTest {
     }
 
     @Test
-    fun testAddsEachBankBeforeItsAccounts() = runTest {
+    fun `adds each bank before its accounts`() = runTest {
         populateDemoData(repository)
 
         verifyOrder {
@@ -85,7 +85,7 @@ class PopulateDemoDataUseCaseTest {
     }
 
     @Test
-    fun testReturnsFailureWhenTheWriteFails() = runTest {
+    fun `returns failure when the write fails`() = runTest {
         val error = IllegalStateException("write failed")
         coEvery { repository.transaction<Unit>(any()) } throws error
 
@@ -95,7 +95,7 @@ class PopulateDemoDataUseCaseTest {
     }
 
     @Test
-    fun testReturnsFailureWhenAnAccountTypeIsMissing() = runTest {
+    fun `returns failure when an account type is missing`() = runTest {
         every { repository.accountTypes } returns flowOf(emptyList())
 
         val result = populateDemoData(repository)

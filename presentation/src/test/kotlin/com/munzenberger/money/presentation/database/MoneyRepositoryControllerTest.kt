@@ -76,14 +76,14 @@ class MoneyRepositoryControllerTest {
     }
 
     @Test
-    fun testInitialValueIsNull() {
+    fun `moneyRepository is initially null`() {
         val controller = controller()
 
         assertNull(controller.moneyRepository.value)
     }
 
     @Test
-    fun testOpenDatabaseSetsRepositoryWhenReady() = runTest {
+    fun `openDatabase sets repository when ready`() = runTest {
         val repository = mockk<MoneyRepository>()
         val controller = controller(connector(MoneyRepositoryConnectionStatus.Ready(repository)))
 
@@ -93,7 +93,7 @@ class MoneyRepositoryControllerTest {
     }
 
     @Test
-    fun testOpenDatabaseConnectsToExistingDatabase() = runTest {
+    fun `openDatabase connects to existing database`() = runTest {
         val connector = connector(MoneyRepositoryConnectionStatus.Ready(mockk()))
         val controller = controller(connector)
 
@@ -104,7 +104,7 @@ class MoneyRepositoryControllerTest {
     }
 
     @Test
-    fun testOpenDatabaseLeavesRepositoryNullWhenFailed() = runTest {
+    fun `openDatabase leaves repository null when failed`() = runTest {
         val controller = controller(connector(MoneyRepositoryConnectionStatus.Failed(IllegalStateException())))
 
         controller.openDatabase(file)
@@ -113,7 +113,7 @@ class MoneyRepositoryControllerTest {
     }
 
     @Test
-    fun testOpenDatabaseReplacesAndClosesExistingRepository() = runTest {
+    fun `openDatabase replaces and closes existing repository`() = runTest {
         val first = mockk<MoneyRepository>(relaxUnitFun = true)
         val second = mockk<MoneyRepository>()
         val controller = controller(
@@ -129,7 +129,7 @@ class MoneyRepositoryControllerTest {
     }
 
     @Test
-    fun testOpenDatabaseClosesExistingRepositoryEvenWhenFailed() = runTest {
+    fun `openDatabase closes existing repository even when failed`() = runTest {
         val first = mockk<MoneyRepository>(relaxUnitFun = true)
         val controller = controller(
             connector(MoneyRepositoryConnectionStatus.Ready(first)),
@@ -144,7 +144,7 @@ class MoneyRepositoryControllerTest {
     }
 
     @Test
-    fun testCreateDatabaseSetsRepositoryWhenReady() = runTest {
+    fun `createDatabase sets repository when ready`() = runTest {
         val repository = mockk<MoneyRepository>()
         val connector = connector(MoneyRepositoryConnectionStatus.Ready(repository))
         val controller = controller(connector)
@@ -157,7 +157,7 @@ class MoneyRepositoryControllerTest {
     }
 
     @Test
-    fun testCreateDatabaseDeletesExistingFileBeforeCreating() = runTest {
+    fun `createDatabase deletes existing file before creating`() = runTest {
         val existing = createTempFile()
         var existedAtCreate = true
         val connector = mockk<MoneyRepositoryConnector> {
@@ -174,7 +174,7 @@ class MoneyRepositoryControllerTest {
     }
 
     @Test
-    fun testCreateDatabaseFailsWithoutCreatingWhenExistingFileCantBeDeleted() = runTest {
+    fun `createDatabase fails without creating when existing file can't be deleted`() = runTest {
         // A directory that isn't empty can't be deleted.
         val directory = Files.createTempDirectory("money-test").toFile()
         val child = File(directory, "child").apply { createNewFile() }
@@ -191,7 +191,7 @@ class MoneyRepositoryControllerTest {
     }
 
     @Test
-    fun testOverlappingOpensCloseTheFirstRepository() = runTest {
+    fun `overlapping opens close the first repository`() = runTest {
         val first = mockk<MoneyRepository>(relaxUnitFun = true)
         val second = mockk<MoneyRepository>()
         val firstConnected = CompletableDeferred<Unit>()
@@ -216,7 +216,7 @@ class MoneyRepositoryControllerTest {
     }
 
     @Test
-    fun testOpenDemoCreatesDatabaseAndSetsRepositoryWhenReady() = runTest {
+    fun `openDemo creates database and sets repository when ready`() = runTest {
         val repository = mockk<MoneyRepository>()
         val connector = connector(MoneyRepositoryConnectionStatus.Ready(repository))
         val controller = controller(connector)
@@ -229,7 +229,7 @@ class MoneyRepositoryControllerTest {
     }
 
     @Test
-    fun testOpenDemoPopulatesDemoDataBeforeSettingRepository() = runTest {
+    fun `openDemo populates demo data before setting repository`() = runTest {
         val repository = mockk<MoneyRepository>()
         val controller = controller(connector(MoneyRepositoryConnectionStatus.Ready(repository)))
         coEvery { populateDemoData(repository) } answers {
@@ -244,7 +244,7 @@ class MoneyRepositoryControllerTest {
     }
 
     @Test
-    fun testOpenDemoFailsAndClosesRepositoryWhenPopulatingFails() = runTest {
+    fun `openDemo fails and closes repository when populating fails`() = runTest {
         val repository = mockk<MoneyRepository>(relaxUnitFun = true)
         val error = IllegalStateException("write failed")
         coEvery { populateDemoData(repository) } returns PopulateDemoDataResult.Failure(error)
@@ -258,7 +258,7 @@ class MoneyRepositoryControllerTest {
     }
 
     @Test
-    fun testOpenDemoClosesRepositoryWhenPopulatingThrows() = runTest {
+    fun `openDemo closes repository when populating throws`() = runTest {
         val repository = mockk<MoneyRepository>(relaxUnitFun = true)
         coEvery { populateDemoData(repository) } throws IllegalStateException("unexpected")
         val controller = controller(connector(MoneyRepositoryConnectionStatus.Ready(repository)))
@@ -270,7 +270,7 @@ class MoneyRepositoryControllerTest {
     }
 
     @Test
-    fun testOpenDemoReplacesAndClosesExistingRepository() = runTest {
+    fun `openDemo replaces and closes existing repository`() = runTest {
         val first = mockk<MoneyRepository>(relaxUnitFun = true)
         val second = mockk<MoneyRepository>()
         val controller = controller(
@@ -286,7 +286,7 @@ class MoneyRepositoryControllerTest {
     }
 
     @Test
-    fun testCloseClosesRepository() = runTest {
+    fun `close closes repository`() = runTest {
         val repository = mockk<MoneyRepository>(relaxUnitFun = true)
         val controller = controller(connector(MoneyRepositoryConnectionStatus.Ready(repository)))
         controller.openDatabase(file)
@@ -297,7 +297,7 @@ class MoneyRepositoryControllerTest {
     }
 
     @Test
-    fun testCloseResetsToNull() = runTest {
+    fun `close resets to null`() = runTest {
         val controller = controller(connector(MoneyRepositoryConnectionStatus.Ready(mockk(relaxUnitFun = true))))
         controller.openDatabase(file)
 
@@ -307,7 +307,7 @@ class MoneyRepositoryControllerTest {
     }
 
     @Test
-    fun testCloseWithoutRepositoryStaysNull() {
+    fun `close without repository stays null`() {
         val controller = controller()
 
         controller.close()
@@ -316,7 +316,7 @@ class MoneyRepositoryControllerTest {
     }
 
     @Test
-    fun testResultFlowEmitsSuccessFromSelectedFlow() = runTest {
+    fun `resultFlow emits success from selected flow`() = runTest {
         val repository = mockk<MoneyRepository>()
         val controller = controller(connector(MoneyRepositoryConnectionStatus.Ready(repository)))
 
@@ -329,7 +329,7 @@ class MoneyRepositoryControllerTest {
     }
 
     @Test
-    fun testResultFlowEmitsFailureWhenSelectedFlowThrows() = runTest {
+    fun `resultFlow emits failure when selected flow throws`() = runTest {
         val error = IllegalStateException("query failed")
         val controller = controller(connector(MoneyRepositoryConnectionStatus.Ready(mockk())))
 
@@ -341,7 +341,7 @@ class MoneyRepositoryControllerTest {
     }
 
     @Test
-    fun testResultFlowRecoversWhenNewRepositoryIsConnected() = runTest {
+    fun `resultFlow recovers when new repository is connected`() = runTest {
         val failing = mockk<MoneyRepository>(relaxUnitFun = true)
         val working = mockk<MoneyRepository>()
         val error = IllegalStateException("query failed")
