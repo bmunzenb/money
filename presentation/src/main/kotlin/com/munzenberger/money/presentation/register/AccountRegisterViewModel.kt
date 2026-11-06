@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.munzenberger.money.core.account.GetAccountBalanceUseCase
 import com.munzenberger.money.core.account.GetAccountUseCase
 import com.munzenberger.money.core.register.GetAccountRegisterUseCase
+import com.munzenberger.money.data.api.register.RegisterEntry
 import com.munzenberger.money.presentation.database.MoneyRepositoryController
 import com.munzenberger.money.presentation.database.flow
 import com.munzenberger.money.presentation.navigation.Navigator
@@ -26,9 +27,11 @@ class AccountRegisterViewModel(
 
     /**
      * Follows the route's account, its balance, and its register entries in the open repository, and stays loading
-     * while none is open. Each shows as soon as it arrives, and all start loading again when another repository opens.
-     * A missing account, such as one removed while its register is open, fails like a failed read, though its entries
-     * load as an empty list.
+     * while none is open. All start loading again when another repository opens. A missing account, such as one removed
+     * while its register is open, fails like a failed read.
+     *
+     * The balance and entries are shown in the account's sign: a liability's amounts are negated, so what's owed on it
+     * shows as positive. Since that depends on the account, they stay loading until it loads, and fail if it does.
      */
     val state: StateFlow<AccountRegisterUiState> = repositoryController
         .flow { repository ->
@@ -36,8 +39,13 @@ class AccountRegisterViewModel(
                 getAccount(repository, route.accountId).toLoadStates(),
                 getAccountBalance(repository, route.accountId).toLoadStates(),
                 getAccountRegister(repository, route.accountId).toLoadStates(),
-                ::AccountRegisterUiState,
-            )
+            ) { account, balance, entries ->
+                AccountRegisterUiState(
+                    account = account,
+                    balance = balance.inSignOf(account) { -it },
+                    entries = entries.inSignOf(account) { it.map(RegisterEntry::negated) },
+                )
+            }
         }
         .stateIn(
             scope = viewModelScope,

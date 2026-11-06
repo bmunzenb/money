@@ -11,14 +11,18 @@ import com.munzenberger.money.data.api.account.Account
 import com.munzenberger.money.data.api.account.AccountClass
 import com.munzenberger.money.data.api.account.AccountClassConstant
 import com.munzenberger.money.data.api.account.AccountClassId
+import com.munzenberger.money.data.api.account.AccountId
 import com.munzenberger.money.data.api.account.AccountType
 import com.munzenberger.money.data.api.account.AccountTypeConstant
 import com.munzenberger.money.data.api.account.AccountTypeId
+import com.munzenberger.money.data.api.category.CategoryId
 import com.munzenberger.money.data.api.register.RegisterEntry
+import com.munzenberger.money.data.api.transaction.CategoryEntryId
 import com.munzenberger.money.data.api.transaction.TransactionId
 import com.munzenberger.money.data.api.transaction.TransactionStatus
 import com.munzenberger.money.data.api.transaction.TransactionStatusConstant
 import com.munzenberger.money.data.api.transaction.TransactionStatusId
+import com.munzenberger.money.data.api.transaction.TransferEntryId
 import com.munzenberger.money.presentation.MoneyRepositoryControllerFixture
 import com.munzenberger.money.presentation.navigation.Navigator
 import com.munzenberger.money.presentation.navigation.Route
@@ -78,6 +82,15 @@ class AccountRegisterViewModelTest {
             id = AccountTypeId(2),
             accountClass = AccountClass(id = AccountClassId(1), value = AccountClassConstant.Assets),
             value = AccountTypeConstant.Checking,
+        ),
+    )
+
+    private val creditCard = Account(
+        name = "Credit Card",
+        accountType = AccountType(
+            id = AccountTypeId(5),
+            accountClass = AccountClass(id = AccountClassId(2), value = AccountClassConstant.Liabilities),
+            value = AccountTypeConstant.Credit,
         ),
     )
 
@@ -152,7 +165,10 @@ class AccountRegisterViewModelTest {
 
         viewModel().state.test {
             skipItems(1)
-            assertEquals(AccountRegisterUiState(account = LoadState.Error), awaitItem())
+            assertEquals(
+                AccountRegisterUiState(account = LoadState.Error, balance = LoadState.Error, entries = LoadState.Error),
+                awaitItem(),
+            )
         }
     }
 
@@ -166,7 +182,10 @@ class AccountRegisterViewModelTest {
 
             results.value = Result.failure(EntityNotFoundException("No account"))
 
-            assertEquals(AccountRegisterUiState(account = LoadState.Error), awaitItem())
+            assertEquals(
+                AccountRegisterUiState(account = LoadState.Error, balance = LoadState.Error, entries = LoadState.Error),
+                awaitItem(),
+            )
         }
     }
 
@@ -176,7 +195,10 @@ class AccountRegisterViewModelTest {
 
         viewModel().state.test {
             skipItems(1)
-            assertEquals(AccountRegisterUiState(account = LoadState.Error), awaitItem())
+            assertEquals(
+                AccountRegisterUiState(account = LoadState.Error, balance = LoadState.Error, entries = LoadState.Error),
+                awaitItem(),
+            )
         }
     }
 
@@ -210,16 +232,76 @@ class AccountRegisterViewModelTest {
     }
 
     @Test
-    fun `state shows the balance while the account loads`() = runTest {
+    fun `state's balance and entries stay loading while the account loads`() = runTest {
         every { getAccount(any(), any()) } returns emptyFlow()
         every { getAccountBalance(any(), any()) } returns flowOf(Result.success(Money(1000)))
+        every { getAccountRegister(any(), any()) } returns flowOf(Result.success(listOf(entry)))
 
         viewModel().state.test {
-            skipItems(1)
+            runCurrent()
+            assertEquals(AccountRegisterUiState(), expectMostRecentItem())
+        }
+    }
+
+    @Test
+    fun `state negates a liability account's balance and entries`() = runTest {
+        val categoryEntry = RegisterEntry.Transaction.Entry.Category(
+            categoryEntryId = CategoryEntryId(),
+            categoryId = CategoryId(),
+            categoryName = "Dining",
+            parentCategoryId = null,
+            parentCategoryName = null,
+            amount = Money(-2500),
+        )
+        val purchase = entry.copy(entries = listOf(categoryEntry))
+        val transfer = RegisterEntry.Transfer(
+            transferEntryId = TransferEntryId(),
+            payeeId = null,
+            payeeName = null,
+            date = LocalDate(2026, 1, 20),
+            amount = Money(5000),
+            balance = Money(2500),
+            number = null,
+            memo = null,
+            status = entry.status,
+            accountId = AccountId(),
+            accountName = "Checking",
+        )
+        every { getAccount(any(), any()) } returns flowOf(Result.success(creditCard))
+        every { getAccountBalance(any(), any()) } returns flowOf(Result.success(Money(-2500)))
+        every { getAccountRegister(any(), any()) } returns flowOf(Result.success(listOf(purchase, transfer)))
+
+        viewModel().state.test {
+            runCurrent()
+            val state = expectMostRecentItem()
+            assertEquals(LoadState.Loaded(Money(2500)), state.balance)
             assertEquals(
-                AccountRegisterUiState(account = LoadState.Loading, balance = LoadState.Loaded(Money(1000))),
-                awaitItem(),
+                LoadState.Loaded(
+                    listOf(
+                        purchase.copy(
+                            amount = Money(2500),
+                            balance = Money(-7500),
+                            entries = listOf(categoryEntry.copy(amount = Money(2500))),
+                        ),
+                        transfer.copy(amount = Money(-5000), balance = Money(-2500)),
+                    )
+                ),
+                state.entries,
             )
+        }
+    }
+
+    @Test
+    fun `state keeps an asset account's balance and entries' signs`() = runTest {
+        every { getAccount(any(), any()) } returns flowOf(Result.success(account))
+        every { getAccountBalance(any(), any()) } returns flowOf(Result.success(Money(-2500)))
+        every { getAccountRegister(any(), any()) } returns flowOf(Result.success(listOf(entry)))
+
+        viewModel().state.test {
+            runCurrent()
+            val state = expectMostRecentItem()
+            assertEquals(LoadState.Loaded(Money(-2500)), state.balance)
+            assertEquals(LoadState.Loaded(listOf(entry)), state.entries)
         }
     }
 

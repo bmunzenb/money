@@ -86,7 +86,7 @@ class AccountRegisterScreen(
 
     // Stays at the bottom of the screen, since the table above it takes the rest of the height. Its labels inherit the
     // bold font.
-    private val accountBalance = AccountBalanceView(strings.getString("account_balance_label")).apply {
+    private val accountBalance = AccountBalanceView(strings.getString("register_balance_label")).apply {
         styleClass += "total-balance"
     }
 
