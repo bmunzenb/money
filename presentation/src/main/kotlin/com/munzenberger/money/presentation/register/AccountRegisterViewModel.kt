@@ -47,6 +47,7 @@ class AccountRegisterViewModel(
     }
 
     fun onNewTransactionClick() {
+        if (!state.value.canAddTransaction) return
         navigator.navigate { add(Route.NewTransaction(route.accountId)) }
     }
 }

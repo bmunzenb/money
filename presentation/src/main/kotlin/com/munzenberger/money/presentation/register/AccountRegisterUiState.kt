@@ -15,4 +15,8 @@ data class AccountRegisterUiState(
     /** Whether the account's settings can be opened: once the account is loaded, so there's an account to edit. */
     val canOpenAccountSettings: Boolean
         get() = account is LoadState.Loaded
+
+    /** Whether a transaction can be added: once the account is loaded, so there's an account to add it to. */
+    val canAddTransaction: Boolean
+        get() = account is LoadState.Loaded
 }
