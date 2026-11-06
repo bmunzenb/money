@@ -11,8 +11,8 @@ import javafx.scene.layout.HBox
 
 /**
  * A balance after its [label], if it has one: a progress indicator while it loads, the amount once it has, or an error
- * message if it can't be loaded or calculated. A negative amount is marked so the stylesheet can show it in red. Until
- * it's first rendered, it shows only its label.
+ * message if it can't be loaded or calculated. A negative amount is marked so the stylesheet can show it in red. It
+ * starts out loading.
  */
 internal class AccountBalanceView(label: String? = null) : HBox(Spacing.CONTROL_SPACING) {
     private val label = label?.let(::Label)
@@ -28,7 +28,7 @@ internal class AccountBalanceView(label: String? = null) : HBox(Spacing.CONTROL_
 
     init {
         alignment = Pos.CENTER_RIGHT
-        children.setAll(listOfNotNull(this.label))
+        render(LoadState.Loading)
     }
 
     fun render(balance: LoadState<Money>) {
