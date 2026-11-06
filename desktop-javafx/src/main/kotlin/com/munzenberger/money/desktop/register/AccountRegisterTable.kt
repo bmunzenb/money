@@ -5,11 +5,11 @@ import com.munzenberger.money.data.api.register.RegisterEntry
 import com.munzenberger.money.data.api.transaction.TransactionStatusConstant
 import com.munzenberger.money.desktop.components.columnLayoutKey
 import com.munzenberger.money.desktop.components.saveColumnLayout
+import com.munzenberger.money.desktop.components.textColumn
 import com.munzenberger.money.desktop.getString
 import com.munzenberger.money.desktop.strings
 import com.munzenberger.money.presentation.preferences.UserPreferences
 import javafx.beans.property.ReadOnlyObjectWrapper
-import javafx.beans.property.ReadOnlyStringWrapper
 import javafx.css.PseudoClass
 import javafx.scene.control.TableColumn
 import javafx.scene.control.TableRow
@@ -71,11 +71,7 @@ class AccountRegisterTable(preferences: UserPreferences) : TableView<RegisterEnt
     }
 
     private fun column(id: String, titleKey: String, value: (RegisterEntry) -> String) =
-        TableColumn<RegisterEntry, String>(strings.getString(titleKey)).apply {
-            this.id = id
-            isSortable = false
-            setCellValueFactory { features -> ReadOnlyStringWrapper(features.value?.let(value).orEmpty()) }
-        }
+        textColumn(id, titleKey, value).apply { isSortable = false }
 
     // A right-aligned column of amounts, with negative amounts in red.
     private fun amountColumn(id: String, titleKey: String, value: (RegisterEntry) -> Money) =
