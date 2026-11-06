@@ -3,6 +3,7 @@ package com.munzenberger.money.presentation.accounts
 import com.munzenberger.money.core.account.AccountInput
 import com.munzenberger.money.core.account.AccountInputError
 import com.munzenberger.money.core.account.CreateAccountUseCase
+import com.munzenberger.money.core.account.GetAccountUseCase
 import com.munzenberger.money.core.account.SaveAccountResult
 import com.munzenberger.money.core.account.UpdateAccountUseCase
 import com.munzenberger.money.data.api.Money
@@ -54,8 +55,12 @@ class AccountSettingsViewModelTest {
     private val createAccount = mockk<CreateAccountUseCase>()
     private val updateAccount = mockk<UpdateAccountUseCase>()
 
+    // The real use case, a thin read over the repository mock's accountById, so these tests cover how the form treats
+    // a missing or unreadable account without restating the use case's mapping in a mock.
+    private val getAccount = GetAccountUseCase()
+
     private fun viewModel(route: Route.AccountFormRoute = Route.NewAccount) =
-        AccountSettingsViewModel(route, fixture.controller, navigator, createAccount, updateAccount)
+        AccountSettingsViewModel(route, fixture.controller, navigator, createAccount, updateAccount, getAccount)
 
     private val assets = AccountClass(id = AccountClassId(1), value = AccountClassConstant.Assets)
     private val savings = AccountType(id = AccountTypeId(1), accountClass = assets, value = AccountTypeConstant.Savings)
