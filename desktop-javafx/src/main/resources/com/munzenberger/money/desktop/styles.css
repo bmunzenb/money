@@ -36,10 +36,11 @@
 }
 
 /*
- * Dims the account list's closed accounts' rows. It dims the cells rather than the row, so the row's background and
- * selection keep their color, and it dims the account name's link too.
+ * Dims the account list's closed accounts' rows and an account register's future entries' rows. It dims the cells
+ * rather than the row, so the row's background and selection keep their color, and it dims the account name's link too.
  */
-.table-row-cell:closed > .table-cell {
+.table-row-cell:closed > .table-cell,
+.table-row-cell:future > .table-cell {
     -fx-opacity: 0.5;
 }
 
