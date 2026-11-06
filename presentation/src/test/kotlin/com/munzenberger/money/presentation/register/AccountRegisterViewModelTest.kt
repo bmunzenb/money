@@ -3,6 +3,7 @@ package com.munzenberger.money.presentation.register
 import app.cash.turbine.test
 import com.munzenberger.money.core.account.GetAccountBalanceUseCase
 import com.munzenberger.money.core.account.GetAccountUseCase
+import com.munzenberger.money.core.register.GetAccountRegisterUseCase
 import com.munzenberger.money.data.api.EntityNotFoundException
 import com.munzenberger.money.data.api.Money
 import com.munzenberger.money.data.api.MoneyRepository
@@ -13,6 +14,11 @@ import com.munzenberger.money.data.api.account.AccountClassId
 import com.munzenberger.money.data.api.account.AccountType
 import com.munzenberger.money.data.api.account.AccountTypeConstant
 import com.munzenberger.money.data.api.account.AccountTypeId
+import com.munzenberger.money.data.api.register.RegisterEntry
+import com.munzenberger.money.data.api.transaction.TransactionId
+import com.munzenberger.money.data.api.transaction.TransactionStatus
+import com.munzenberger.money.data.api.transaction.TransactionStatusConstant
+import com.munzenberger.money.data.api.transaction.TransactionStatusId
 import com.munzenberger.money.presentation.MoneyRepositoryControllerFixture
 import com.munzenberger.money.presentation.navigation.Navigator
 import com.munzenberger.money.presentation.navigation.Route
@@ -30,6 +36,7 @@ import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
+import kotlinx.datetime.LocalDate
 import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
@@ -58,6 +65,11 @@ class AccountRegisterViewModelTest {
     private val getAccountBalance = mockk<GetAccountBalanceUseCase> {
         every { this@mockk(any(), any()) } returns emptyFlow()
     }
+
+    // Emits no entries unless a test stubs them, so the entries stay loading.
+    private val getAccountRegister = mockk<GetAccountRegisterUseCase> {
+        every { this@mockk(any(), any()) } returns emptyFlow()
+    }
     private val navigator = Navigator()
 
     private val account = Account(
@@ -69,6 +81,19 @@ class AccountRegisterViewModelTest {
         ),
     )
 
+    private val entry = RegisterEntry.Transaction(
+        transactionId = TransactionId(),
+        payeeId = null,
+        payeeName = "Grocer",
+        date = LocalDate(2026, 1, 15),
+        amount = Money(-2500),
+        balance = Money(7500),
+        number = null,
+        memo = null,
+        status = TransactionStatus(TransactionStatusId(1), TransactionStatusConstant.Unreconciled),
+        entries = emptyList(),
+    )
+
     private suspend fun viewModel(connect: Boolean = true): AccountRegisterViewModel {
         if (connect) fixture.connect(repository)
         return AccountRegisterViewModel(
@@ -76,6 +101,7 @@ class AccountRegisterViewModelTest {
             fixture.controller,
             getAccount,
             getAccountBalance,
+            getAccountRegister,
             navigator,
         )
     }
@@ -90,6 +116,7 @@ class AccountRegisterViewModelTest {
 
         verify(exactly = 0) { getAccount(any(), any()) }
         verify(exactly = 0) { getAccountBalance(any(), any()) }
+        verify(exactly = 0) { getAccountRegister(any(), any()) }
     }
 
     @Test
@@ -228,12 +255,70 @@ class AccountRegisterViewModelTest {
     }
 
     @Test
+    fun `state loads the route's account's register entries from the open repository`() = runTest {
+        every { getAccount(any(), any()) } returns flowOf(Result.success(account))
+        every { getAccountRegister(any(), any()) } returns flowOf(Result.success(listOf(entry)))
+
+        viewModel().state.test {
+            runCurrent()
+            assertEquals(LoadState.Loaded(listOf(entry)), expectMostRecentItem().entries)
+        }
+
+        verify(exactly = 1) { getAccountRegister(repository, account.id) }
+    }
+
+    @Test
+    fun `state shows the account while its register entries load`() = runTest {
+        every { getAccount(any(), any()) } returns flowOf(Result.success(account))
+
+        viewModel().state.test {
+            runCurrent()
+            val state = expectMostRecentItem()
+            assertEquals(LoadState.Loaded(account), state.account)
+            assertEquals(LoadState.Loading, state.entries)
+        }
+    }
+
+    @Test
+    fun `state follows changes to the register entries`() = runTest {
+        val results = MutableStateFlow(Result.success(listOf(entry)))
+        every { getAccount(any(), any()) } returns flowOf(Result.success(account))
+        every { getAccountRegister(any(), any()) } returns results
+
+        viewModel().state.test {
+            runCurrent()
+            expectMostRecentItem()
+
+            val added = entry.copy(transactionId = TransactionId(), amount = Money(1000), balance = Money(8500))
+            results.value = Result.success(listOf(entry, added))
+
+            assertEquals(LoadState.Loaded(listOf(entry, added)), awaitItem().entries)
+        }
+    }
+
+    @Test
+    fun `state's register entries are an error when they can't be loaded`() = runTest {
+        every { getAccount(any(), any()) } returns flowOf(Result.success(account))
+        every { getAccountRegister(any(), any()) } returns
+            flowOf(Result.failure(IllegalStateException("query failed")))
+
+        viewModel().state.test {
+            runCurrent()
+            val state = expectMostRecentItem()
+            assertEquals(LoadState.Loaded(account), state.account)
+            assertEquals(LoadState.Error, state.entries)
+        }
+    }
+
+    @Test
     fun `state starts loading again when another repository opens`() = runTest {
         val other = mockk<MoneyRepository>()
         every { getAccount(repository, any()) } returns flowOf(Result.success(account))
         every { getAccountBalance(repository, any()) } returns flowOf(Result.success(Money(1000)))
+        every { getAccountRegister(repository, any()) } returns flowOf(Result.success(listOf(entry)))
         every { getAccount(other, any()) } returns emptyFlow()
         every { getAccountBalance(other, any()) } returns emptyFlow()
+        every { getAccountRegister(other, any()) } returns emptyFlow()
 
         viewModel().state.test {
             runCurrent()

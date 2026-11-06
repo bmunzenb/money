@@ -7,6 +7,7 @@ import com.munzenberger.money.core.account.GetAccountGroupsUseCase
 import com.munzenberger.money.core.account.GetAccountUseCase
 import com.munzenberger.money.core.account.UpdateAccountUseCase
 import com.munzenberger.money.core.demo.PopulateDemoDataUseCase
+import com.munzenberger.money.core.register.GetAccountRegisterUseCase
 import com.munzenberger.money.presentation.AppViewModel
 import com.munzenberger.money.presentation.accounts.AccountSettingsViewModel
 import com.munzenberger.money.presentation.accounts.AccountListViewModel
@@ -30,6 +31,7 @@ val presentationModule = module {
 
     factory { CreateAccountUseCase() }
     factory { GetAccountBalanceUseCase() }
+    factory { GetAccountRegisterUseCase() }
     factory { GetAccountBalancesUseCase() }
     factory { GetAccountGroupsUseCase() }
     factory { GetAccountUseCase() }
@@ -44,5 +46,5 @@ val presentationModule = module {
     viewModel { PayeeListViewModel(get()) }
     viewModel { AppNavigationRailViewModel(get()) }
     viewModel { AppToolbarViewModel(get()) }
-    viewModel { params -> AccountRegisterViewModel(params.get(), get(), get(), get(), get()) }
+    viewModel { params -> AccountRegisterViewModel(params.get(), get(), get(), get(), get(), get()) }
 }
