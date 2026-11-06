@@ -14,7 +14,6 @@ import javafx.scene.control.TableColumn
 import javafx.scene.control.TableView
 import kotlinx.datetime.toJavaLocalDate
 import java.time.format.DateTimeFormatter
-import java.time.format.FormatStyle
 
 /**
  * An account register's table of entries, in the register's order. The columns can't be sorted, since each entry's
@@ -86,7 +85,8 @@ class AccountRegisterTable(preferences: UserPreferences) : TableView<RegisterEnt
 
     private companion object {
         val COLUMN_LAYOUT_KEY = columnLayoutKey("account.register.columns")
-        val DATE_FORMATTER: DateTimeFormatter = DateTimeFormatter.ofLocalizedDate(FormatStyle.SHORT)
+        // The locale's numeric date, with a four-digit year, e.g. 1/15/2026 in the US.
+        val DATE_FORMATTER: DateTimeFormatter = DateTimeFormatter.ofLocalizedPattern("yMd")
     }
 }
 
