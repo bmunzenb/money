@@ -1,6 +1,7 @@
 package com.munzenberger.money.desktop.accounts
 
 import com.munzenberger.money.core.account.AccountGrouping
+import com.munzenberger.money.desktop.components.AccountBalanceView
 import com.munzenberger.money.desktop.components.ScreenHeading
 import com.munzenberger.money.desktop.navigation.ScreenScope
 import com.munzenberger.money.desktop.strings

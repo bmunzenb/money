@@ -1,5 +1,6 @@
 package com.munzenberger.money.core
 
+import com.munzenberger.money.data.api.EntityNotFoundException
 import com.munzenberger.money.data.api.MoneyRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
@@ -23,3 +24,11 @@ fun <T> MoneyRepository.resultFlow(selector: (MoneyRepository) -> Flow<T>): Flow
             logger.log(Level.WARNING, "Failed to read from the money repository", e)
             emit(Result.failure(e))
         }
+
+/**
+ * Returns this flow with each null value, such as an entity's after it's removed, replaced by a failure with an
+ * [EntityNotFoundException] whose message is [message]'s. That isn't logged as a failed read, and it doesn't end the
+ * flow.
+ */
+fun <T : Any> Flow<Result<T?>>.requireFound(message: () -> String): Flow<Result<T>> =
+    map { result -> result.mapCatching { it ?: throw EntityNotFoundException(message()) } }
