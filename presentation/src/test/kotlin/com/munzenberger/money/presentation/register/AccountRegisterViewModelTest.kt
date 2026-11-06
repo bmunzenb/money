@@ -295,4 +295,55 @@ class AccountRegisterViewModelTest {
 
         assertEquals(listOf(Route.AccountRegister(account.id)), navigator.backStack.value)
     }
+
+    @Test
+    fun `onNewTransactionClick pushes the new transaction route for the route's account`() = runTest {
+        every { getAccount(any(), any()) } returns flowOf(Result.success(account))
+        navigator.navigate { clear(); add(Route.AccountRegister(account.id)) }
+        val viewModel = viewModel()
+
+        viewModel.state.test {
+            runCurrent()
+            assertTrue(expectMostRecentItem().canAddTransaction)
+
+            viewModel.onNewTransactionClick()
+        }
+
+        assertEquals(
+            listOf(Route.AccountRegister(account.id), Route.NewTransaction(account.id)),
+            navigator.backStack.value,
+        )
+    }
+
+    @Test
+    fun `onNewTransactionClick does nothing while the account loads`() = runTest {
+        every { getAccount(any(), any()) } returns emptyFlow()
+        navigator.navigate { clear(); add(Route.AccountRegister(account.id)) }
+        val viewModel = viewModel()
+
+        viewModel.state.test {
+            runCurrent()
+            assertFalse(expectMostRecentItem().canAddTransaction)
+
+            viewModel.onNewTransactionClick()
+        }
+
+        assertEquals(listOf(Route.AccountRegister(account.id)), navigator.backStack.value)
+    }
+
+    @Test
+    fun `onNewTransactionClick does nothing when the account can't be loaded`() = runTest {
+        every { getAccount(any(), any()) } returns flowOf(Result.failure(EntityNotFoundException("No account")))
+        navigator.navigate { clear(); add(Route.AccountRegister(account.id)) }
+        val viewModel = viewModel()
+
+        viewModel.state.test {
+            runCurrent()
+            assertFalse(expectMostRecentItem().canAddTransaction)
+
+            viewModel.onNewTransactionClick()
+        }
+
+        assertEquals(listOf(Route.AccountRegister(account.id)), navigator.backStack.value)
+    }
 }

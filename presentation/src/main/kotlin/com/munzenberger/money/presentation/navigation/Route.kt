@@ -1,6 +1,8 @@
 package com.munzenberger.money.presentation.navigation
 
 import com.munzenberger.money.data.api.account.AccountId
+import com.munzenberger.money.data.api.transaction.TransactionId
+import com.munzenberger.money.data.api.transaction.TransferEntryId
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -29,4 +31,17 @@ sealed interface Route {
 
     @Serializable
     data class AccountRegister(val accountId: AccountId) : Route
+
+    @Serializable
+    sealed interface TransactionFormRoute : Route
+
+    /** Adds a transaction to [accountId], or to an account the user chooses when it's null. */
+    @Serializable
+    data class NewTransaction(val accountId: AccountId? = null) : TransactionFormRoute
+
+    @Serializable
+    data class TransactionDetails(val transactionId: TransactionId) : TransactionFormRoute
+
+    @Serializable
+    data class TransferDetails(val transferEntryId: TransferEntryId) : Route
 }

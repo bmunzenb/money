@@ -25,5 +25,13 @@ class AppToolbarViewModel(
         navigator.back()
     }
 
-    private fun uiState(backStack: List<Route>) = AppToolbarUiState(canNavigateBack = backStack.size > 1)
+    fun onNewTransactionClick() {
+        if (!state.value.canAddTransaction) return
+        navigator.navigate { add(Route.NewTransaction()) }
+    }
+
+    private fun uiState(backStack: List<Route>) = AppToolbarUiState(
+        canNavigateBack = backStack.size > 1,
+        canAddTransaction = backStack.lastOrNull() !is Route.NewTransaction,
+    )
 }

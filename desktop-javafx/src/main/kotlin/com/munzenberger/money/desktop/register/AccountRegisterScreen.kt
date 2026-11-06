@@ -23,8 +23,8 @@ import javafx.scene.layout.VBox
 import org.koin.core.parameter.parametersOf
 
 /**
- * An account's register, headed by the account's name, with a row of controls to see the account's settings, a
- * table of its entries, and the account's balance below them.
+ * An account's register, headed by the account's name, with a row of controls to add a transaction and see the
+ * account's settings, a table of its entries, and the account's balance below them.
  */
 class AccountRegisterScreen(scope: ScreenScope, route: Route.AccountRegister) : VBox(Spacing.CONTROL_SPACING) {
     private val viewModel: AccountRegisterViewModel = scope.viewModel { parametersOf(route) }
@@ -41,17 +41,22 @@ class AccountRegisterScreen(scope: ScreenScope, route: Route.AccountRegister) : 
         alignment = Pos.CENTER_LEFT
     }
 
+    private val newTransactionButton = Button(strings.getString("new_transaction_button_title")).apply {
+        isDisable = true
+        setOnAction { viewModel.onNewTransactionClick() }
+    }
+
     private val accountSettingsButton = Button(strings.getString("account_settings_button_title")).apply {
         isDisable = true
         setOnAction { viewModel.onAccountSettingsClick() }
     }
 
-    // Pushes the account settings button to the end of the row.
+    // Pushes the buttons to the end of the row.
     private val spacer = Region().apply { HBox.setHgrow(this, Priority.ALWAYS) }
 
     private val controls = HBox(Spacing.CONTROL_SPACING).apply {
         alignment = Pos.CENTER_LEFT
-        children.setAll(spacer, accountSettingsButton)
+        children.setAll(spacer, newTransactionButton, accountSettingsButton)
     }
 
     // Takes the rest of the screen's height.
@@ -79,6 +84,7 @@ class AccountRegisterScreen(scope: ScreenScope, route: Route.AccountRegister) : 
         }
         header.children.setAll(headerContent)
 
+        newTransactionButton.isDisable = !state.canAddTransaction
         accountSettingsButton.isDisable = !state.canOpenAccountSettings
 
         accountBalance.render(state.balance)
