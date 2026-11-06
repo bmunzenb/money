@@ -32,25 +32,12 @@ FROM Account
 JOIN AccountType ON Account.account_type_id = AccountType.id
 JOIN AccountClass ON AccountType.class_id = AccountClass.id;
 
-selectAll:
-SELECT * FROM AccountWithType;
-
-selectById:
-SELECT * FROM AccountWithType WHERE id = ?;
-
-insert:
-INSERT INTO Account (id, name, number, account_type_id, bank_id, initial_balance, memo, is_closed) VALUES (?, ?, ?, ?, ?, ?, ?, ?);
-
-update:
-UPDATE Account SET name = ?, number = ?, account_type_id = ?, bank_id = ?, initial_balance = ?, memo = ?, is_closed = ? WHERE id = ?;
-
-deleteById:
-DELETE FROM Account WHERE id = ?;
-
 -- Each account's id and balance: its initial balance, plus the category and transfer entries of its own
 -- transactions, minus the transfer entries of other accounts' transactions that move money into or out of it (a
--- transfer entry's amount is from its parent transaction's account's view).
-selectBalances:
+-- transfer entry's amount is from its parent transaction's account's view). The balances are calculated in per-row
+-- subqueries rather than a GROUP BY, so SQLite can merge the view into a query that filters it by id, and only
+-- calculates the balances of the accounts the query selects.
+CREATE VIEW AccountBalance AS
 SELECT
     Account.id AS id,
     Account.initial_balance
@@ -72,3 +59,24 @@ SELECT
         WHERE TransferEntry.account_id = Account.id
     ) AS balance
 FROM Account;
+
+selectAll:
+SELECT * FROM AccountWithType;
+
+selectById:
+SELECT * FROM AccountWithType WHERE id = ?;
+
+insert:
+INSERT INTO Account (id, name, number, account_type_id, bank_id, initial_balance, memo, is_closed) VALUES (?, ?, ?, ?, ?, ?, ?, ?);
+
+update:
+UPDATE Account SET name = ?, number = ?, account_type_id = ?, bank_id = ?, initial_balance = ?, memo = ?, is_closed = ? WHERE id = ?;
+
+deleteById:
+DELETE FROM Account WHERE id = ?;
+
+selectBalances:
+SELECT * FROM AccountBalance;
+
+selectBalanceById:
+SELECT balance FROM AccountBalance WHERE id = ?;
