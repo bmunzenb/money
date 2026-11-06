@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.munzenberger.money.core.account.AccountInput
 import com.munzenberger.money.core.account.AccountInputError
 import com.munzenberger.money.core.account.CreateAccountUseCase
+import com.munzenberger.money.core.account.GetAccountUseCase
 import com.munzenberger.money.core.account.SaveAccountResult
 import com.munzenberger.money.core.account.UpdateAccountUseCase
 import com.munzenberger.money.data.api.Money
@@ -13,6 +14,7 @@ import com.munzenberger.money.data.api.account.AccountId
 import com.munzenberger.money.data.api.account.AccountType
 import com.munzenberger.money.data.api.bank.Bank
 import com.munzenberger.money.presentation.database.MoneyRepositoryController
+import com.munzenberger.money.presentation.database.flow
 import com.munzenberger.money.presentation.database.resultFlow
 import com.munzenberger.money.presentation.navigation.Navigator
 import com.munzenberger.money.presentation.navigation.Route
@@ -39,6 +41,7 @@ class AccountSettingsViewModel(
     private val navigator: Navigator,
     private val createAccount: CreateAccountUseCase,
     private val updateAccount: UpdateAccountUseCase,
+    private val getAccount: GetAccountUseCase,
 ) : ViewModel() {
 
     private val accountId: AccountId? = when (route) {
@@ -78,9 +81,7 @@ class AccountSettingsViewModel(
      * name; without them, saving would drop the bank, so the account counts as not loaded.
      */
     private suspend fun loadExistingAccount(accountId: AccountId) {
-        val account = repositoryController.resultFlow { it.accounts }.first()
-            .map { accounts -> accounts.firstOrNull { it.id == accountId } }
-            .getOrNull()
+        val account = repositoryController.flow { getAccount(it, accountId) }.first().getOrNull()
         val banks = repositoryController.resultFlow { it.banks }.first().getOrNull()
 
         if (account == null || banks == null) {

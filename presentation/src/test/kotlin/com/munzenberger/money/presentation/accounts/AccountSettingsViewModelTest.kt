@@ -3,6 +3,7 @@ package com.munzenberger.money.presentation.accounts
 import com.munzenberger.money.core.account.AccountInput
 import com.munzenberger.money.core.account.AccountInputError
 import com.munzenberger.money.core.account.CreateAccountUseCase
+import com.munzenberger.money.core.account.GetAccountUseCase
 import com.munzenberger.money.core.account.SaveAccountResult
 import com.munzenberger.money.core.account.UpdateAccountUseCase
 import com.munzenberger.money.data.api.Money
@@ -24,6 +25,7 @@ import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.slot
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -31,6 +33,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
@@ -52,8 +55,12 @@ class AccountSettingsViewModelTest {
     private val createAccount = mockk<CreateAccountUseCase>()
     private val updateAccount = mockk<UpdateAccountUseCase>()
 
+    // The real use case, a thin read over the repository mock's accountById, so these tests cover how the form treats
+    // a missing or unreadable account without restating the use case's mapping in a mock.
+    private val getAccount = GetAccountUseCase()
+
     private fun viewModel(route: Route.AccountFormRoute = Route.NewAccount) =
-        AccountSettingsViewModel(route, fixture.controller, navigator, createAccount, updateAccount)
+        AccountSettingsViewModel(route, fixture.controller, navigator, createAccount, updateAccount, getAccount)
 
     private val assets = AccountClass(id = AccountClassId(1), value = AccountClassConstant.Assets)
     private val savings = AccountType(id = AccountTypeId(1), accountClass = assets, value = AccountTypeConstant.Savings)
@@ -82,7 +89,11 @@ class AccountSettingsViewModelTest {
     ) = mockk<MoneyRepository>(relaxUnitFun = true) {
         every { this@mockk.accountTypes } returns accountTypes
         every { this@mockk.banks } returns banks
-        every { this@mockk.accounts } returns accounts
+        val accountId = slot<AccountId>()
+        every { accountById(capture(accountId)) } answers {
+            val id = accountId.captured
+            accounts.map { list -> list.firstOrNull { it.id == id } }
+        }
     }
 
     private fun <T> failingFlow(): Flow<T> = flow { error("query failed") }
@@ -608,7 +619,7 @@ class AccountSettingsViewModelTest {
     }
 
     @Test
-    fun `an existing account is an error when the accounts can't be loaded`() = runTest {
+    fun `an existing account is an error when it can't be loaded`() = runTest {
         val viewModel = viewModel(Route.AccountSettings(existingAccount.id))
 
         fixture.connect(repository(accounts = failingFlow()))
