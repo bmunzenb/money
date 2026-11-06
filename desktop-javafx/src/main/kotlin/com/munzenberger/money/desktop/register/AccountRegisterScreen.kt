@@ -12,9 +12,12 @@ import com.munzenberger.money.presentation.preferences.UserPreferences
 import com.munzenberger.money.presentation.register.AccountRegisterUiState
 import com.munzenberger.money.presentation.register.AccountRegisterViewModel
 import com.munzenberger.money.presentation.state.LoadState
+import com.munzenberger.money.presentation.state.loadedOrEmpty
 import javafx.geometry.Insets
 import javafx.geometry.Pos
 import javafx.scene.control.Button
+import javafx.scene.control.Label
+import javafx.scene.control.ProgressIndicator
 import javafx.scene.layout.HBox
 import javafx.scene.layout.Priority
 import javafx.scene.layout.Region
@@ -65,6 +68,17 @@ class AccountRegisterScreen(
         children.setAll(spacer, newTransactionButton, accountSettingsButton)
     }
 
+    // The table's placeholder while the entries load.
+    private val loadingProgress = ProgressIndicator()
+
+    // The table's placeholder when the entries fail to load.
+    private val loadErrorMessage = errorLabel(strings.getString("register_load_error_message")).apply {
+        isWrapText = true
+    }
+
+    // The table's placeholder when the entries have loaded and there are none.
+    private val emptyMessage = Label(strings.getString("register_empty_message"))
+
     // Takes the rest of the screen's height.
     private val registerTable = AccountRegisterTable(preferences).apply {
         setVgrow(this, Priority.ALWAYS)
@@ -92,6 +106,13 @@ class AccountRegisterScreen(
 
         newTransactionButton.isDisable = !state.canAddTransaction
         accountSettingsButton.isDisable = !state.canOpenAccountSettings
+
+        registerTable.placeholder = when (state.entries) {
+            LoadState.Loading -> loadingProgress
+            LoadState.Error -> loadErrorMessage
+            is LoadState.Loaded -> emptyMessage
+        }
+        registerTable.show(state.entries.loadedOrEmpty)
 
         accountBalance.render(state.balance)
     }

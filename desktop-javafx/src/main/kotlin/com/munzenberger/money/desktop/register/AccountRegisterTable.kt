@@ -1,15 +1,22 @@
 package com.munzenberger.money.desktop.register
 
 import com.munzenberger.money.data.api.register.RegisterEntry
+import com.munzenberger.money.data.api.transaction.TransactionStatusConstant
 import com.munzenberger.money.desktop.components.columnLayoutKey
 import com.munzenberger.money.desktop.components.saveColumnLayout
+import com.munzenberger.money.desktop.getString
 import com.munzenberger.money.desktop.strings
 import com.munzenberger.money.presentation.preferences.UserPreferences
+import javafx.beans.property.ReadOnlyStringWrapper
 import javafx.scene.control.TableColumn
 import javafx.scene.control.TableView
+import kotlinx.datetime.toJavaLocalDate
+import java.time.format.DateTimeFormatter
+import java.time.format.FormatStyle
 
 /**
- * An account register's table of entries.
+ * An account register's table of entries, in the register's order. The columns can't be sorted, since each entry's
+ * balance is the account's balance after it in that order.
  *
  * The columns stretch to fill the table's width. They start at the same width, so they share it equally. Resizing a
  * column takes the space from the last column only, leaving the others as they are. Their order and widths are saved in
@@ -17,34 +24,79 @@ import javafx.scene.control.TableView
  */
 class AccountRegisterTable(preferences: UserPreferences) : TableView<RegisterEntry>() {
 
-    private val numberColumn = column(id = "number", titleKey = "register_number_column_title")
+    private val numberColumn = column(id = "number", titleKey = "register_number_column_title") {
+        it.number.orEmpty()
+    }
 
-    private val dateColumn = column(id = "date", titleKey = "register_date_column_title")
+    private val dateColumn = column(id = "date", titleKey = "register_date_column_title") {
+        DATE_FORMATTER.format(it.date.toJavaLocalDate())
+    }
 
-    private val detailsColumn = column(id = "details", titleKey = "register_details_column_title")
+    private val payeeColumn = column(id = "payee", titleKey = "register_payee_column_title") {
+        it.payeeName.orEmpty()
+    }
 
-    private val statusColumn = column(id = "status", titleKey = "register_status_column_title")
+    private val categoryColumn = column(id = "category", titleKey = "register_category_column_title") {
+        it.category().orEmpty()
+    }
 
-    private val amountColumn = column(id = "amount", titleKey = "amount_column_title").apply {
+    private val statusColumn = column(id = "status", titleKey = "register_status_column_title") {
+        when (it.status.value) {
+            TransactionStatusConstant.Unreconciled -> ""
+            TransactionStatusConstant.Cleared -> strings.getString("register_status_cleared")
+            TransactionStatusConstant.Reconciled -> strings.getString("register_status_reconciled")
+        }
+    }
+
+    private val amountColumn = column(id = "amount", titleKey = "amount_column_title") {
+        it.amount.toString(accountFormat = true, asCurrency = false)
+    }.apply {
         styleClass += "amount-column"
     }
 
-    private val balanceColumn = column(id = "balance", titleKey = "balance_column_title").apply {
+    private val balanceColumn = column(id = "balance", titleKey = "balance_column_title") {
+        it.balance.toString(accountFormat = true, asCurrency = false)
+    }.apply {
         styleClass += "amount-column"
     }
 
     init {
         columnResizePolicy = CONSTRAINED_RESIZE_POLICY_LAST_COLUMN
-        columns.setAll(numberColumn, dateColumn, detailsColumn, statusColumn, amountColumn, balanceColumn)
+        columns.setAll(numberColumn, dateColumn, payeeColumn, categoryColumn, statusColumn, amountColumn, balanceColumn)
         saveColumnLayout(preferences, COLUMN_LAYOUT_KEY)
     }
 
-    private fun column(id: String, titleKey: String) =
+    /** Shows [entries], replacing the ones shown. */
+    fun show(entries: List<RegisterEntry>) {
+        if (entries != items) items.setAll(entries)
+    }
+
+    private fun column(id: String, titleKey: String, value: (RegisterEntry) -> String) =
         TableColumn<RegisterEntry, String>(strings.getString(titleKey)).apply {
             this.id = id
+            isSortable = false
+            setCellValueFactory { features -> ReadOnlyStringWrapper(features.value?.let(value).orEmpty()) }
         }
 
     private companion object {
         val COLUMN_LAYOUT_KEY = columnLayoutKey("account.register.columns")
+        val DATE_FORMATTER: DateTimeFormatter = DateTimeFormatter.ofLocalizedDate(FormatStyle.SHORT)
     }
+}
+
+/** The entry's category, or the account it transfers to, or null if it has neither. */
+private fun RegisterEntry.category(): String? = when (this) {
+    is RegisterEntry.Transaction -> when (entries.size) {
+        0 -> null
+        1 -> entries.single().title()
+        else -> strings.getString("register_split_value")
+    }
+    is RegisterEntry.Transfer -> strings.getString("register_transfer_value", accountName)
+}
+
+private fun RegisterEntry.Transaction.Entry.title(): String = when (this) {
+    is RegisterEntry.Transaction.Entry.Category -> parentCategoryName
+        ?.let { strings.getString("register_subcategory_value", it, categoryName) }
+        ?: categoryName
+    is RegisterEntry.Transaction.Entry.Transfer -> strings.getString("register_transfer_value", accountName)
 }
