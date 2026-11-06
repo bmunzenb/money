@@ -18,6 +18,8 @@ val navigationRouter: (route: Route, scope: ScreenScope) -> Node = { route, scop
         is Route.AccountRegister -> AccountRegisterScreen(scope, route)
         Route.CategoryList -> placeholderScreen(route)
         Route.PayeeList -> placeholderScreen(route)
+        is Route.TransactionFormRoute -> placeholderScreen(route)
+        is Route.TransferDetails -> placeholderScreen(route)
     }
 }
 
