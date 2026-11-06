@@ -42,6 +42,7 @@ class AccountRegisterViewModel(
         )
 
     fun onAccountSettingsClick() {
+        if (!state.value.canOpenAccountSettings) return
         navigator.navigate { add(Route.AccountSettings(route.accountId)) }
     }
 }

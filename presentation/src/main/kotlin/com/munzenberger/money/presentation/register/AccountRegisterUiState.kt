@@ -11,4 +11,8 @@ import com.munzenberger.money.presentation.state.LoadState
 data class AccountRegisterUiState(
     val account: LoadState<Account> = LoadState.Loading,
     val balance: LoadState<Money> = LoadState.Loading,
-)
+) {
+    /** Whether the account's settings can be opened: once the account is loaded, so there's an account to edit. */
+    val canOpenAccountSettings: Boolean
+        get() = account is LoadState.Loaded
+}

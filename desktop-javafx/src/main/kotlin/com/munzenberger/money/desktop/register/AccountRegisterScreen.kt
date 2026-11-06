@@ -42,6 +42,7 @@ class AccountRegisterScreen(scope: ScreenScope, route: Route.AccountRegister) : 
     }
 
     private val accountSettingsButton = Button(strings.getString("account_settings_button_title")).apply {
+        isDisable = true
         setOnAction { viewModel.onAccountSettingsClick() }
     }
 
@@ -77,6 +78,8 @@ class AccountRegisterScreen(scope: ScreenScope, route: Route.AccountRegister) : 
             is LoadState.Loaded -> heading.apply { text = account.value.name }
         }
         header.children.setAll(headerContent)
+
+        accountSettingsButton.isDisable = !state.canOpenAccountSettings
 
         accountBalance.render(state.balance)
     }
