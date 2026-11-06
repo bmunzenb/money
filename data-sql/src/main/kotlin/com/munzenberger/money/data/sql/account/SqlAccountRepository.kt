@@ -42,13 +42,6 @@ internal class SqlAccountRepository(
         .mapToList(context)
         .map { it.toMap() }
 
-    /** Emits the balance of the account with [accountId], calculated as in [accountBalances], or null if it's gone. */
-    override fun accountBalanceById(accountId: AccountId): Flow<Money?> = database.accountQueries
-        .selectBalanceById(accountId.value)
-        .asFlow()
-        .mapToOneOrNull(context)
-        .map { balance -> balance?.let(::Money) }
-
     override fun add(account: Account) {
         database.accountQueries.insert(
             id = account.id.value,

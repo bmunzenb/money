@@ -4,6 +4,7 @@ import com.munzenberger.money.core.account.AccountGroup
 import com.munzenberger.money.data.api.account.Account
 import com.munzenberger.money.desktop.components.columnLayoutKey
 import com.munzenberger.money.desktop.components.saveColumnLayout
+import com.munzenberger.money.desktop.components.textColumn
 import com.munzenberger.money.desktop.strings
 import com.munzenberger.money.presentation.accounts.AccountBalances
 import com.munzenberger.money.presentation.accounts.maskAccountNumber
@@ -11,7 +12,6 @@ import com.munzenberger.money.presentation.preferences.UserPreferences
 import com.munzenberger.money.presentation.state.LoadState
 import javafx.beans.binding.Bindings
 import javafx.beans.property.SimpleObjectProperty
-import javafx.beans.property.ReadOnlyStringWrapper
 import javafx.collections.FXCollections
 import javafx.css.PseudoClass
 import javafx.scene.control.ContextMenu
@@ -129,16 +129,11 @@ class AccountListTable(
         titleKey: String,
         groupValue: (AccountGroup) -> String = { "" },
         accountValue: (Account) -> String = { "" },
-    ) = TableColumn<AccountListRow, String>(strings.getString(titleKey)).apply {
-        this.id = id
-        setCellValueFactory { features ->
-            val value = when (val row = features.value) {
-                is AccountListRow.GroupRow -> groupValue(row.group)
-                is AccountListRow.AccountRow -> accountValue(row.account)
-                is AccountListRow.SubtotalRow -> ""
-                null -> ""
-            }
-            ReadOnlyStringWrapper(value)
+    ) = textColumn<AccountListRow>(id, titleKey) { row ->
+        when (row) {
+            is AccountListRow.GroupRow -> groupValue(row.group)
+            is AccountListRow.AccountRow -> accountValue(row.account)
+            is AccountListRow.SubtotalRow -> ""
         }
     }
 

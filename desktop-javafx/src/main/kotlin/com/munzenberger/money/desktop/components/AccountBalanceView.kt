@@ -4,7 +4,6 @@ import com.munzenberger.money.data.api.Money
 import com.munzenberger.money.desktop.strings
 import com.munzenberger.money.desktop.theme.Spacing
 import com.munzenberger.money.presentation.state.LoadState
-import javafx.css.PseudoClass
 import javafx.geometry.Pos
 import javafx.scene.control.Label
 import javafx.scene.layout.HBox
@@ -20,7 +19,7 @@ internal class AccountBalanceView(label: String? = null) : HBox(Spacing.CONTROL_
     private val progress = smallProgressIndicator()
 
     // Negative amounts are in parentheses, in the accounting format.
-    private val amount = Label().apply { styleClass += "balance-amount" }
+    private val amount = Label()
 
     private val errorMessage = Label(strings.getString("account_balance_error_message")).apply {
         styleClass += "error-message"
@@ -35,15 +34,8 @@ internal class AccountBalanceView(label: String? = null) : HBox(Spacing.CONTROL_
         val value = when (balance) {
             LoadState.Loading -> progress
             LoadState.Error -> errorMessage
-            is LoadState.Loaded -> amount.apply {
-                text = balance.value.toString(accountFormat = true)
-                pseudoClassStateChanged(NEGATIVE_PSEUDO_CLASS, balance.value.value < 0)
-            }
+            is LoadState.Loaded -> amount.apply { showAmount(balance.value) }
         }
         children.setAll(listOfNotNull(label, value))
-    }
-
-    private companion object {
-        val NEGATIVE_PSEUDO_CLASS: PseudoClass = PseudoClass.getPseudoClass("negative")
     }
 }
