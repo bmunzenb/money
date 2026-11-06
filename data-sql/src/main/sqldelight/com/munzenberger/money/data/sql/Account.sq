@@ -77,6 +77,3 @@ DELETE FROM Account WHERE id = ?;
 
 selectBalances:
 SELECT * FROM AccountBalance;
-
-selectBalanceById:
-SELECT balance FROM AccountBalance WHERE id = ?;

@@ -11,7 +11,4 @@ interface AccountRepository {
 
     /** The account with [accountId], or null if there's none, such as after it's removed. */
     fun accountById(accountId: AccountId): Flow<Account?>
-
-    /** The balance of the account with [accountId], or null if there's none, such as after it's removed. */
-    fun accountBalanceById(accountId: AccountId): Flow<Money?>
 }
