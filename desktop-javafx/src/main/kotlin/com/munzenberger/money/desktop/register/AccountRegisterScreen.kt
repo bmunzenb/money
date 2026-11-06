@@ -59,7 +59,7 @@ class AccountRegisterScreen(scope: ScreenScope, route: Route.AccountRegister) : 
     }
 
     // Stays at the bottom of the screen, since the table above it takes the rest of the height. Its labels inherit the
-    // bold font. It shows only its label until the account's balance is loaded.
+    // bold font.
     private val accountBalance = AccountBalanceView(strings.getString("account_balance_label")).apply {
         styleClass += "total-balance"
     }
@@ -77,5 +77,7 @@ class AccountRegisterScreen(scope: ScreenScope, route: Route.AccountRegister) : 
             is LoadState.Loaded -> heading.apply { text = account.value.name }
         }
         header.children.setAll(headerContent)
+
+        accountBalance.render(state.balance)
     }
 }
