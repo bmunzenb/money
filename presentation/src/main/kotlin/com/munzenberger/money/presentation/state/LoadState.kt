@@ -1,5 +1,9 @@
 package com.munzenberger.money.presentation.state
 
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onStart
+
 /** The state of data a screen loads from the repository, such as the options for a dropdown. */
 sealed interface LoadState<out T> {
     data object Loading : LoadState<Nothing>
@@ -13,3 +17,7 @@ val <T> LoadState<List<T>>.loadedOrEmpty: List<T>
 
 fun <T> Result<T>.toLoadState(): LoadState<T> =
     fold(onSuccess = { LoadState.Loaded(it) }, onFailure = { LoadState.Error })
+
+/** Maps each result to its [LoadState], starting with [LoadState.Loading] until the first result arrives. */
+fun <T> Flow<Result<T>>.toLoadStates(): Flow<LoadState<T>> =
+    map { it.toLoadState() }.onStart { emit(LoadState.Loading) }

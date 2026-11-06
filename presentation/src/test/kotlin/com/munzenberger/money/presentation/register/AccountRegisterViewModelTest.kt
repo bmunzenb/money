@@ -49,7 +49,7 @@ class AccountRegisterViewModelTest {
     }
 
     private val fixture = MoneyRepositoryControllerFixture()
-    private val repository = mockk<MoneyRepository>()
+    private val repository = mockk<MoneyRepository>(relaxUnitFun = true)
     private val getAccount = mockk<GetAccountUseCase>()
 
     // Emits no balance unless a test stubs one, so the balance stays loading.
@@ -222,6 +222,24 @@ class AccountRegisterViewModelTest {
                 AccountRegisterUiState(account = LoadState.Loaded(account), balance = LoadState.Error),
                 expectMostRecentItem(),
             )
+        }
+    }
+
+    @Test
+    fun `state starts loading again when another repository opens`() = runTest {
+        val other = mockk<MoneyRepository>()
+        every { getAccount(repository, any()) } returns flowOf(Result.success(account))
+        every { getAccountBalance(repository, any()) } returns flowOf(Result.success(Money(1000)))
+        every { getAccount(other, any()) } returns emptyFlow()
+        every { getAccountBalance(other, any()) } returns emptyFlow()
+
+        viewModel().state.test {
+            runCurrent()
+            expectMostRecentItem()
+
+            fixture.connect(other)
+
+            assertEquals(AccountRegisterUiState(), awaitItem())
         }
     }
 
