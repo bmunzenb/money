@@ -9,7 +9,7 @@
     -fx-alignment: CENTER-RIGHT;
 }
 
-/* The account list's total balance. Its labels inherit the bold font. */
+/* The account list's total balance and an account register's balance. Their labels inherit the bold font. */
 .total-balance {
     -fx-font-weight: bold;
 }

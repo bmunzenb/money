@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.munzenberger.money.core.account.GetAccountUseCase
 import com.munzenberger.money.presentation.database.MoneyRepositoryController
 import com.munzenberger.money.presentation.database.flow
+import com.munzenberger.money.presentation.navigation.Navigator
 import com.munzenberger.money.presentation.navigation.Route
 import com.munzenberger.money.presentation.state.toLoadState
 import kotlinx.coroutines.flow.SharingStarted
@@ -13,9 +14,10 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 
 class AccountRegisterViewModel(
-    route: Route.AccountRegister,
+    private val route: Route.AccountRegister,
     repositoryController: MoneyRepositoryController,
     getAccount: GetAccountUseCase,
+    private val navigator: Navigator,
 ) : ViewModel() {
 
     /** Follows the route's account in the open repository, and stays loading while none is open. */
@@ -28,4 +30,8 @@ class AccountRegisterViewModel(
             started = SharingStarted.WhileSubscribed(),
             initialValue = AccountRegisterUiState(),
         )
+
+    fun onAccountSettingsClick() {
+        navigator.navigate { add(Route.AccountSettings(route.accountId)) }
+    }
 }

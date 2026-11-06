@@ -1,7 +1,6 @@
-package com.munzenberger.money.desktop.accounts
+package com.munzenberger.money.desktop.components
 
 import com.munzenberger.money.data.api.Money
-import com.munzenberger.money.desktop.components.smallProgressIndicator
 import com.munzenberger.money.desktop.strings
 import com.munzenberger.money.desktop.theme.Spacing
 import com.munzenberger.money.presentation.state.LoadState
@@ -12,7 +11,8 @@ import javafx.scene.layout.HBox
 
 /**
  * A balance after its [label], if it has one: a progress indicator while it loads, the amount once it has, or an error
- * message if it can't be loaded or calculated. A negative amount is marked so the stylesheet can show it in red.
+ * message if it can't be loaded or calculated. A negative amount is marked so the stylesheet can show it in red. Until
+ * it's first rendered, it shows only its label.
  */
 internal class AccountBalanceView(label: String? = null) : HBox(Spacing.CONTROL_SPACING) {
     private val label = label?.let(::Label)
@@ -28,6 +28,7 @@ internal class AccountBalanceView(label: String? = null) : HBox(Spacing.CONTROL_
 
     init {
         alignment = Pos.CENTER_RIGHT
+        children.setAll(listOfNotNull(this.label))
     }
 
     fun render(balance: LoadState<Money>) {

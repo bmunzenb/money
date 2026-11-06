@@ -12,6 +12,7 @@ import com.munzenberger.money.data.api.account.AccountType
 import com.munzenberger.money.data.api.account.AccountTypeConstant
 import com.munzenberger.money.data.api.account.AccountTypeId
 import com.munzenberger.money.presentation.MoneyRepositoryControllerFixture
+import com.munzenberger.money.presentation.navigation.Navigator
 import com.munzenberger.money.presentation.navigation.Route
 import com.munzenberger.money.presentation.state.LoadState
 import io.mockk.every
@@ -47,6 +48,7 @@ class AccountRegisterViewModelTest {
     private val fixture = MoneyRepositoryControllerFixture()
     private val repository = mockk<MoneyRepository>()
     private val getAccount = mockk<GetAccountUseCase>()
+    private val navigator = Navigator()
 
     private val account = Account(
         name = "Checking",
@@ -59,7 +61,7 @@ class AccountRegisterViewModelTest {
 
     private suspend fun viewModel(connect: Boolean = true): AccountRegisterViewModel {
         if (connect) fixture.connect(repository)
-        return AccountRegisterViewModel(Route.AccountRegister(account.id), fixture.controller, getAccount)
+        return AccountRegisterViewModel(Route.AccountRegister(account.id), fixture.controller, getAccount, navigator)
     }
 
     @Test
@@ -132,5 +134,18 @@ class AccountRegisterViewModelTest {
             skipItems(1)
             assertEquals(AccountRegisterUiState(account = LoadState.Error), awaitItem())
         }
+    }
+
+    @Test
+    fun `onAccountSettingsClick pushes the account settings route for the route's account`() = runTest {
+        every { getAccount(any(), any()) } returns flowOf(Result.success(account))
+        navigator.navigate { clear(); add(Route.AccountRegister(account.id)) }
+
+        viewModel().onAccountSettingsClick()
+
+        assertEquals(
+            listOf(Route.AccountRegister(account.id), Route.AccountSettings(account.id)),
+            navigator.backStack.value,
+        )
     }
 }

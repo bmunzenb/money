@@ -1,6 +1,7 @@
 package com.munzenberger.money.desktop.accounts
 
 import com.munzenberger.money.data.api.Money
+import com.munzenberger.money.desktop.components.AccountBalanceView
 import com.munzenberger.money.desktop.strings
 import com.munzenberger.money.presentation.accounts.AccountBalances
 import com.munzenberger.money.presentation.state.LoadState
