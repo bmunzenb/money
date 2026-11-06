@@ -9,12 +9,17 @@
     -fx-alignment: CENTER-RIGHT;
 }
 
+/* Centers the cells of an account register's status column, which each hold at most one letter. */
+.table-cell.status-column {
+    -fx-alignment: CENTER;
+}
+
 /* The account list's total balance and an account register's balance. Their labels inherit the bold font. */
 .total-balance {
     -fx-font-weight: bold;
 }
 
-/* Shows a negative balance, subtotal, or total balance in the error color. */
+/* Shows a negative balance, subtotal, total balance, or register amount in the error color. */
 .balance-amount:negative {
     -fx-text-fill: #c62828;
 }

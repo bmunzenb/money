@@ -1,5 +1,6 @@
 package com.munzenberger.money.desktop.register
 
+import com.munzenberger.money.data.api.Money
 import com.munzenberger.money.data.api.register.RegisterEntry
 import com.munzenberger.money.data.api.transaction.TransactionStatusConstant
 import com.munzenberger.money.desktop.components.columnLayoutKey
@@ -7,6 +8,7 @@ import com.munzenberger.money.desktop.components.saveColumnLayout
 import com.munzenberger.money.desktop.getString
 import com.munzenberger.money.desktop.strings
 import com.munzenberger.money.presentation.preferences.UserPreferences
+import javafx.beans.property.ReadOnlyObjectWrapper
 import javafx.beans.property.ReadOnlyStringWrapper
 import javafx.scene.control.TableColumn
 import javafx.scene.control.TableView
@@ -46,19 +48,13 @@ class AccountRegisterTable(preferences: UserPreferences) : TableView<RegisterEnt
             TransactionStatusConstant.Cleared -> strings.getString("register_status_cleared")
             TransactionStatusConstant.Reconciled -> strings.getString("register_status_reconciled")
         }
+    }.apply {
+        styleClass += "status-column"
     }
 
-    private val amountColumn = column(id = "amount", titleKey = "amount_column_title") {
-        it.amount.toString(accountFormat = true, asCurrency = false)
-    }.apply {
-        styleClass += "amount-column"
-    }
+    private val amountColumn = amountColumn(id = "amount", titleKey = "amount_column_title") { it.amount }
 
-    private val balanceColumn = column(id = "balance", titleKey = "balance_column_title") {
-        it.balance.toString(accountFormat = true, asCurrency = false)
-    }.apply {
-        styleClass += "amount-column"
-    }
+    private val balanceColumn = amountColumn(id = "balance", titleKey = "balance_column_title") { it.balance }
 
     init {
         columnResizePolicy = CONSTRAINED_RESIZE_POLICY_LAST_COLUMN
@@ -76,6 +72,16 @@ class AccountRegisterTable(preferences: UserPreferences) : TableView<RegisterEnt
             this.id = id
             isSortable = false
             setCellValueFactory { features -> ReadOnlyStringWrapper(features.value?.let(value).orEmpty()) }
+        }
+
+    // A right-aligned column of amounts, with negative amounts in red.
+    private fun amountColumn(id: String, titleKey: String, value: (RegisterEntry) -> Money) =
+        TableColumn<RegisterEntry, Money?>(strings.getString(titleKey)).apply {
+            this.id = id
+            isSortable = false
+            styleClass += "amount-column"
+            setCellValueFactory { features -> ReadOnlyObjectWrapper(features.value?.let(value)) }
+            setCellFactory { RegisterAmountCell() }
         }
 
     private companion object {
