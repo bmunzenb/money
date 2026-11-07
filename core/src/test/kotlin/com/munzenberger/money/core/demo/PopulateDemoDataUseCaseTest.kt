@@ -39,8 +39,8 @@ class PopulateDemoDataUseCaseTest {
     private val accountTypes = AccountTypeConstant.entries.mapIndexed { index, value ->
         val accountClass = when (value) {
             AccountTypeConstant.Credit, AccountTypeConstant.Loan ->
-                AccountClass(id = AccountClassId(2), value = AccountClassConstant.Liabilities)
-            else -> AccountClass(id = AccountClassId(1), value = AccountClassConstant.Assets)
+                AccountClass(id = AccountClassId(2), value = AccountClassConstant.Liability)
+            else -> AccountClass(id = AccountClassId(1), value = AccountClassConstant.Asset)
         }
         AccountType(id = AccountTypeId(index + 1L), accountClass = accountClass, value = value)
     }

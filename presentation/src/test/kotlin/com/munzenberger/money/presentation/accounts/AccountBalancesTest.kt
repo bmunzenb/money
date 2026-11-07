@@ -16,13 +16,13 @@ import kotlin.test.assertEquals
 
 class AccountBalancesTest {
 
-    private val assets = AccountClass(id = AccountClassId(1), value = AccountClassConstant.Assets)
+    private val asset = AccountClass(id = AccountClassId(1), value = AccountClassConstant.Asset)
     private val checking = AccountType(
         id = AccountTypeId(1),
-        accountClass = assets,
+        accountClass = asset,
         value = AccountTypeConstant.Checking,
     )
-    private val savings = AccountType(id = AccountTypeId(2), accountClass = assets, value = AccountTypeConstant.Savings)
+    private val savings = AccountType(id = AccountTypeId(2), accountClass = asset, value = AccountTypeConstant.Savings)
 
     private val everyday = Account(name = "Everyday", accountType = checking)
     private val bills = Account(name = "Bills", accountType = checking)

@@ -7,7 +7,7 @@ import kotlinx.serialization.Serializable
 value class AccountClassId(val value: Long)
 
 enum class AccountClassConstant {
-    Assets, Liabilities
+    Asset, Liability
 }
 
 data class AccountClass(

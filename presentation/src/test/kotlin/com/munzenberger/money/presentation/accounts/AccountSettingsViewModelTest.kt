@@ -62,11 +62,11 @@ class AccountSettingsViewModelTest {
     private fun viewModel(route: Route.AccountFormRoute = Route.NewAccount) =
         AccountSettingsViewModel(route, fixture.controller, navigator, createAccount, updateAccount, getAccount)
 
-    private val assets = AccountClass(id = AccountClassId(1), value = AccountClassConstant.Assets)
-    private val savings = AccountType(id = AccountTypeId(1), accountClass = assets, value = AccountTypeConstant.Savings)
+    private val asset = AccountClass(id = AccountClassId(1), value = AccountClassConstant.Asset)
+    private val savings = AccountType(id = AccountTypeId(1), accountClass = asset, value = AccountTypeConstant.Savings)
     private val checking = AccountType(
         id = AccountTypeId(2),
-        accountClass = assets,
+        accountClass = asset,
         value = AccountTypeConstant.Checking,
     )
 

@@ -10,8 +10,8 @@ CREATE TABLE AccountType (
     FOREIGN KEY (class_id) REFERENCES AccountClass (id)
 );
 
-INSERT INTO AccountClass (id, value) VALUES (1, 'Assets');
-INSERT INTO AccountClass (id, value) VALUES (2, 'Liabilities');
+INSERT INTO AccountClass (id, value) VALUES (1, 'Asset');
+INSERT INTO AccountClass (id, value) VALUES (2, 'Liability');
 
 INSERT INTO AccountType (id, class_id, value) VALUES (1, 1, 'Savings');
 INSERT INTO AccountType (id, class_id, value) VALUES (2, 1, 'Checking');

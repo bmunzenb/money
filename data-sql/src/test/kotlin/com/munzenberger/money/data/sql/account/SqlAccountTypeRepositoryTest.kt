@@ -33,12 +33,12 @@ class SqlAccountTypeRepositoryTest {
 
         assertEquals(
             mapOf(
-                AccountTypeConstant.Savings to AccountClassConstant.Assets,
-                AccountTypeConstant.Checking to AccountClassConstant.Assets,
-                AccountTypeConstant.Asset to AccountClassConstant.Assets,
-                AccountTypeConstant.Cash to AccountClassConstant.Assets,
-                AccountTypeConstant.Credit to AccountClassConstant.Liabilities,
-                AccountTypeConstant.Loan to AccountClassConstant.Liabilities,
+                AccountTypeConstant.Savings to AccountClassConstant.Asset,
+                AccountTypeConstant.Checking to AccountClassConstant.Asset,
+                AccountTypeConstant.Asset to AccountClassConstant.Asset,
+                AccountTypeConstant.Cash to AccountClassConstant.Asset,
+                AccountTypeConstant.Credit to AccountClassConstant.Liability,
+                AccountTypeConstant.Loan to AccountClassConstant.Liability,
             ),
             classesByType,
         )

@@ -67,7 +67,7 @@ class AccountListViewModelTest {
 
     private val accountType = AccountType(
         id = AccountTypeId(1),
-        accountClass = AccountClass(id = AccountClassId(1), value = AccountClassConstant.Assets),
+        accountClass = AccountClass(id = AccountClassId(1), value = AccountClassConstant.Asset),
         value = AccountTypeConstant.Checking,
     )
 
