@@ -16,6 +16,7 @@ import javafx.scene.control.MenuItem
 import javafx.scene.control.TableColumn
 import javafx.scene.control.TableRow
 import javafx.scene.control.TableView
+import javafx.scene.input.MouseButton
 import kotlinx.datetime.toJavaLocalDate
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
@@ -28,7 +29,7 @@ import java.time.format.DateTimeFormatter
  * column takes the space from the last column only, leaving the others as they are. Their order and widths are saved in
  * [preferences].
  *
- * Each entry's row has a context menu whose See Details item calls [onEntryClick] with the entry.
+ * Double-clicking an entry's row, or choosing See Details from its context menu, calls [onEntryClick] with the entry.
  */
 class AccountRegisterTable(
     preferences: UserPreferences,
@@ -92,7 +93,7 @@ class AccountRegisterTable(
 
     // Marks the rows of entries dated after today so the stylesheet can dim them. Today is checked as each row is
     // shown, so a row shown before midnight stays as it is until it's shown again. Gives the entries' rows a context
-    // menu.
+    // menu and shows their entry's details on a double click.
     private inner class AccountRegisterTableRow : TableRow<RegisterEntry>() {
         // Shows the details of the entry in the row. The row reuses it for whichever entry it shows.
         private val entryContextMenu = ContextMenu(
@@ -100,6 +101,14 @@ class AccountRegisterTable(
                 setOnAction { item?.let(onEntryClick) }
             },
         )
+
+        init {
+            setOnMouseClicked { event ->
+                if (event.button == MouseButton.PRIMARY && event.clickCount == 2) {
+                    item?.let(onEntryClick)
+                }
+            }
+        }
 
         override fun updateItem(item: RegisterEntry?, empty: Boolean) {
             super.updateItem(item, empty)
