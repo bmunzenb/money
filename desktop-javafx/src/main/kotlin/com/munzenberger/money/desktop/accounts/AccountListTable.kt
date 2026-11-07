@@ -143,11 +143,16 @@ class AccountListTable(
     private inner class AccountListTableRow : TableRow<AccountListRow>() {
         // Edits the account in the row. The row reuses it for whichever account it shows.
         private val accountContextMenu = ContextMenu(
+            MenuItem(strings.getString("account_register_menu_item_title")).apply {
+                setOnAction {
+                    (item as? AccountListRow.AccountRow)?.let { onAccountClick(it.account) }
+                }
+            },
             MenuItem(strings.getString("account_settings_menu_item_title")).apply {
                 setOnAction {
                     (item as? AccountListRow.AccountRow)?.let { onAccountSettingsClick(it.account) }
                 }
-            }
+            },
         )
 
         init {
