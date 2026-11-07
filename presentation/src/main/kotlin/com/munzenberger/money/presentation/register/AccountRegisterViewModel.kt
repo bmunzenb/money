@@ -7,6 +7,8 @@ import com.munzenberger.money.core.register.GetAccountRegisterUseCase
 import com.munzenberger.money.data.api.Money
 import com.munzenberger.money.data.api.account.Account
 import com.munzenberger.money.data.api.register.RegisterEntry
+import com.munzenberger.money.data.api.transaction.TransactionId
+import com.munzenberger.money.data.api.transaction.TransferEntryId
 import com.munzenberger.money.presentation.database.MoneyRepositoryController
 import com.munzenberger.money.presentation.database.flow
 import com.munzenberger.money.presentation.navigation.Navigator
@@ -64,6 +66,14 @@ class AccountRegisterViewModel(
     fun onNewTransactionClick() {
         if (!state.value.canAddTransaction) return
         navigator.navigate { add(Route.NewTransaction(route.accountId)) }
+    }
+
+    fun onTransactionClick(transactionId: TransactionId) {
+        navigator.navigate { add(Route.TransactionDetails(transactionId)) }
+    }
+
+    fun onTransferClick(transferEntryId: TransferEntryId) {
+        navigator.navigate { add(Route.TransferDetails(transferEntryId)) }
     }
 }
 
