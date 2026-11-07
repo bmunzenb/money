@@ -76,12 +76,21 @@ class MoneyRepositoryController(
         open: suspend () -> MoneyRepositoryConnectionStatus,
     ): MoneyRepositoryConnectionStatus = withContext(context) {
         mutex.withLock {
-            close()
+            closeRepository()
             open().also { applyConnectionStatus(it) }
         }
     }
 
-    fun close() {
+    /**
+     * Closes the open repository off the calling thread. It waits for an open or create in progress to finish, then
+     * closes that repository, so a database that was opening when this was called doesn't stay open afterward.
+     */
+    suspend fun close() = withContext(context) {
+        mutex.withLock { closeRepository() }
+    }
+
+    // Callers hold the mutex; it isn't reentrant, so connect can't call close.
+    private fun closeRepository() {
         moneyRepositoryFlow.value?.close()
         moneyRepositoryFlow.value = null
     }

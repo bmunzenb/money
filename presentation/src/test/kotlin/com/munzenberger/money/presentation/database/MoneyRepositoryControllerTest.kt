@@ -307,11 +307,34 @@ class MoneyRepositoryControllerTest {
     }
 
     @Test
-    fun `close without repository stays null`() {
+    fun `close without repository stays null`() = runTest {
         val controller = controller()
 
         controller.close()
 
+        assertNull(controller.moneyRepository.value)
+    }
+
+    @Test
+    fun `close waits for an open in progress and closes its repository`() = runTest {
+        val repository = mockk<MoneyRepository>(relaxUnitFun = true)
+        val connected = CompletableDeferred<Unit>()
+        val slowConnector = mockk<MoneyRepositoryConnector> {
+            coEvery { connect() } coAnswers {
+                connected.await()
+                MoneyRepositoryConnectionStatus.Ready(repository)
+            }
+        }
+        val controller = controller(slowConnector)
+
+        val open = launch { controller.openDatabase(file) }
+        runCurrent()
+        val close = launch { controller.close() }
+        runCurrent()
+        connected.complete(Unit)
+        joinAll(open, close)
+
+        verify(exactly = 1) { repository.close() }
         assertNull(controller.moneyRepository.value)
     }
 

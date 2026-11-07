@@ -12,6 +12,7 @@ import com.munzenberger.money.presentation.accounts.AccountSettingsViewModel
 import com.munzenberger.money.presentation.accounts.AccountListViewModel
 import com.munzenberger.money.presentation.categories.CategoryListViewModel
 import com.munzenberger.money.presentation.database.MoneyRepositoryController
+import com.munzenberger.money.presentation.menu.AppMenuBarViewModel
 import com.munzenberger.money.presentation.navigation.Navigator
 import com.munzenberger.money.presentation.payees.PayeeListViewModel
 import com.munzenberger.money.presentation.preferences.UserPreferences
@@ -44,5 +45,6 @@ val presentationModule = module {
     viewModel { PayeeListViewModel(get()) }
     viewModel { AppNavigationRailViewModel(get()) }
     viewModel { AppToolbarViewModel(get()) }
+    viewModel { AppMenuBarViewModel(get()) }
     viewModel { params -> AccountRegisterViewModel(params.get(), get(), get(), get(), get()) }
 }
