@@ -1,5 +1,6 @@
 package com.munzenberger.money.desktop.register
 
+import com.munzenberger.money.data.api.register.RegisterEntry
 import com.munzenberger.money.desktop.components.AccountBalanceView
 import com.munzenberger.money.desktop.components.ScreenHeading
 import com.munzenberger.money.desktop.components.errorLabel
@@ -80,7 +81,12 @@ class AccountRegisterScreen(
     private val emptyMessage = Label(strings.getString("register_empty_message"))
 
     // Takes the rest of the screen's height.
-    private val registerTable = AccountRegisterTable(preferences).apply {
+    private val registerTable = AccountRegisterTable(preferences, onEntryClick = { entry ->
+        when (entry) {
+            is RegisterEntry.Transaction -> viewModel.onTransactionClick(entry.transactionId)
+            is RegisterEntry.Transfer -> viewModel.onTransferClick(entry.transferEntryId)
+        }
+    }).apply {
         setVgrow(this, Priority.ALWAYS)
     }
 

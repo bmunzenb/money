@@ -11,6 +11,8 @@ import com.munzenberger.money.desktop.strings
 import com.munzenberger.money.presentation.preferences.UserPreferences
 import javafx.beans.property.ReadOnlyObjectWrapper
 import javafx.css.PseudoClass
+import javafx.scene.control.ContextMenu
+import javafx.scene.control.MenuItem
 import javafx.scene.control.TableColumn
 import javafx.scene.control.TableRow
 import javafx.scene.control.TableView
@@ -25,8 +27,13 @@ import java.time.format.DateTimeFormatter
  * The columns stretch to fill the table's width. They start at the same width, so they share it equally. Resizing a
  * column takes the space from the last column only, leaving the others as they are. Their order and widths are saved in
  * [preferences].
+ *
+ * Each entry's row has a context menu whose See Details item calls [onEntryClick] with the entry.
  */
-class AccountRegisterTable(preferences: UserPreferences) : TableView<RegisterEntry>() {
+class AccountRegisterTable(
+    preferences: UserPreferences,
+    private val onEntryClick: (RegisterEntry) -> Unit,
+) : TableView<RegisterEntry>() {
 
     private val numberColumn = column(id = "number", titleKey = "register_number_column_title") {
         it.number.orEmpty()
@@ -84,14 +91,23 @@ class AccountRegisterTable(preferences: UserPreferences) : TableView<RegisterEnt
         }
 
     // Marks the rows of entries dated after today so the stylesheet can dim them. Today is checked as each row is
-    // shown, so a row shown before midnight stays as it is until it's shown again.
-    private class AccountRegisterTableRow : TableRow<RegisterEntry>() {
+    // shown, so a row shown before midnight stays as it is until it's shown again. Gives the entries' rows a context
+    // menu.
+    private inner class AccountRegisterTableRow : TableRow<RegisterEntry>() {
+        // Shows the details of the entry in the row. The row reuses it for whichever entry it shows.
+        private val entryContextMenu = ContextMenu(
+            MenuItem(strings.getString("register_entry_menu_item_title")).apply {
+                setOnAction { item?.let(onEntryClick) }
+            },
+        )
+
         override fun updateItem(item: RegisterEntry?, empty: Boolean) {
             super.updateItem(item, empty)
             pseudoClassStateChanged(
                 FUTURE_PSEUDO_CLASS,
                 item != null && item.date.toJavaLocalDate().isAfter(LocalDate.now()),
             )
+            contextMenu = if (item != null && !empty) entryContextMenu else null
         }
     }
 

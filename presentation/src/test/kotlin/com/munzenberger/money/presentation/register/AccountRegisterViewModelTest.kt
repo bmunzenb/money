@@ -525,4 +525,30 @@ class AccountRegisterViewModelTest {
 
         assertEquals(listOf(Route.AccountRegister(account.id)), navigator.backStack.value)
     }
+
+    @Test
+    fun `onTransactionClick pushes the transaction details route for the transaction`() = runTest {
+        navigator.navigate { clear(); add(Route.AccountRegister(account.id)) }
+        val transactionId = TransactionId()
+
+        viewModel().onTransactionClick(transactionId)
+
+        assertEquals(
+            listOf(Route.AccountRegister(account.id), Route.TransactionDetails(transactionId)),
+            navigator.backStack.value,
+        )
+    }
+
+    @Test
+    fun `onTransferClick pushes the transfer details route for the transfer entry`() = runTest {
+        navigator.navigate { clear(); add(Route.AccountRegister(account.id)) }
+        val transferEntryId = TransferEntryId()
+
+        viewModel().onTransferClick(transferEntryId)
+
+        assertEquals(
+            listOf(Route.AccountRegister(account.id), Route.TransferDetails(transferEntryId)),
+            navigator.backStack.value,
+        )
+    }
 }
