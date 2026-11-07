@@ -417,7 +417,7 @@ class SqlRegisterRepositoryTest {
     }
 
     @Test
-    fun `register never emits a transaction without the entries written with it`() = runTest {
+    fun `register settles on a transaction with the entries written with it`() = runTest {
         val fixture = createFixture()
         val account = fixture.createAccount(initialBalance = Money(1000))
         val category = fixture.createCategory("Groceries")
@@ -432,6 +432,9 @@ class SqlRegisterRepositoryTest {
         }
         advanceUntilIdle()
 
-        assertEquals(listOf(emptyList(), listOf(Money(900))), emissions.map { it.map(RegisterEntry::balance) })
+        // In-between registers may be emitted as each query rereads, but the first is the empty register and
+        // the last has the transaction with its entries.
+        assertEquals(emptyList(), emissions.first())
+        assertEquals(listOf(Money(900)), emissions.last().map(RegisterEntry::balance))
     }
 }

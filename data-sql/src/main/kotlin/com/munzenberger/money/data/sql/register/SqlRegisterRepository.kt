@@ -2,6 +2,8 @@ package com.munzenberger.money.data.sql.register
 
 import app.cash.sqldelight.Query
 import app.cash.sqldelight.coroutines.asFlow
+import app.cash.sqldelight.coroutines.mapToList
+import app.cash.sqldelight.coroutines.mapToOneOrNull
 import com.munzenberger.money.data.api.Money
 import com.munzenberger.money.data.api.account.AccountId
 import com.munzenberger.money.data.api.category.CategoryId
@@ -16,11 +18,7 @@ import com.munzenberger.money.data.sql.MoneyDatabase
 import com.munzenberger.money.data.sql.transaction.transactionStatus
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.conflate
-import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.merge
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.flow.combine
 import kotlinx.datetime.LocalDate
 import kotlin.coroutines.CoroutineContext
 import kotlin.uuid.Uuid
@@ -38,36 +36,26 @@ internal class SqlRegisterRepository(
     private val context: CoroutineContext = Dispatchers.IO,
 ) : RegisterRepository {
 
-    // Each query only signals a change, and every change rereads all of them in one transaction. Combining
-    // their separate flows instead would emit as each one rereads, such as a new transaction before its entries.
+    // Each query rereads on its own when a commit changes it, and the register is rebuilt from their latest
+    // results. A commit that changes several queries can emit in-between registers as each one rereads, such as
+    // a new transaction before its entries, but the register settles once they've all reread.
     override fun registerEntriesForAccount(accountId: AccountId): Flow<List<RegisterEntry>> {
         val id = accountId.value
-        return merge(
-            initialBalance(id).asFlow(),
-            transactionRows(id).asFlow(),
-            categoryEntryRows(id).asFlow(),
-            transferEntryRows(id).asFlow(),
-            transferRows(id).asFlow(),
-        )
-            // A commit that changes several of the queries signals each of them; signals that arrive during a
-            // reread are conflated into one more reread, and identical results are dropped.
-            .conflate()
-            .map { readRegister(id) }
-            .distinctUntilChanged()
-    }
-
-    private suspend fun readRegister(accountId: Uuid): List<RegisterEntry> = withContext(context) {
-        database.transactionWithResult {
-            val initialBalance = initialBalance(accountId).executeAsOneOrNull()
+        return combine(
+            initialBalance(id).asFlow().mapToOneOrNull(context),
+            transactionRows(id).asFlow().mapToList(context),
+            categoryEntryRows(id).asFlow().mapToList(context),
+            transferEntryRows(id).asFlow().mapToList(context),
+            transferRows(id).asFlow().mapToList(context)
+        ) { initialBalance, transactionRows, categoryEntryRows, transferEntryRows, transferRows ->
             if (initialBalance == null) {
                 emptyList()
             } else {
                 buildRegister(
                     initialBalance = Money(initialBalance),
-                    transactions = transactionRows(accountId).executeAsList(),
-                    entries = categoryEntryRows(accountId).executeAsList() +
-                        transferEntryRows(accountId).executeAsList(),
-                    transfers = transferRows(accountId).executeAsList(),
+                    transactions = transactionRows,
+                    entries = categoryEntryRows + transferEntryRows,
+                    transfers = transferRows
                 )
             }
         }
