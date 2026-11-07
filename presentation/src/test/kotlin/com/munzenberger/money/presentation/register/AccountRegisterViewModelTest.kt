@@ -74,7 +74,7 @@ class AccountRegisterViewModelTest {
         name = "Checking",
         accountType = AccountType(
             id = AccountTypeId(2),
-            accountClass = AccountClass(id = AccountClassId(1), value = AccountClassConstant.Assets),
+            accountClass = AccountClass(id = AccountClassId(1), value = AccountClassConstant.Asset),
             value = AccountTypeConstant.Checking,
         ),
     )
@@ -83,7 +83,7 @@ class AccountRegisterViewModelTest {
         name = "Credit Card",
         accountType = AccountType(
             id = AccountTypeId(5),
-            accountClass = AccountClass(id = AccountClassId(2), value = AccountClassConstant.Liabilities),
+            accountClass = AccountClass(id = AccountClassId(2), value = AccountClassConstant.Liability),
             value = AccountTypeConstant.Credit,
         ),
     )

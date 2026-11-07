@@ -48,17 +48,17 @@ import kotlin.test.assertTrue
 @OptIn(ExperimentalCoroutinesApi::class)
 class SqlAccountRepositoryTest {
 
-    private val assets = AccountClass(id = AccountClassId(1), value = AccountClassConstant.Assets)
-    private val liabilities = AccountClass(id = AccountClassId(2), value = AccountClassConstant.Liabilities)
+    private val asset = AccountClass(id = AccountClassId(1), value = AccountClassConstant.Asset)
+    private val liability = AccountClass(id = AccountClassId(2), value = AccountClassConstant.Liability)
 
     private val checking = AccountType(
         id = AccountTypeId(2),
-        accountClass = assets,
+        accountClass = asset,
         value = AccountTypeConstant.Checking,
     )
     private val credit = AccountType(
         id = AccountTypeId(5),
-        accountClass = liabilities,
+        accountClass = liability,
         value = AccountTypeConstant.Credit,
     )
 

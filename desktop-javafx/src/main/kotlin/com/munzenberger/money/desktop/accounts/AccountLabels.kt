@@ -27,8 +27,8 @@ internal fun AccountGroup.title(): String = when (this) {
     is AccountGroup.ByAccountType -> accountType.value.label
     is AccountGroup.ByAccountClass -> strings.getString(
         when (accountClass.value) {
-            AccountClassConstant.Assets -> "account_class_assets"
-            AccountClassConstant.Liabilities -> "account_class_liabilities"
+            AccountClassConstant.Asset -> "account_class_assets"
+            AccountClassConstant.Liability -> "account_class_liabilities"
         }
     )
     is AccountGroup.ByBank -> bank?.name ?: strings.getString("account_group_no_bank_title")

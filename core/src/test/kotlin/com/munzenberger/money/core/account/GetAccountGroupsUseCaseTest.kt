@@ -23,18 +23,18 @@ import kotlin.test.assertEquals
 
 class GetAccountGroupsUseCaseTest {
 
-    private val assets = AccountClass(id = AccountClassId(1), value = AccountClassConstant.Assets)
-    private val liabilities = AccountClass(id = AccountClassId(2), value = AccountClassConstant.Liabilities)
+    private val asset = AccountClass(id = AccountClassId(1), value = AccountClassConstant.Asset)
+    private val liability = AccountClass(id = AccountClassId(2), value = AccountClassConstant.Liability)
 
     private val checking = AccountType(
         id = AccountTypeId(2),
-        accountClass = assets,
+        accountClass = asset,
         value = AccountTypeConstant.Checking,
     )
-    private val savings = AccountType(id = AccountTypeId(1), accountClass = assets, value = AccountTypeConstant.Savings)
+    private val savings = AccountType(id = AccountTypeId(1), accountClass = asset, value = AccountTypeConstant.Savings)
     private val credit = AccountType(
         id = AccountTypeId(5),
-        accountClass = liabilities,
+        accountClass = liability,
         value = AccountTypeConstant.Credit,
     )
 
@@ -98,8 +98,8 @@ class GetAccountGroupsUseCaseTest {
             assertEquals(
                 Result.success(
                     listOf(
-                        AccountGroup.ByAccountClass(assets, listOf(bills, everyday, rainyDay)),
-                        AccountGroup.ByAccountClass(liabilities, listOf(visa)),
+                        AccountGroup.ByAccountClass(asset, listOf(bills, everyday, rainyDay)),
+                        AccountGroup.ByAccountClass(liability, listOf(visa)),
                     )
                 ),
                 awaitItem(),
@@ -141,7 +141,7 @@ class GetAccountGroupsUseCaseTest {
 
             accounts.value = listOf(visa)
 
-            assertEquals(Result.success(listOf(AccountGroup.ByAccountClass(liabilities, listOf(visa)))), awaitItem())
+            assertEquals(Result.success(listOf(AccountGroup.ByAccountClass(liability, listOf(visa)))), awaitItem())
         }
     }
 
@@ -162,8 +162,8 @@ class GetAccountGroupsUseCaseTest {
             assertEquals(
                 Result.success(
                     listOf(
-                        AccountGroup.ByAccountClass(assets, listOf(bills, everyday, rainyDay)),
-                        AccountGroup.ByAccountClass(liabilities, listOf(visa)),
+                        AccountGroup.ByAccountClass(asset, listOf(bills, everyday, rainyDay)),
+                        AccountGroup.ByAccountClass(liability, listOf(visa)),
                     )
                 ),
                 awaitItem(),
