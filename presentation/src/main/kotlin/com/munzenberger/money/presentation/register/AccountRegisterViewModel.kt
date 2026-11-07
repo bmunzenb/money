@@ -34,10 +34,10 @@ class AccountRegisterViewModel(
      * register is open, fails like a failed read.
      *
      * The balance is the last entry's balance, or the account's initial balance if it has no entries, rather than a
-     * separate read, so it always agrees with the entries shown.
+     * separate read, so it always agrees with the entries shown. Since it depends on the account, it stays loading
+     * until the account loads, and fails if it does. The entries load independently of the account.
      *
-     * The balance and entries are shown in the account's sign: a liability's amounts are negated, so what's owed on it
-     * shows as positive. Since that depends on the account, they stay loading until it loads, and fail if it does.
+     * Amounts keep the repository's signs for every account, including liabilities.
      */
     val state: StateFlow<AccountRegisterUiState> = repositoryController
         .flow { repository ->
@@ -47,8 +47,8 @@ class AccountRegisterViewModel(
             ) { account, entries ->
                 AccountRegisterUiState(
                     account = account,
-                    balance = entries.endingBalance(account).inSignOf(account) { -it },
-                    entries = entries.inSignOf(account) { it.map(RegisterEntry::negated) },
+                    balance = entries.endingBalance(account),
+                    entries = entries,
                 )
             }
         }

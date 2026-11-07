@@ -158,7 +158,7 @@ class AccountRegisterViewModelTest {
         viewModel().state.test {
             skipItems(1)
             assertEquals(
-                AccountRegisterUiState(account = LoadState.Error, balance = LoadState.Error, entries = LoadState.Error),
+                AccountRegisterUiState(account = LoadState.Error, balance = LoadState.Error),
                 awaitItem(),
             )
         }
@@ -175,7 +175,7 @@ class AccountRegisterViewModelTest {
             results.value = Result.failure(EntityNotFoundException("No account"))
 
             assertEquals(
-                AccountRegisterUiState(account = LoadState.Error, balance = LoadState.Error, entries = LoadState.Error),
+                AccountRegisterUiState(account = LoadState.Error, balance = LoadState.Error),
                 awaitItem(),
             )
         }
@@ -188,7 +188,7 @@ class AccountRegisterViewModelTest {
         viewModel().state.test {
             skipItems(1)
             assertEquals(
-                AccountRegisterUiState(account = LoadState.Error, balance = LoadState.Error, entries = LoadState.Error),
+                AccountRegisterUiState(account = LoadState.Error, balance = LoadState.Error),
                 awaitItem(),
             )
         }
@@ -231,18 +231,21 @@ class AccountRegisterViewModelTest {
     }
 
     @Test
-    fun `state's balance and entries stay loading while the account loads`() = runTest {
+    fun `state's balance stays loading while the account loads`() = runTest {
         every { getAccount(any(), any()) } returns emptyFlow()
         every { getAccountRegister(any(), any()) } returns flowOf(Result.success(listOf(entry)))
 
         viewModel().state.test {
             runCurrent()
-            assertEquals(AccountRegisterUiState(), expectMostRecentItem())
+            assertEquals(
+                AccountRegisterUiState(entries = LoadState.Loaded(listOf(entry))),
+                expectMostRecentItem(),
+            )
         }
     }
 
     @Test
-    fun `state negates a liability account's balance and entries`() = runTest {
+    fun `state keeps a liability account's balance and entries' signs`() = runTest {
         val categoryEntry = RegisterEntry.Transaction.Entry.Category(
             categoryEntryId = CategoryEntryId(),
             categoryId = CategoryId(),
@@ -271,20 +274,8 @@ class AccountRegisterViewModelTest {
         viewModel().state.test {
             runCurrent()
             val state = expectMostRecentItem()
-            assertEquals(LoadState.Loaded(Money(-2500)), state.balance)
-            assertEquals(
-                LoadState.Loaded(
-                    listOf(
-                        purchase.copy(
-                            amount = Money(2500),
-                            balance = Money(-7500),
-                            entries = listOf(categoryEntry.copy(amount = Money(2500))),
-                        ),
-                        transfer.copy(amount = Money(-5000), balance = Money(-2500)),
-                    )
-                ),
-                state.entries,
-            )
+            assertEquals(LoadState.Loaded(Money(2500)), state.balance)
+            assertEquals(LoadState.Loaded(listOf(purchase, transfer)), state.entries)
         }
     }
 
@@ -303,14 +294,14 @@ class AccountRegisterViewModelTest {
     }
 
     @Test
-    fun `state negates a liability account's initial balance when it has no register entries`() = runTest {
+    fun `state keeps a liability account's initial balance's sign when it has no register entries`() = runTest {
         every { getAccount(any(), any()) } returns
             flowOf(Result.success(creditCard.copy(initialBalance = Money(-1000))))
         every { getAccountRegister(any(), any()) } returns flowOf(Result.success(emptyList()))
 
         viewModel().state.test {
             runCurrent()
-            assertEquals(LoadState.Loaded(Money(1000)), expectMostRecentItem().balance)
+            assertEquals(LoadState.Loaded(Money(-1000)), expectMostRecentItem().balance)
         }
     }
 
