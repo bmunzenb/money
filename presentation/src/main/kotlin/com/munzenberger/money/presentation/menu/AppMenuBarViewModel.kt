@@ -8,6 +8,7 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 
 /**
  * The ViewModel for the app's menu bar. Which items each OS shows is up to the UI, following that platform's
@@ -27,7 +28,9 @@ class AppMenuBarViewModel(
 
     /** Closes the open repository, after which `AppViewModel` navigates to the welcome screen. */
     fun onCloseRepositoryClick() {
-        repositoryController.close()
+        viewModelScope.launch {
+            repositoryController.close()
+        }
     }
 
     private fun uiState(repository: MoneyRepository?) = AppMenuBarUiState(

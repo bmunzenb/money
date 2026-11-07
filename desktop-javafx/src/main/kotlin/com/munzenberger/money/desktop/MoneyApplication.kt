@@ -13,6 +13,7 @@ import javafx.scene.Scene
 import javafx.stage.Screen
 import javafx.stage.Stage
 import javafx.util.Duration
+import kotlinx.coroutines.runBlocking
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 
@@ -45,8 +46,11 @@ class MoneyApplication : Application(), KoinComponent {
     override fun stop() {
         appScreen.close()
         appScope.close()
-        // After the screens are closed, so AppViewModel doesn't navigate to Welcome as the database closes.
-        repositoryController.close()
+
+        runBlocking {
+            // After the screens are closed, so AppViewModel doesn't navigate to Welcome as the database closes.
+            repositoryController.close()
+        }
 
         if (saveBoundsDelay.status == Animation.Status.RUNNING) {
             saveBoundsDelay.stop()
