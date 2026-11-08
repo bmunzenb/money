@@ -9,6 +9,7 @@ import javafx.scene.control.ProgressIndicator
 import javafx.scene.control.TextInputControl
 import javafx.scene.layout.HBox
 import javafx.scene.layout.Priority
+import javafx.scene.layout.VBox
 
 private const val SMALL_PROGRESS_SIZE = 16.0
 
@@ -26,11 +27,14 @@ fun smallProgressIndicator() = ProgressIndicator().apply {
     setMaxSize(SMALL_PROGRESS_SIZE, SMALL_PROGRESS_SIZE)
 }
 
-/** Puts [progress] after [field], which takes the rest of the width. */
-fun withProgress(field: Node, progress: Node) = HBox(Spacing.CONTROL_SPACING, field, progress).apply {
+/** Puts [progress] after [this], which takes the rest of the width. */
+fun Node.withProgress(progress: Node) = HBox(Spacing.CONTROL_SPACING, this, progress).apply {
     alignment = Pos.CENTER_LEFT
-    HBox.setHgrow(field, Priority.ALWAYS)
+    HBox.setHgrow(this@withProgress, Priority.ALWAYS)
 }
+
+/** Puts [error] below [this]. */
+fun Node.withError(error: Node) = VBox(Spacing.TINY, this, error)
 
 /**
  * Sets this control's text, unless it already has it. Setting the text the field already has would move the caret, so a

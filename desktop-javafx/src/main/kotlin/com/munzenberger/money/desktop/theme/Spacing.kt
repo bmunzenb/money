@@ -2,6 +2,7 @@ package com.munzenberger.money.desktop.theme
 
 /** The spacing scale for padding and gaps between nodes. */
 object Spacing {
+    const val TINY = 4.0
     const val SMALL = 8.0
     const val MEDIUM = 16.0
     const val LARGE = 24.0

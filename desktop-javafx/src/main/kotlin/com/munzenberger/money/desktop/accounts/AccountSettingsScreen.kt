@@ -11,6 +11,7 @@ import com.munzenberger.money.desktop.components.setError
 import com.munzenberger.money.desktop.components.setShown
 import com.munzenberger.money.desktop.components.setTextIfChanged
 import com.munzenberger.money.desktop.components.smallProgressIndicator
+import com.munzenberger.money.desktop.components.withError
 import com.munzenberger.money.desktop.components.withProgress
 import com.munzenberger.money.desktop.getString
 import com.munzenberger.money.desktop.navigation.ScreenScope
@@ -101,16 +102,16 @@ class AccountSettingsScreen(scope: ScreenScope, route: Route.AccountFormRoute) :
 
     private val fields = FormGrid().apply {
         addSection(strings.getString("account_section_title"))
-        addField(strings.getString("account_name_label"), nameField, VBox(ERROR_SPACING, nameField, nameError))
+        addField(strings.getString("account_name_label"), nameField, nameField.withError(nameError))
         addField(
             strings.getString("account_type_label"),
             accountTypeComboBox,
-            VBox(ERROR_SPACING, withProgress(accountTypeComboBox, accountTypesProgress), accountTypeError),
+            accountTypeComboBox.withProgress(accountTypesProgress).withError(accountTypeError),
         )
         addField(
             strings.getString("financial_institution_label"),
             bankComboBox,
-            VBox(ERROR_SPACING, withProgress(bankComboBox, banksProgress), banksError),
+            bankComboBox.withProgress(banksProgress).withError(banksError),
         )
         // A new account is always open, so it can only be closed once it exists. The row is left out rather than
         // hidden, since the grid would still put a gap around an empty row.
@@ -123,7 +124,7 @@ class AccountSettingsScreen(scope: ScreenScope, route: Route.AccountFormRoute) :
         addField(
             strings.getString("initial_balance_label"),
             initialBalanceField,
-            VBox(ERROR_SPACING, initialBalanceField, initialBalanceError),
+            initialBalanceField.withError(initialBalanceError),
         )
         addSection(strings.getString("additional_information_section_title"))
         addField(strings.getString("comments_label"), commentsArea)
@@ -237,7 +238,6 @@ class AccountSettingsScreen(scope: ScreenScope, route: Route.AccountFormRoute) :
 
     private companion object {
         const val INITIAL_BALANCE_FIELD_MAX_WIDTH = 150.0
-        const val ERROR_SPACING = 4.0
         const val COMMENTS_ROW_COUNT = 4
     }
 }
