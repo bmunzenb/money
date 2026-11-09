@@ -15,6 +15,7 @@ import com.munzenberger.money.data.api.account.AccountType
 import com.munzenberger.money.data.api.bank.Bank
 import com.munzenberger.money.presentation.database.MoneyRepositoryController
 import com.munzenberger.money.presentation.database.flow
+import com.munzenberger.money.presentation.database.repository
 import com.munzenberger.money.presentation.database.resultFlow
 import com.munzenberger.money.presentation.navigation.Navigator
 import com.munzenberger.money.presentation.navigation.Route
@@ -148,7 +149,7 @@ class AccountSettingsViewModel(
         val current = _state.value
         if (!current.isFormReady || current.saveState == SaveState.Saving) return
 
-        val repository = repositoryController.moneyRepository.value
+        val repository = repositoryController.repository
         if (repository == null) {
             _state.update { it.copy(saveState = SaveState.Failed) }
             return

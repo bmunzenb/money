@@ -1,26 +1,50 @@
 package com.munzenberger.money.presentation.welcome
 
 import app.cash.turbine.test
+import com.munzenberger.money.core.demo.PopulateDemoDataResult
 import com.munzenberger.money.data.api.MoneyRepository
 import com.munzenberger.money.data.api.MoneyRepositoryConnectionStatus
 import com.munzenberger.money.presentation.MoneyRepositoryControllerFixture
 import com.munzenberger.money.presentation.database.MoneyRepositoryController
+import com.munzenberger.money.presentation.database.RepositoryConnectionState
 import io.mockk.coEvery
 import io.mockk.coVerify
+import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
+import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.yield
+import kotlinx.coroutines.test.UnconfinedTestDispatcher
+import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
+import kotlinx.coroutines.test.setMain
+import kotlin.test.AfterTest
+import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertIs
 import kotlin.test.assertNotNull
-import kotlin.test.assertNull
-import kotlin.test.assertSame
 
+@OptIn(ExperimentalCoroutinesApi::class)
 class WelcomeViewModelTest {
 
     private val fixture = MoneyRepositoryControllerFixture()
     private val controller = fixture.controller
+
+    @BeforeTest
+    fun setUp() {
+        Dispatchers.setMain(UnconfinedTestDispatcher())
+    }
+
+    @AfterTest
+    fun tearDown() {
+        Dispatchers.resetMain()
+    }
 
     @Test
     fun `state starts as idle`() = runTest {
@@ -42,7 +66,7 @@ class WelcomeViewModelTest {
             assertEquals(WelcomeUiState(isLoading = true), awaitItem())
 
             // The screen is about to be replaced, so it keeps showing progress instead of its buttons.
-            controller.moneyRepository.first { it != null }
+            controller.connectionState.first { it is RepositoryConnectionState.Connected }
             assertEquals(WelcomeUiState(isLoading = true), viewModel.state.value)
             expectNoEvents()
         }
@@ -61,7 +85,7 @@ class WelcomeViewModelTest {
             assertEquals(WelcomeUiState(isLoading = true), awaitItem())
 
             // The screen is about to be replaced, so it keeps showing progress instead of its buttons.
-            controller.moneyRepository.first { it != null }
+            controller.connectionState.first { it is RepositoryConnectionState.Connected }
             assertEquals(WelcomeUiState(isLoading = true), viewModel.state.value)
             expectNoEvents()
         }
@@ -79,16 +103,92 @@ class WelcomeViewModelTest {
             assertEquals(WelcomeUiState(isLoading = true), awaitItem())
 
             // The screen is about to be replaced, so it keeps showing progress instead of its buttons.
-            controller.moneyRepository.first { it != null }
+            controller.connectionState.first { it is RepositoryConnectionState.Connected }
             assertEquals(WelcomeUiState(isLoading = true), viewModel.state.value)
             expectNoEvents()
         }
     }
 
     @Test
+    fun `state is loading while a database it didn't open is connecting`() = runTest {
+        val connected = CompletableDeferred<Unit>()
+        val populateDemoData = fixture.populateDemoData
+        coEvery { populateDemoData(any()) } coAnswers {
+            connected.await()
+            PopulateDemoDataResult.Success
+        }
+        val viewModel = WelcomeViewModel(controller)
+
+        viewModel.state.test {
+            assertEquals(WelcomeUiState(), awaitItem())
+
+            val open = launch { controller.openDemo() }
+
+            assertEquals(WelcomeUiState(isLoading = true), awaitItem())
+            connected.complete(Unit)
+            open.join()
+            expectNoEvents()
+        }
+    }
+
+    @Test
+    fun `state hides its error while a database it didn't open is connecting`() = runTest {
+        val connected = CompletableDeferred<Unit>()
+        val populateDemoData = fixture.populateDemoData
+        coEvery { populateDemoData(any()) } coAnswers {
+            connected.await()
+            PopulateDemoDataResult.Success
+        }
+        val viewModel = WelcomeViewModel(controller)
+
+        viewModel.state.test {
+            assertEquals(WelcomeUiState(), awaitItem())
+            viewModel.createDatabase(fixture.unusableFile())
+            assertEquals(WelcomeUiState(isLoading = true), awaitItem())
+            assertEquals(WelcomeUiState(error = WelcomeError.CreateDatabaseFailed), awaitItem())
+
+            val open = launch { controller.openDemo() }
+
+            assertEquals(WelcomeUiState(isLoading = true), awaitItem())
+            connected.complete(Unit)
+            open.join()
+            expectNoEvents()
+        }
+    }
+
+    @Test
+    fun `state clears its error when a database it didn't open fails to connect`() = runTest {
+        val connected = CompletableDeferred<Unit>()
+        val populateDemoData = fixture.populateDemoData
+        coEvery { populateDemoData(any()) } coAnswers {
+            connected.await()
+            PopulateDemoDataResult.Failure(IllegalStateException())
+        }
+        val viewModel = WelcomeViewModel(controller)
+
+        viewModel.state.test {
+            assertEquals(WelcomeUiState(), awaitItem())
+            viewModel.createDatabase(fixture.unusableFile())
+            assertEquals(WelcomeUiState(isLoading = true), awaitItem())
+            assertEquals(WelcomeUiState(error = WelcomeError.CreateDatabaseFailed), awaitItem())
+
+            val open = launch { controller.openDemo() }
+
+            assertEquals(WelcomeUiState(isLoading = true), awaitItem())
+            connected.complete(Unit)
+            open.join()
+            assertEquals(WelcomeUiState(), awaitItem())
+        }
+    }
+
+    @Test
     fun `state shows an error when opening the demo database fails`() = runTest {
         val controller = mockk<MoneyRepositoryController> {
-            coEvery { openDemo() } returns MoneyRepositoryConnectionStatus.Failed(IllegalStateException())
+            every { connectionState } returns MutableStateFlow(RepositoryConnectionState.Disconnected)
+            coEvery { openDemo() } coAnswers {
+                yield()
+                MoneyRepositoryConnectionStatus.Failed(IllegalStateException())
+            }
         }
         val viewModel = WelcomeViewModel(controller)
 
@@ -106,13 +206,30 @@ class WelcomeViewModelTest {
     fun `connects to a demo database populated with demo data when the demo is opened`() = runTest {
         val viewModel = WelcomeViewModel(controller)
 
-        controller.moneyRepository.test {
-            assertNull(awaitItem())
+        controller.connectionState.test {
+            assertEquals(RepositoryConnectionState.Disconnected, awaitItem())
 
             viewModel.openDemo()
 
-            val repository = assertNotNull(awaitItem())
+            assertEquals(RepositoryConnectionState.Connecting, awaitItem())
+            val repository = assertNotNull(awaitItem().repository)
             coVerify(exactly = 1) { fixture.populateDemoData(repository) }
+        }
+    }
+
+    @Test
+    fun `state shows an error when opening the demo database throws`() = runTest {
+        val populateDemoData = fixture.populateDemoData
+        coEvery { populateDemoData(any()) } throws IllegalStateException("unexpected")
+        val viewModel = WelcomeViewModel(controller)
+
+        viewModel.state.test {
+            assertEquals(WelcomeUiState(), awaitItem())
+
+            viewModel.openDemo()
+
+            assertEquals(WelcomeUiState(isLoading = true), awaitItem())
+            assertEquals(WelcomeUiState(error = WelcomeError.OpenDemoFailed), awaitItem())
         }
     }
 
@@ -173,13 +290,13 @@ class WelcomeViewModelTest {
         val file = fixture.newFile()
         val viewModel = WelcomeViewModel(controller)
 
-        controller.moneyRepository.test {
-            assertNull(awaitItem())
+        controller.connectionState.test {
+            assertEquals(RepositoryConnectionState.Disconnected, awaitItem())
 
             viewModel.createDatabase(file)
 
-            val repository = assertNotNull(awaitItem())
-            assertSame(fixture.databaseAt(file), repository)
+            assertEquals(RepositoryConnectionState.Connecting, awaitItem())
+            assertEquals(RepositoryConnectionState.Connected(assertNotNull(fixture.databaseAt(file))), awaitItem())
         }
     }
 
@@ -189,13 +306,13 @@ class WelcomeViewModelTest {
         fixture.connect(repository)
         val viewModel = WelcomeViewModel(controller)
 
-        controller.moneyRepository.test {
-            assertEquals(repository, awaitItem())
+        controller.connectionState.test {
+            assertEquals(RepositoryConnectionState.Connected(repository), awaitItem())
 
             viewModel.createDatabase(fixture.newFile())
 
-            assertNull(awaitItem())
-            assertNotNull(awaitItem())
+            assertEquals(RepositoryConnectionState.Connecting, awaitItem())
+            assertIs<RepositoryConnectionState.Connected>(awaitItem())
 
             verify { repository.close() }
         }
@@ -207,12 +324,13 @@ class WelcomeViewModelTest {
         val file = fixture.addDatabase(existing)
         val viewModel = WelcomeViewModel(controller)
 
-        controller.moneyRepository.test {
-            assertNull(awaitItem())
+        controller.connectionState.test {
+            assertEquals(RepositoryConnectionState.Disconnected, awaitItem())
 
             viewModel.openDatabase(file)
 
-            assertSame(existing, awaitItem())
+            assertEquals(RepositoryConnectionState.Connecting, awaitItem())
+            assertEquals(RepositoryConnectionState.Connected(existing), awaitItem())
         }
     }
 
@@ -223,13 +341,13 @@ class WelcomeViewModelTest {
         fixture.connect(repository)
         val viewModel = WelcomeViewModel(controller)
 
-        controller.moneyRepository.test {
-            assertEquals(repository, awaitItem())
+        controller.connectionState.test {
+            assertEquals(RepositoryConnectionState.Connected(repository), awaitItem())
 
             viewModel.openDatabase(file)
 
-            assertNull(awaitItem())
-            assertNotNull(awaitItem())
+            assertEquals(RepositoryConnectionState.Connecting, awaitItem())
+            assertIs<RepositoryConnectionState.Connected>(awaitItem())
 
             verify { repository.close() }
         }

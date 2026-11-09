@@ -94,9 +94,9 @@ then closes the `MoneyRepositoryController` so the open database is closed on ex
 so `AppViewModel` doesn't navigate to `Welcome` as the database closes.
 
 App-wide reactive navigation lives in `AppViewModel` (`presentation/.../presentation/AppViewModel.kt`): in
-`init` it collects `MoneyRepositoryController.moneyRepository` and does `navigator.navigate { clear(); add(...) }`
-to `AccountList`/`Welcome` depending on whether a repository is open. It also exposes
-`state: StateFlow<AppUiState>` (`isRepositoryConnected`). Put new app-lifetime reactive navigation in
+`init` it collects `MoneyRepositoryController.connectionState` and does `navigator.navigate { clear(); add(...) }`
+to `AccountList` while a repository is `Connected`, or to `Welcome` otherwise (including while `Connecting`). It
+also exposes `state: StateFlow<AppUiState>` (`isRepositoryConnected`). Put new app-lifetime reactive navigation in
 `AppViewModel`.
 
 ## ViewModels
@@ -224,11 +224,13 @@ class CreateAccountUseCase {
 
 Register it in `PresentationModule` with `factory { ... }` and pass it to the ViewModel's constructor. The
 ViewModel also takes the `MoneyRepositoryController`
-(`presentation/.../presentation/database/MoneyRepositoryController.kt`), which tracks the open database, and
-supplies the open repository:
+(`presentation/.../presentation/database/MoneyRepositoryController.kt`), which tracks the open database as its
+`connectionState` (`Disconnected`, `Connecting` or `Connected`; failures aren't part of it, since each open call
+returns its own result), and supplies the open repository:
 
-- to write, it reads `repositoryController.moneyRepository.value` and calls the use case like a
-  function (`createAccount(repository, input)`), treating no open repository as a failure;
+- to write, it reads the `repositoryController.repository` extension (the `repository` of the current
+  `connectionState`) and calls the use case like a function (`createAccount(repository, input)`), treating no
+  open repository as a failure;
 - to read, it uses `repositoryController.flow { getAccountGroups(it, grouping) }`, which follows the
   open repository and emits nothing while none is open.
 

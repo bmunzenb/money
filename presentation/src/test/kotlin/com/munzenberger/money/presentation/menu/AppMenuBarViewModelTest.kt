@@ -3,6 +3,7 @@ package com.munzenberger.money.presentation.menu
 import app.cash.turbine.test
 import com.munzenberger.money.data.api.MoneyRepository
 import com.munzenberger.money.presentation.MoneyRepositoryControllerFixture
+import com.munzenberger.money.presentation.database.RepositoryConnectionState
 import io.mockk.mockk
 import io.mockk.verify
 import kotlinx.coroutines.Dispatchers
@@ -15,7 +16,6 @@ import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertNull
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class AppMenuBarViewModelTest {
@@ -66,6 +66,6 @@ class AppMenuBarViewModelTest {
         viewModel.onCloseRepositoryClick()
 
         verify { repository.close() }
-        assertNull(controller.moneyRepository.value)
+        assertEquals(RepositoryConnectionState.Disconnected, controller.connectionState.value)
     }
 }
