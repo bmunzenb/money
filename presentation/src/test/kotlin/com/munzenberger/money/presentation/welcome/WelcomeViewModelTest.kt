@@ -132,6 +132,56 @@ class WelcomeViewModelTest {
     }
 
     @Test
+    fun `state hides its error while a database it didn't open is connecting`() = runTest {
+        val connected = CompletableDeferred<Unit>()
+        val populateDemoData = fixture.populateDemoData
+        coEvery { populateDemoData(any()) } coAnswers {
+            connected.await()
+            PopulateDemoDataResult.Success
+        }
+        val viewModel = WelcomeViewModel(controller)
+
+        viewModel.state.test {
+            assertEquals(WelcomeUiState(), awaitItem())
+            viewModel.createDatabase(fixture.unusableFile())
+            assertEquals(WelcomeUiState(isLoading = true), awaitItem())
+            assertEquals(WelcomeUiState(error = WelcomeError.CreateDatabaseFailed), awaitItem())
+
+            val open = launch { controller.openDemo() }
+
+            assertEquals(WelcomeUiState(isLoading = true), awaitItem())
+            connected.complete(Unit)
+            open.join()
+            expectNoEvents()
+        }
+    }
+
+    @Test
+    fun `state clears its error when a database it didn't open fails to connect`() = runTest {
+        val connected = CompletableDeferred<Unit>()
+        val populateDemoData = fixture.populateDemoData
+        coEvery { populateDemoData(any()) } coAnswers {
+            connected.await()
+            PopulateDemoDataResult.Failure(IllegalStateException())
+        }
+        val viewModel = WelcomeViewModel(controller)
+
+        viewModel.state.test {
+            assertEquals(WelcomeUiState(), awaitItem())
+            viewModel.createDatabase(fixture.unusableFile())
+            assertEquals(WelcomeUiState(isLoading = true), awaitItem())
+            assertEquals(WelcomeUiState(error = WelcomeError.CreateDatabaseFailed), awaitItem())
+
+            val open = launch { controller.openDemo() }
+
+            assertEquals(WelcomeUiState(isLoading = true), awaitItem())
+            connected.complete(Unit)
+            open.join()
+            assertEquals(WelcomeUiState(), awaitItem())
+        }
+    }
+
+    @Test
     fun `state shows an error when opening the demo database fails`() = runTest {
         val controller = mockk<MoneyRepositoryController> {
             every { connectionState } returns MutableStateFlow(RepositoryConnectionState.Disconnected)

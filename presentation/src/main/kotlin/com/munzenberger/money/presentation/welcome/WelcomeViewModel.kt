@@ -6,11 +6,8 @@ import com.munzenberger.money.data.api.MoneyRepositoryConnectionStatus
 import com.munzenberger.money.presentation.database.MoneyRepositoryController
 import com.munzenberger.money.presentation.database.RepositoryConnectionState
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.stateIn
-import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import java.io.File
 
@@ -19,20 +16,19 @@ class WelcomeViewModel(
 ) : ViewModel() {
 
     // This ViewModel's own operation, which stays loading until its result is known, so a failure goes straight
-    // from progress to its error rather than briefly showing the buttons once the controller is disconnected.
-    private val operationState = MutableStateFlow(WelcomeUiState())
+    // from progress to its error rather than briefly showing the buttons once the controller is disconnected. It's
+    // only read and written on the main thread, by publish.
+    private var operation = WelcomeUiState()
 
-    // Also loading while the controller connects or is connected, such as for an open this ViewModel didn't start,
-    // or while the screen is about to be replaced after a successful one.
-    val state: StateFlow<WelcomeUiState> = combine(
-        operationState,
-        repositoryController.connectionState,
-        ::uiState,
-    ).stateIn(
-        scope = viewModelScope,
-        started = SharingStarted.WhileSubscribed(),
-        initialValue = uiState(operationState.value, repositoryController.connectionState.value),
-    )
+    private val stateFlow = MutableStateFlow(WelcomeUiState())
+    val state: StateFlow<WelcomeUiState> = stateFlow.asStateFlow()
+
+    init {
+        publish()
+        viewModelScope.launch {
+            repositoryController.connectionState.collect { publish() }
+        }
+    }
 
     fun createDatabase(file: File) {
         connect(WelcomeError.CreateDatabaseFailed) { repositoryController.createDatabase(file) }
@@ -47,7 +43,7 @@ class WelcomeViewModel(
     }
 
     fun dismissError() {
-        operationState.update { it.copy(error = null) }
+        publish(operation.copy(error = null))
     }
 
     private fun connect(
@@ -55,16 +51,27 @@ class WelcomeViewModel(
         connect: suspend () -> MoneyRepositoryConnectionStatus,
     ) {
         viewModelScope.launch {
-            operationState.value = WelcomeUiState(isLoading = true)
+            publish(WelcomeUiState(isLoading = true))
 
-            operationState.value = when (connect()) {
-                is MoneyRepositoryConnectionStatus.Ready -> WelcomeUiState()
-                is MoneyRepositoryConnectionStatus.Failed -> WelcomeUiState(error = failure)
-            }
+            publish(
+                when (connect()) {
+                    is MoneyRepositoryConnectionStatus.Ready -> WelcomeUiState()
+                    is MoneyRepositoryConnectionStatus.Failed -> WelcomeUiState(error = failure)
+                }
+            )
         }
     }
 
-    private fun uiState(operation: WelcomeUiState, connection: RepositoryConnectionState) = operation.copy(
-        isLoading = operation.isLoading || connection != RepositoryConnectionState.Disconnected,
-    )
+    /**
+     * Publishes [operation] with the controller's current connection: also loading while it connects or is
+     * connected, such as for an open this ViewModel didn't start, or while the screen is about to be replaced after
+     * a successful one. A connection replaces the last failure, so its error is cleared rather than shown over the
+     * progress or brought back once that connection ends. Reading the connection here, rather than combining two
+     * flows, keeps the error and the progress from being published out of step.
+     */
+    private fun publish(operation: WelcomeUiState = this.operation) {
+        val isConnecting = repositoryController.connectionState.value != RepositoryConnectionState.Disconnected
+        this.operation = if (isConnecting) operation.copy(error = null) else operation
+        stateFlow.value = this.operation.copy(isLoading = this.operation.isLoading || isConnecting)
+    }
 }
