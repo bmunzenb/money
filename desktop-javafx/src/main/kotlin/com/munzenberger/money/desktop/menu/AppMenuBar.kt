@@ -38,6 +38,7 @@ class AppMenuBar(scope: ScreenScope) : MenuBar() {
 
     // Exits through Platform.exit(), so MoneyApplication.stop() saves the window bounds and closes the database.
     private val exitMenuItem = MenuItem(strings.getString("exit_menu_item_title")).apply {
+        accelerator = KeyCombination.keyCombination("Alt+F4")
         setOnAction { Platform.exit() }
     }
 

@@ -26,6 +26,14 @@ fun chooseNewDatabaseFile(owner: Window?): File? {
 fun chooseDatabaseFile(owner: Window?): File? {
     val chooser = FileChooser().apply {
         title = strings.getString("open_database_dialog_title")
+        extensionFilters += FileChooser.ExtensionFilter(
+            strings.getString("database_file_type"),
+            "*.$MONEY_DATABASE_FILE_EXTENSION",
+        )
+        extensionFilters += FileChooser.ExtensionFilter(
+            strings.getString("all_file_type"),
+            "*",
+        )
     }
     return chooser.showOpenDialog(owner)
 }
