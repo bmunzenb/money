@@ -5,6 +5,7 @@ import com.munzenberger.money.core.demo.PopulateDemoDataResult
 import com.munzenberger.money.data.api.MoneyRepository
 import com.munzenberger.money.data.api.MoneyRepositoryConnectionStatus
 import com.munzenberger.money.presentation.MoneyRepositoryControllerFixture
+import com.munzenberger.money.presentation.database.DatabaseError
 import com.munzenberger.money.presentation.database.MoneyRepositoryController
 import com.munzenberger.money.presentation.database.RepositoryConnectionState
 import io.mockk.coEvery
@@ -145,7 +146,7 @@ class WelcomeViewModelTest {
             assertEquals(WelcomeUiState(), awaitItem())
             viewModel.createDatabase(fixture.unusableFile())
             assertEquals(WelcomeUiState(isLoading = true), awaitItem())
-            assertEquals(WelcomeUiState(error = WelcomeError.CreateDatabaseFailed), awaitItem())
+            assertEquals(WelcomeUiState(error = DatabaseError.CreateDatabaseFailed), awaitItem())
 
             val open = launch { controller.openDemo() }
 
@@ -170,7 +171,7 @@ class WelcomeViewModelTest {
             assertEquals(WelcomeUiState(), awaitItem())
             viewModel.createDatabase(fixture.unusableFile())
             assertEquals(WelcomeUiState(isLoading = true), awaitItem())
-            assertEquals(WelcomeUiState(error = WelcomeError.CreateDatabaseFailed), awaitItem())
+            assertEquals(WelcomeUiState(error = DatabaseError.CreateDatabaseFailed), awaitItem())
 
             val open = launch { controller.openDemo() }
 
@@ -198,7 +199,7 @@ class WelcomeViewModelTest {
             viewModel.openDemo()
 
             assertEquals(WelcomeUiState(isLoading = true), awaitItem())
-            assertEquals(WelcomeUiState(error = WelcomeError.OpenDemoFailed), awaitItem())
+            assertEquals(WelcomeUiState(error = DatabaseError.OpenDemoFailed), awaitItem())
         }
     }
 
@@ -229,7 +230,7 @@ class WelcomeViewModelTest {
             viewModel.openDemo()
 
             assertEquals(WelcomeUiState(isLoading = true), awaitItem())
-            assertEquals(WelcomeUiState(error = WelcomeError.OpenDemoFailed), awaitItem())
+            assertEquals(WelcomeUiState(error = DatabaseError.OpenDemoFailed), awaitItem())
         }
     }
 
@@ -244,7 +245,7 @@ class WelcomeViewModelTest {
             viewModel.createDatabase(file)
 
             assertEquals(WelcomeUiState(isLoading = true), awaitItem())
-            assertEquals(WelcomeUiState(error = WelcomeError.CreateDatabaseFailed), awaitItem())
+            assertEquals(WelcomeUiState(error = DatabaseError.CreateDatabaseFailed), awaitItem())
         }
     }
 
@@ -258,7 +259,7 @@ class WelcomeViewModelTest {
 
             viewModel.createDatabase(file)
             assertEquals(WelcomeUiState(isLoading = true), awaitItem())
-            assertEquals(WelcomeUiState(error = WelcomeError.CreateDatabaseFailed), awaitItem())
+            assertEquals(WelcomeUiState(error = DatabaseError.CreateDatabaseFailed), awaitItem())
 
             viewModel.dismissError()
 
@@ -276,7 +277,7 @@ class WelcomeViewModelTest {
 
             viewModel.createDatabase(file)
             assertEquals(WelcomeUiState(isLoading = true), awaitItem())
-            assertEquals(WelcomeUiState(error = WelcomeError.CreateDatabaseFailed), awaitItem())
+            assertEquals(WelcomeUiState(error = DatabaseError.CreateDatabaseFailed), awaitItem())
 
             viewModel.openDatabase(fixture.addDatabase())
 
