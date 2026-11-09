@@ -127,6 +127,10 @@ class MoneyRepositoryController(
     }
 }
 
+/**
+ * The currently open [MoneyRepository], or `null` while none is open, including while one is connecting. Read it to
+ * write through a use case; to read, use [flow] or [resultFlow], which follow the open repository.
+ */
 val MoneyRepositoryController.repository: MoneyRepository?
     get() = connectionState.value.repository
 
