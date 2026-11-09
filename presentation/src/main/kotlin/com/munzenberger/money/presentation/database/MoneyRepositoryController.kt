@@ -18,7 +18,11 @@ import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.IOException
 import java.nio.file.Files
+import java.util.logging.Level
+import java.util.logging.Logger
 import kotlin.coroutines.CoroutineContext
+
+private val logger = Logger.getLogger(MoneyRepositoryController::class.java.name)
 
 class MoneyRepositoryController(
     private val connectorFactory: MoneyRepositoryConnectorFactory,
@@ -102,10 +106,17 @@ class MoneyRepositoryController(
         mutex.withLock { closeRepository() }
     }
 
-    // Callers hold the mutex; it isn't reentrant, so connect can't call close.
+    // Callers hold the mutex; it isn't reentrant, so connect can't call close. Publishes [next] before closing, so the
+    // state never holds a closed repository, and logs a failed close rather than throwing, since the repository can't
+    // be used either way.
     private fun closeRepository(next: RepositoryConnectionState = RepositoryConnectionState.Disconnected) {
-        connectionStateFlow.value.repository?.close()
+        val repository = connectionStateFlow.value.repository
         connectionStateFlow.value = next
+        try {
+            repository?.close()
+        } catch (@Suppress("TooGenericExceptionCaught") e: Exception) {
+            logger.log(Level.WARNING, "Failed to close the money repository", e)
+        }
     }
 }
 

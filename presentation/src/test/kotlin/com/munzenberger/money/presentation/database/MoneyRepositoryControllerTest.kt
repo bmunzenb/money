@@ -8,6 +8,7 @@ import com.munzenberger.money.data.api.MoneyRepositoryConnectionStatus
 import com.munzenberger.money.data.api.MoneyRepositoryConnector
 import io.mockk.coEvery
 import io.mockk.coVerify
+import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
 import kotlinx.coroutines.CompletableDeferred
@@ -305,6 +306,33 @@ class MoneyRepositoryControllerTest {
 
         controller.close()
 
+        assertEquals(RepositoryConnectionState.Disconnected, controller.connectionState.value)
+    }
+
+    @Test
+    fun `openDatabase connects when the existing repository fails to close`() = runTest {
+        val first = mockk<MoneyRepository> { every { close() } throws IllegalStateException("close failed") }
+        val second = mockk<MoneyRepository>()
+        val controller = controller(
+            connector(MoneyRepositoryConnectionStatus.Ready(first)),
+            connector(MoneyRepositoryConnectionStatus.Ready(second)),
+        )
+        controller.openDatabase(file)
+
+        controller.openDatabase(file)
+
+        assertEquals(RepositoryConnectionState.Connected(second), controller.connectionState.value)
+    }
+
+    @Test
+    fun `close disconnects when the repository fails to close`() = runTest {
+        val repository = mockk<MoneyRepository> { every { close() } throws IllegalStateException("close failed") }
+        val controller = controller(connector(MoneyRepositoryConnectionStatus.Ready(repository)))
+        controller.openDatabase(file)
+
+        controller.close()
+
+        verify(exactly = 1) { repository.close() }
         assertEquals(RepositoryConnectionState.Disconnected, controller.connectionState.value)
     }
 
