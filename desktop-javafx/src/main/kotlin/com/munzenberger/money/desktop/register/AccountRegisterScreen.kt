@@ -1,5 +1,7 @@
 package com.munzenberger.money.desktop.register
 
+import com.munzenberger.money.core.register.RegisterDateFilter
+import com.munzenberger.money.core.register.RegisterStatusFilter
 import com.munzenberger.money.data.api.register.RegisterEntry
 import com.munzenberger.money.desktop.components.AccountBalanceView
 import com.munzenberger.money.desktop.components.ScreenHeading
@@ -17,6 +19,7 @@ import com.munzenberger.money.presentation.state.loadedOrEmpty
 import javafx.geometry.Insets
 import javafx.geometry.Pos
 import javafx.scene.control.Button
+import javafx.scene.control.ComboBox
 import javafx.scene.control.Label
 import javafx.scene.control.ProgressIndicator
 import javafx.scene.layout.HBox
@@ -28,8 +31,9 @@ import org.koin.core.component.inject
 import org.koin.core.parameter.parametersOf
 
 /**
- * An account's register, headed by the account's name, with a row of controls to add a transaction and see the
- * account's settings, a table of its entries, and the account's balance below them.
+ * An account's register, headed by the account's name, with a row of controls to filter its entries by status and
+ * date, add a transaction, and see the account's settings, a table of its entries, and the account's balance below
+ * them.
  */
 class AccountRegisterScreen(
     scope: ScreenScope,
@@ -51,6 +55,23 @@ class AccountRegisterScreen(
         alignment = Pos.CENTER_LEFT
     }
 
+    // Choosing the filter the state already has, as render does, leaves the ViewModel's filter unchanged.
+    private val statusFilterComboBox = ComboBox<RegisterStatusFilter>().apply {
+        items.setAll(RegisterStatusFilter.entries)
+        converter = RegisterStatusFilterConverter
+        setOnAction { value?.let(viewModel::onStatusFilterChange) }
+    }
+
+    private val statusFilterLabel = Label(strings.getString("register_filter_label")).apply {
+        labelFor = statusFilterComboBox
+    }
+
+    private val dateFilterComboBox = ComboBox<RegisterDateFilter>().apply {
+        items.setAll(RegisterDateFilter.entries)
+        converter = RegisterDateFilterConverter
+        setOnAction { value?.let(viewModel::onDateFilterChange) }
+    }
+
     private val newTransactionButton = Button(strings.getString("new_transaction_button_title")).apply {
         isDisable = true
         setOnAction { viewModel.onNewTransactionClick() }
@@ -66,7 +87,14 @@ class AccountRegisterScreen(
 
     private val controls = HBox(Spacing.CONTROL_SPACING).apply {
         alignment = Pos.CENTER_LEFT
-        children.setAll(spacer, newTransactionButton, accountSettingsButton)
+        children.setAll(
+            statusFilterLabel,
+            statusFilterComboBox,
+            dateFilterComboBox,
+            spacer,
+            newTransactionButton,
+            accountSettingsButton,
+        )
     }
 
     // The table's placeholder while the entries load.
@@ -109,6 +137,9 @@ class AccountRegisterScreen(
             is LoadState.Loaded -> heading.apply { text = account.value.name }
         }
         header.children.setAll(headerContent)
+
+        statusFilterComboBox.value = state.statusFilter
+        dateFilterComboBox.value = state.dateFilter
 
         newTransactionButton.isDisable = !state.canAddTransaction
         accountSettingsButton.isDisable = !state.canOpenAccountSettings

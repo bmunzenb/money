@@ -3,6 +3,8 @@ package com.munzenberger.money.presentation.register
 import app.cash.turbine.test
 import com.munzenberger.money.core.account.GetAccountUseCase
 import com.munzenberger.money.core.register.GetAccountRegisterUseCase
+import com.munzenberger.money.core.register.RegisterDateFilter
+import com.munzenberger.money.core.register.RegisterStatusFilter
 import com.munzenberger.money.data.api.EntityNotFoundException
 import com.munzenberger.money.data.api.Money
 import com.munzenberger.money.data.api.MoneyRepository
@@ -31,9 +33,12 @@ import io.mockk.mockk
 import io.mockk.verify
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runCurrent
@@ -413,6 +418,108 @@ class AccountRegisterViewModelTest {
             fixture.connect(other)
 
             assertEquals(AccountRegisterUiState(), awaitItem())
+        }
+    }
+
+    @Test
+    fun `state starts with all dates and all transactions`() = runTest {
+        every { getAccount(any(), any()) } returns flowOf(Result.success(account))
+        every { getAccountRegister(any(), any(), any(), any()) } answers {
+            combine(
+                thirdArg<Flow<RegisterDateFilter>>(),
+                lastArg<Flow<RegisterStatusFilter>>(),
+            ) { dateFilter, statusFilter ->
+                assertEquals(RegisterDateFilter.AllDates, dateFilter)
+                assertEquals(RegisterStatusFilter.AllTransactions, statusFilter)
+                Result.success(listOf(entry))
+            }
+        }
+
+        viewModel().state.test {
+            val initial = awaitItem()
+            assertEquals(RegisterDateFilter.AllDates, initial.dateFilter)
+            assertEquals(RegisterStatusFilter.AllTransactions, initial.statusFilter)
+            runCurrent()
+            assertEquals(LoadState.Loaded(listOf(entry)), expectMostRecentItem().entries)
+        }
+    }
+
+    @Test
+    fun `onDateFilterChange switches to the entries for the new date filter`() = runTest {
+        val thisMonth = entry.copy(transactionId = TransactionId(), balance = Money(5000))
+        every { getAccount(any(), any()) } returns flowOf(Result.success(account))
+        every { getAccountRegister(any(), any(), any(), any()) } answers {
+            thirdArg<Flow<RegisterDateFilter>>().map { dateFilter ->
+                Result.success(if (dateFilter == RegisterDateFilter.CurrentMonth) listOf(thisMonth) else listOf(entry))
+            }
+        }
+        val viewModel = viewModel()
+
+        viewModel.state.test {
+            runCurrent()
+            expectMostRecentItem()
+
+            // The new date filter may show over the old entries until they're filtered.
+            viewModel.onDateFilterChange(RegisterDateFilter.CurrentMonth)
+            runCurrent()
+            val state = expectMostRecentItem()
+            assertEquals(RegisterDateFilter.CurrentMonth, state.dateFilter)
+            assertEquals(LoadState.Loaded(listOf(thisMonth)), state.entries)
+        }
+
+        verify(exactly = 1) { getAccountRegister(repository, account.id, any(), any()) }
+    }
+
+    @Test
+    fun `onStatusFilterChange switches to the entries for the new status filter`() = runTest {
+        val unreconciled = entry.copy(transactionId = TransactionId(), balance = Money(5000))
+        every { getAccount(any(), any()) } returns flowOf(Result.success(account))
+        every { getAccountRegister(any(), any(), any(), any()) } answers {
+            lastArg<Flow<RegisterStatusFilter>>().map { statusFilter ->
+                Result.success(
+                    if (statusFilter == RegisterStatusFilter.UnreconciledTransactions) {
+                        listOf(unreconciled)
+                    } else {
+                        listOf(entry)
+                    }
+                )
+            }
+        }
+        val viewModel = viewModel()
+
+        viewModel.state.test {
+            runCurrent()
+            expectMostRecentItem()
+
+            // The new status filter may show over the old entries until they're filtered.
+            viewModel.onStatusFilterChange(RegisterStatusFilter.UnreconciledTransactions)
+            runCurrent()
+            val state = expectMostRecentItem()
+            assertEquals(RegisterStatusFilter.UnreconciledTransactions, state.statusFilter)
+            assertEquals(LoadState.Loaded(listOf(unreconciled)), state.entries)
+        }
+
+        verify(exactly = 1) { getAccountRegister(repository, account.id, any(), any()) }
+    }
+
+    @Test
+    fun `filter changes show the selected filters while no repository is open`() = runTest {
+        val viewModel = viewModel(connect = false)
+
+        viewModel.state.test {
+            assertEquals(AccountRegisterUiState(), awaitItem())
+
+            viewModel.onDateFilterChange(RegisterDateFilter.Last3Months)
+            assertEquals(AccountRegisterUiState(dateFilter = RegisterDateFilter.Last3Months), awaitItem())
+
+            viewModel.onStatusFilterChange(RegisterStatusFilter.UnreconciledTransactions)
+            assertEquals(
+                AccountRegisterUiState(
+                    dateFilter = RegisterDateFilter.Last3Months,
+                    statusFilter = RegisterStatusFilter.UnreconciledTransactions,
+                ),
+                awaitItem(),
+            )
         }
     }
 
