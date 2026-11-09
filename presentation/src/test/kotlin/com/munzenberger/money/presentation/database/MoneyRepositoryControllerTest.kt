@@ -252,12 +252,13 @@ class MoneyRepositoryControllerTest {
     }
 
     @Test
-    fun `openDemo closes repository when populating throws`() = runTest {
+    fun `openDemo fails and closes repository when populating throws`() = runTest {
         val repository = mockk<MoneyRepository>(relaxUnitFun = true)
-        coEvery { populateDemoData(repository) } throws IllegalStateException("unexpected")
+        val error = IllegalStateException("unexpected")
+        coEvery { populateDemoData(repository) } throws error
         val controller = controller(connector(MoneyRepositoryConnectionStatus.Ready(repository)))
 
-        assertFailsWith<IllegalStateException> { controller.openDemo() }
+        assertEquals(MoneyRepositoryConnectionStatus.Failed(error), controller.openDemo())
 
         verify(exactly = 1) { repository.close() }
         assertEquals(RepositoryConnectionState.Disconnected, controller.connectionState.value)
@@ -399,12 +400,13 @@ class MoneyRepositoryControllerTest {
     }
 
     @Test
-    fun `connectionState is disconnected when an open throws`() = runTest {
+    fun `openDatabase fails and is disconnected when an open throws`() = runTest {
+        val error = IllegalStateException()
         val controller = controller(
-            mockk<MoneyRepositoryConnector> { coEvery { connect() } throws IllegalStateException() },
+            mockk<MoneyRepositoryConnector> { coEvery { connect() } throws error },
         )
 
-        assertFailsWith<IllegalStateException> { controller.openDatabase(file) }
+        assertEquals(MoneyRepositoryConnectionStatus.Failed(error), controller.openDatabase(file))
 
         assertEquals(RepositoryConnectionState.Disconnected, controller.connectionState.value)
     }

@@ -21,6 +21,7 @@ import java.nio.file.Files
 import java.util.logging.Level
 import java.util.logging.Logger
 import kotlin.coroutines.CoroutineContext
+import kotlin.coroutines.cancellation.CancellationException
 
 private val logger = Logger.getLogger(MoneyRepositoryController::class.java.name)
 
@@ -78,7 +79,8 @@ class MoneyRepositoryController(
 
     /**
      * Closes the open repository and publishes [RepositoryConnectionState.Connecting], then publishes the repository
-     * [open] returns if it's ready. If [open] fails or throws, the controller is left disconnected.
+     * [open] returns if it's ready. If [open] fails, or throws, which is logged and returned as
+     * [MoneyRepositoryConnectionStatus.Failed], the controller is left disconnected.
      */
     private suspend fun connect(
         open: suspend () -> MoneyRepositoryConnectionStatus,
@@ -92,6 +94,11 @@ class MoneyRepositoryController(
                         state = RepositoryConnectionState.Connected(it.moneyRepository)
                     }
                 }
+            } catch (e: CancellationException) {
+                throw e
+            } catch (@Suppress("TooGenericExceptionCaught") e: Exception) {
+                logger.log(Level.WARNING, "Failed to connect to the money repository", e)
+                MoneyRepositoryConnectionStatus.Failed(e)
             } finally {
                 connectionStateFlow.value = state
             }

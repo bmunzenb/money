@@ -168,6 +168,22 @@ class WelcomeViewModelTest {
     }
 
     @Test
+    fun `state shows an error when opening the demo database throws`() = runTest {
+        val populateDemoData = fixture.populateDemoData
+        coEvery { populateDemoData(any()) } throws IllegalStateException("unexpected")
+        val viewModel = WelcomeViewModel(controller)
+
+        viewModel.state.test {
+            assertEquals(WelcomeUiState(), awaitItem())
+
+            viewModel.openDemo()
+
+            assertEquals(WelcomeUiState(isLoading = true), awaitItem())
+            assertEquals(WelcomeUiState(error = WelcomeError.OpenDemoFailed), awaitItem())
+        }
+    }
+
+    @Test
     fun `state shows an error when creating a database fails`() = runTest {
         val file = fixture.unusableFile()
         val viewModel = WelcomeViewModel(controller)
