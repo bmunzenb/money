@@ -14,8 +14,10 @@ import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import java.io.File
@@ -28,8 +30,6 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
 import kotlin.test.assertIs
-import kotlin.test.assertNull
-import kotlin.test.assertSame
 import kotlin.test.assertTrue
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -76,20 +76,13 @@ class MoneyRepositoryControllerTest {
     }
 
     @Test
-    fun `moneyRepository is initially null`() {
-        val controller = controller()
-
-        assertNull(controller.moneyRepository.value)
-    }
-
-    @Test
     fun `openDatabase sets repository when ready`() = runTest {
         val repository = mockk<MoneyRepository>()
         val controller = controller(connector(MoneyRepositoryConnectionStatus.Ready(repository)))
 
         controller.openDatabase(file)
 
-        assertSame(repository, controller.moneyRepository.value)
+        assertEquals(RepositoryConnectionState.Connected(repository), controller.connectionState.value)
     }
 
     @Test
@@ -104,12 +97,12 @@ class MoneyRepositoryControllerTest {
     }
 
     @Test
-    fun `openDatabase leaves repository null when failed`() = runTest {
+    fun `openDatabase leaves the controller disconnected when failed`() = runTest {
         val controller = controller(connector(MoneyRepositoryConnectionStatus.Failed(IllegalStateException())))
 
         controller.openDatabase(file)
 
-        assertNull(controller.moneyRepository.value)
+        assertEquals(RepositoryConnectionState.Disconnected, controller.connectionState.value)
     }
 
     @Test
@@ -125,7 +118,7 @@ class MoneyRepositoryControllerTest {
         controller.openDatabase(file)
 
         verify(exactly = 1) { first.close() }
-        assertSame(second, controller.moneyRepository.value)
+        assertEquals(RepositoryConnectionState.Connected(second), controller.connectionState.value)
     }
 
     @Test
@@ -140,7 +133,7 @@ class MoneyRepositoryControllerTest {
         controller.openDatabase(file)
 
         verify(exactly = 1) { first.close() }
-        assertNull(controller.moneyRepository.value)
+        assertEquals(RepositoryConnectionState.Disconnected, controller.connectionState.value)
     }
 
     @Test
@@ -153,7 +146,7 @@ class MoneyRepositoryControllerTest {
 
         coVerify(exactly = 1) { connector.connect() }
         assertEquals(listOf("create"), factoryCalls)
-        assertSame(repository, controller.moneyRepository.value)
+        assertEquals(RepositoryConnectionState.Connected(repository), controller.connectionState.value)
     }
 
     @Test
@@ -187,7 +180,7 @@ class MoneyRepositoryControllerTest {
         assertIs<IOException>(assertIs<MoneyRepositoryConnectionStatus.Failed>(status).error)
         coVerify(exactly = 0) { connector.connect() }
         assertTrue(factoryCalls.isEmpty())
-        assertNull(controller.moneyRepository.value)
+        assertEquals(RepositoryConnectionState.Disconnected, controller.connectionState.value)
     }
 
     @Test
@@ -212,7 +205,7 @@ class MoneyRepositoryControllerTest {
         opens.joinAll()
 
         verify(exactly = 1) { first.close() }
-        assertSame(second, controller.moneyRepository.value)
+        assertEquals(RepositoryConnectionState.Connected(second), controller.connectionState.value)
     }
 
     @Test
@@ -225,7 +218,7 @@ class MoneyRepositoryControllerTest {
 
         coVerify(exactly = 1) { connector.connect() }
         assertEquals(listOf("createInMemory"), factoryCalls)
-        assertSame(repository, controller.moneyRepository.value)
+        assertEquals(RepositoryConnectionState.Connected(repository), controller.connectionState.value)
     }
 
     @Test
@@ -233,14 +226,14 @@ class MoneyRepositoryControllerTest {
         val repository = mockk<MoneyRepository>()
         val controller = controller(connector(MoneyRepositoryConnectionStatus.Ready(repository)))
         coEvery { populateDemoData(repository) } answers {
-            assertNull(controller.moneyRepository.value)
+            assertEquals(RepositoryConnectionState.Connecting, controller.connectionState.value)
             PopulateDemoDataResult.Success
         }
 
         controller.openDemo()
 
         coVerify(exactly = 1) { populateDemoData(repository) }
-        assertSame(repository, controller.moneyRepository.value)
+        assertEquals(RepositoryConnectionState.Connected(repository), controller.connectionState.value)
     }
 
     @Test
@@ -254,7 +247,7 @@ class MoneyRepositoryControllerTest {
 
         assertEquals(MoneyRepositoryConnectionStatus.Failed(error), status)
         verify(exactly = 1) { repository.close() }
-        assertNull(controller.moneyRepository.value)
+        assertEquals(RepositoryConnectionState.Disconnected, controller.connectionState.value)
     }
 
     @Test
@@ -266,7 +259,7 @@ class MoneyRepositoryControllerTest {
         assertFailsWith<IllegalStateException> { controller.openDemo() }
 
         verify(exactly = 1) { repository.close() }
-        assertNull(controller.moneyRepository.value)
+        assertEquals(RepositoryConnectionState.Disconnected, controller.connectionState.value)
     }
 
     @Test
@@ -282,7 +275,7 @@ class MoneyRepositoryControllerTest {
         controller.openDemo()
 
         verify(exactly = 1) { first.close() }
-        assertSame(second, controller.moneyRepository.value)
+        assertEquals(RepositoryConnectionState.Connected(second), controller.connectionState.value)
     }
 
     @Test
@@ -297,22 +290,22 @@ class MoneyRepositoryControllerTest {
     }
 
     @Test
-    fun `close resets to null`() = runTest {
+    fun `close disconnects`() = runTest {
         val controller = controller(connector(MoneyRepositoryConnectionStatus.Ready(mockk(relaxUnitFun = true))))
         controller.openDatabase(file)
 
         controller.close()
 
-        assertNull(controller.moneyRepository.value)
+        assertEquals(RepositoryConnectionState.Disconnected, controller.connectionState.value)
     }
 
     @Test
-    fun `close without repository stays null`() = runTest {
+    fun `close without repository stays disconnected`() = runTest {
         val controller = controller()
 
         controller.close()
 
-        assertNull(controller.moneyRepository.value)
+        assertEquals(RepositoryConnectionState.Disconnected, controller.connectionState.value)
     }
 
     @Test
@@ -335,7 +328,92 @@ class MoneyRepositoryControllerTest {
         joinAll(open, close)
 
         verify(exactly = 1) { repository.close() }
-        assertNull(controller.moneyRepository.value)
+        assertEquals(RepositoryConnectionState.Disconnected, controller.connectionState.value)
+    }
+
+    @Test
+    fun `connectionState is initially disconnected`() {
+        val controller = controller()
+
+        assertEquals(RepositoryConnectionState.Disconnected, controller.connectionState.value)
+    }
+
+    @Test
+    fun `connectionState is connecting while an open is in progress, then connected`() = runTest {
+        val repository = mockk<MoneyRepository>()
+        val connected = CompletableDeferred<Unit>()
+        val slowConnector = mockk<MoneyRepositoryConnector> {
+            coEvery { connect() } coAnswers {
+                connected.await()
+                MoneyRepositoryConnectionStatus.Ready(repository)
+            }
+        }
+        val controller = controller(slowConnector)
+
+        val open = launch { controller.openDatabase(file) }
+        runCurrent()
+
+        assertEquals(RepositoryConnectionState.Connecting, controller.connectionState.value)
+
+        connected.complete(Unit)
+        open.join()
+
+        assertEquals(RepositoryConnectionState.Connected(repository), controller.connectionState.value)
+    }
+
+    @Test
+    fun `connectionState is disconnected when an open fails`() = runTest {
+        val controller = controller(connector(MoneyRepositoryConnectionStatus.Failed(IllegalStateException())))
+
+        controller.openDatabase(file)
+
+        assertEquals(RepositoryConnectionState.Disconnected, controller.connectionState.value)
+    }
+
+    @Test
+    fun `connectionState is disconnected when an open throws`() = runTest {
+        val controller = controller(
+            mockk<MoneyRepositoryConnector> { coEvery { connect() } throws IllegalStateException() },
+        )
+
+        assertFailsWith<IllegalStateException> { controller.openDatabase(file) }
+
+        assertEquals(RepositoryConnectionState.Disconnected, controller.connectionState.value)
+    }
+
+    @Test
+    fun `connectionState goes straight from connected to connecting when replacing a repository`() = runTest {
+        val first = mockk<MoneyRepository>(relaxUnitFun = true)
+        val second = mockk<MoneyRepository>()
+        val controller = controller(
+            connector(MoneyRepositoryConnectionStatus.Ready(first)),
+            connector(MoneyRepositoryConnectionStatus.Ready(second)),
+        )
+        controller.openDatabase(file)
+        val states = mutableListOf<RepositoryConnectionState>()
+        val collect = launch(UnconfinedTestDispatcher(testScheduler)) { controller.connectionState.toList(states) }
+
+        controller.openDatabase(file)
+        collect.cancel()
+
+        assertEquals(
+            listOf(
+                RepositoryConnectionState.Connected(first),
+                RepositoryConnectionState.Connecting,
+                RepositoryConnectionState.Connected(second),
+            ),
+            states,
+        )
+    }
+
+    @Test
+    fun `connectionState is disconnected after close`() = runTest {
+        val controller = controller(connector(MoneyRepositoryConnectionStatus.Ready(mockk(relaxUnitFun = true))))
+        controller.openDatabase(file)
+
+        controller.close()
+
+        assertEquals(RepositoryConnectionState.Disconnected, controller.connectionState.value)
     }
 
     @Test

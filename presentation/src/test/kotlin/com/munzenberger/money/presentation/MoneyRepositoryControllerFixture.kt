@@ -9,6 +9,7 @@ import com.munzenberger.money.presentation.database.MoneyRepositoryConnectorFact
 import com.munzenberger.money.presentation.database.MoneyRepositoryController
 import io.mockk.coEvery
 import io.mockk.mockk
+import kotlinx.coroutines.yield
 import java.io.File
 import java.io.FileNotFoundException
 import java.io.IOException
@@ -76,6 +77,10 @@ class MoneyRepositoryControllerFixture {
     private class FakeConnector(
         private val connect: () -> MoneyRepositoryConnectionStatus,
     ) : MoneyRepositoryConnector {
-        override suspend fun connect() = connect.invoke()
+        // Suspends like a real connect, so collectors see the controller's state while it's connecting.
+        override suspend fun connect(): MoneyRepositoryConnectionStatus {
+            yield()
+            return connect.invoke()
+        }
     }
 }

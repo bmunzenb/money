@@ -2,8 +2,8 @@ package com.munzenberger.money.presentation.menu
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.munzenberger.money.data.api.MoneyRepository
 import com.munzenberger.money.presentation.database.MoneyRepositoryController
+import com.munzenberger.money.presentation.database.RepositoryConnectionState
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
@@ -18,12 +18,12 @@ class AppMenuBarViewModel(
     private val repositoryController: MoneyRepositoryController,
 ) : ViewModel() {
 
-    val state: StateFlow<AppMenuBarUiState> = repositoryController.moneyRepository
+    val state: StateFlow<AppMenuBarUiState> = repositoryController.connectionState
         .map(::uiState)
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(),
-            initialValue = uiState(repositoryController.moneyRepository.value),
+            initialValue = uiState(repositoryController.connectionState.value),
         )
 
     /** Closes the open repository, after which `AppViewModel` navigates to the welcome screen. */
@@ -33,7 +33,7 @@ class AppMenuBarViewModel(
         }
     }
 
-    private fun uiState(repository: MoneyRepository?) = AppMenuBarUiState(
-        canCloseRepository = repository != null,
+    private fun uiState(connection: RepositoryConnectionState) = AppMenuBarUiState(
+        canCloseRepository = connection is RepositoryConnectionState.Connected,
     )
 }

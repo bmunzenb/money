@@ -25,8 +25,9 @@ class MoneyRepositoryController(
     private val populateDemoData: PopulateDemoDataUseCase,
     private val context: CoroutineContext = Dispatchers.IO,
 ) {
-    private val moneyRepositoryFlow = MutableStateFlow<MoneyRepository?>(null)
-    val moneyRepository = moneyRepositoryFlow.asStateFlow()
+    private val connectionStateFlow =
+        MutableStateFlow<RepositoryConnectionState>(RepositoryConnectionState.Disconnected)
+    val connectionState = connectionStateFlow.asStateFlow()
 
     // Lets one open or create run at a time, so overlapping calls can't each publish a repository and leak one.
     private val mutex = Mutex()
@@ -71,13 +72,25 @@ class MoneyRepositoryController(
         }
     }
 
-    // Closes the open repository, then publishes the one [open] returns if it's ready.
+    /**
+     * Closes the open repository and publishes [RepositoryConnectionState.Connecting], then publishes the repository
+     * [open] returns if it's ready. If [open] fails or throws, the controller is left disconnected.
+     */
     private suspend fun connect(
         open: suspend () -> MoneyRepositoryConnectionStatus,
     ): MoneyRepositoryConnectionStatus = withContext(context) {
         mutex.withLock {
-            closeRepository()
-            open().also { applyConnectionStatus(it) }
+            closeRepository(next = RepositoryConnectionState.Connecting)
+            var state: RepositoryConnectionState = RepositoryConnectionState.Disconnected
+            try {
+                open().also {
+                    if (it is MoneyRepositoryConnectionStatus.Ready) {
+                        state = RepositoryConnectionState.Connected(it.moneyRepository)
+                    }
+                }
+            } finally {
+                connectionStateFlow.value = state
+            }
         }
     }
 
@@ -90,17 +103,14 @@ class MoneyRepositoryController(
     }
 
     // Callers hold the mutex; it isn't reentrant, so connect can't call close.
-    private fun closeRepository() {
-        moneyRepositoryFlow.value?.close()
-        moneyRepositoryFlow.value = null
-    }
-
-    private fun applyConnectionStatus(status: MoneyRepositoryConnectionStatus) {
-        if (status is MoneyRepositoryConnectionStatus.Ready) {
-            moneyRepositoryFlow.value = status.moneyRepository
-        }
+    private fun closeRepository(next: RepositoryConnectionState = RepositoryConnectionState.Disconnected) {
+        connectionStateFlow.value.repository?.close()
+        connectionStateFlow.value = next
     }
 }
+
+val MoneyRepositoryController.repository: MoneyRepository?
+    get() = connectionState.value.repository
 
 /**
  * Returns a flow of values selected from the currently open [MoneyRepository].
@@ -111,8 +121,8 @@ class MoneyRepositoryController(
  */
 @OptIn(ExperimentalCoroutinesApi::class)
 fun <T> MoneyRepositoryController.flow(selector: (MoneyRepository) -> Flow<T>): Flow<T> =
-    moneyRepository.flatMapLatest { repository ->
-        repository?.let(selector) ?: emptyFlow()
+    connectionState.flatMapLatest { state ->
+        state.repository?.let(selector) ?: emptyFlow()
     }
 
 /**
