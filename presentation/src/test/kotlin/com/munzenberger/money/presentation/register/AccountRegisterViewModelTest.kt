@@ -28,6 +28,9 @@ import com.munzenberger.money.data.api.transaction.TransferEntryId
 import com.munzenberger.money.presentation.MoneyRepositoryControllerFixture
 import com.munzenberger.money.presentation.navigation.Navigator
 import com.munzenberger.money.presentation.navigation.Route
+import com.munzenberger.money.presentation.preferences.InMemoryPreferences
+import com.munzenberger.money.presentation.preferences.UserPreferences
+import com.munzenberger.money.presentation.preferences.forAccount
 import com.munzenberger.money.presentation.state.LoadState
 import io.mockk.every
 import io.mockk.mockk
@@ -75,6 +78,8 @@ class AccountRegisterViewModelTest {
         every { this@mockk(any(), any(), any(), any()) } returns emptyFlow()
     }
     private val navigator = Navigator()
+    private val preferencesNode = InMemoryPreferences()
+    private val preferences = UserPreferences(preferencesNode)
 
     private val account = Account(
         name = "Checking",
@@ -118,6 +123,7 @@ class AccountRegisterViewModelTest {
             getAccount,
             getAccountRegister,
             navigator,
+            preferences,
         )
     }
 
@@ -558,6 +564,78 @@ class AccountRegisterViewModelTest {
                 awaitItem(),
             )
         }
+    }
+
+    @Test
+    fun `state starts with the account's saved filters`() = runTest {
+        preferences.forAccount(account.id).registerFilters =
+            RegisterFilters(RegisterDateFilter.CurrentYear, RegisterStatusFilter.UnreconciledTransactions)
+        every { getAccount(any(), any()) } returns flowOf(Result.success(account))
+        every { getAccountRegister(any(), any(), any(), any()) } answers {
+            combine(
+                thirdArg<Flow<RegisterDateFilter>>(),
+                lastArg<Flow<RegisterStatusFilter>>(),
+            ) { dateFilter, statusFilter ->
+                assertEquals(RegisterDateFilter.CurrentYear, dateFilter)
+                assertEquals(RegisterStatusFilter.UnreconciledTransactions, statusFilter)
+                Result.success(register(listOf(entry)))
+            }
+        }
+
+        viewModel().state.test {
+            val initial = awaitItem()
+            assertEquals(RegisterDateFilter.CurrentYear, initial.dateFilter)
+            assertEquals(RegisterStatusFilter.UnreconciledTransactions, initial.statusFilter)
+            runCurrent()
+            assertEquals(LoadState.Loaded(listOf(entry)), expectMostRecentItem().entries)
+        }
+    }
+
+    @Test
+    fun `state ignores the filters saved for another account`() = runTest {
+        preferences.forAccount(creditCard.id).registerFilters =
+            RegisterFilters(RegisterDateFilter.CurrentYear, RegisterStatusFilter.UnreconciledTransactions)
+
+        viewModel(connect = false).state.test {
+            assertEquals(AccountRegisterUiState(), awaitItem())
+        }
+    }
+
+    @Test
+    fun `onDateFilterChange saves the filters for the route's account`() = runTest {
+        preferences.forAccount(account.id).registerFilters =
+            RegisterFilters(statusFilter = RegisterStatusFilter.UnreconciledTransactions)
+
+        viewModel(connect = false).onDateFilterChange(RegisterDateFilter.Last12Months)
+
+        assertEquals(
+            RegisterFilters(RegisterDateFilter.Last12Months, RegisterStatusFilter.UnreconciledTransactions),
+            preferences.forAccount(account.id).registerFilters,
+        )
+        assertEquals(RegisterFilters(), preferences.forAccount(creditCard.id).registerFilters)
+    }
+
+    @Test
+    fun `onStatusFilterChange saves the filters for the route's account`() = runTest {
+        preferences.forAccount(account.id).registerFilters =
+            RegisterFilters(dateFilter = RegisterDateFilter.CurrentMonth)
+
+        viewModel(connect = false).onStatusFilterChange(RegisterStatusFilter.UnreconciledTransactions)
+
+        assertEquals(
+            RegisterFilters(RegisterDateFilter.CurrentMonth, RegisterStatusFilter.UnreconciledTransactions),
+            preferences.forAccount(account.id).registerFilters,
+        )
+    }
+
+    @Test
+    fun `filter changes don't save the filters they already have`() = runTest {
+        val viewModel = viewModel(connect = false)
+
+        viewModel.onDateFilterChange(RegisterDateFilter.AllDates)
+        viewModel.onStatusFilterChange(RegisterStatusFilter.AllTransactions)
+
+        assertEquals(emptyList(), preferencesNode.node(account.id.value.toString()).keys().toList())
     }
 
     @Test

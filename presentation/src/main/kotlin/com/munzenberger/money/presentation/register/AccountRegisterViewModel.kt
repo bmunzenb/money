@@ -16,6 +16,8 @@ import com.munzenberger.money.presentation.database.MoneyRepositoryController
 import com.munzenberger.money.presentation.database.flow
 import com.munzenberger.money.presentation.navigation.Navigator
 import com.munzenberger.money.presentation.navigation.Route
+import com.munzenberger.money.presentation.preferences.UserPreferences
+import com.munzenberger.money.presentation.preferences.forAccount
 import com.munzenberger.money.presentation.state.LoadState
 import com.munzenberger.money.presentation.state.toLoadStates
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -31,11 +33,15 @@ class AccountRegisterViewModel(
     getAccount: GetAccountUseCase,
     getAccountRegister: GetAccountRegisterUseCase,
     private val navigator: Navigator,
+    preferences: UserPreferences,
 ) : ViewModel() {
 
-    private val dateFilter = MutableStateFlow(RegisterDateFilter.AllDates)
+    // Each account keeps its own filters.
+    private val accountPreferences = preferences.forAccount(route.accountId)
 
-    private val statusFilter = MutableStateFlow(RegisterStatusFilter.AllTransactions)
+    private val dateFilter = MutableStateFlow(accountPreferences.registerFilters.dateFilter)
+
+    private val statusFilter = MutableStateFlow(accountPreferences.registerFilters.statusFilter)
 
     // Starts with nothing loaded, so the selected filters show before the account and entries arrive, and while no
     // repository is open, since combine waits for all of its flows to emit.
@@ -59,8 +65,8 @@ class AccountRegisterViewModel(
      * open. Both start loading again when another repository opens. A missing account, such as one removed while its
      * register is open, fails like a failed read.
      *
-     * The entries are those that match the selected date and status filters, which start at all dates and all
-     * transactions.
+     * The entries are those that match the selected date and status filters, which start at the filters last selected
+     * on the account's register, or all dates and all transactions if none were.
      *
      * The balance is the last entry's balance before filtering, or the account's initial balance if it has no entries,
      * so the filters don't change it. It comes from the same read as the entries rather than a separate one, so it
@@ -81,12 +87,22 @@ class AccountRegisterViewModel(
         initialValue = AccountRegisterUiState(dateFilter = dateFilter.value, statusFilter = statusFilter.value),
     )
 
+    // The screen reports the filters it shows from the state, so a filter it already has is ignored rather than saved
+    // again.
     fun onDateFilterChange(dateFilter: RegisterDateFilter) {
+        if (dateFilter == this.dateFilter.value) return
         this.dateFilter.value = dateFilter
+        saveFilters()
     }
 
     fun onStatusFilterChange(statusFilter: RegisterStatusFilter) {
+        if (statusFilter == this.statusFilter.value) return
         this.statusFilter.value = statusFilter
+        saveFilters()
+    }
+
+    private fun saveFilters() {
+        accountPreferences.registerFilters = RegisterFilters(dateFilter.value, statusFilter.value)
     }
 
     fun onAccountSettingsClick() {
