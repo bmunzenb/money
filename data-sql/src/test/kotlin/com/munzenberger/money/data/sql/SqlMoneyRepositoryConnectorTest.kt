@@ -1,6 +1,6 @@
 package com.munzenberger.money.data.sql
 
-import com.munzenberger.money.data.api.MoneyRepositoryConnectionStatus
+import com.munzenberger.money.data.api.MoneyRepositoryConnectionResult
 import kotlinx.coroutines.test.runTest
 import java.io.File
 import java.sql.DriverManager
@@ -27,15 +27,15 @@ class SqlMoneyRepositoryConnectorTest {
     @Test
     fun `new file connector returns Ready for file-based database`() = runTest {
         val connector = NewFileSqlMoneyRepositoryConnector(createTempFile())
-        val status = connector.connect()
-        assertIs<MoneyRepositoryConnectionStatus.Ready>(status)
+        val result = connector.connect()
+        assertIs<MoneyRepositoryConnectionResult.Success>(result)
     }
 
     @Test
     fun `new file connector returns Failed for inaccessible database path`() = runTest {
         val connector = NewFileSqlMoneyRepositoryConnector(File("/nonexistent-directory/money-test.db"))
-        val status = connector.connect()
-        assertIs<MoneyRepositoryConnectionStatus.Failed>(status)
+        val result = connector.connect()
+        assertIs<MoneyRepositoryConnectionResult.Failure>(result)
     }
 
     @Test
@@ -44,9 +44,9 @@ class SqlMoneyRepositoryConnectorTest {
         // A table the schema creates last fails its CREATE TABLE after the others have run.
         execute(file, "CREATE TABLE TransactionStatus (id INTEGER)")
 
-        val status = NewFileSqlMoneyRepositoryConnector(file).connect()
+        val result = NewFileSqlMoneyRepositoryConnector(file).connect()
 
-        assertIs<MoneyRepositoryConnectionStatus.Failed>(status)
+        assertIs<MoneyRepositoryConnectionResult.Failure>(result)
         assertEquals(listOf("TransactionStatus"), tableNames(file))
     }
 
@@ -54,19 +54,19 @@ class SqlMoneyRepositoryConnectorTest {
     fun `existing file connector returns Ready for file-based database`() = runTest {
         val file = createTempFile()
         val created = NewFileSqlMoneyRepositoryConnector(file).connect()
-        check(created is MoneyRepositoryConnectionStatus.Ready)
+        check(created is MoneyRepositoryConnectionResult.Success)
         created.moneyRepository.close()
 
-        val status = ExistingFileSqlMoneyRepositoryConnector(file).connect()
+        val result = ExistingFileSqlMoneyRepositoryConnector(file).connect()
 
-        assertIs<MoneyRepositoryConnectionStatus.Ready>(status)
+        assertIs<MoneyRepositoryConnectionResult.Success>(result)
     }
 
     @Test
     fun `in-memory connector returns Ready`() = runTest {
         val connector = InMemorySqlMoneyRepositoryConnector()
-        val status = connector.connect()
-        assertIs<MoneyRepositoryConnectionStatus.Ready>(status)
+        val result = connector.connect()
+        assertIs<MoneyRepositoryConnectionResult.Success>(result)
     }
 
     private fun execute(file: File, sql: String) {

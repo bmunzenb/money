@@ -4,7 +4,7 @@ import com.munzenberger.money.core.demo.PopulateDemoDataResult
 import com.munzenberger.money.core.demo.PopulateDemoDataUseCase
 import com.munzenberger.money.core.resultFlow
 import com.munzenberger.money.data.api.MoneyRepository
-import com.munzenberger.money.data.api.MoneyRepositoryConnectionStatus
+import com.munzenberger.money.data.api.MoneyRepositoryConnectionResult
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
@@ -37,60 +37,60 @@ class MoneyRepositoryController(
     // Lets one open or create run at a time, so overlapping calls can't each publish a repository and leak one.
     private val mutex = Mutex()
 
-    suspend fun createDatabase(file: File): MoneyRepositoryConnectionStatus = connect {
+    suspend fun createDatabase(file: File): MoneyRepositoryConnectionResult = connect {
         try {
             Files.deleteIfExists(file.toPath())
         } catch (e: IOException) {
-            return@connect MoneyRepositoryConnectionStatus.Failed(e)
+            return@connect MoneyRepositoryConnectionResult.Failure(e)
         }
         connectorFactory.create(file).connect()
     }
 
-    suspend fun openDatabase(file: File): MoneyRepositoryConnectionStatus = connect {
+    suspend fun openDatabase(file: File): MoneyRepositoryConnectionResult = connect {
         connectorFactory.open(file).connect()
     }
 
     /**
      * Opens a new in-memory database populated with demo data, which is discarded when it's closed. The
      * repository is only published once its demo data is written; if that fails, it's closed and the result is
-     * [MoneyRepositoryConnectionStatus.Failed].
+     * [MoneyRepositoryConnectionResult.Failure].
      */
-    suspend fun openDemo(): MoneyRepositoryConnectionStatus = connect {
-        val status = connectorFactory.createInMemory().connect()
-        if (status is MoneyRepositoryConnectionStatus.Ready) populateDemo(status) else status
+    suspend fun openDemo(): MoneyRepositoryConnectionResult = connect {
+        val result = connectorFactory.createInMemory().connect()
+        if (result is MoneyRepositoryConnectionResult.Success) populateDemo(result) else result
     }
 
     // Closes the repository if its demo data isn't written, including when populating throws or is cancelled.
     private suspend fun populateDemo(
-        status: MoneyRepositoryConnectionStatus.Ready,
-    ): MoneyRepositoryConnectionStatus {
+        connection: MoneyRepositoryConnectionResult.Success,
+    ): MoneyRepositoryConnectionResult {
         var populated = false
         try {
-            val result = populateDemoData(status.moneyRepository)
+            val result = populateDemoData(connection.moneyRepository)
             if (result is PopulateDemoDataResult.Failure) {
-                return MoneyRepositoryConnectionStatus.Failed(result.cause)
+                return MoneyRepositoryConnectionResult.Failure(result.cause)
             }
             populated = true
-            return status
+            return connection
         } finally {
-            if (!populated) status.moneyRepository.close()
+            if (!populated) connection.moneyRepository.close()
         }
     }
 
     /**
      * Closes the open repository and publishes [RepositoryConnectionState.Connecting], then publishes the repository
      * [open] returns if it's ready. If [open] fails, or throws, which is logged and returned as
-     * [MoneyRepositoryConnectionStatus.Failed], the controller is left disconnected.
+     * [MoneyRepositoryConnectionResult.Failure], the controller is left disconnected.
      */
     private suspend fun connect(
-        open: suspend () -> MoneyRepositoryConnectionStatus,
-    ): MoneyRepositoryConnectionStatus = withContext(context) {
+        open: suspend () -> MoneyRepositoryConnectionResult,
+    ): MoneyRepositoryConnectionResult = withContext(context) {
         mutex.withLock {
             closeRepository(next = RepositoryConnectionState.Connecting)
             var state: RepositoryConnectionState = RepositoryConnectionState.Disconnected
             try {
                 open().also {
-                    if (it is MoneyRepositoryConnectionStatus.Ready) {
+                    if (it is MoneyRepositoryConnectionResult.Success) {
                         state = RepositoryConnectionState.Connected(it.moneyRepository)
                     }
                 }
@@ -98,7 +98,7 @@ class MoneyRepositoryController(
                 throw e
             } catch (@Suppress("TooGenericExceptionCaught") e: Exception) {
                 logger.log(Level.WARNING, "Failed to connect to the money repository", e)
-                MoneyRepositoryConnectionStatus.Failed(e)
+                MoneyRepositoryConnectionResult.Failure(e)
             } finally {
                 connectionStateFlow.value = state
             }
