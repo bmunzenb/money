@@ -1,5 +1,8 @@
 package com.munzenberger.money.desktop.menu
 
+import com.munzenberger.money.desktop.database.DatabaseErrorAlert
+import com.munzenberger.money.desktop.database.chooseDatabaseFile
+import com.munzenberger.money.desktop.database.chooseNewDatabaseFile
 import com.munzenberger.money.desktop.navigation.ScreenScope
 import com.munzenberger.money.desktop.strings
 import com.munzenberger.money.presentation.menu.AppMenuBarUiState
@@ -17,6 +20,14 @@ import javafx.scene.control.SeparatorMenuItem
 class AppMenuBar(scope: ScreenScope) : MenuBar() {
     private val viewModel: AppMenuBarViewModel = scope.viewModel()
 
+    private val newDatabaseMenuItem = MenuItem(strings.getString("new_database_menu_item_title")).apply {
+        setOnAction { chooseNewDatabaseFile(scene?.window)?.let(viewModel::createDatabase) }
+    }
+
+    private val openDatabaseMenuItem = MenuItem(strings.getString("open_database_menu_item_title")).apply {
+        setOnAction { chooseDatabaseFile(scene?.window)?.let(viewModel::openDatabase) }
+    }
+
     private val closeRepositoryMenuItem = MenuItem(strings.getString("close_repository_menu_item_title")).apply {
         setOnAction { viewModel.onCloseRepositoryClick() }
     }
@@ -28,9 +39,11 @@ class AppMenuBar(scope: ScreenScope) : MenuBar() {
 
     // macOS already has Quit in the app menu, so File has no Exit there.
     private val fileMenu = Menu(strings.getString("file_menu_title")).apply {
-        items += closeRepositoryMenuItem
+        items.addAll(newDatabaseMenuItem, openDatabaseMenuItem, closeRepositoryMenuItem)
         if (!isMacOs) items.addAll(SeparatorMenuItem(), exitMenuItem)
     }
+
+    private val errorAlert = DatabaseErrorAlert(onDismiss = viewModel::dismissError)
 
     init {
         isUseSystemMenuBar = true
@@ -39,7 +52,10 @@ class AppMenuBar(scope: ScreenScope) : MenuBar() {
     }
 
     private fun render(state: AppMenuBarUiState) {
+        newDatabaseMenuItem.isDisable = !state.canOpenDatabase
+        openDatabaseMenuItem.isDisable = !state.canOpenDatabase
         closeRepositoryMenuItem.isDisable = !state.canCloseRepository
+        errorAlert.render(state.error, scene?.window)
     }
 
     private companion object {

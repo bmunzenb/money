@@ -2,9 +2,10 @@ package com.munzenberger.money.presentation.welcome
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.munzenberger.money.data.api.MoneyRepositoryConnectionStatus
+import com.munzenberger.money.presentation.database.DatabaseRequest
 import com.munzenberger.money.presentation.database.MoneyRepositoryController
 import com.munzenberger.money.presentation.database.RepositoryConnectionState
+import com.munzenberger.money.presentation.database.execute
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -31,34 +32,25 @@ class WelcomeViewModel(
     }
 
     fun createDatabase(file: File) {
-        connect(WelcomeError.CreateDatabaseFailed) { repositoryController.createDatabase(file) }
+        execute(DatabaseRequest.Create(file))
     }
 
     fun openDatabase(file: File) {
-        connect(WelcomeError.OpenDatabaseFailed) { repositoryController.openDatabase(file) }
+        execute(DatabaseRequest.Open(file))
     }
 
     fun openDemo() {
-        connect(WelcomeError.OpenDemoFailed) { repositoryController.openDemo() }
+        execute(DatabaseRequest.Demo)
     }
 
     fun dismissError() {
         publish(operation.copy(error = null))
     }
 
-    private fun connect(
-        failure: WelcomeError,
-        connect: suspend () -> MoneyRepositoryConnectionStatus,
-    ) {
+    private fun execute(request: DatabaseRequest) {
         viewModelScope.launch {
             publish(WelcomeUiState(isLoading = true))
-
-            publish(
-                when (connect()) {
-                    is MoneyRepositoryConnectionStatus.Ready -> WelcomeUiState()
-                    is MoneyRepositoryConnectionStatus.Failed -> WelcomeUiState(error = failure)
-                }
-            )
+            publish(WelcomeUiState(error = repositoryController.execute(request)))
         }
     }
 
