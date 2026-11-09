@@ -3,7 +3,10 @@ package com.munzenberger.money.presentation.register
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.munzenberger.money.core.account.GetAccountUseCase
+import com.munzenberger.money.core.register.AccountRegister
 import com.munzenberger.money.core.register.GetAccountRegisterUseCase
+import com.munzenberger.money.core.register.RegisterDateFilter
+import com.munzenberger.money.core.register.RegisterStatusFilter
 import com.munzenberger.money.data.api.Money
 import com.munzenberger.money.data.api.account.Account
 import com.munzenberger.money.data.api.register.RegisterEntry
@@ -13,11 +16,15 @@ import com.munzenberger.money.presentation.database.MoneyRepositoryController
 import com.munzenberger.money.presentation.database.flow
 import com.munzenberger.money.presentation.navigation.Navigator
 import com.munzenberger.money.presentation.navigation.Route
+import com.munzenberger.money.presentation.preferences.UserPreferences
+import com.munzenberger.money.presentation.preferences.forAccount
 import com.munzenberger.money.presentation.state.LoadState
 import com.munzenberger.money.presentation.state.toLoadStates
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.stateIn
 
 class AccountRegisterViewModel(
@@ -26,37 +33,77 @@ class AccountRegisterViewModel(
     getAccount: GetAccountUseCase,
     getAccountRegister: GetAccountRegisterUseCase,
     private val navigator: Navigator,
+    preferences: UserPreferences,
 ) : ViewModel() {
+
+    // Each account keeps its own filters.
+    private val accountPreferences = preferences.forAccount(route.accountId)
+
+    private val dateFilter = MutableStateFlow(accountPreferences.registerFilters.dateFilter)
+
+    private val statusFilter = MutableStateFlow(accountPreferences.registerFilters.statusFilter)
+
+    // Starts with nothing loaded, so the selected filters show before the account and entries arrive, and while no
+    // repository is open, since combine waits for all of its flows to emit.
+    private val register = repositoryController
+        .flow { repository ->
+            combine(
+                getAccount(repository, route.accountId).toLoadStates(),
+                getAccountRegister(repository, route.accountId, dateFilter, statusFilter).toLoadStates(),
+            ) { account, register ->
+                AccountRegisterUiState(
+                    account = account,
+                    balance = register.endingBalance(account),
+                    entries = register.entries(),
+                )
+            }
+        }
+        .onStart { emit(AccountRegisterUiState()) }
 
     /**
      * Follows the route's account and its register entries in the open repository, and stays loading while none is
      * open. Both start loading again when another repository opens. A missing account, such as one removed while its
      * register is open, fails like a failed read.
      *
-     * The balance is the last entry's balance, or the account's initial balance if it has no entries, rather than a
-     * separate read, so it always agrees with the entries shown. Since it depends on the account, it stays loading
-     * until the account loads, and fails if it does. The entries load independently of the account.
+     * The entries are those that match the selected date and status filters, which start at the filters last selected
+     * on the account's register, or all dates and all transactions if none were.
+     *
+     * The balance is the last entry's balance before filtering, or the account's initial balance if it has no entries,
+     * so the filters don't change it. It comes from the same read as the entries rather than a separate one, so it
+     * always agrees with them. Since it depends on the account, it stays loading until the account loads, and fails if
+     * it does. The entries load independently of the account.
      *
      * Amounts keep the repository's signs for every account, including liabilities.
      */
-    val state: StateFlow<AccountRegisterUiState> = repositoryController
-        .flow { repository ->
-            combine(
-                getAccount(repository, route.accountId).toLoadStates(),
-                getAccountRegister(repository, route.accountId).toLoadStates(),
-            ) { account, entries ->
-                AccountRegisterUiState(
-                    account = account,
-                    balance = entries.endingBalance(account),
-                    entries = entries,
-                )
-            }
-        }
-        .stateIn(
-            scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(),
-            initialValue = AccountRegisterUiState(),
-        )
+    val state: StateFlow<AccountRegisterUiState> = combine(
+        dateFilter,
+        statusFilter,
+        register,
+    ) { dateFilter, statusFilter, register ->
+        register.copy(dateFilter = dateFilter, statusFilter = statusFilter)
+    }.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(),
+        initialValue = AccountRegisterUiState(dateFilter = dateFilter.value, statusFilter = statusFilter.value),
+    )
+
+    // The screen reports the filters it shows from the state, so a filter it already has is ignored rather than saved
+    // again.
+    fun onDateFilterChange(dateFilter: RegisterDateFilter) {
+        if (dateFilter == this.dateFilter.value) return
+        this.dateFilter.value = dateFilter
+        saveFilters()
+    }
+
+    fun onStatusFilterChange(statusFilter: RegisterStatusFilter) {
+        if (statusFilter == this.statusFilter.value) return
+        this.statusFilter.value = statusFilter
+        saveFilters()
+    }
+
+    private fun saveFilters() {
+        accountPreferences.registerFilters = RegisterFilters(dateFilter.value, statusFilter.value)
+    }
 
     fun onAccountSettingsClick() {
         if (!state.value.canOpenAccountSettings) return
@@ -77,13 +124,20 @@ class AccountRegisterViewModel(
     }
 }
 
+/** The register's entries that match the filters, loading or an error while the register is. */
+private fun LoadState<AccountRegister>.entries(): LoadState<List<RegisterEntry>> = when (this) {
+    LoadState.Loading -> LoadState.Loading
+    LoadState.Error -> LoadState.Error
+    is LoadState.Loaded -> LoadState.Loaded(value.entries)
+}
+
 /**
- * The account's balance after these entries: the last one's balance, or [account]'s initial balance if there are none.
- * It's loading or an error while the entries or the account are.
+ * The account's balance after all of the register's entries, whether or not they match the filters, or [account]'s
+ * initial balance if there are none. It's loading or an error while the register or the account are.
  */
-private fun LoadState<List<RegisterEntry>>.endingBalance(account: LoadState<Account>): LoadState<Money> = when {
+private fun LoadState<AccountRegister>.endingBalance(account: LoadState<Account>): LoadState<Money> = when {
     this is LoadState.Error || account is LoadState.Error -> LoadState.Error
     this is LoadState.Loaded && account is LoadState.Loaded ->
-        LoadState.Loaded(value.lastOrNull()?.balance ?: account.value.initialBalance)
+        LoadState.Loaded(value.endingBalance ?: account.value.initialBalance)
     else -> LoadState.Loading
 }

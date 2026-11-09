@@ -70,4 +70,37 @@ class UserPreferencesTest {
             PreferenceKey("x".repeat(Preferences.MAX_KEY_LENGTH + 1), 0, Int.serializer())
         }
     }
+
+    @Test
+    fun `node stores values in the child node with its name`() {
+        preferences.node("child")[count] = 5
+
+        assertEquals("5", node.node("child").get("test.count", null))
+        assertNull(node.get("test.count", null))
+        assertEquals(0, preferences[count])
+    }
+
+    @Test
+    fun `node returns the values stored in the same child node`() {
+        preferences.node("child")[count] = 5
+
+        assertEquals(5, preferences.node("child")[count])
+        assertEquals(0, preferences.node("other")[count])
+    }
+
+    @Test
+    fun `a node's name can't be longer than the maximum name length`() {
+        preferences.node("x".repeat(Preferences.MAX_NAME_LENGTH))
+
+        assertFailsWith<IllegalArgumentException> {
+            preferences.node("x".repeat(Preferences.MAX_NAME_LENGTH + 1))
+        }
+    }
+
+    @Test
+    fun `a node's name can't contain a slash`() {
+        assertFailsWith<IllegalArgumentException> {
+            preferences.node("a/b")
+        }
+    }
 }

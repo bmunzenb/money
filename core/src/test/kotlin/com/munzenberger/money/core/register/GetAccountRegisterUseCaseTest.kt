@@ -13,6 +13,8 @@ import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.test.runTest
 import kotlinx.datetime.LocalDate
 import kotlin.test.Test
@@ -22,32 +24,241 @@ class GetAccountRegisterUseCaseTest {
 
     private val accountId = AccountId()
 
-    private val entry = registerEntry(amount = Money(-25), balance = Money(75))
+    private val today = LocalDate(2026, 5, 15)
 
-    private val entriesFlow = MutableStateFlow<List<RegisterEntry>>(listOf(entry))
+    private val dayBefore12Months = registerEntry(LocalDate(2025, 5, 14))
+    private val first12Months = registerEntry(LocalDate(2025, 5, 15))
+    private val dayBefore3Months = registerEntry(LocalDate(2026, 2, 14))
+    private val first3Months = registerEntry(LocalDate(2026, 2, 15))
+    private val earlierThisMonth = registerEntry(LocalDate(2026, 5, 1))
+    private val laterThisMonth = registerEntry(LocalDate(2026, 5, 28))
+    private val nextMonth = registerEntry(LocalDate(2026, 6, 10))
+    private val nextYear = registerEntry(LocalDate(2027, 1, 5), balance = Money(150))
+
+    private val allEntries = listOf(
+        dayBefore12Months,
+        first12Months,
+        dayBefore3Months,
+        first3Months,
+        earlierThisMonth,
+        laterThisMonth,
+        nextMonth,
+        nextYear,
+    )
+
+    private val entriesFlow = MutableStateFlow<List<RegisterEntry>>(allEntries)
 
     private val repository = mockk<MoneyRepository> {
         every { registerEntriesForAccount(accountId) } returns entriesFlow
     }
 
-    private val getAccountRegister = GetAccountRegisterUseCase()
+    private val getAccountRegister = GetAccountRegisterUseCase(today = { today })
 
     @Test
-    fun `emits the account's register entries`() = runTest {
-        getAccountRegister(repository, accountId).test {
-            assertEquals(Result.success(listOf(entry)), awaitItem())
+    fun `all dates and all transactions emits all of the account's register entries`() = runTest {
+        getAccountRegister(
+            repository,
+            accountId,
+            flowOf(RegisterDateFilter.AllDates),
+            flowOf(RegisterStatusFilter.AllTransactions),
+        ).test {
+            assertEquals(filtered(allEntries), awaitItem())
         }
     }
 
     @Test
-    fun `emits the entries again when they change`() = runTest {
-        getAccountRegister(repository, accountId).test {
+    fun `current month emits the entries in today's month, including later dates`() = runTest {
+        getAccountRegister(
+            repository,
+            accountId,
+            flowOf(RegisterDateFilter.CurrentMonth),
+            flowOf(RegisterStatusFilter.AllTransactions),
+        ).test {
+            assertEquals(filtered(listOf(earlierThisMonth, laterThisMonth)), awaitItem())
+        }
+    }
+
+    @Test
+    fun `current year emits the entries in today's year, including later dates`() = runTest {
+        getAccountRegister(
+            repository,
+            accountId,
+            flowOf(RegisterDateFilter.CurrentYear),
+            flowOf(RegisterStatusFilter.AllTransactions),
+        ).test {
+            assertEquals(
+                filtered(listOf(dayBefore3Months, first3Months, earlierThisMonth, laterThisMonth, nextMonth)),
+                awaitItem(),
+            )
+        }
+    }
+
+    @Test
+    fun `last 3 months emits the entries from 3 months ago on, including future dates`() = runTest {
+        getAccountRegister(
+            repository,
+            accountId,
+            flowOf(RegisterDateFilter.Last3Months),
+            flowOf(RegisterStatusFilter.AllTransactions),
+        ).test {
+            assertEquals(
+                filtered(listOf(first3Months, earlierThisMonth, laterThisMonth, nextMonth, nextYear)),
+                awaitItem(),
+            )
+        }
+    }
+
+    @Test
+    fun `last 12 months emits the entries from 12 months ago on, including future dates`() = runTest {
+        getAccountRegister(
+            repository,
+            accountId,
+            flowOf(RegisterDateFilter.Last12Months),
+            flowOf(RegisterStatusFilter.AllTransactions),
+        ).test {
+            assertEquals(filtered(allEntries - dayBefore12Months), awaitItem())
+        }
+    }
+
+    @Test
+    fun `unreconciled transactions emits the entries that aren't reconciled`() = runTest {
+        val unreconciled = registerEntry(today, TransactionStatusConstant.Unreconciled)
+        val cleared = registerEntry(today, TransactionStatusConstant.Cleared)
+        val reconciled = registerEntry(today, TransactionStatusConstant.Reconciled)
+        entriesFlow.value = listOf(unreconciled, cleared, reconciled)
+
+        getAccountRegister(
+            repository,
+            accountId,
+            flowOf(RegisterDateFilter.AllDates),
+            flowOf(RegisterStatusFilter.UnreconciledTransactions),
+        ).test {
+            assertEquals(filtered(listOf(unreconciled, cleared)), awaitItem())
+        }
+    }
+
+    @Test
+    fun `emits the entries that match both filters`() = runTest {
+        val reconciledThisMonth = registerEntry(today, TransactionStatusConstant.Reconciled)
+        val reconciledLastYear = registerEntry(LocalDate(2025, 12, 1), TransactionStatusConstant.Reconciled)
+        val unreconciledLastYear = registerEntry(LocalDate(2025, 12, 1))
+        entriesFlow.value = listOf(earlierThisMonth, reconciledThisMonth, reconciledLastYear, unreconciledLastYear)
+
+        getAccountRegister(
+            repository,
+            accountId,
+            flowOf(RegisterDateFilter.CurrentMonth),
+            flowOf(RegisterStatusFilter.UnreconciledTransactions),
+        ).test {
+            assertEquals(filtered(listOf(earlierThisMonth)), awaitItem())
+        }
+    }
+
+    @Test
+    fun `emits the filtered entries again when they change`() = runTest {
+        getAccountRegister(
+            repository,
+            accountId,
+            flowOf(RegisterDateFilter.CurrentMonth),
+            flowOf(RegisterStatusFilter.AllTransactions),
+        ).test {
             awaitItem()
 
-            val added = registerEntry(amount = Money(50), balance = Money(125))
-            entriesFlow.value = listOf(entry, added)
+            val added = registerEntry(LocalDate(2026, 5, 20))
+            entriesFlow.value = allEntries + added
 
-            assertEquals(Result.success(listOf(entry, added)), awaitItem())
+            assertEquals(filtered(listOf(earlierThisMonth, laterThisMonth, added)), awaitItem())
+        }
+    }
+
+    @Test
+    fun `refilters without reading entries again when the date filter changes`() = runTest {
+        var entryReads = 0
+        every { repository.registerEntriesForAccount(accountId) } returns entriesFlow.onStart { entryReads++ }
+        val dateFilter = MutableStateFlow(RegisterDateFilter.AllDates)
+
+        getAccountRegister(repository, accountId, dateFilter, flowOf(RegisterStatusFilter.AllTransactions)).test {
+            awaitItem()
+
+            dateFilter.value = RegisterDateFilter.CurrentMonth
+
+            assertEquals(filtered(listOf(earlierThisMonth, laterThisMonth)), awaitItem())
+            assertEquals(1, entryReads)
+        }
+    }
+
+    @Test
+    fun `refilters without reading entries again when the status filter changes`() = runTest {
+        val unreconciled = registerEntry(today, TransactionStatusConstant.Unreconciled)
+        val reconciled = registerEntry(today, TransactionStatusConstant.Reconciled)
+        entriesFlow.value = listOf(unreconciled, reconciled)
+        var entryReads = 0
+        every { repository.registerEntriesForAccount(accountId) } returns entriesFlow.onStart { entryReads++ }
+        val statusFilter = MutableStateFlow(RegisterStatusFilter.AllTransactions)
+
+        getAccountRegister(repository, accountId, flowOf(RegisterDateFilter.AllDates), statusFilter).test {
+            awaitItem()
+
+            statusFilter.value = RegisterStatusFilter.UnreconciledTransactions
+
+            assertEquals(filtered(listOf(unreconciled)), awaitItem())
+            assertEquals(1, entryReads)
+        }
+    }
+
+    @Test
+    fun `filters by today's date when the entries are filtered`() = runTest {
+        var currentDay = today
+        val getAccountRegister = GetAccountRegisterUseCase(today = { currentDay })
+        val dateFilter = MutableStateFlow(RegisterDateFilter.AllDates)
+
+        getAccountRegister(repository, accountId, dateFilter, flowOf(RegisterStatusFilter.AllTransactions)).test {
+            awaitItem()
+
+            currentDay = LocalDate(2026, 6, 1)
+            dateFilter.value = RegisterDateFilter.CurrentMonth
+
+            assertEquals(filtered(listOf(nextMonth)), awaitItem())
+        }
+    }
+
+    @Test
+    fun `ending balance is the last entry's balance when the filters leave it out`() = runTest {
+        getAccountRegister(
+            repository,
+            accountId,
+            flowOf(RegisterDateFilter.CurrentMonth),
+            flowOf(RegisterStatusFilter.AllTransactions),
+        ).test {
+            assertEquals(Money(150), awaitItem().getOrThrow().endingBalance)
+        }
+    }
+
+    @Test
+    fun `ending balance is the last entry's balance when no entries match the filters`() = runTest {
+        entriesFlow.value = listOf(registerEntry(today, TransactionStatusConstant.Reconciled, Money(90)))
+
+        getAccountRegister(
+            repository,
+            accountId,
+            flowOf(RegisterDateFilter.AllDates),
+            flowOf(RegisterStatusFilter.UnreconciledTransactions),
+        ).test {
+            assertEquals(Result.success(AccountRegister(emptyList(), Money(90))), awaitItem())
+        }
+    }
+
+    @Test
+    fun `ending balance is null when the account has no entries`() = runTest {
+        entriesFlow.value = emptyList()
+
+        getAccountRegister(
+            repository,
+            accountId,
+            flowOf(RegisterDateFilter.AllDates),
+            flowOf(RegisterStatusFilter.AllTransactions),
+        ).test {
+            assertEquals(Result.success(AccountRegister(emptyList(), null)), awaitItem())
         }
     }
 
@@ -56,22 +267,35 @@ class GetAccountRegisterUseCaseTest {
         val error = IllegalStateException("query failed")
         every { repository.registerEntriesForAccount(accountId) } returns flow { throw error }
 
-        getAccountRegister(repository, accountId).test {
+        getAccountRegister(
+            repository,
+            accountId,
+            flowOf(RegisterDateFilter.AllDates),
+            flowOf(RegisterStatusFilter.AllTransactions),
+        ).test {
             assertEquals(error.message, awaitItem().exceptionOrNull()?.message)
             awaitComplete()
         }
     }
 
-    private fun registerEntry(amount: Money, balance: Money) = RegisterEntry.Transaction(
+    // The entries that match the filters, with the ending balance of all the account's entries.
+    private fun filtered(entries: List<RegisterEntry>) =
+        Result.success(AccountRegister(entries, entriesFlow.value.lastOrNull()?.balance))
+
+    private fun registerEntry(
+        date: LocalDate,
+        status: TransactionStatusConstant = TransactionStatusConstant.Unreconciled,
+        balance: Money = Money(75),
+    ) = RegisterEntry.Transaction(
         transactionId = TransactionId(),
         payeeId = null,
         payeeName = null,
-        date = LocalDate(2026, 1, 15),
-        amount = amount,
+        date = date,
+        amount = Money(-25),
         balance = balance,
         number = null,
         memo = null,
-        status = TransactionStatus(TransactionStatusId(1), TransactionStatusConstant.Unreconciled),
+        status = TransactionStatus(TransactionStatusId(status.ordinal.toLong() + 1), status),
         entries = emptyList(),
     )
 }

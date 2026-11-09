@@ -48,6 +48,16 @@ class UserPreferences(
         node.remove(key.name)
     }
 
+    /**
+     * The preferences in the child node [name] of this one, which is created if it doesn't exist, even if nothing is
+     * written to it. The [name] can be at most [Preferences.MAX_NAME_LENGTH] characters, and can't contain a slash,
+     * which would make it a path of nodes.
+     */
+    fun node(name: String): UserPreferences {
+        require(name.length <= Preferences.MAX_NAME_LENGTH && '/' !in name) { "Invalid preference node name: $name" }
+        return UserPreferences(node.node(name), json)
+    }
+
     private companion object {
         const val NODE_PATH = "com/munzenberger/money"
     }
