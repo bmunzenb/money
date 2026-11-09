@@ -13,15 +13,15 @@ import kotlinx.datetime.LocalDate
 import kotlinx.datetime.minus
 
 /**
- * Returns a flow of the register entries of the repository's account with [AccountId], each with the account's balance
- * after it, filtered by the latest [RegisterDateFilter] and [RegisterStatusFilter], wrapped in a [Result] (see
- * [resultFlow]). It emits again whenever the entries change.
+ * Returns a flow of the [AccountRegister] of the repository's account with [AccountId]: its register entries, each with
+ * the account's balance after it, filtered by the latest [RegisterDateFilter] and [RegisterStatusFilter], and its
+ * ending balance, wrapped in a [Result] (see [resultFlow]). It emits again whenever the entries change.
  *
  * A new filter refilters the entries already read, without reading them from the repository again. Each entry keeps
- * its balance in the whole register, so filtering doesn't change the balances shown. Date filters are relative to
- * [today], read each time the entries are filtered.
+ * its balance in the whole register, and the ending balance is the last entry's balance before filtering, so filtering
+ * doesn't change the balances shown. Date filters are relative to [today], read each time the entries are filtered.
  *
- * If there's no such account, such as after it's removed, it emits an empty list.
+ * If there's no such account, such as after it's removed, it emits a register with no entries and no ending balance.
  */
 class GetAccountRegisterUseCase(
     private val today: () -> LocalDate = { LocalDate.today() },
@@ -31,7 +31,7 @@ class GetAccountRegisterUseCase(
         accountId: AccountId,
         dateFilter: Flow<RegisterDateFilter>,
         statusFilter: Flow<RegisterStatusFilter>,
-    ): Flow<Result<List<RegisterEntry>>> =
+    ): Flow<Result<AccountRegister>> =
         repository.resultFlow {
             combine(
                 it.registerEntriesForAccount(accountId),
@@ -39,7 +39,12 @@ class GetAccountRegisterUseCase(
                 statusFilter,
             ) { entries, dateFilter, statusFilter ->
                 val today = today()
-                entries.filter { entry -> dateFilter.matches(entry.date, today) && statusFilter.matches(entry) }
+                AccountRegister(
+                    entries = entries.filter { entry ->
+                        dateFilter.matches(entry.date, today) && statusFilter.matches(entry)
+                    },
+                    endingBalance = entries.lastOrNull()?.balance,
+                )
             }
         }
 }

@@ -3,6 +3,7 @@ package com.munzenberger.money.presentation.register
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.munzenberger.money.core.account.GetAccountUseCase
+import com.munzenberger.money.core.register.AccountRegister
 import com.munzenberger.money.core.register.GetAccountRegisterUseCase
 import com.munzenberger.money.core.register.RegisterDateFilter
 import com.munzenberger.money.core.register.RegisterStatusFilter
@@ -43,11 +44,11 @@ class AccountRegisterViewModel(
             combine(
                 getAccount(repository, route.accountId).toLoadStates(),
                 getAccountRegister(repository, route.accountId, dateFilter, statusFilter).toLoadStates(),
-            ) { account, entries ->
+            ) { account, register ->
                 AccountRegisterUiState(
                     account = account,
-                    balance = entries.endingBalance(account),
-                    entries = entries,
+                    balance = register.endingBalance(account),
+                    entries = register.entries(),
                 )
             }
         }
@@ -61,9 +62,10 @@ class AccountRegisterViewModel(
      * The entries are those that match the selected date and status filters, which start at all dates and all
      * transactions.
      *
-     * The balance is the last entry's balance, or the account's initial balance if it has no entries, rather than a
-     * separate read, so it always agrees with the entries shown. Since it depends on the account, it stays loading
-     * until the account loads, and fails if it does. The entries load independently of the account.
+     * The balance is the last entry's balance before filtering, or the account's initial balance if it has no entries,
+     * so the filters don't change it. It comes from the same read as the entries rather than a separate one, so it
+     * always agrees with them. Since it depends on the account, it stays loading until the account loads, and fails if
+     * it does. The entries load independently of the account.
      *
      * Amounts keep the repository's signs for every account, including liabilities.
      */
@@ -106,13 +108,20 @@ class AccountRegisterViewModel(
     }
 }
 
+/** The register's entries that match the filters, loading or an error while the register is. */
+private fun LoadState<AccountRegister>.entries(): LoadState<List<RegisterEntry>> = when (this) {
+    LoadState.Loading -> LoadState.Loading
+    LoadState.Error -> LoadState.Error
+    is LoadState.Loaded -> LoadState.Loaded(value.entries)
+}
+
 /**
- * The account's balance after these entries: the last one's balance, or [account]'s initial balance if there are none.
- * It's loading or an error while the entries or the account are.
+ * The account's balance after all of the register's entries, whether or not they match the filters, or [account]'s
+ * initial balance if there are none. It's loading or an error while the register or the account are.
  */
-private fun LoadState<List<RegisterEntry>>.endingBalance(account: LoadState<Account>): LoadState<Money> = when {
+private fun LoadState<AccountRegister>.endingBalance(account: LoadState<Account>): LoadState<Money> = when {
     this is LoadState.Error || account is LoadState.Error -> LoadState.Error
     this is LoadState.Loaded && account is LoadState.Loaded ->
-        LoadState.Loaded(value.lastOrNull()?.balance ?: account.value.initialBalance)
+        LoadState.Loaded(value.endingBalance ?: account.value.initialBalance)
     else -> LoadState.Loading
 }

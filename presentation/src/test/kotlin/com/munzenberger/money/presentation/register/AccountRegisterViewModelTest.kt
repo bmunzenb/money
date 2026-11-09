@@ -2,6 +2,7 @@ package com.munzenberger.money.presentation.register
 
 import app.cash.turbine.test
 import com.munzenberger.money.core.account.GetAccountUseCase
+import com.munzenberger.money.core.register.AccountRegister
 import com.munzenberger.money.core.register.GetAccountRegisterUseCase
 import com.munzenberger.money.core.register.RegisterDateFilter
 import com.munzenberger.money.core.register.RegisterStatusFilter
@@ -106,6 +107,9 @@ class AccountRegisterViewModelTest {
         entries = emptyList(),
     )
 
+    // A register of these entries, with no filtered-out entries after them.
+    private fun register(entries: List<RegisterEntry>) = AccountRegister(entries, entries.lastOrNull()?.balance)
+
     private suspend fun viewModel(connect: Boolean = true): AccountRegisterViewModel {
         if (connect) fixture.connect(repository)
         return AccountRegisterViewModel(
@@ -203,7 +207,8 @@ class AccountRegisterViewModelTest {
     fun `state's balance is the last register entry's balance`() = runTest {
         val added = entry.copy(transactionId = TransactionId(), amount = Money(1000), balance = Money(8500))
         every { getAccount(any(), any()) } returns flowOf(Result.success(account))
-        every { getAccountRegister(any(), any(), any(), any()) } returns flowOf(Result.success(listOf(entry, added)))
+        every { getAccountRegister(any(), any(), any(), any()) } returns
+            flowOf(Result.success(register(listOf(entry, added))))
 
         viewModel().state.test {
             runCurrent()
@@ -214,7 +219,7 @@ class AccountRegisterViewModelTest {
     @Test
     fun `state's balance is the account's initial balance when it has no register entries`() = runTest {
         every { getAccount(any(), any()) } returns flowOf(Result.success(account.copy(initialBalance = Money(1000))))
-        every { getAccountRegister(any(), any(), any(), any()) } returns flowOf(Result.success(emptyList()))
+        every { getAccountRegister(any(), any(), any(), any()) } returns flowOf(Result.success(register(emptyList())))
 
         viewModel().state.test {
             runCurrent()
@@ -238,7 +243,7 @@ class AccountRegisterViewModelTest {
     @Test
     fun `state's balance stays loading while the account loads`() = runTest {
         every { getAccount(any(), any()) } returns emptyFlow()
-        every { getAccountRegister(any(), any(), any(), any()) } returns flowOf(Result.success(listOf(entry)))
+        every { getAccountRegister(any(), any(), any(), any()) } returns flowOf(Result.success(register(listOf(entry))))
 
         viewModel().state.test {
             runCurrent()
@@ -275,7 +280,7 @@ class AccountRegisterViewModelTest {
         )
         every { getAccount(any(), any()) } returns flowOf(Result.success(creditCard))
         every { getAccountRegister(any(), any(), any(), any()) } returns
-            flowOf(Result.success(listOf(purchase, transfer)))
+            flowOf(Result.success(register(listOf(purchase, transfer))))
 
         viewModel().state.test {
             runCurrent()
@@ -289,7 +294,8 @@ class AccountRegisterViewModelTest {
     fun `state keeps an asset account's balance and entries' signs`() = runTest {
         val overdrawn = entry.copy(balance = Money(-2500))
         every { getAccount(any(), any()) } returns flowOf(Result.success(account))
-        every { getAccountRegister(any(), any(), any(), any()) } returns flowOf(Result.success(listOf(overdrawn)))
+        every { getAccountRegister(any(), any(), any(), any()) } returns
+            flowOf(Result.success(register(listOf(overdrawn))))
 
         viewModel().state.test {
             runCurrent()
@@ -303,7 +309,7 @@ class AccountRegisterViewModelTest {
     fun `state keeps a liability account's initial balance's sign when it has no register entries`() = runTest {
         every { getAccount(any(), any()) } returns
             flowOf(Result.success(creditCard.copy(initialBalance = Money(-1000))))
-        every { getAccountRegister(any(), any(), any(), any()) } returns flowOf(Result.success(emptyList()))
+        every { getAccountRegister(any(), any(), any(), any()) } returns flowOf(Result.success(register(emptyList())))
 
         viewModel().state.test {
             runCurrent()
@@ -312,8 +318,34 @@ class AccountRegisterViewModelTest {
     }
 
     @Test
+    fun `state's balance is the register's ending balance when the filters leave out the last entry`() = runTest {
+        every { getAccount(any(), any()) } returns flowOf(Result.success(account))
+        every { getAccountRegister(any(), any(), any(), any()) } returns
+            flowOf(Result.success(AccountRegister(listOf(entry), Money(9000))))
+
+        viewModel().state.test {
+            runCurrent()
+            val state = expectMostRecentItem()
+            assertEquals(LoadState.Loaded(listOf(entry)), state.entries)
+            assertEquals(LoadState.Loaded(Money(9000)), state.balance)
+        }
+    }
+
+    @Test
+    fun `state's balance is the register's ending balance when no entries match the filters`() = runTest {
+        every { getAccount(any(), any()) } returns flowOf(Result.success(account.copy(initialBalance = Money(1000))))
+        every { getAccountRegister(any(), any(), any(), any()) } returns
+            flowOf(Result.success(AccountRegister(emptyList(), Money(9000))))
+
+        viewModel().state.test {
+            runCurrent()
+            assertEquals(LoadState.Loaded(Money(9000)), expectMostRecentItem().balance)
+        }
+    }
+
+    @Test
     fun `state follows changes to the balance`() = runTest {
-        val results = MutableStateFlow(Result.success(listOf(entry)))
+        val results = MutableStateFlow(Result.success(register(listOf(entry))))
         every { getAccount(any(), any()) } returns flowOf(Result.success(account))
         every { getAccountRegister(any(), any(), any(), any()) } returns results
 
@@ -322,7 +354,7 @@ class AccountRegisterViewModelTest {
             expectMostRecentItem()
 
             val added = entry.copy(transactionId = TransactionId(), amount = Money(-750), balance = Money(6750))
-            results.value = Result.success(listOf(entry, added))
+            results.value = Result.success(register(listOf(entry, added)))
 
             assertEquals(LoadState.Loaded(Money(6750)), awaitItem().balance)
         }
@@ -350,7 +382,7 @@ class AccountRegisterViewModelTest {
     @Test
     fun `state loads the route's account's register entries from the open repository`() = runTest {
         every { getAccount(any(), any()) } returns flowOf(Result.success(account))
-        every { getAccountRegister(any(), any(), any(), any()) } returns flowOf(Result.success(listOf(entry)))
+        every { getAccountRegister(any(), any(), any(), any()) } returns flowOf(Result.success(register(listOf(entry))))
 
         viewModel().state.test {
             runCurrent()
@@ -374,7 +406,7 @@ class AccountRegisterViewModelTest {
 
     @Test
     fun `state follows changes to the register entries`() = runTest {
-        val results = MutableStateFlow(Result.success(listOf(entry)))
+        val results = MutableStateFlow(Result.success(register(listOf(entry))))
         every { getAccount(any(), any()) } returns flowOf(Result.success(account))
         every { getAccountRegister(any(), any(), any(), any()) } returns results
 
@@ -383,7 +415,7 @@ class AccountRegisterViewModelTest {
             expectMostRecentItem()
 
             val added = entry.copy(transactionId = TransactionId(), amount = Money(1000), balance = Money(8500))
-            results.value = Result.success(listOf(entry, added))
+            results.value = Result.success(register(listOf(entry, added)))
 
             assertEquals(LoadState.Loaded(listOf(entry, added)), awaitItem().entries)
         }
@@ -407,7 +439,8 @@ class AccountRegisterViewModelTest {
     fun `state starts loading again when another repository opens`() = runTest {
         val other = mockk<MoneyRepository>()
         every { getAccount(repository, any()) } returns flowOf(Result.success(account))
-        every { getAccountRegister(repository, any(), any(), any()) } returns flowOf(Result.success(listOf(entry)))
+        every { getAccountRegister(repository, any(), any(), any()) } returns
+            flowOf(Result.success(register(listOf(entry))))
         every { getAccount(other, any()) } returns emptyFlow()
         every { getAccountRegister(other, any(), any(), any()) } returns emptyFlow()
 
@@ -431,7 +464,7 @@ class AccountRegisterViewModelTest {
             ) { dateFilter, statusFilter ->
                 assertEquals(RegisterDateFilter.AllDates, dateFilter)
                 assertEquals(RegisterStatusFilter.AllTransactions, statusFilter)
-                Result.success(listOf(entry))
+                Result.success(register(listOf(entry)))
             }
         }
 
@@ -450,7 +483,9 @@ class AccountRegisterViewModelTest {
         every { getAccount(any(), any()) } returns flowOf(Result.success(account))
         every { getAccountRegister(any(), any(), any(), any()) } answers {
             thirdArg<Flow<RegisterDateFilter>>().map { dateFilter ->
-                Result.success(if (dateFilter == RegisterDateFilter.CurrentMonth) listOf(thisMonth) else listOf(entry))
+                Result.success(
+                    register(if (dateFilter == RegisterDateFilter.CurrentMonth) listOf(thisMonth) else listOf(entry))
+                )
             }
         }
         val viewModel = viewModel()
@@ -477,11 +512,13 @@ class AccountRegisterViewModelTest {
         every { getAccountRegister(any(), any(), any(), any()) } answers {
             lastArg<Flow<RegisterStatusFilter>>().map { statusFilter ->
                 Result.success(
-                    if (statusFilter == RegisterStatusFilter.UnreconciledTransactions) {
-                        listOf(unreconciled)
-                    } else {
-                        listOf(entry)
-                    }
+                    register(
+                        if (statusFilter == RegisterStatusFilter.UnreconciledTransactions) {
+                            listOf(unreconciled)
+                        } else {
+                            listOf(entry)
+                        }
+                    )
                 )
             }
         }

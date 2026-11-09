@@ -33,7 +33,7 @@ class GetAccountRegisterUseCaseTest {
     private val earlierThisMonth = registerEntry(LocalDate(2026, 5, 1))
     private val laterThisMonth = registerEntry(LocalDate(2026, 5, 28))
     private val nextMonth = registerEntry(LocalDate(2026, 6, 10))
-    private val nextYear = registerEntry(LocalDate(2027, 1, 5))
+    private val nextYear = registerEntry(LocalDate(2027, 1, 5), balance = Money(150))
 
     private val allEntries = listOf(
         dayBefore12Months,
@@ -62,7 +62,7 @@ class GetAccountRegisterUseCaseTest {
             flowOf(RegisterDateFilter.AllDates),
             flowOf(RegisterStatusFilter.AllTransactions),
         ).test {
-            assertEquals(Result.success(allEntries), awaitItem())
+            assertEquals(filtered(allEntries), awaitItem())
         }
     }
 
@@ -74,7 +74,7 @@ class GetAccountRegisterUseCaseTest {
             flowOf(RegisterDateFilter.CurrentMonth),
             flowOf(RegisterStatusFilter.AllTransactions),
         ).test {
-            assertEquals(Result.success(listOf(earlierThisMonth, laterThisMonth)), awaitItem())
+            assertEquals(filtered(listOf(earlierThisMonth, laterThisMonth)), awaitItem())
         }
     }
 
@@ -87,7 +87,7 @@ class GetAccountRegisterUseCaseTest {
             flowOf(RegisterStatusFilter.AllTransactions),
         ).test {
             assertEquals(
-                Result.success(listOf(dayBefore3Months, first3Months, earlierThisMonth, laterThisMonth, nextMonth)),
+                filtered(listOf(dayBefore3Months, first3Months, earlierThisMonth, laterThisMonth, nextMonth)),
                 awaitItem(),
             )
         }
@@ -102,7 +102,7 @@ class GetAccountRegisterUseCaseTest {
             flowOf(RegisterStatusFilter.AllTransactions),
         ).test {
             assertEquals(
-                Result.success(listOf(first3Months, earlierThisMonth, laterThisMonth, nextMonth, nextYear)),
+                filtered(listOf(first3Months, earlierThisMonth, laterThisMonth, nextMonth, nextYear)),
                 awaitItem(),
             )
         }
@@ -116,7 +116,7 @@ class GetAccountRegisterUseCaseTest {
             flowOf(RegisterDateFilter.Last12Months),
             flowOf(RegisterStatusFilter.AllTransactions),
         ).test {
-            assertEquals(Result.success(allEntries - dayBefore12Months), awaitItem())
+            assertEquals(filtered(allEntries - dayBefore12Months), awaitItem())
         }
     }
 
@@ -133,7 +133,7 @@ class GetAccountRegisterUseCaseTest {
             flowOf(RegisterDateFilter.AllDates),
             flowOf(RegisterStatusFilter.UnreconciledTransactions),
         ).test {
-            assertEquals(Result.success(listOf(unreconciled, cleared)), awaitItem())
+            assertEquals(filtered(listOf(unreconciled, cleared)), awaitItem())
         }
     }
 
@@ -150,7 +150,7 @@ class GetAccountRegisterUseCaseTest {
             flowOf(RegisterDateFilter.CurrentMonth),
             flowOf(RegisterStatusFilter.UnreconciledTransactions),
         ).test {
-            assertEquals(Result.success(listOf(earlierThisMonth)), awaitItem())
+            assertEquals(filtered(listOf(earlierThisMonth)), awaitItem())
         }
     }
 
@@ -167,7 +167,7 @@ class GetAccountRegisterUseCaseTest {
             val added = registerEntry(LocalDate(2026, 5, 20))
             entriesFlow.value = allEntries + added
 
-            assertEquals(Result.success(listOf(earlierThisMonth, laterThisMonth, added)), awaitItem())
+            assertEquals(filtered(listOf(earlierThisMonth, laterThisMonth, added)), awaitItem())
         }
     }
 
@@ -182,7 +182,7 @@ class GetAccountRegisterUseCaseTest {
 
             dateFilter.value = RegisterDateFilter.CurrentMonth
 
-            assertEquals(Result.success(listOf(earlierThisMonth, laterThisMonth)), awaitItem())
+            assertEquals(filtered(listOf(earlierThisMonth, laterThisMonth)), awaitItem())
             assertEquals(1, entryReads)
         }
     }
@@ -201,7 +201,7 @@ class GetAccountRegisterUseCaseTest {
 
             statusFilter.value = RegisterStatusFilter.UnreconciledTransactions
 
-            assertEquals(Result.success(listOf(unreconciled)), awaitItem())
+            assertEquals(filtered(listOf(unreconciled)), awaitItem())
             assertEquals(1, entryReads)
         }
     }
@@ -218,7 +218,47 @@ class GetAccountRegisterUseCaseTest {
             currentDay = LocalDate(2026, 6, 1)
             dateFilter.value = RegisterDateFilter.CurrentMonth
 
-            assertEquals(Result.success(listOf(nextMonth)), awaitItem())
+            assertEquals(filtered(listOf(nextMonth)), awaitItem())
+        }
+    }
+
+    @Test
+    fun `ending balance is the last entry's balance when the filters leave it out`() = runTest {
+        getAccountRegister(
+            repository,
+            accountId,
+            flowOf(RegisterDateFilter.CurrentMonth),
+            flowOf(RegisterStatusFilter.AllTransactions),
+        ).test {
+            assertEquals(Money(150), awaitItem().getOrThrow().endingBalance)
+        }
+    }
+
+    @Test
+    fun `ending balance is the last entry's balance when no entries match the filters`() = runTest {
+        entriesFlow.value = listOf(registerEntry(today, TransactionStatusConstant.Reconciled, Money(90)))
+
+        getAccountRegister(
+            repository,
+            accountId,
+            flowOf(RegisterDateFilter.AllDates),
+            flowOf(RegisterStatusFilter.UnreconciledTransactions),
+        ).test {
+            assertEquals(Result.success(AccountRegister(emptyList(), Money(90))), awaitItem())
+        }
+    }
+
+    @Test
+    fun `ending balance is null when the account has no entries`() = runTest {
+        entriesFlow.value = emptyList()
+
+        getAccountRegister(
+            repository,
+            accountId,
+            flowOf(RegisterDateFilter.AllDates),
+            flowOf(RegisterStatusFilter.AllTransactions),
+        ).test {
+            assertEquals(Result.success(AccountRegister(emptyList(), null)), awaitItem())
         }
     }
 
@@ -238,16 +278,21 @@ class GetAccountRegisterUseCaseTest {
         }
     }
 
+    // The entries that match the filters, with the ending balance of all the account's entries.
+    private fun filtered(entries: List<RegisterEntry>) =
+        Result.success(AccountRegister(entries, entriesFlow.value.lastOrNull()?.balance))
+
     private fun registerEntry(
         date: LocalDate,
         status: TransactionStatusConstant = TransactionStatusConstant.Unreconciled,
+        balance: Money = Money(75),
     ) = RegisterEntry.Transaction(
         transactionId = TransactionId(),
         payeeId = null,
         payeeName = null,
         date = date,
         amount = Money(-25),
-        balance = Money(75),
+        balance = balance,
         number = null,
         memo = null,
         status = TransactionStatus(TransactionStatusId(status.ordinal.toLong() + 1), status),
