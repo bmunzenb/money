@@ -12,6 +12,7 @@ import javafx.scene.control.Menu
 import javafx.scene.control.MenuBar
 import javafx.scene.control.MenuItem
 import javafx.scene.control.SeparatorMenuItem
+import javafx.scene.input.KeyCombination
 
 /**
  * The app's menu bar. It uses the system menu bar where the OS has one (the screen-top bar on macOS), and is shown at
@@ -21,14 +22,17 @@ class AppMenuBar(scope: ScreenScope) : MenuBar() {
     private val viewModel: AppMenuBarViewModel = scope.viewModel()
 
     private val newDatabaseMenuItem = MenuItem(strings.getString("new_database_menu_item_title")).apply {
+        accelerator = KeyCombination.keyCombination("Shortcut+N")
         setOnAction { chooseNewDatabaseFile(scene?.window)?.let(viewModel::createDatabase) }
     }
 
     private val openDatabaseMenuItem = MenuItem(strings.getString("open_database_menu_item_title")).apply {
+        accelerator = KeyCombination.keyCombination("Shortcut+O")
         setOnAction { chooseDatabaseFile(scene?.window)?.let(viewModel::openDatabase) }
     }
 
     private val closeRepositoryMenuItem = MenuItem(strings.getString("close_repository_menu_item_title")).apply {
+        accelerator = KeyCombination.keyCombination("Shortcut+W")
         setOnAction { viewModel.onCloseRepositoryClick() }
     }
 
@@ -39,7 +43,7 @@ class AppMenuBar(scope: ScreenScope) : MenuBar() {
 
     // macOS already has Quit in the app menu, so File has no Exit there.
     private val fileMenu = Menu(strings.getString("file_menu_title")).apply {
-        items.addAll(newDatabaseMenuItem, openDatabaseMenuItem, closeRepositoryMenuItem)
+        items.addAll(newDatabaseMenuItem, openDatabaseMenuItem, SeparatorMenuItem(), closeRepositoryMenuItem)
         if (!isMacOs) items.addAll(SeparatorMenuItem(), exitMenuItem)
     }
 
