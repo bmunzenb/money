@@ -3,7 +3,7 @@ package com.munzenberger.money.presentation.welcome
 import app.cash.turbine.test
 import com.munzenberger.money.core.demo.PopulateDemoDataResult
 import com.munzenberger.money.data.api.MoneyRepository
-import com.munzenberger.money.data.api.MoneyRepositoryConnectionStatus
+import com.munzenberger.money.data.api.MoneyRepositoryConnectionResult
 import com.munzenberger.money.presentation.MoneyRepositoryControllerFixture
 import com.munzenberger.money.presentation.database.DatabaseError
 import com.munzenberger.money.presentation.database.MoneyRepositoryController
@@ -188,7 +188,7 @@ class WelcomeViewModelTest {
             every { connectionState } returns MutableStateFlow(RepositoryConnectionState.Disconnected)
             coEvery { openDemo() } coAnswers {
                 yield()
-                MoneyRepositoryConnectionStatus.Failed(IllegalStateException())
+                MoneyRepositoryConnectionResult.Failure(IllegalStateException())
             }
         }
         val viewModel = WelcomeViewModel(controller)

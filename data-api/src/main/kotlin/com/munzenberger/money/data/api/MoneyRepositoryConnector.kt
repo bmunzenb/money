@@ -1,10 +1,10 @@
 package com.munzenberger.money.data.api
 
 interface MoneyRepositoryConnector {
-    suspend fun connect(): MoneyRepositoryConnectionStatus
+    suspend fun connect(): MoneyRepositoryConnectionResult
 }
 
-sealed interface MoneyRepositoryConnectionStatus {
-    data class Ready(val moneyRepository: MoneyRepository) : MoneyRepositoryConnectionStatus
-    data class Failed(val error: Throwable) : MoneyRepositoryConnectionStatus
+sealed interface MoneyRepositoryConnectionResult {
+    data class Success(val moneyRepository: MoneyRepository) : MoneyRepositoryConnectionResult
+    data class Failure(val cause: Throwable) : MoneyRepositoryConnectionResult
 }

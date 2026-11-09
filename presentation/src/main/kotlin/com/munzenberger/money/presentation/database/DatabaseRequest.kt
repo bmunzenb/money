@@ -1,6 +1,6 @@
 package com.munzenberger.money.presentation.database
 
-import com.munzenberger.money.data.api.MoneyRepositoryConnectionStatus
+import com.munzenberger.money.data.api.MoneyRepositoryConnectionResult
 import java.io.File
 
 /** A database for [MoneyRepositoryController] to open, as the welcome screen and the menu bar ask for one. */
@@ -25,14 +25,14 @@ enum class DatabaseError {
  * or `null` once it's open.
  */
 suspend fun MoneyRepositoryController.execute(request: DatabaseRequest): DatabaseError? {
-    val status = when (request) {
+    val result = when (request) {
         is DatabaseRequest.Create -> createDatabase(request.file)
         is DatabaseRequest.Open -> openDatabase(request.file)
         DatabaseRequest.Demo -> openDemo()
     }
-    return when (status) {
-        is MoneyRepositoryConnectionStatus.Ready -> null
-        is MoneyRepositoryConnectionStatus.Failed -> request.error
+    return when (result) {
+        is MoneyRepositoryConnectionResult.Success -> null
+        is MoneyRepositoryConnectionResult.Failure -> request.error
     }
 }
 

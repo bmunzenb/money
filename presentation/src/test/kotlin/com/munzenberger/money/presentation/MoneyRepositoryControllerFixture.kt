@@ -3,7 +3,7 @@ package com.munzenberger.money.presentation
 import com.munzenberger.money.core.demo.PopulateDemoDataResult
 import com.munzenberger.money.core.demo.PopulateDemoDataUseCase
 import com.munzenberger.money.data.api.MoneyRepository
-import com.munzenberger.money.data.api.MoneyRepositoryConnectionStatus
+import com.munzenberger.money.data.api.MoneyRepositoryConnectionResult
 import com.munzenberger.money.data.api.MoneyRepositoryConnector
 import com.munzenberger.money.presentation.database.MoneyRepositoryConnectorFactory
 import com.munzenberger.money.presentation.database.MoneyRepositoryController
@@ -38,18 +38,18 @@ class MoneyRepositoryControllerFixture {
         connectorFactory = object : MoneyRepositoryConnectorFactory {
             override fun create(file: File) = FakeConnector {
                 if (file in unusableFiles) {
-                    MoneyRepositoryConnectionStatus.Failed(IOException("Can't create a database at $file"))
+                    MoneyRepositoryConnectionResult.Failure(IOException("Can't create a database at $file"))
                 } else {
-                    MoneyRepositoryConnectionStatus.Ready(fakeRepository().also { databases[file] = it })
+                    MoneyRepositoryConnectionResult.Success(fakeRepository().also { databases[file] = it })
                 }
             }
 
             override fun open(file: File) = FakeConnector {
-                databases[file]?.let { MoneyRepositoryConnectionStatus.Ready(it) }
-                    ?: MoneyRepositoryConnectionStatus.Failed(FileNotFoundException("No database at $file"))
+                databases[file]?.let { MoneyRepositoryConnectionResult.Success(it) }
+                    ?: MoneyRepositoryConnectionResult.Failure(FileNotFoundException("No database at $file"))
             }
 
-            override fun createInMemory() = FakeConnector { MoneyRepositoryConnectionStatus.Ready(fakeRepository()) }
+            override fun createInMemory() = FakeConnector { MoneyRepositoryConnectionResult.Success(fakeRepository()) }
         },
         populateDemoData = populateDemoData,
         context = EmptyCoroutineContext,
@@ -75,10 +75,10 @@ class MoneyRepositoryControllerFixture {
     private fun fakeRepository() = mockk<MoneyRepository>(relaxUnitFun = true)
 
     private class FakeConnector(
-        private val connect: () -> MoneyRepositoryConnectionStatus,
+        private val connect: () -> MoneyRepositoryConnectionResult,
     ) : MoneyRepositoryConnector {
         // Suspends like a real connect, so collectors see the controller's state while it's connecting.
-        override suspend fun connect(): MoneyRepositoryConnectionStatus {
+        override suspend fun connect(): MoneyRepositoryConnectionResult {
             yield()
             return connect.invoke()
         }

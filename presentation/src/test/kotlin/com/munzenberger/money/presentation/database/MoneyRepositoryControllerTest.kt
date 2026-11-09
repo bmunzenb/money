@@ -4,7 +4,7 @@ import app.cash.turbine.test
 import com.munzenberger.money.core.demo.PopulateDemoDataResult
 import com.munzenberger.money.core.demo.PopulateDemoDataUseCase
 import com.munzenberger.money.data.api.MoneyRepository
-import com.munzenberger.money.data.api.MoneyRepositoryConnectionStatus
+import com.munzenberger.money.data.api.MoneyRepositoryConnectionResult
 import com.munzenberger.money.data.api.MoneyRepositoryConnector
 import io.mockk.coEvery
 import io.mockk.coVerify
@@ -54,9 +54,9 @@ class MoneyRepositoryControllerTest {
         coEvery { this@mockk(any()) } returns PopulateDemoDataResult.Success
     }
 
-    private fun connector(status: MoneyRepositoryConnectionStatus) =
+    private fun connector(result: MoneyRepositoryConnectionResult) =
         mockk<MoneyRepositoryConnector> {
-            coEvery { connect() } returns status
+            coEvery { connect() } returns result
         }
 
     // The connector factory methods the controller called, in order.
@@ -79,7 +79,7 @@ class MoneyRepositoryControllerTest {
     @Test
     fun `openDatabase sets repository when ready`() = runTest {
         val repository = mockk<MoneyRepository>()
-        val controller = controller(connector(MoneyRepositoryConnectionStatus.Ready(repository)))
+        val controller = controller(connector(MoneyRepositoryConnectionResult.Success(repository)))
 
         controller.openDatabase(file)
 
@@ -88,7 +88,7 @@ class MoneyRepositoryControllerTest {
 
     @Test
     fun `openDatabase connects to existing database`() = runTest {
-        val connector = connector(MoneyRepositoryConnectionStatus.Ready(mockk()))
+        val connector = connector(MoneyRepositoryConnectionResult.Success(mockk()))
         val controller = controller(connector)
 
         controller.openDatabase(file)
@@ -99,7 +99,7 @@ class MoneyRepositoryControllerTest {
 
     @Test
     fun `openDatabase leaves the controller disconnected when failed`() = runTest {
-        val controller = controller(connector(MoneyRepositoryConnectionStatus.Failed(IllegalStateException())))
+        val controller = controller(connector(MoneyRepositoryConnectionResult.Failure(IllegalStateException())))
 
         controller.openDatabase(file)
 
@@ -111,8 +111,8 @@ class MoneyRepositoryControllerTest {
         val first = mockk<MoneyRepository>(relaxUnitFun = true)
         val second = mockk<MoneyRepository>()
         val controller = controller(
-            connector(MoneyRepositoryConnectionStatus.Ready(first)),
-            connector(MoneyRepositoryConnectionStatus.Ready(second)),
+            connector(MoneyRepositoryConnectionResult.Success(first)),
+            connector(MoneyRepositoryConnectionResult.Success(second)),
         )
 
         controller.openDatabase(file)
@@ -126,8 +126,8 @@ class MoneyRepositoryControllerTest {
     fun `openDatabase closes existing repository even when failed`() = runTest {
         val first = mockk<MoneyRepository>(relaxUnitFun = true)
         val controller = controller(
-            connector(MoneyRepositoryConnectionStatus.Ready(first)),
-            connector(MoneyRepositoryConnectionStatus.Failed(IllegalStateException())),
+            connector(MoneyRepositoryConnectionResult.Success(first)),
+            connector(MoneyRepositoryConnectionResult.Failure(IllegalStateException())),
         )
 
         controller.openDatabase(file)
@@ -140,7 +140,7 @@ class MoneyRepositoryControllerTest {
     @Test
     fun `createDatabase sets repository when ready`() = runTest {
         val repository = mockk<MoneyRepository>()
-        val connector = connector(MoneyRepositoryConnectionStatus.Ready(repository))
+        val connector = connector(MoneyRepositoryConnectionResult.Success(repository))
         val controller = controller(connector)
 
         controller.createDatabase(file)
@@ -157,7 +157,7 @@ class MoneyRepositoryControllerTest {
         val connector = mockk<MoneyRepositoryConnector> {
             coEvery { connect() } answers {
                 existedAtCreate = existing.exists()
-                MoneyRepositoryConnectionStatus.Ready(mockk())
+                MoneyRepositoryConnectionResult.Success(mockk())
             }
         }
         val controller = controller(connector)
@@ -173,12 +173,12 @@ class MoneyRepositoryControllerTest {
         val directory = Files.createTempDirectory("money-test").toFile()
         val child = File(directory, "child").apply { createNewFile() }
         tempFiles += listOf(child, directory)
-        val connector = connector(MoneyRepositoryConnectionStatus.Ready(mockk()))
+        val connector = connector(MoneyRepositoryConnectionResult.Success(mockk()))
         val controller = controller(connector)
 
-        val status = controller.createDatabase(directory)
+        val result = controller.createDatabase(directory)
 
-        assertIs<IOException>(assertIs<MoneyRepositoryConnectionStatus.Failed>(status).error)
+        assertIs<IOException>(assertIs<MoneyRepositoryConnectionResult.Failure>(result).cause)
         coVerify(exactly = 0) { connector.connect() }
         assertTrue(factoryCalls.isEmpty())
         assertEquals(RepositoryConnectionState.Disconnected, controller.connectionState.value)
@@ -192,10 +192,10 @@ class MoneyRepositoryControllerTest {
         val slowConnector = mockk<MoneyRepositoryConnector> {
             coEvery { connect() } coAnswers {
                 firstConnected.await()
-                MoneyRepositoryConnectionStatus.Ready(first)
+                MoneyRepositoryConnectionResult.Success(first)
             }
         }
-        val controller = controller(slowConnector, connector(MoneyRepositoryConnectionStatus.Ready(second)))
+        val controller = controller(slowConnector, connector(MoneyRepositoryConnectionResult.Success(second)))
 
         val opens = listOf(
             launch { controller.openDatabase(file) },
@@ -212,7 +212,7 @@ class MoneyRepositoryControllerTest {
     @Test
     fun `openDemo creates database and sets repository when ready`() = runTest {
         val repository = mockk<MoneyRepository>()
-        val connector = connector(MoneyRepositoryConnectionStatus.Ready(repository))
+        val connector = connector(MoneyRepositoryConnectionResult.Success(repository))
         val controller = controller(connector)
 
         controller.openDemo()
@@ -225,7 +225,7 @@ class MoneyRepositoryControllerTest {
     @Test
     fun `openDemo populates demo data before setting repository`() = runTest {
         val repository = mockk<MoneyRepository>()
-        val controller = controller(connector(MoneyRepositoryConnectionStatus.Ready(repository)))
+        val controller = controller(connector(MoneyRepositoryConnectionResult.Success(repository)))
         coEvery { populateDemoData(repository) } answers {
             assertEquals(RepositoryConnectionState.Connecting, controller.connectionState.value)
             PopulateDemoDataResult.Success
@@ -242,11 +242,11 @@ class MoneyRepositoryControllerTest {
         val repository = mockk<MoneyRepository>(relaxUnitFun = true)
         val error = IllegalStateException("write failed")
         coEvery { populateDemoData(repository) } returns PopulateDemoDataResult.Failure(error)
-        val controller = controller(connector(MoneyRepositoryConnectionStatus.Ready(repository)))
+        val controller = controller(connector(MoneyRepositoryConnectionResult.Success(repository)))
 
-        val status = controller.openDemo()
+        val result = controller.openDemo()
 
-        assertEquals(MoneyRepositoryConnectionStatus.Failed(error), status)
+        assertEquals(MoneyRepositoryConnectionResult.Failure(error), result)
         verify(exactly = 1) { repository.close() }
         assertEquals(RepositoryConnectionState.Disconnected, controller.connectionState.value)
     }
@@ -256,9 +256,9 @@ class MoneyRepositoryControllerTest {
         val repository = mockk<MoneyRepository>(relaxUnitFun = true)
         val error = IllegalStateException("unexpected")
         coEvery { populateDemoData(repository) } throws error
-        val controller = controller(connector(MoneyRepositoryConnectionStatus.Ready(repository)))
+        val controller = controller(connector(MoneyRepositoryConnectionResult.Success(repository)))
 
-        assertEquals(MoneyRepositoryConnectionStatus.Failed(error), controller.openDemo())
+        assertEquals(MoneyRepositoryConnectionResult.Failure(error), controller.openDemo())
 
         verify(exactly = 1) { repository.close() }
         assertEquals(RepositoryConnectionState.Disconnected, controller.connectionState.value)
@@ -269,8 +269,8 @@ class MoneyRepositoryControllerTest {
         val first = mockk<MoneyRepository>(relaxUnitFun = true)
         val second = mockk<MoneyRepository>()
         val controller = controller(
-            connector(MoneyRepositoryConnectionStatus.Ready(first)),
-            connector(MoneyRepositoryConnectionStatus.Ready(second)),
+            connector(MoneyRepositoryConnectionResult.Success(first)),
+            connector(MoneyRepositoryConnectionResult.Success(second)),
         )
 
         controller.openDatabase(file)
@@ -283,7 +283,7 @@ class MoneyRepositoryControllerTest {
     @Test
     fun `close closes repository`() = runTest {
         val repository = mockk<MoneyRepository>(relaxUnitFun = true)
-        val controller = controller(connector(MoneyRepositoryConnectionStatus.Ready(repository)))
+        val controller = controller(connector(MoneyRepositoryConnectionResult.Success(repository)))
         controller.openDatabase(file)
 
         controller.close()
@@ -293,7 +293,7 @@ class MoneyRepositoryControllerTest {
 
     @Test
     fun `close disconnects`() = runTest {
-        val controller = controller(connector(MoneyRepositoryConnectionStatus.Ready(mockk(relaxUnitFun = true))))
+        val controller = controller(connector(MoneyRepositoryConnectionResult.Success(mockk(relaxUnitFun = true))))
         controller.openDatabase(file)
 
         controller.close()
@@ -315,8 +315,8 @@ class MoneyRepositoryControllerTest {
         val first = mockk<MoneyRepository> { every { close() } throws IllegalStateException("close failed") }
         val second = mockk<MoneyRepository>()
         val controller = controller(
-            connector(MoneyRepositoryConnectionStatus.Ready(first)),
-            connector(MoneyRepositoryConnectionStatus.Ready(second)),
+            connector(MoneyRepositoryConnectionResult.Success(first)),
+            connector(MoneyRepositoryConnectionResult.Success(second)),
         )
         controller.openDatabase(file)
 
@@ -328,7 +328,7 @@ class MoneyRepositoryControllerTest {
     @Test
     fun `close disconnects when the repository fails to close`() = runTest {
         val repository = mockk<MoneyRepository> { every { close() } throws IllegalStateException("close failed") }
-        val controller = controller(connector(MoneyRepositoryConnectionStatus.Ready(repository)))
+        val controller = controller(connector(MoneyRepositoryConnectionResult.Success(repository)))
         controller.openDatabase(file)
 
         controller.close()
@@ -344,7 +344,7 @@ class MoneyRepositoryControllerTest {
         val slowConnector = mockk<MoneyRepositoryConnector> {
             coEvery { connect() } coAnswers {
                 connected.await()
-                MoneyRepositoryConnectionStatus.Ready(repository)
+                MoneyRepositoryConnectionResult.Success(repository)
             }
         }
         val controller = controller(slowConnector)
@@ -374,7 +374,7 @@ class MoneyRepositoryControllerTest {
         val slowConnector = mockk<MoneyRepositoryConnector> {
             coEvery { connect() } coAnswers {
                 connected.await()
-                MoneyRepositoryConnectionStatus.Ready(repository)
+                MoneyRepositoryConnectionResult.Success(repository)
             }
         }
         val controller = controller(slowConnector)
@@ -392,7 +392,7 @@ class MoneyRepositoryControllerTest {
 
     @Test
     fun `connectionState is disconnected when an open fails`() = runTest {
-        val controller = controller(connector(MoneyRepositoryConnectionStatus.Failed(IllegalStateException())))
+        val controller = controller(connector(MoneyRepositoryConnectionResult.Failure(IllegalStateException())))
 
         controller.openDatabase(file)
 
@@ -406,7 +406,7 @@ class MoneyRepositoryControllerTest {
             mockk<MoneyRepositoryConnector> { coEvery { connect() } throws error },
         )
 
-        assertEquals(MoneyRepositoryConnectionStatus.Failed(error), controller.openDatabase(file))
+        assertEquals(MoneyRepositoryConnectionResult.Failure(error), controller.openDatabase(file))
 
         assertEquals(RepositoryConnectionState.Disconnected, controller.connectionState.value)
     }
@@ -416,8 +416,8 @@ class MoneyRepositoryControllerTest {
         val first = mockk<MoneyRepository>(relaxUnitFun = true)
         val second = mockk<MoneyRepository>()
         val controller = controller(
-            connector(MoneyRepositoryConnectionStatus.Ready(first)),
-            connector(MoneyRepositoryConnectionStatus.Ready(second)),
+            connector(MoneyRepositoryConnectionResult.Success(first)),
+            connector(MoneyRepositoryConnectionResult.Success(second)),
         )
         controller.openDatabase(file)
         val states = mutableListOf<RepositoryConnectionState>()
@@ -438,7 +438,7 @@ class MoneyRepositoryControllerTest {
 
     @Test
     fun `connectionState is disconnected after close`() = runTest {
-        val controller = controller(connector(MoneyRepositoryConnectionStatus.Ready(mockk(relaxUnitFun = true))))
+        val controller = controller(connector(MoneyRepositoryConnectionResult.Success(mockk(relaxUnitFun = true))))
         controller.openDatabase(file)
 
         controller.close()
@@ -449,7 +449,7 @@ class MoneyRepositoryControllerTest {
     @Test
     fun `resultFlow emits success from selected flow`() = runTest {
         val repository = mockk<MoneyRepository>()
-        val controller = controller(connector(MoneyRepositoryConnectionStatus.Ready(repository)))
+        val controller = controller(connector(MoneyRepositoryConnectionResult.Success(repository)))
 
         controller.resultFlow { flowOf(1, 2) }.test {
             controller.openDatabase(file)
@@ -462,7 +462,7 @@ class MoneyRepositoryControllerTest {
     @Test
     fun `resultFlow emits failure when selected flow throws`() = runTest {
         val error = IllegalStateException("query failed")
-        val controller = controller(connector(MoneyRepositoryConnectionStatus.Ready(mockk())))
+        val controller = controller(connector(MoneyRepositoryConnectionResult.Success(mockk())))
 
         controller.resultFlow<Int> { flow { throw error } }.test {
             controller.openDatabase(file)
@@ -477,8 +477,8 @@ class MoneyRepositoryControllerTest {
         val working = mockk<MoneyRepository>()
         val error = IllegalStateException("query failed")
         val controller = controller(
-            connector(MoneyRepositoryConnectionStatus.Ready(failing)),
-            connector(MoneyRepositoryConnectionStatus.Ready(working)),
+            connector(MoneyRepositoryConnectionResult.Success(failing)),
+            connector(MoneyRepositoryConnectionResult.Success(working)),
         )
 
         controller.resultFlow { repository ->

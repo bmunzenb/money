@@ -3,7 +3,7 @@ package com.munzenberger.money.data.sql
 import app.cash.sqldelight.db.SqlDriver
 import app.cash.sqldelight.driver.jdbc.sqlite.JdbcSqliteDriver
 import app.cash.sqldelight.logs.LogSqliteDriver
-import com.munzenberger.money.data.api.MoneyRepositoryConnectionStatus
+import com.munzenberger.money.data.api.MoneyRepositoryConnectionResult
 import com.munzenberger.money.data.api.MoneyRepositoryConnector
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -40,18 +40,18 @@ sealed class SqlMoneyRepositoryConnector(
         )
 
     /** Opens a driver and builds a repository on it, closing the driver if that fails. */
-    override suspend fun connect(): MoneyRepositoryConnectionStatus = withContext(context) {
+    override suspend fun connect(): MoneyRepositoryConnectionResult = withContext(context) {
         var driver: SqlDriver? = null
         try {
             driver = openDriver()
-            MoneyRepositoryConnectionStatus.Ready(repository(driver))
+            MoneyRepositoryConnectionResult.Success(repository(driver))
         } catch (e: CancellationException) {
             driver?.close()
             throw e
         } catch (@Suppress("TooGenericExceptionCaught") e: Exception) {
             logger.log(Level.WARNING, "Failed to $action database: $url", e)
             driver?.close()
-            MoneyRepositoryConnectionStatus.Failed(e)
+            MoneyRepositoryConnectionResult.Failure(e)
         }
     }
 
