@@ -62,7 +62,7 @@ class AccountRegisterScreen(
         setOnAction { value?.let(viewModel::onStatusFilterChange) }
     }
 
-    private val statusFilterLabel = Label(strings.getString("register_filter_label")).apply {
+    private val statusFilterLabel = Label(strings.getString("register_status_filter_label")).apply {
         labelFor = statusFilterComboBox
     }
 
@@ -70,6 +70,10 @@ class AccountRegisterScreen(
         items.setAll(RegisterDateFilter.entries)
         converter = RegisterDateFilterConverter
         setOnAction { value?.let(viewModel::onDateFilterChange) }
+    }
+
+    private val dateFilterLabel = Label(strings.getString("register_date_filter_label")).apply {
+        labelFor = dateFilterComboBox
     }
 
     private val newTransactionButton = Button(strings.getString("new_transaction_button_title")).apply {
@@ -90,6 +94,7 @@ class AccountRegisterScreen(
         children.setAll(
             statusFilterLabel,
             statusFilterComboBox,
+            dateFilterLabel,
             dateFilterComboBox,
             spacer,
             newTransactionButton,
