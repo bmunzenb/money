@@ -4,6 +4,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.munzenberger.money.core.account.GetAccountUseCase
 import com.munzenberger.money.core.register.GetAccountRegisterUseCase
+import com.munzenberger.money.core.register.RegisterDateFilter
+import com.munzenberger.money.core.register.RegisterStatusFilter
 import com.munzenberger.money.data.api.Money
 import com.munzenberger.money.data.api.account.Account
 import com.munzenberger.money.data.api.register.RegisterEntry
@@ -15,6 +17,7 @@ import com.munzenberger.money.presentation.navigation.Navigator
 import com.munzenberger.money.presentation.navigation.Route
 import com.munzenberger.money.presentation.state.LoadState
 import com.munzenberger.money.presentation.state.toLoadStates
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
@@ -27,6 +30,10 @@ class AccountRegisterViewModel(
     getAccountRegister: GetAccountRegisterUseCase,
     private val navigator: Navigator,
 ) : ViewModel() {
+
+    private val dateFilter = MutableStateFlow(RegisterDateFilter.AllDates)
+
+    private val statusFilter = MutableStateFlow(RegisterStatusFilter.AllTransactions)
 
     /**
      * Follows the route's account and its register entries in the open repository, and stays loading while none is
@@ -43,7 +50,7 @@ class AccountRegisterViewModel(
         .flow { repository ->
             combine(
                 getAccount(repository, route.accountId).toLoadStates(),
-                getAccountRegister(repository, route.accountId).toLoadStates(),
+                getAccountRegister(repository, route.accountId, dateFilter, statusFilter).toLoadStates(),
             ) { account, entries ->
                 AccountRegisterUiState(
                     account = account,

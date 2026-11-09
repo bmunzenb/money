@@ -66,7 +66,7 @@ class AccountRegisterViewModelTest {
 
     // Emits no entries unless a test stubs them, so the entries stay loading.
     private val getAccountRegister = mockk<GetAccountRegisterUseCase> {
-        every { this@mockk(any(), any()) } returns emptyFlow()
+        every { this@mockk(any(), any(), any(), any()) } returns emptyFlow()
     }
     private val navigator = Navigator()
 
@@ -121,7 +121,7 @@ class AccountRegisterViewModelTest {
         }
 
         verify(exactly = 0) { getAccount(any(), any()) }
-        verify(exactly = 0) { getAccountRegister(any(), any()) }
+        verify(exactly = 0) { getAccountRegister(any(), any(), any(), any()) }
     }
 
     @Test
@@ -198,7 +198,7 @@ class AccountRegisterViewModelTest {
     fun `state's balance is the last register entry's balance`() = runTest {
         val added = entry.copy(transactionId = TransactionId(), amount = Money(1000), balance = Money(8500))
         every { getAccount(any(), any()) } returns flowOf(Result.success(account))
-        every { getAccountRegister(any(), any()) } returns flowOf(Result.success(listOf(entry, added)))
+        every { getAccountRegister(any(), any(), any(), any()) } returns flowOf(Result.success(listOf(entry, added)))
 
         viewModel().state.test {
             runCurrent()
@@ -209,7 +209,7 @@ class AccountRegisterViewModelTest {
     @Test
     fun `state's balance is the account's initial balance when it has no register entries`() = runTest {
         every { getAccount(any(), any()) } returns flowOf(Result.success(account.copy(initialBalance = Money(1000))))
-        every { getAccountRegister(any(), any()) } returns flowOf(Result.success(emptyList()))
+        every { getAccountRegister(any(), any(), any(), any()) } returns flowOf(Result.success(emptyList()))
 
         viewModel().state.test {
             runCurrent()
@@ -233,7 +233,7 @@ class AccountRegisterViewModelTest {
     @Test
     fun `state's balance stays loading while the account loads`() = runTest {
         every { getAccount(any(), any()) } returns emptyFlow()
-        every { getAccountRegister(any(), any()) } returns flowOf(Result.success(listOf(entry)))
+        every { getAccountRegister(any(), any(), any(), any()) } returns flowOf(Result.success(listOf(entry)))
 
         viewModel().state.test {
             runCurrent()
@@ -269,7 +269,8 @@ class AccountRegisterViewModelTest {
             accountName = "Checking",
         )
         every { getAccount(any(), any()) } returns flowOf(Result.success(creditCard))
-        every { getAccountRegister(any(), any()) } returns flowOf(Result.success(listOf(purchase, transfer)))
+        every { getAccountRegister(any(), any(), any(), any()) } returns
+            flowOf(Result.success(listOf(purchase, transfer)))
 
         viewModel().state.test {
             runCurrent()
@@ -283,7 +284,7 @@ class AccountRegisterViewModelTest {
     fun `state keeps an asset account's balance and entries' signs`() = runTest {
         val overdrawn = entry.copy(balance = Money(-2500))
         every { getAccount(any(), any()) } returns flowOf(Result.success(account))
-        every { getAccountRegister(any(), any()) } returns flowOf(Result.success(listOf(overdrawn)))
+        every { getAccountRegister(any(), any(), any(), any()) } returns flowOf(Result.success(listOf(overdrawn)))
 
         viewModel().state.test {
             runCurrent()
@@ -297,7 +298,7 @@ class AccountRegisterViewModelTest {
     fun `state keeps a liability account's initial balance's sign when it has no register entries`() = runTest {
         every { getAccount(any(), any()) } returns
             flowOf(Result.success(creditCard.copy(initialBalance = Money(-1000))))
-        every { getAccountRegister(any(), any()) } returns flowOf(Result.success(emptyList()))
+        every { getAccountRegister(any(), any(), any(), any()) } returns flowOf(Result.success(emptyList()))
 
         viewModel().state.test {
             runCurrent()
@@ -309,7 +310,7 @@ class AccountRegisterViewModelTest {
     fun `state follows changes to the balance`() = runTest {
         val results = MutableStateFlow(Result.success(listOf(entry)))
         every { getAccount(any(), any()) } returns flowOf(Result.success(account))
-        every { getAccountRegister(any(), any()) } returns results
+        every { getAccountRegister(any(), any(), any(), any()) } returns results
 
         viewModel().state.test {
             runCurrent()
@@ -325,7 +326,7 @@ class AccountRegisterViewModelTest {
     @Test
     fun `state's balance is an error when the register entries can't be loaded`() = runTest {
         every { getAccount(any(), any()) } returns flowOf(Result.success(account))
-        every { getAccountRegister(any(), any()) } returns
+        every { getAccountRegister(any(), any(), any(), any()) } returns
             flowOf(Result.failure(IllegalStateException("query failed")))
 
         viewModel().state.test {
@@ -344,14 +345,14 @@ class AccountRegisterViewModelTest {
     @Test
     fun `state loads the route's account's register entries from the open repository`() = runTest {
         every { getAccount(any(), any()) } returns flowOf(Result.success(account))
-        every { getAccountRegister(any(), any()) } returns flowOf(Result.success(listOf(entry)))
+        every { getAccountRegister(any(), any(), any(), any()) } returns flowOf(Result.success(listOf(entry)))
 
         viewModel().state.test {
             runCurrent()
             assertEquals(LoadState.Loaded(listOf(entry)), expectMostRecentItem().entries)
         }
 
-        verify(exactly = 1) { getAccountRegister(repository, account.id) }
+        verify(exactly = 1) { getAccountRegister(repository, account.id, any(), any()) }
     }
 
     @Test
@@ -370,7 +371,7 @@ class AccountRegisterViewModelTest {
     fun `state follows changes to the register entries`() = runTest {
         val results = MutableStateFlow(Result.success(listOf(entry)))
         every { getAccount(any(), any()) } returns flowOf(Result.success(account))
-        every { getAccountRegister(any(), any()) } returns results
+        every { getAccountRegister(any(), any(), any(), any()) } returns results
 
         viewModel().state.test {
             runCurrent()
@@ -386,7 +387,7 @@ class AccountRegisterViewModelTest {
     @Test
     fun `state's register entries are an error when they can't be loaded`() = runTest {
         every { getAccount(any(), any()) } returns flowOf(Result.success(account))
-        every { getAccountRegister(any(), any()) } returns
+        every { getAccountRegister(any(), any(), any(), any()) } returns
             flowOf(Result.failure(IllegalStateException("query failed")))
 
         viewModel().state.test {
@@ -401,9 +402,9 @@ class AccountRegisterViewModelTest {
     fun `state starts loading again when another repository opens`() = runTest {
         val other = mockk<MoneyRepository>()
         every { getAccount(repository, any()) } returns flowOf(Result.success(account))
-        every { getAccountRegister(repository, any()) } returns flowOf(Result.success(listOf(entry)))
+        every { getAccountRegister(repository, any(), any(), any()) } returns flowOf(Result.success(listOf(entry)))
         every { getAccount(other, any()) } returns emptyFlow()
-        every { getAccountRegister(other, any()) } returns emptyFlow()
+        every { getAccountRegister(other, any(), any(), any()) } returns emptyFlow()
 
         viewModel().state.test {
             runCurrent()
