@@ -64,7 +64,7 @@ class FormGrid : GridPane() {
         /** The space after the fields. Anything lined up with their end, like a [FormFooter], takes it too. */
         val END_PADDING = Insets(0.0, Spacing.MEDIUM, 0.0, 0.0)
 
-        private const val MAX_WIDTH = 400.0
+        private const val MAX_WIDTH = 500.0
         private const val LABEL_TOP_PADDING = 4.0
     }
 }

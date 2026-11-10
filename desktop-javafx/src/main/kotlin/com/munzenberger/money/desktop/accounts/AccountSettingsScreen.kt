@@ -56,7 +56,6 @@ class AccountSettingsScreen(scope: ScreenScope, route: Route.AccountFormRoute) :
     // Choosing the type the state already has, as render does, leaves the ViewModel's type unchanged.
     private val accountTypeComboBox = ComboBox<AccountType>().apply {
         converter = AccountTypeConverter
-        maxWidth = Double.MAX_VALUE
         setOnAction { value?.let(viewModel::onAccountTypeChange) }
     }
 
