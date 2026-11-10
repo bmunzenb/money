@@ -2,8 +2,8 @@ package com.munzenberger.money.desktop.navigation
 
 import com.munzenberger.money.presentation.navigation.Navigator
 import com.munzenberger.money.presentation.navigation.Route
-import javafx.scene.Node
 import javafx.scene.layout.StackPane
+import javafx.stage.Window
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -12,17 +12,25 @@ import kotlinx.coroutines.launch
 
 /**
  * Shows the screen for the top of [navigator]'s back stack. Each back stack entry gets its own
- * [ScreenScope] and node, built once by [router] and kept while the entry stays in the stack, so going
+ * [ScreenScope] and [Destination], built once by [router] and kept while the entry stays in the stack, so going
  * back shows the same screen and ViewModels. An entry's scope is closed when it's popped or replaced,
  * so navigating to its route again starts fresh.
+ *
+ * The pane shows the top-most [Destination.Screen], and each [Destination.Dialog] above it is shown in a
+ * [ScreenDialog] owned by the window below it, so dialogs can open over dialogs. Dialogs below the top-most screen
+ * are hidden until going back shows them again.
  */
 class NavigationHost(
     private val navigator: Navigator,
-    private val router: (route: Route, scope: ScreenScope) -> Node,
+    private val router: (route: Route, scope: ScreenScope) -> Destination,
 ) : StackPane(), AutoCloseable {
 
-    private class Entry(val route: Route, val scope: ScreenScope, val node: Node) : AutoCloseable {
+    private class Entry(val route: Route, val scope: ScreenScope, val destination: Destination) : AutoCloseable {
+        // Created the first time a dialog entry is shown.
+        var dialog: ScreenDialog? = null
+
         override fun close() {
+            dialog?.close()
             scope.close()
         }
     }
@@ -48,9 +56,25 @@ class NavigationHost(
             entries += Entry(route, scope, router(route, scope))
         }
 
-        val screen = entries.lastOrNull()
-        children.setAll(listOfNotNull(screen?.node))
+        val screenIndex = entries.indexOfLast { it.destination is Destination.Screen }
+        children.setAll(listOfNotNull(entries.getOrNull(screenIndex)?.destination?.node))
+
+        entries.take(screenIndex.coerceAtLeast(0)).forEach { it.dialog?.hide() }
+
+        var owner: Window? = scene?.window
+        entries.drop(screenIndex + 1).forEach { entry ->
+            val dialog = entry.dialog ?: entry.createDialog(owner).also { entry.dialog = it }
+            dialog.show()
+            owner = dialog.window
+        }
     }
+
+    // Closing the dialog's window goes back from its route, which pops the entry and closes the dialog.
+    private fun Entry.createDialog(owner: Window?) = ScreenDialog(
+        destination = destination as Destination.Dialog,
+        owner = owner,
+        onCloseRequest = { navigator.back(from = route) },
+    )
 
     override fun close() {
         coroutineScope.cancel()
