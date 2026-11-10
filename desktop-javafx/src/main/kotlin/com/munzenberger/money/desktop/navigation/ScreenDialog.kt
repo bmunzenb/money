@@ -22,6 +22,13 @@ class ScreenDialog(
         scene = Scene(destination.node).apply {
             owner?.scene?.let { stylesheets.setAll(it.stylesheets) }
         }
+        // The window first opens at its content's preferred size, so it can't be made smaller than that.
+        setOnShown {
+            if (minWidth == 0.0) {
+                minWidth = width
+                minHeight = height
+            }
+        }
         setOnCloseRequest { event ->
             event.consume()
             onCloseRequest()
