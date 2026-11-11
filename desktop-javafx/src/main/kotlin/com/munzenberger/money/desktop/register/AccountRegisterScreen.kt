@@ -16,6 +16,7 @@ import com.munzenberger.money.presentation.register.AccountRegisterUiState
 import com.munzenberger.money.presentation.register.AccountRegisterViewModel
 import com.munzenberger.money.presentation.state.LoadState
 import com.munzenberger.money.presentation.state.loadedOrEmpty
+import com.munzenberger.money.presentation.state.map
 import javafx.geometry.Insets
 import javafx.geometry.Pos
 import javafx.scene.control.Button
@@ -136,10 +137,11 @@ class AccountRegisterScreen(
     }
 
     private fun render(state: AccountRegisterUiState) {
-        val headerContent = when (val account = state.account) {
+        val register = state.register
+        val headerContent = when (register) {
             LoadState.Loading -> headingProgress
             LoadState.Error -> headingError
-            is LoadState.Loaded -> heading.apply { text = account.value.name }
+            is LoadState.Loaded -> heading.apply { text = register.value.account.name }
         }
         header.children.setAll(headerContent)
 
@@ -149,13 +151,13 @@ class AccountRegisterScreen(
         newTransactionButton.isDisable = !state.canAddTransaction
         accountSettingsButton.isDisable = !state.canOpenAccountSettings
 
-        registerTable.placeholder = when (state.entries) {
+        registerTable.placeholder = when (register) {
             LoadState.Loading -> loadingProgress
             LoadState.Error -> loadErrorMessage
             is LoadState.Loaded -> emptyMessage
         }
-        registerTable.show(state.entries.loadedOrEmpty)
+        registerTable.show(register.map { it.entries }.loadedOrEmpty)
 
-        accountBalance.render(state.balance)
+        accountBalance.render(register.map { it.endingBalance })
     }
 }

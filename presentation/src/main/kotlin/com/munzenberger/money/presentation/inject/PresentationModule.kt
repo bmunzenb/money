@@ -46,5 +46,5 @@ val presentationModule = module {
     viewModel { AppNavigationRailViewModel(get()) }
     viewModel { AppToolbarViewModel(get()) }
     viewModel { AppMenuBarViewModel(get()) }
-    viewModel { params -> AccountRegisterViewModel(params.get(), get(), get(), get(), get(), get()) }
+    viewModel { params -> AccountRegisterViewModel(params.get(), get(), get(), get(), get()) }
 }
