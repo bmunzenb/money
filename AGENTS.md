@@ -29,13 +29,20 @@ sealed interface Route {
 
     @Serializable
     data object AccountList : Route
+
+    @Serializable
+    data object NewAccount : Route
 }
 
 // desktop-javafx
-val navigationRouter: (route: Route, scope: ScreenScope) -> Node = { route, scope ->
+val navigationRouter: (route: Route, scope: ScreenScope) -> Destination = { route, scope ->
     when (route) {
-        Route.Welcome -> WelcomeScreen(scope)
-        Route.AccountList -> AccountListScreen(scope)
+        Route.Welcome -> Destination.Screen(WelcomeScreen(scope))
+        Route.AccountList -> Destination.Screen(AccountListScreen(scope))
+        is Route.NewAccount -> Destination.Dialog(
+            AccountSettingsScreen(scope, route),
+            strings.getString("new_account_title"),
+        )
     }
 }
 ```
@@ -44,6 +51,12 @@ val navigationRouter: (route: Route, scope: ScreenScope) -> Node = { route, scop
   `Route` sealed interface. `Route` is a plain Kotlin type with no UI-toolkit dependencies.
 - Map each route to its screen in `navigationRouter`'s exhaustive `when`, so adding a `Route` fails to compile
   until it's mapped. A route without a screen yet uses `placeholderScreen(route)`.
+- The router also decides how each screen is shown, through a `Destination` (`navigation/Destination.kt`):
+  `Destination.Screen` shows it in the window's content pane, replacing the screen below it, and
+  `Destination.Dialog` shows it in a modal window titled from a string resource, over the screen below it. A
+  screen that passes its route on needs `is Route.X ->` even for a `data object`, so `route` is smart-cast to the
+  screen's route type. Whether a route is a dialog is up to the UI module, so `Route` and the ViewModels don't
+  change: a dialog's ViewModel navigates and goes back with `navigator.back(from = route)` like any screen's.
 - Screens live in their own subpackage under
   `desktop-javafx/src/main/kotlin/com/munzenberger/money/desktop/<screenName>/`, e.g. `welcome/WelcomeScreen.kt`,
   `accounts/AccountListScreen.kt`.
@@ -79,9 +92,14 @@ it, so peers don't build up back history. To add a top-level screen, add a `Rout
 `navigationRouter`, and add a `TopLevelDestination` entry with its label.
 
 `NavigationHost` (`desktop-javafx/.../desktop/navigation/NavigationHost.kt`) collects `navigator.backStack`,
-builds each entry's node with `navigationRouter`, and gives each entry a `ScreenScope`
-(`navigation/ScreenScope.kt`). `ScreenScope` holds that entry's `ViewModelStore`: `scope.viewModel<XViewModel>()`
-resolves the ViewModel from Koin, and `scope.collect(viewModel.state) { ... }` updates nodes on the FX thread.
+builds each entry's `Destination` with `navigationRouter`, and gives each entry a `ScreenScope`
+(`navigation/ScreenScope.kt`). Its pane shows the top-most `Destination.Screen`, and each `Destination.Dialog`
+above it is shown in a `ScreenDialog` (`navigation/ScreenDialog.kt`) owned by the window below it, so dialogs can
+open over dialogs; dialogs below the top-most screen are hidden until going back shows them again. A dialog
+opens at its content's preferred size, which becomes its minimum size. Closing a dialog's window goes back from
+its route, so only the back stack opens and closes dialogs, and popping the entry closes its window.
+`ScreenScope` holds that entry's `ViewModelStore`: `scope.viewModel<XViewModel>()` resolves the ViewModel from
+Koin, and `scope.collect(viewModel.state) { ... }` updates nodes on the FX thread.
 The scope is closed (clearing its ViewModels and cancelling its collectors) when the entry is popped, so
 navigating to the screen again starts with a fresh ViewModel. `kotlinx-coroutines-javafx` supplies
 `Dispatchers.Main` for `viewModelScope`.
