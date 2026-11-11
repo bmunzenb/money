@@ -5,7 +5,6 @@ import com.munzenberger.money.desktop.components.AutoCompleteComboBox
 import com.munzenberger.money.desktop.components.FormFooter
 import com.munzenberger.money.desktop.components.FormGrid
 import com.munzenberger.money.desktop.components.LoadStateContainer
-import com.munzenberger.money.desktop.components.ScreenHeading
 import com.munzenberger.money.desktop.components.errorLabel
 import com.munzenberger.money.desktop.components.setError
 import com.munzenberger.money.desktop.components.setShown
@@ -29,7 +28,6 @@ import javafx.scene.control.ButtonBar
 import javafx.scene.control.CheckBox
 import javafx.scene.control.ComboBox
 import javafx.scene.control.Label
-import javafx.scene.control.ScrollPane
 import javafx.scene.control.TextArea
 import javafx.scene.control.TextField
 import javafx.scene.layout.Priority
@@ -41,10 +39,6 @@ class AccountSettingsScreen(scope: ScreenScope, route: Route.AccountFormRoute) :
     private val viewModel: AccountSettingsViewModel = scope.viewModel { parametersOf(route) }
 
     private val isExistingAccount = route is Route.AccountSettings
-
-    private val heading = ScreenHeading(
-        strings.getString(if (isExistingAccount) "account_settings_title" else "new_account_title")
-    )
 
     private val nameField = TextField().apply {
         promptText = strings.getString("required_prompt")
@@ -100,7 +94,6 @@ class AccountSettingsScreen(scope: ScreenScope, route: Route.AccountFormRoute) :
     }
 
     private val fields = FormGrid().apply {
-        addSection(strings.getString("account_section_title"))
         addField(strings.getString("account_name_label"), nameField, nameField.withError(nameError))
         addField(
             strings.getString("account_type_label"),
@@ -112,12 +105,6 @@ class AccountSettingsScreen(scope: ScreenScope, route: Route.AccountFormRoute) :
             bankComboBox,
             bankComboBox.withProgress(banksProgress).withError(banksError),
         )
-        // A new account is always open, so it can only be closed once it exists. The row is left out rather than
-        // hidden, since the grid would still put a gap around an empty row.
-        if (isExistingAccount) {
-            add(closedCheckBox, 1, rowCount)
-        }
-        addSection(strings.getString("balance_and_reference_section_title"))
         addField(strings.getString("account_number_label"), numberField)
         addField(strings.getString("account_currency_label"), currencyField, labelPadding = Insets.EMPTY)
         addField(
@@ -125,15 +112,12 @@ class AccountSettingsScreen(scope: ScreenScope, route: Route.AccountFormRoute) :
             initialBalanceField,
             initialBalanceField.withError(initialBalanceError),
         )
-        addSection(strings.getString("additional_information_section_title"))
+        // A new account is always open, so it can only be closed once it exists. The row is left out rather than
+        // hidden, since the grid would still put a gap around an empty row.
+        if (isExistingAccount) {
+            add(closedCheckBox, 1, rowCount)
+        }
         addField(strings.getString("comments_label"), commentsArea)
-    }
-
-    // Only the fields scroll, so the heading and the buttons stay visible.
-    private val fieldsScrollPane = ScrollPane(fields).apply {
-        styleClass += "borderless-scroll-pane"
-        isFitToWidth = true
-        setVgrow(this, Priority.ALWAYS)
     }
 
     private val saveError = errorLabel(strings.getString("save_account_error_message"))
@@ -152,7 +136,10 @@ class AccountSettingsScreen(scope: ScreenScope, route: Route.AccountFormRoute) :
 
     private val footer = FormFooter(fields, saveButton, cancelButton)
 
-    private val form = VBox(Spacing.CONTROL_SPACING, fieldsScrollPane, saveError, footer)
+    // The fields take the form's extra height, so the save error and the footer stay at the bottom of the screen.
+    private val form = VBox(Spacing.CONTROL_SPACING, fields, saveError, footer).apply {
+        setVgrow(fields, Priority.ALWAYS)
+    }
 
     // Shows the form once the account being edited loads.
     private val content = LoadStateContainer(form, strings.getString("account_load_error_message")).apply {
@@ -160,10 +147,14 @@ class AccountSettingsScreen(scope: ScreenScope, route: Route.AccountFormRoute) :
     }
 
     init {
+        prefWidth = PREF_WIDTH
         padding = Insets(Spacing.SCREEN_PADDING)
-        children.setAll(heading, content)
+        children.setAll(content)
         scope.collect(viewModel.state, ::render)
     }
+
+    /** Goes back as Cancel does, unless the account is saving. */
+    fun onCloseRequest() = viewModel.onBackClick()
 
     private fun render(state: AccountSettingsUiState) {
         // A new account has nothing to load.
@@ -236,6 +227,7 @@ class AccountSettingsScreen(scope: ScreenScope, route: Route.AccountFormRoute) :
     }
 
     private companion object {
+        const val PREF_WIDTH = 500.0
         const val INITIAL_BALANCE_FIELD_MAX_WIDTH = 150.0
         const val COMMENTS_ROW_COUNT = 4
     }

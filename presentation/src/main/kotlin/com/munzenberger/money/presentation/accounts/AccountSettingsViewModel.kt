@@ -179,7 +179,9 @@ class AccountSettingsViewModel(
         }
     }
 
+    // Leaving while saving would drop the save's result, so the user stays until it finishes.
     fun onBackClick() {
+        if (_state.value.saveState == SaveState.Saving) return
         navigator.back(from = route)
     }
 }
