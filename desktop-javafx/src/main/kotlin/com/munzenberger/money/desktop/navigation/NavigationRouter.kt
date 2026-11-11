@@ -3,6 +3,7 @@ package com.munzenberger.money.desktop.navigation
 import com.munzenberger.money.desktop.accounts.AccountSettingsScreen
 import com.munzenberger.money.desktop.accounts.AccountListScreen
 import com.munzenberger.money.desktop.register.AccountRegisterScreen
+import com.munzenberger.money.desktop.strings
 import com.munzenberger.money.desktop.welcome.WelcomeScreen
 import com.munzenberger.money.presentation.navigation.Route
 import javafx.scene.Parent
@@ -15,7 +16,14 @@ val navigationRouter: (route: Route, scope: ScreenScope) -> Destination = { rout
     when (route) {
         Route.Welcome -> Destination.Screen(WelcomeScreen(scope))
         Route.AccountList -> Destination.Screen(AccountListScreen(scope))
-        is Route.AccountFormRoute -> Destination.Screen(AccountSettingsScreen(scope, route))
+        is Route.NewAccount -> Destination.Dialog(
+            AccountSettingsScreen(scope, route),
+            strings.getString("new_account_title"),
+        )
+        is Route.AccountSettings -> Destination.Dialog(
+            AccountSettingsScreen(scope, route),
+            strings.getString("account_settings_title"),
+        )
         is Route.AccountRegister -> Destination.Screen(AccountRegisterScreen(scope, route))
         Route.CategoryList -> Destination.Screen(placeholderScreen(route))
         Route.PayeeList -> Destination.Screen(placeholderScreen(route))
