@@ -16,14 +16,12 @@ val navigationRouter: (route: Route, scope: ScreenScope) -> Destination = { rout
     when (route) {
         Route.Welcome -> Destination.Screen(WelcomeScreen(scope))
         Route.AccountList -> Destination.Screen(AccountListScreen(scope))
-        is Route.NewAccount -> Destination.Dialog(
-            AccountSettingsScreen(scope, route),
-            strings.getString("new_account_title"),
-        )
-        is Route.AccountSettings -> Destination.Dialog(
-            AccountSettingsScreen(scope, route),
-            strings.getString("account_settings_title"),
-        )
+        is Route.NewAccount -> AccountSettingsScreen(scope, route).let { screen ->
+            Destination.Dialog(screen, strings.getString("new_account_title"), screen::onCloseRequest)
+        }
+        is Route.AccountSettings -> AccountSettingsScreen(scope, route).let { screen ->
+            Destination.Dialog(screen, strings.getString("account_settings_title"), screen::onCloseRequest)
+        }
         is Route.AccountRegister -> Destination.Screen(AccountRegisterScreen(scope, route))
         Route.CategoryList -> Destination.Screen(placeholderScreen(route))
         Route.PayeeList -> Destination.Screen(placeholderScreen(route))

@@ -153,6 +153,9 @@ class AccountSettingsScreen(scope: ScreenScope, route: Route.AccountFormRoute) :
         scope.collect(viewModel.state, ::render)
     }
 
+    /** Goes back as Cancel does, unless the account is saving. */
+    fun onCloseRequest() = viewModel.onBackClick()
+
     private fun render(state: AccountSettingsUiState) {
         // A new account has nothing to load.
         content.setLoadState(state.existingAccount ?: LoadState.Loaded(Unit))

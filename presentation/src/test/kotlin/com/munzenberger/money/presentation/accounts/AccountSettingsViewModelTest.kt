@@ -361,6 +361,19 @@ class AccountSettingsViewModelTest {
     }
 
     @Test
+    fun `onBackClick is ignored while saving`() = runTest {
+        coEvery { createAccount(any(), any()) } coAnswers { CompletableDeferred<SaveAccountResult>().await() }
+        fixture.connect(repository())
+        navigator.navigate { clear(); add(Route.AccountList); add(Route.NewAccount) }
+        val viewModel = viewModel()
+        viewModel.onSaveClick()
+
+        viewModel.onBackClick()
+
+        assertEquals(listOf(Route.AccountList, Route.NewAccount), navigator.backStack.value)
+    }
+
+    @Test
     fun `onSaveClick passes the form's values to the use case`() = runTest {
         coEvery { createAccount(any(), any()) } returns SaveAccountResult.Invalid(emptySet())
         fixture.connect(repository(accountTypes = flowOf(listOf(checking)), banks = flowOf(listOf(firstBank))))

@@ -97,7 +97,10 @@ builds each entry's `Destination` with `navigationRouter`, and gives each entry 
 above it is shown in a `ScreenDialog` (`navigation/ScreenDialog.kt`) owned by the window below it, so dialogs can
 open over dialogs; dialogs below the top-most screen are hidden until going back shows them again. A dialog
 opens at its content's preferred size, which becomes its minimum size. Closing a dialog's window goes back from
-its route, so only the back stack opens and closes dialogs, and popping the entry closes its window.
+its route, so only the back stack opens and closes dialogs, and popping the entry closes its window. A dialog
+whose screen has its own back action passes it as `Destination.Dialog`'s `onCloseRequest`, so closing the window
+follows the same rules: the account form's goes through `AccountSettingsViewModel.onBackClick()`, which stays put
+while saving.
 `ScreenScope` holds that entry's `ViewModelStore`: `scope.viewModel<XViewModel>()` resolves the ViewModel from
 Koin, and `scope.collect(viewModel.state) { ... }` updates nodes on the FX thread.
 The scope is closed (clearing its ViewModels and cancelling its collectors) when the entry is popped, so

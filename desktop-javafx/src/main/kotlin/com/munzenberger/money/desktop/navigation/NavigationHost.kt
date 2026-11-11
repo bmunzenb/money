@@ -69,12 +69,16 @@ class NavigationHost(
         }
     }
 
-    // Closing the dialog's window goes back from its route, which pops the entry and closes the dialog.
-    private fun Entry.createDialog(owner: Window?) = ScreenDialog(
-        destination = destination as Destination.Dialog,
-        owner = owner,
-        onCloseRequest = { navigator.back(from = route) },
-    )
+    // Unless the dialog handles it, closing its window goes back from its route, which pops the entry and closes the
+    // dialog.
+    private fun Entry.createDialog(owner: Window?): ScreenDialog {
+        val dialog = destination as Destination.Dialog
+        return ScreenDialog(
+            destination = dialog,
+            owner = owner,
+            onCloseRequest = dialog.onCloseRequest ?: { navigator.back(from = route) },
+        )
+    }
 
     override fun close() {
         coroutineScope.cancel()

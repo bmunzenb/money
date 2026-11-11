@@ -9,6 +9,13 @@ sealed interface Destination {
     /** Shown in the host's pane, replacing the screen below it. */
     class Screen(override val node: Parent) : Destination
 
-    /** Shown in a modal window titled [title], over the screen below it. */
-    class Dialog(override val node: Parent, val title: String) : Destination
+    /**
+     * Shown in a modal window titled [title], over the screen below it. Closing the window calls [onCloseRequest], or
+     * goes back from the entry's route if it's null.
+     */
+    class Dialog(
+        override val node: Parent,
+        val title: String,
+        val onCloseRequest: (() -> Unit)? = null,
+    ) : Destination
 }
