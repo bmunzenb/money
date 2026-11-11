@@ -2,8 +2,8 @@ package com.munzenberger.money.desktop.navigation
 
 import com.munzenberger.money.presentation.navigation.Navigator
 import com.munzenberger.money.presentation.navigation.Route
+import javafx.scene.Parent
 import javafx.scene.layout.StackPane
-import javafx.stage.Window
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -25,10 +25,13 @@ class NavigationHost(
     private val router: (route: Route, scope: ScreenScope) -> Destination,
 ) : StackPane(), AutoCloseable {
 
-    private class Entry(val route: Route, val scope: ScreenScope, val destination: Destination) : AutoCloseable {
-        // Created the first time a dialog entry is shown.
-        var dialog: ScreenDialog? = null
-
+    // An entry has a dialog if its destination is a Destination.Dialog, and is shown in the pane otherwise.
+    private class Entry(
+        val route: Route,
+        val scope: ScreenScope,
+        val node: Parent,
+        val dialog: ScreenDialog?,
+    ) : AutoCloseable {
         override fun close() {
             dialog?.close()
             scope.close()
@@ -53,31 +56,30 @@ class NavigationHost(
 
         backStack.drop(kept).forEach { route ->
             val scope = ScreenScope()
-            entries += Entry(route, scope, router(route, scope))
+            entries += entry(route, scope, router(route, scope))
         }
 
-        val screenIndex = entries.indexOfLast { it.destination is Destination.Screen }
-        children.setAll(listOfNotNull(entries.getOrNull(screenIndex)?.destination?.node))
-
-        entries.take(screenIndex.coerceAtLeast(0)).forEach { it.dialog?.hide() }
-
-        var owner: Window? = scene?.window
-        entries.drop(screenIndex + 1).forEach { entry ->
-            val dialog = entry.dialog ?: entry.createDialog(owner).also { entry.dialog = it }
-            dialog.show()
-            owner = dialog.window
+        // The pane shows the top-most screen. The dialogs above it are shown, and the ones below it are hidden until
+        // going back shows them again.
+        val screenIndex = entries.indexOfLast { it.dialog == null }
+        children.setAll(listOfNotNull(entries.getOrNull(screenIndex)?.node))
+        entries.forEachIndexed { index, entry ->
+            if (index > screenIndex) entry.dialog?.show() else entry.dialog?.hide()
         }
     }
 
-    // Unless the dialog handles it, closing its window goes back from its route, which pops the entry and closes the
-    // dialog.
-    private fun Entry.createDialog(owner: Window?): ScreenDialog {
-        val dialog = destination as Destination.Dialog
-        return ScreenDialog(
-            destination = dialog,
-            owner = owner,
-            onCloseRequest = dialog.onCloseRequest ?: { navigator.back(from = route) },
-        )
+    // A dialog is owned by the window below it: the entry below's dialog, or the host's window if that's a screen. The
+    // owner never changes, since an entry is kept only while the entries below it are. Unless the dialog handles it,
+    // closing its window goes back from its route, which pops the entry and closes the dialog.
+    private fun entry(route: Route, scope: ScreenScope, destination: Destination): Entry {
+        val dialog = (destination as? Destination.Dialog)?.let {
+            ScreenDialog(
+                destination = it,
+                owner = entries.lastOrNull()?.dialog?.window ?: scene?.window,
+                onCloseRequest = it.onCloseRequest ?: { navigator.back(from = route) },
+            )
+        }
+        return Entry(route, scope, destination.node, dialog)
     }
 
     override fun close() {
