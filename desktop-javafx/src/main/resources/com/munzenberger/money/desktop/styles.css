@@ -92,3 +92,8 @@
     -fx-focus-color: #c62828;
     -fx-faint-focus-color: #c6282822;
 }
+
+/* Bolds a context menu's default item, the one a double click runs. */
+.context-menu .default-menu-item .label {
+    -fx-font-weight: bold;
+}

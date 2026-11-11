@@ -98,6 +98,7 @@ class AccountRegisterTable(
         // Shows the details of the entry in the row. The row reuses it for whichever entry it shows.
         private val entryContextMenu = ContextMenu(
             MenuItem(strings.getString("register_entry_menu_item_title")).apply {
+                styleClass += "default-menu-item"
                 setOnAction { item?.let(onEntryClick) }
             },
         )
