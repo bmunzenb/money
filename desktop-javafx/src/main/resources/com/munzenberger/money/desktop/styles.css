@@ -92,10 +92,3 @@
     -fx-focus-color: #c62828;
     -fx-faint-focus-color: #c6282822;
 }
-
-/* A scroll pane without Modena's border, focus ring or background, so its content sits directly on the screen. */
-.borderless-scroll-pane,
-.borderless-scroll-pane > .viewport {
-    -fx-background-color: transparent;
-    -fx-padding: 0;
-}
