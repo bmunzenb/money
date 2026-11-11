@@ -9,6 +9,9 @@ import com.munzenberger.money.desktop.components.textColumn
 import com.munzenberger.money.desktop.getString
 import com.munzenberger.money.desktop.strings
 import com.munzenberger.money.presentation.preferences.UserPreferences
+import com.munzenberger.money.presentation.register.RegisterAmountColumns
+import com.munzenberger.money.presentation.register.decrease
+import com.munzenberger.money.presentation.register.increase
 import javafx.beans.property.ReadOnlyObjectWrapper
 import javafx.css.PseudoClass
 import javafx.scene.control.ContextMenu
@@ -24,6 +27,10 @@ import java.time.format.DateTimeFormatter
 /**
  * An account register's table of entries, in the register's order. The columns can't be sorted, since each entry's
  * balance is the account's balance after it in that order. Entries dated after today are dimmed.
+ *
+ * Each entry's amount shows as a positive value in one of two columns, for amounts that lower the account's balance
+ * and amounts that raise it, named for the kind of account (e.g. Payment and Deposit, or Charge and Payment). Only the
+ * balance column shows signs, with a negative balance in red.
  *
  * The columns stretch to fill the table's width. They start at the same width, so they share it equally. Resizing a
  * column takes the space from the last column only, leaving the others as they are. Their order and widths are saved in
@@ -62,28 +69,59 @@ class AccountRegisterTable(
         styleClass += "status-column"
     }
 
-    private val amountColumn = amountColumn(id = "amount", titleKey = "amount_column_title") { it.amount }
+    // Each entry's amount shows, as a positive value, in the column for whether it lowers or raises the balance. Their
+    // titles depend on the kind of account, so show sets them.
+    private val decreaseColumn = amountColumn(id = DECREASE_COLUMN_ID) { it.decrease }
 
-    private val balanceColumn = amountColumn(id = "balance", titleKey = "balance_column_title") { it.balance }
+    private val increaseColumn = amountColumn(id = INCREASE_COLUMN_ID) { it.increase }
+
+    private val balanceColumn = amountColumn(id = "balance", strings.getString("balance_column_title")) { it.balance }
 
     init {
         columnResizePolicy = CONSTRAINED_RESIZE_POLICY_LAST_COLUMN
-        columns.setAll(numberColumn, dateColumn, payeeColumn, categoryColumn, statusColumn, amountColumn, balanceColumn)
+        columns.setAll(
+            numberColumn,
+            dateColumn,
+            payeeColumn,
+            categoryColumn,
+            statusColumn,
+            decreaseColumn,
+            increaseColumn,
+            balanceColumn,
+        )
         saveColumnLayout(preferences, COLUMN_LAYOUT_KEY)
         setRowFactory { AccountRegisterTableRow() }
+        showAmountColumnTitles(RegisterAmountColumns.Other)
     }
 
-    /** Shows [entries], replacing the ones shown. */
-    fun show(entries: List<RegisterEntry>) {
+    /** Shows [entries], replacing the ones shown, with amount columns named for [amountColumns]. */
+    fun show(entries: List<RegisterEntry>, amountColumns: RegisterAmountColumns) {
         if (entries != items) items.setAll(entries)
+        showAmountColumnTitles(amountColumns)
+    }
+
+    private fun showAmountColumnTitles(amountColumns: RegisterAmountColumns) {
+        val (decreaseKey, increaseKey) = when (amountColumns) {
+            RegisterAmountColumns.Banking ->
+                "register_banking_decrease_column_title" to "register_banking_increase_column_title"
+            RegisterAmountColumns.CreditCard ->
+                "register_credit_card_decrease_column_title" to "register_credit_card_increase_column_title"
+            RegisterAmountColumns.Loan ->
+                "register_loan_decrease_column_title" to "register_loan_increase_column_title"
+            RegisterAmountColumns.Other ->
+                "register_other_decrease_column_title" to "register_other_increase_column_title"
+        }
+        decreaseColumn.text = strings.getString(decreaseKey)
+        increaseColumn.text = strings.getString(increaseKey)
     }
 
     private fun column(id: String, titleKey: String, value: (RegisterEntry) -> String) =
         textColumn(id, titleKey, value).apply { isSortable = false }
 
-    // A right-aligned column of amounts, with negative amounts in red.
-    private fun amountColumn(id: String, titleKey: String, value: (RegisterEntry) -> Money) =
-        TableColumn<RegisterEntry, Money?>(strings.getString(titleKey)).apply {
+    // A right-aligned column of amounts, with negative amounts in red. Only the balance column has any, since the
+    // others show their amounts as positive values.
+    private fun amountColumn(id: String, title: String = "", value: (RegisterEntry) -> Money?) =
+        TableColumn<RegisterEntry, Money?>(title).apply {
             this.id = id
             isSortable = false
             styleClass += "amount-column"
@@ -124,6 +162,12 @@ class AccountRegisterTable(
     private companion object {
         val FUTURE_PSEUDO_CLASS: PseudoClass = PseudoClass.getPseudoClass("future")
         val COLUMN_LAYOUT_KEY = columnLayoutKey("account.register.columns")
+        const val DECREASE_COLUMN_ID = "decrease"
+        const val INCREASE_COLUMN_ID = "increase"
+
+        // The id of the single amount column the decrease and increase columns replaced.
+        const val AMOUNT_COLUMN_ID = "amount"
+
         // The locale's numeric date, with a four-digit year, e.g. 1/15/2026 in the US.
         val DATE_FORMATTER: DateTimeFormatter = DateTimeFormatter.ofLocalizedPattern("yMd")
     }

@@ -22,4 +22,8 @@ data class AccountRegisterUiState(
     /** Whether a transaction can be added: once the register is loaded, so there's an account to add it to. */
     val canAddTransaction: Boolean
         get() = register is LoadState.Loaded
+
+    /** The kind of account the amount columns are named for, or [RegisterAmountColumns.Other] until it loads. */
+    val amountColumns: RegisterAmountColumns
+        get() = (register as? LoadState.Loaded)?.value?.account?.registerAmountColumns ?: RegisterAmountColumns.Other
 }

@@ -156,7 +156,7 @@ class AccountRegisterScreen(
             LoadState.Error -> loadErrorMessage
             is LoadState.Loaded -> emptyMessage
         }
-        registerTable.show(register.map { it.entries }.loadedOrEmpty)
+        registerTable.show(register.map { it.entries }.loadedOrEmpty, state.amountColumns)
 
         accountBalance.render(register.map { it.endingBalance })
     }
