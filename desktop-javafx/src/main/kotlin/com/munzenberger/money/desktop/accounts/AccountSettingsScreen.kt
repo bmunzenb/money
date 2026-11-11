@@ -147,6 +147,7 @@ class AccountSettingsScreen(scope: ScreenScope, route: Route.AccountFormRoute) :
     }
 
     init {
+        prefWidth = PREF_WIDTH
         padding = Insets(Spacing.SCREEN_PADDING)
         children.setAll(content)
         scope.collect(viewModel.state, ::render)
@@ -223,6 +224,7 @@ class AccountSettingsScreen(scope: ScreenScope, route: Route.AccountFormRoute) :
     }
 
     private companion object {
+        const val PREF_WIDTH = 500.0
         const val INITIAL_BALANCE_FIELD_MAX_WIDTH = 150.0
         const val COMMENTS_ROW_COUNT = 4
     }
