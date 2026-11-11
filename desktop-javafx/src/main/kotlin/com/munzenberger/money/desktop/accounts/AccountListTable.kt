@@ -16,6 +16,7 @@ import javafx.collections.FXCollections
 import javafx.css.PseudoClass
 import javafx.scene.control.ContextMenu
 import javafx.scene.control.MenuItem
+import javafx.scene.control.SeparatorMenuItem
 import javafx.scene.control.TableColumn
 import javafx.scene.control.TableRow
 import javafx.scene.control.TableView
@@ -144,10 +145,12 @@ class AccountListTable(
         // Edits the account in the row. The row reuses it for whichever account it shows.
         private val accountContextMenu = ContextMenu(
             MenuItem(strings.getString("account_register_menu_item_title")).apply {
+                styleClass += "default-menu-item"
                 setOnAction {
                     (item as? AccountListRow.AccountRow)?.let { onAccountClick(it.account) }
                 }
             },
+            SeparatorMenuItem(),
             MenuItem(strings.getString("account_settings_menu_item_title")).apply {
                 setOnAction {
                     (item as? AccountListRow.AccountRow)?.let { onAccountSettingsClick(it.account) }
