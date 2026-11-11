@@ -164,10 +164,6 @@ class AccountRegisterTable(
         val COLUMN_LAYOUT_KEY = columnLayoutKey("account.register.columns")
         const val DECREASE_COLUMN_ID = "decrease"
         const val INCREASE_COLUMN_ID = "increase"
-
-        // The id of the single amount column the decrease and increase columns replaced.
-        const val AMOUNT_COLUMN_ID = "amount"
-
         // The locale's numeric date, with a four-digit year, e.g. 1/15/2026 in the US.
         val DATE_FORMATTER: DateTimeFormatter = DateTimeFormatter.ofLocalizedPattern("yMd")
     }
