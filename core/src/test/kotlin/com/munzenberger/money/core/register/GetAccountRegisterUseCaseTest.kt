@@ -1,9 +1,16 @@
 package com.munzenberger.money.core.register
 
 import app.cash.turbine.test
+import com.munzenberger.money.data.api.EntityNotFoundException
 import com.munzenberger.money.data.api.Money
 import com.munzenberger.money.data.api.MoneyRepository
-import com.munzenberger.money.data.api.account.AccountId
+import com.munzenberger.money.data.api.account.Account
+import com.munzenberger.money.data.api.account.AccountClass
+import com.munzenberger.money.data.api.account.AccountClassConstant
+import com.munzenberger.money.data.api.account.AccountClassId
+import com.munzenberger.money.data.api.account.AccountType
+import com.munzenberger.money.data.api.account.AccountTypeConstant
+import com.munzenberger.money.data.api.account.AccountTypeId
 import com.munzenberger.money.data.api.register.RegisterEntry
 import com.munzenberger.money.data.api.transaction.TransactionId
 import com.munzenberger.money.data.api.transaction.TransactionStatus
@@ -19,10 +26,22 @@ import kotlinx.coroutines.test.runTest
 import kotlinx.datetime.LocalDate
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertIs
 
 class GetAccountRegisterUseCaseTest {
 
-    private val accountId = AccountId()
+    private val account = Account(
+        name = "Checking",
+        accountType = AccountType(
+            id = AccountTypeId(2),
+            accountClass = AccountClass(id = AccountClassId(1), value = AccountClassConstant.Asset),
+            value = AccountTypeConstant.Checking,
+        ),
+    )
+
+    private val accountId = account.id
+
+    private val accountFlow = MutableStateFlow<Account?>(account)
 
     private val today = LocalDate(2026, 5, 15)
 
@@ -49,6 +68,7 @@ class GetAccountRegisterUseCaseTest {
     private val entriesFlow = MutableStateFlow<List<RegisterEntry>>(allEntries)
 
     private val repository = mockk<MoneyRepository> {
+        every { accountById(accountId) } returns accountFlow
         every { registerEntriesForAccount(accountId) } returns entriesFlow
     }
 
@@ -244,12 +264,13 @@ class GetAccountRegisterUseCaseTest {
             flowOf(RegisterDateFilter.AllDates),
             flowOf(RegisterStatusFilter.UnreconciledTransactions),
         ).test {
-            assertEquals(Result.success(AccountRegister(emptyList(), Money(90))), awaitItem())
+            assertEquals(Result.success(AccountRegister(account, emptyList(), Money(90))), awaitItem())
         }
     }
 
     @Test
-    fun `ending balance is null when the account has no entries`() = runTest {
+    fun `ending balance is the account's initial balance when it has no entries`() = runTest {
+        accountFlow.value = account.copy(initialBalance = Money(1000))
         entriesFlow.value = emptyList()
 
         getAccountRegister(
@@ -258,7 +279,7 @@ class GetAccountRegisterUseCaseTest {
             flowOf(RegisterDateFilter.AllDates),
             flowOf(RegisterStatusFilter.AllTransactions),
         ).test {
-            assertEquals(Result.success(AccountRegister(emptyList(), null)), awaitItem())
+            assertEquals(Money(1000), awaitItem().getOrThrow().endingBalance)
         }
     }
 
@@ -278,9 +299,61 @@ class GetAccountRegisterUseCaseTest {
         }
     }
 
+    @Test
+    fun `emits the account again when it changes`() = runTest {
+        getAccountRegister(
+            repository,
+            accountId,
+            flowOf(RegisterDateFilter.AllDates),
+            flowOf(RegisterStatusFilter.AllTransactions),
+        ).test {
+            awaitItem()
+
+            val renamed = account.copy(name = "Everyday")
+            accountFlow.value = renamed
+
+            assertEquals(renamed, awaitItem().getOrThrow().account)
+        }
+    }
+
+    @Test
+    fun `emits a not-found failure when there's no such account`() = runTest {
+        accountFlow.value = null
+
+        getAccountRegister(
+            repository,
+            accountId,
+            flowOf(RegisterDateFilter.AllDates),
+            flowOf(RegisterStatusFilter.AllTransactions),
+        ).test {
+            assertIs<EntityNotFoundException>(awaitItem().exceptionOrNull())
+        }
+    }
+
+    @Test
+    fun `keeps emitting after the account isn't found`() = runTest {
+        getAccountRegister(
+            repository,
+            accountId,
+            flowOf(RegisterDateFilter.AllDates),
+            flowOf(RegisterStatusFilter.AllTransactions),
+        ).test {
+            awaitItem()
+
+            accountFlow.value = null
+            assertIs<EntityNotFoundException>(awaitItem().exceptionOrNull())
+
+            // The flow is still collecting, so a later value still arrives.
+            accountFlow.value = account
+            assertEquals(filtered(allEntries), awaitItem())
+        }
+    }
+
     // The entries that match the filters, with the ending balance of all the account's entries.
     private fun filtered(entries: List<RegisterEntry>) =
-        Result.success(AccountRegister(entries, entriesFlow.value.lastOrNull()?.balance))
+        Result.success(
+            AccountRegister(account, entries, entriesFlow.value.lastOrNull()?.balance ?: account.initialBalance),
+        )
 
     private fun registerEntry(
         date: LocalDate,

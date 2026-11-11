@@ -1,6 +1,8 @@
 package com.munzenberger.money.core.register
 
+import com.munzenberger.money.core.requireFound
 import com.munzenberger.money.core.resultFlow
+import com.munzenberger.money.data.api.EntityNotFoundException
 import com.munzenberger.money.data.api.MoneyRepository
 import com.munzenberger.money.data.api.account.AccountId
 import com.munzenberger.money.data.api.register.RegisterEntry
@@ -13,15 +15,18 @@ import kotlinx.datetime.LocalDate
 import kotlinx.datetime.minus
 
 /**
- * Returns a flow of the [AccountRegister] of the repository's account with [AccountId]: its register entries, each with
- * the account's balance after it, filtered by the latest [RegisterDateFilter] and [RegisterStatusFilter], and its
- * ending balance, wrapped in a [Result] (see [resultFlow]). It emits again whenever the entries change.
+ * Returns a flow of the [AccountRegister] of the repository's account with [AccountId]: the account, its register
+ * entries, each with the account's balance after it, filtered by the latest [RegisterDateFilter] and
+ * [RegisterStatusFilter], and its ending balance, wrapped in a [Result] (see [resultFlow]). It emits again whenever the
+ * account or its entries change.
  *
  * A new filter refilters the entries already read, without reading them from the repository again. Each entry keeps
- * its balance in the whole register, and the ending balance is the last entry's balance before filtering, so filtering
- * doesn't change the balances shown. Date filters are relative to [today], read each time the entries are filtered.
+ * its balance in the whole register, and the ending balance is the last entry's balance before filtering, or the
+ * account's initial balance if it has no entries, so filtering doesn't change the balances shown. Date filters are
+ * relative to [today], read each time the entries are filtered.
  *
- * If there's no such account, such as after it's removed, it emits a register with no entries and no ending balance.
+ * If there's no such account, such as after it's removed, it emits a failure with an [EntityNotFoundException] (see
+ * [requireFound]).
  */
 class GetAccountRegisterUseCase(
     private val today: () -> LocalDate = { LocalDate.today() },
@@ -34,19 +39,22 @@ class GetAccountRegisterUseCase(
     ): Flow<Result<AccountRegister>> =
         repository.resultFlow {
             combine(
+                it.accountById(accountId),
                 it.registerEntriesForAccount(accountId),
                 dateFilter,
                 statusFilter,
-            ) { entries, dateFilter, statusFilter ->
+            ) { account, entries, dateFilter, statusFilter ->
+                if (account == null) return@combine null
                 val today = today()
                 AccountRegister(
+                    account = account,
                     entries = entries.filter { entry ->
                         dateFilter.matches(entry.date, today) && statusFilter.matches(entry)
                     },
-                    endingBalance = entries.lastOrNull()?.balance,
+                    endingBalance = entries.lastOrNull()?.balance ?: account.initialBalance,
                 )
             }
-        }
+        }.requireFound { "No account with id ${accountId.value}" }
 }
 
 private const val LAST_3_MONTHS = 3

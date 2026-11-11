@@ -11,6 +11,13 @@ sealed interface LoadState<out T> {
     data class Loaded<T>(val value: T) : LoadState<T>
 }
 
+/** The loaded value transformed by [transform], or the same loading or error state. */
+fun <T, R> LoadState<T>.map(transform: (T) -> R): LoadState<R> = when (this) {
+    LoadState.Loading -> LoadState.Loading
+    LoadState.Error -> LoadState.Error
+    is LoadState.Loaded -> LoadState.Loaded(transform(value))
+}
+
 /** The loaded list, or an empty list while loading or after an error. */
 val <T> LoadState<List<T>>.loadedOrEmpty: List<T>
     get() = (this as? LoadState.Loaded)?.value.orEmpty()
