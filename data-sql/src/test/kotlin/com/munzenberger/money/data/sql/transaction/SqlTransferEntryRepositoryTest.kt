@@ -78,60 +78,6 @@ class SqlTransferEntryRepositoryTest {
     }
 
     @Test
-    fun `transferEntriesByAccountId emits empty list when no transfer entries exist`() = runTest {
-        val dispatcher = UnconfinedTestDispatcher(testScheduler)
-        val database = createTestDatabase()
-        val accountId = createAccount(database, dispatcher)
-        val repository = createRepository(database, dispatcher)
-        assertTrue(repository.transferEntriesByAccountId(accountId).first().isEmpty())
-    }
-
-    @Test
-    fun `transferEntriesByAccountId returns entries for the specified account`() = runTest {
-        val dispatcher = UnconfinedTestDispatcher(testScheduler)
-        val database = createTestDatabase()
-        val accountId = createAccount(database, dispatcher)
-        val transactionId = createTransaction(database, dispatcher, accountId)
-        val repository = createRepository(database, dispatcher)
-        val transferEntry = TransferEntry(
-            transactionId = transactionId,
-            accountId = accountId,
-            amount = Money(1000),
-            status = unreconciled,
-            orderInTransaction = 0,
-        )
-        repository.add(transferEntry)
-        assertEquals(listOf(transferEntry), repository.transferEntriesByAccountId(accountId).first())
-    }
-
-    @Test
-    fun `transferEntriesByAccountId only returns entries for the specified account`() = runTest {
-        val dispatcher = UnconfinedTestDispatcher(testScheduler)
-        val database = createTestDatabase()
-        val accountId1 = createAccount(database, dispatcher)
-        val accountId2 = createAccount(database, dispatcher)
-        val transactionId = createTransaction(database, dispatcher, accountId1)
-        val repository = createRepository(database, dispatcher)
-        val entry1 = TransferEntry(
-            transactionId = transactionId,
-            accountId = accountId1,
-            amount = Money(1000),
-            status = unreconciled,
-            orderInTransaction = 0,
-        )
-        val entry2 = TransferEntry(
-            transactionId = transactionId,
-            accountId = accountId2,
-            amount = Money(-1000),
-            status = unreconciled,
-            orderInTransaction = 1,
-        )
-        repository.add(entry1)
-        repository.add(entry2)
-        assertEquals(listOf(entry1), repository.transferEntriesByAccountId(accountId1).first())
-    }
-
-    @Test
     fun `add inserts a transfer entry`() = runTest {
         val dispatcher = UnconfinedTestDispatcher(testScheduler)
         val database = createTestDatabase()

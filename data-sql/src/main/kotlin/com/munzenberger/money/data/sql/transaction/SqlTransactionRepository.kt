@@ -1,7 +1,7 @@
 package com.munzenberger.money.data.sql.transaction
 
 import app.cash.sqldelight.coroutines.asFlow
-import app.cash.sqldelight.coroutines.mapToList
+import app.cash.sqldelight.coroutines.mapToOneOrNull
 import com.munzenberger.money.data.api.account.AccountId
 import com.munzenberger.money.data.api.payee.PayeeId
 import com.munzenberger.money.data.api.transaction.Transaction
@@ -15,6 +15,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.datetime.LocalDate
 import kotlin.coroutines.CoroutineContext
 import kotlin.time.Clock
+import kotlin.uuid.Uuid
 
 internal class SqlTransactionRepository(
     private val database: MoneyDatabase,
@@ -22,30 +23,11 @@ internal class SqlTransactionRepository(
     private val clock: Clock = Clock.System,
 ) : TransactionRepository, TransactionWriter {
 
-    override fun transactionsByAccountId(accountId: AccountId): Flow<List<Transaction>> =
+    override fun transactionById(transactionId: TransactionId): Flow<Transaction?> =
         database.transactionQueries
-            .selectByAccountId(accountId.value) {
-                id,
-                accountIdValue,
-                payeeId,
-                date,
-                number,
-                memo,
-                statusId,
-                statusValue,
-                ->
-                Transaction(
-                    id = TransactionId(id),
-                    accountId = AccountId(accountIdValue),
-                    payeeId = payeeId?.let { PayeeId(it) },
-                    date = LocalDate.fromEpochDays(date),
-                    number = number,
-                    memo = memo,
-                    status = transactionStatus(statusId, statusValue),
-                )
-            }
+            .selectById(transactionId.value, ::transaction)
             .asFlow()
-            .mapToList(context)
+            .mapToOneOrNull(context)
 
     override fun add(transaction: Transaction) {
         database.transactionQueries.insert(
@@ -76,3 +58,24 @@ internal class SqlTransactionRepository(
         database.transactionQueries.deleteById(transactionId.value)
     }
 }
+
+/** Maps a row of `selectById` to a [Transaction]. */
+@Suppress("LongParameterList")
+private fun transaction(
+    id: Uuid,
+    accountId: Uuid,
+    payeeId: Uuid?,
+    date: Long,
+    number: String?,
+    memo: String?,
+    statusId: Long,
+    statusValue: String,
+) = Transaction(
+    id = TransactionId(id),
+    accountId = AccountId(accountId),
+    payeeId = payeeId?.let { PayeeId(it) },
+    date = LocalDate.fromEpochDays(date),
+    number = number,
+    memo = memo,
+    status = transactionStatus(statusId, statusValue),
+)

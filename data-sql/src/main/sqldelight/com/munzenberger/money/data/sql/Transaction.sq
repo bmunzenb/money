@@ -17,7 +17,7 @@ CREATE TABLE "Transaction" (
 
 CREATE INDEX Transaction_account_id ON "Transaction" (account_id);
 
-selectByAccountId:
+selectById:
 SELECT
     t.id AS id,
     t.account_id AS account_id,
@@ -29,7 +29,7 @@ SELECT
     TransactionStatus.value AS status_value
 FROM "Transaction" AS t
 JOIN TransactionStatus ON t.status_id = TransactionStatus.id
-WHERE t.account_id = ?;
+WHERE t.id = ?;
 
 insert:
 INSERT INTO "Transaction" (id, account_id, payee_id, date, number, memo, status_id, created) VALUES (?, ?, ?, ?, ?, ?, ?, ?);
