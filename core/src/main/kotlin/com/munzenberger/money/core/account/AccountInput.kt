@@ -12,7 +12,7 @@ data class AccountInput(
     /** The existing bank to use, or null to add a bank named [bankName] (if it isn't blank). */
     val bank: Bank?,
     val number: String,
-    /** The opening balance; blank means zero. */
+    /** The opening balance, as the amount owed for a liability; blank means zero. */
     val initialBalance: String,
     val memo: String,
 )

@@ -19,6 +19,8 @@ import com.munzenberger.money.presentation.database.repository
 import com.munzenberger.money.presentation.database.resultFlow
 import com.munzenberger.money.presentation.navigation.Navigator
 import com.munzenberger.money.presentation.navigation.Route
+import com.munzenberger.money.presentation.register.registerBalance
+import com.munzenberger.money.presentation.register.showsBalanceOwed
 import com.munzenberger.money.presentation.state.LoadState
 import com.munzenberger.money.presentation.state.loadedOrEmpty
 import com.munzenberger.money.presentation.state.toLoadState
@@ -195,6 +197,7 @@ private fun List<Bank>.matching(bankName: String): Bank? {
     return if (name.isEmpty()) null else firstOrNull { it.name.equals(name, ignoreCase = true) }
 }
 
+// A liability's initial balance is the amount owed, as the use cases read it from the form and the register shows it.
 private fun AccountSettingsUiState.filledInFrom(account: Account, bank: Bank?) = copy(
     existingAccount = LoadState.Loaded(account),
     name = account.name,
@@ -202,7 +205,7 @@ private fun AccountSettingsUiState.filledInFrom(account: Account, bank: Bank?) =
     bankName = bank?.name.orEmpty(),
     bank = bank,
     number = account.number.orEmpty(),
-    initialBalance = account.initialBalance.toString(asCurrency = false),
+    initialBalance = account.initialBalance.registerBalance(account.showsBalanceOwed).toString(asCurrency = false),
     memo = account.memo.orEmpty(),
     isClosed = account.isClosed,
 )

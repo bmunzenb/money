@@ -3,13 +3,15 @@ package com.munzenberger.money.presentation.register
 import com.munzenberger.money.core.register.AccountRegister
 import com.munzenberger.money.core.register.RegisterDateFilter
 import com.munzenberger.money.core.register.RegisterStatusFilter
+import com.munzenberger.money.data.api.Money
 import com.munzenberger.money.presentation.state.LoadState
 import com.munzenberger.money.presentation.state.map
 
 /**
  * The state of an account's register. [register] is the account, its register entries that match the selected
  * [dateFilter] and [statusFilter], and its ending balance (see [AccountRegister]), with the repository's signs. It's an
- * error if it can't be read, or if there's no account with the route's id, such as after it's removed.
+ * error if it can't be read, or if there's no account with the route's id, such as after it's removed. The register
+ * shows a liability's balances as the amount owed (see [showsBalanceOwed] and [balance]).
  */
 data class AccountRegisterUiState(
     val register: LoadState<AccountRegister> = LoadState.Loading,
@@ -27,4 +29,14 @@ data class AccountRegisterUiState(
     /** The kind of account the amount columns are named for, once the register loads. */
     val amountColumns: LoadState<RegisterAmountColumns>
         get() = register.map { it.account.registerAmountColumns }
+
+    /**
+     * Whether the entries' balances show as the amount owed, negated with [registerBalance], once the register loads.
+     */
+    val showsBalanceOwed: LoadState<Boolean>
+        get() = register.map { it.account.showsBalanceOwed }
+
+    /** The account's ending balance as the register shows it, as the amount owed for a liability. */
+    val balance: LoadState<Money>
+        get() = register.map { it.endingBalance.registerBalance(it.account.showsBalanceOwed) }
 }

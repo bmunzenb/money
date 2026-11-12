@@ -28,6 +28,12 @@ class ValidatedAccountInputTest {
         value = AccountTypeConstant.Checking,
     )
 
+    private val creditCard = AccountType(
+        id = AccountTypeId(5),
+        accountClass = AccountClass(id = AccountClassId(2), value = AccountClassConstant.Liability),
+        value = AccountTypeConstant.Credit,
+    )
+
     private val accountId = AccountId()
 
     private val validInput = AccountInput(
@@ -119,6 +125,20 @@ class ValidatedAccountInputTest {
         assertEquals("1234-5678", account.number)
         assertEquals(Money(-123450), account.initialBalance)
         assertEquals("Joint account.\nOpened 2020.", account.memo)
+    }
+
+    @Test
+    fun `a liability's initial balance is the amount owed`() {
+        val (account) = validInput.copy(accountType = creditCard, initialBalance = "1,200").validAccount()
+
+        assertEquals(Money(-120000), account.initialBalance)
+    }
+
+    @Test
+    fun `a liability's negative initial balance is an overpayment`() {
+        val (account) = validInput.copy(accountType = creditCard, initialBalance = "-50").validAccount()
+
+        assertEquals(Money(5000), account.initialBalance)
     }
 
     @Test

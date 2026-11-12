@@ -7,8 +7,9 @@ import com.munzenberger.money.data.api.register.RegisterEntry
 
 /**
  * The kind of account a register's two amount columns are named for. The register shows each entry's amount as a
- * positive value in one of two columns: [RegisterEntry.decrease] for amounts that lower the account's balance, and
- * [RegisterEntry.increase] for amounts that raise it. The UI names the columns for the kind of account, such as
+ * positive value in one of two columns: [RegisterEntry.decrease] for amounts that lower the account's balance in the
+ * repository, and [RegisterEntry.increase] for amounts that raise it, even for a liability, whose balance the register
+ * shows as the amount owed (see [showsBalanceOwed]). The UI names the columns for the kind of account, such as
  * Payment and Deposit for a bank account, or Charge and Payment for a credit card.
  */
 enum class RegisterAmountColumns {

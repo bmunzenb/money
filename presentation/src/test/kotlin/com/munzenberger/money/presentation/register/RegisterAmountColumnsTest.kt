@@ -1,6 +1,5 @@
 package com.munzenberger.money.presentation.register
 
-import com.munzenberger.money.core.register.AccountRegister
 import com.munzenberger.money.data.api.Money
 import com.munzenberger.money.data.api.account.Account
 import com.munzenberger.money.data.api.account.AccountClass
@@ -14,7 +13,6 @@ import com.munzenberger.money.data.api.transaction.TransactionId
 import com.munzenberger.money.data.api.transaction.TransactionStatus
 import com.munzenberger.money.data.api.transaction.TransactionStatusConstant
 import com.munzenberger.money.data.api.transaction.TransactionStatusId
-import com.munzenberger.money.presentation.state.LoadState
 import kotlinx.datetime.LocalDate
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -82,20 +80,5 @@ class RegisterAmountColumnsTest {
         val entry = entry(0)
         assertNull(entry.decrease)
         assertEquals(Money(0), entry.increase)
-    }
-
-    @Test
-    fun `state's amount columns aren't loaded until the register loads`() {
-        assertEquals(LoadState.Loading, AccountRegisterUiState().amountColumns)
-        assertEquals(LoadState.Error, AccountRegisterUiState(register = LoadState.Error).amountColumns)
-    }
-
-    @Test
-    fun `state's amount columns follow the loaded account's type`() {
-        val register = AccountRegister(account(AccountTypeConstant.Credit), emptyList(), Money(0))
-        assertEquals(
-            LoadState.Loaded(RegisterAmountColumns.CreditCard),
-            AccountRegisterUiState(register = LoadState.Loaded(register)).amountColumns,
-        )
     }
 }

@@ -70,6 +70,12 @@ class AccountSettingsViewModelTest {
         value = AccountTypeConstant.Checking,
     )
 
+    private val creditCard = AccountType(
+        id = AccountTypeId(5),
+        accountClass = AccountClass(id = AccountClassId(2), value = AccountClassConstant.Liability),
+        value = AccountTypeConstant.Credit,
+    )
+
     private val firstBank = Bank(name = "First Bank")
     private val creditUnion = Bank(name = "credit union")
 
@@ -604,6 +610,16 @@ class AccountSettingsViewModelTest {
         fixture.connect(repository(banks = flowOf(listOf(firstBank)), accounts = flowOf(listOf(account))))
 
         assertTrue(viewModel.state.value.isClosed)
+    }
+
+    @Test
+    fun `an existing liability fills in its initial balance as the amount owed`() = runTest {
+        val account = Account(name = "Visa", accountType = creditCard, initialBalance = Money(-120000))
+        val viewModel = viewModel(Route.AccountSettings(account.id))
+
+        fixture.connect(repository(accounts = flowOf(listOf(account))))
+
+        assertEquals("1,200.00", viewModel.state.value.initialBalance)
     }
 
     @Test

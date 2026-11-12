@@ -12,6 +12,7 @@ import com.munzenberger.money.presentation.preferences.UserPreferences
 import com.munzenberger.money.presentation.register.RegisterAmountColumns
 import com.munzenberger.money.presentation.register.decrease
 import com.munzenberger.money.presentation.register.increase
+import com.munzenberger.money.presentation.register.registerBalance
 import javafx.beans.property.ReadOnlyObjectWrapper
 import javafx.css.PseudoClass
 import javafx.scene.control.ContextMenu
@@ -30,7 +31,8 @@ import java.time.format.DateTimeFormatter
  *
  * Each entry's amount shows as a positive value in one of two columns, for amounts that lower the account's balance
  * and amounts that raise it, named for the kind of account (e.g. Payment and Deposit, or Charge and Payment). Only the
- * balance column shows signs, with a negative balance in red.
+ * balance column shows signs, with a negative balance in red. A liability's balances show as the amount owed, so a debt
+ * is positive and only an overpayment is red.
  *
  * The columns stretch to fill the table's width. They start at the same width, so they share it equally. Resizing a
  * column takes the space from the last column only, leaving the others as they are. Their order and widths are saved in
@@ -75,7 +77,12 @@ class AccountRegisterTable(
 
     private val increaseColumn = amountColumn(id = INCREASE_COLUMN_ID) { it.increase }
 
-    private val balanceColumn = amountColumn(id = "balance", strings.getString("balance_column_title")) { it.balance }
+    // Whether the balances show as the amount owed, which show sets once the account loads.
+    private var balanceOwed = false
+
+    private val balanceColumn = amountColumn(id = "balance", strings.getString("balance_column_title")) {
+        it.balance.registerBalance(balanceOwed)
+    }
 
     init {
         columnResizePolicy = CONSTRAINED_RESIZE_POLICY_LAST_COLUMN
@@ -94,9 +101,19 @@ class AccountRegisterTable(
         showAmountColumnTitles(RegisterAmountColumns.Other)
     }
 
-    /** Shows [entries], replacing the ones shown, with amount columns named for [amountColumns]. */
-    fun show(entries: List<RegisterEntry>, amountColumns: RegisterAmountColumns?) {
-        if (entries != items) items.setAll(entries)
+    /**
+     * Shows [entries], replacing the ones shown, with amount columns named for [amountColumns], and balances as the
+     * amount owed if [balanceOwed] is true. A null [amountColumns] or [balanceOwed] keeps what's shown.
+     */
+    fun show(entries: List<RegisterEntry>, amountColumns: RegisterAmountColumns?, balanceOwed: Boolean?) {
+        val balanceOwedChanged = balanceOwed != null && balanceOwed != this.balanceOwed
+        balanceOwed?.let { this.balanceOwed = it }
+        if (entries != items) {
+            items.setAll(entries)
+        } else if (balanceOwedChanged) {
+            // The entries are the same, such as when the account's type changes, so their balances need showing again.
+            refresh()
+        }
         amountColumns?.let { showAmountColumnTitles(it) }
     }
 

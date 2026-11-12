@@ -208,7 +208,7 @@ class AccountRegisterViewModelTest {
 
         viewModel().state.test {
             runCurrent()
-            assertEquals(LoadState.Loaded(Money(8500)), expectMostRecentItem().register.map { it.endingBalance })
+            assertEquals(LoadState.Loaded(Money(8500)), expectMostRecentItem().balance)
         }
     }
 
@@ -282,7 +282,22 @@ class AccountRegisterViewModelTest {
             runCurrent()
             val state = expectMostRecentItem()
             assertEquals(LoadState.Loaded(listOf(entry)), state.register.map { it.entries })
-            assertEquals(LoadState.Loaded(Money(9000)), state.register.map { it.endingBalance })
+            assertEquals(LoadState.Loaded(Money(9000)), state.balance)
+        }
+    }
+
+    @Test
+    fun `state's balance is a liability's amount owed when the filters leave out the last entry`() = runTest {
+        val charge = entry.copy(balance = Money(-2500))
+        every { getAccountRegister(any(), any(), any(), any()) } returns
+            flowOf(Result.success(AccountRegister(creditCard, listOf(charge), Money(-9000))))
+
+        viewModel().state.test {
+            runCurrent()
+            val state = expectMostRecentItem()
+            assertEquals(LoadState.Loaded(listOf(charge)), state.register.map { it.entries })
+            assertEquals(LoadState.Loaded(true), state.showsBalanceOwed)
+            assertEquals(LoadState.Loaded(Money(9000)), state.balance)
         }
     }
 
@@ -294,7 +309,7 @@ class AccountRegisterViewModelTest {
 
         viewModel().state.test {
             runCurrent()
-            assertEquals(LoadState.Loaded(Money(9000)), expectMostRecentItem().register.map { it.endingBalance })
+            assertEquals(LoadState.Loaded(Money(9000)), expectMostRecentItem().balance)
         }
     }
 
@@ -310,7 +325,7 @@ class AccountRegisterViewModelTest {
             val added = entry.copy(transactionId = TransactionId(), amount = Money(-750), balance = Money(6750))
             results.value = Result.success(register(listOf(entry, added)))
 
-            assertEquals(LoadState.Loaded(Money(6750)), awaitItem().register.map { it.endingBalance })
+            assertEquals(LoadState.Loaded(Money(6750)), awaitItem().balance)
         }
     }
 
