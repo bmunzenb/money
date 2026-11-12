@@ -17,20 +17,6 @@ CREATE TABLE "Transaction" (
 
 CREATE INDEX Transaction_account_id ON "Transaction" (account_id);
 
-selectByAccountId:
-SELECT
-    t.id AS id,
-    t.account_id AS account_id,
-    t.payee_id AS payee_id,
-    t.date AS date,
-    t.number AS number,
-    t.memo AS memo,
-    TransactionStatus.id AS status_id,
-    TransactionStatus.value AS status_value
-FROM "Transaction" AS t
-JOIN TransactionStatus ON t.status_id = TransactionStatus.id
-WHERE t.account_id = ?;
-
 selectById:
 SELECT
     t.id AS id,

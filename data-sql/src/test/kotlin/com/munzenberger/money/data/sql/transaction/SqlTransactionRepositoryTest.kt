@@ -33,11 +33,9 @@ import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.runTest
 import kotlinx.datetime.LocalDate
 import kotlin.test.Test
-import kotlin.test.assertContains
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertNull
-import kotlin.test.assertTrue
 import kotlin.time.Clock
 import kotlin.time.Instant
 
@@ -84,14 +82,6 @@ class SqlTransactionRepositoryTest {
             parameters = 1,
         ) { bindBytes(0, transactionId.value.toByteArray()) }.value
 
-    @Test
-    fun `transactionsByAccountId emits empty list when no transactions exist`() = runTest {
-        val dispatcher = UnconfinedTestDispatcher(testScheduler)
-        val database = createTestDatabase()
-        val accountId = createAccount(database, dispatcher)
-        val repository = createRepository(database, dispatcher)
-        assertTrue(repository.transactionsByAccountId(accountId).first().isEmpty())
-    }
 
     @Test
     fun `add inserts a transaction`() = runTest {
@@ -106,7 +96,7 @@ class SqlTransactionRepositoryTest {
             status = unreconciled,
         )
         repository.add(transaction)
-        assertEquals(listOf(transaction), repository.transactionsByAccountId(accountId).first())
+        assertEquals(transaction, repository.transactionById(transaction.id).first())
     }
 
     @Test
@@ -124,7 +114,7 @@ class SqlTransactionRepositoryTest {
             status = unreconciled,
         )
         repository.add(transaction)
-        assertEquals(listOf(transaction), repository.transactionsByAccountId(accountId).first())
+        assertEquals(transaction, repository.transactionById(transaction.id).first())
     }
 
     @Test
@@ -140,7 +130,7 @@ class SqlTransactionRepositoryTest {
             status = unreconciled,
         )
         repository.add(transaction)
-        assertEquals(listOf(transaction), repository.transactionsByAccountId(accountId).first())
+        assertEquals(transaction, repository.transactionById(transaction.id).first())
     }
 
     @Test
@@ -155,7 +145,7 @@ class SqlTransactionRepositoryTest {
             status = reconciled,
         )
         repository.add(transaction)
-        assertEquals(listOf(transaction), repository.transactionsByAccountId(accountId).first())
+        assertEquals(transaction, repository.transactionById(transaction.id).first())
     }
 
     @Test
@@ -178,25 +168,10 @@ class SqlTransactionRepositoryTest {
         )
         repository.add(transaction1)
         repository.add(transaction2)
-        val transactions = repository.transactionsByAccountId(accountId).first()
-        assertEquals(2, transactions.size)
-        assertContains(transactions, transaction1)
-        assertContains(transactions, transaction2)
+        assertEquals(transaction1, repository.transactionById(transaction1.id).first())
+        assertEquals(transaction2, repository.transactionById(transaction2.id).first())
     }
 
-    @Test
-    fun `transactionsByAccountId only returns transactions for the specified account`() = runTest {
-        val dispatcher = UnconfinedTestDispatcher(testScheduler)
-        val database = createTestDatabase()
-        val accountId1 = createAccount(database, dispatcher)
-        val accountId2 = createAccount(database, dispatcher)
-        val repository = createRepository(database, dispatcher)
-        val transaction1 = Transaction(accountId = accountId1, date = LocalDate(2024, 1, 15), status = unreconciled)
-        val transaction2 = Transaction(accountId = accountId2, date = LocalDate(2024, 1, 16), status = unreconciled)
-        repository.add(transaction1)
-        repository.add(transaction2)
-        assertEquals(listOf(transaction1), repository.transactionsByAccountId(accountId1).first())
-    }
 
     @Test
     fun `transactionById emits null when no transaction has the id`() = runTest {
@@ -262,7 +237,7 @@ class SqlTransactionRepositoryTest {
         repository.add(original)
         val updated = original.copy(memo = "Updated", number = "1002")
         repository.update(updated)
-        assertEquals(listOf(updated), repository.transactionsByAccountId(accountId).first())
+        assertEquals(updated, repository.transactionById(updated.id).first())
     }
 
     @Test
@@ -275,7 +250,7 @@ class SqlTransactionRepositoryTest {
         repository.add(original)
         val updated = original.copy(date = LocalDate(2024, 2, 1), status = cleared)
         repository.update(updated)
-        assertEquals(listOf(updated), repository.transactionsByAccountId(accountId).first())
+        assertEquals(updated, repository.transactionById(updated.id).first())
     }
 
     @Test
@@ -290,7 +265,7 @@ class SqlTransactionRepositoryTest {
         repository.add(original)
         val updated = original.copy(payeeId = payee.id)
         repository.update(updated)
-        assertEquals(listOf(updated), repository.transactionsByAccountId(accountId).first())
+        assertEquals(updated, repository.transactionById(updated.id).first())
     }
 
     @Test
@@ -315,9 +290,8 @@ class SqlTransactionRepositoryTest {
         repository.add(transaction2)
         val updatedTransaction1 = transaction1.copy(memo = "First Updated")
         repository.update(updatedTransaction1)
-        val transactions = repository.transactionsByAccountId(accountId).first()
-        assertContains(transactions, updatedTransaction1)
-        assertContains(transactions, transaction2)
+        assertEquals(updatedTransaction1, repository.transactionById(transaction1.id).first())
+        assertEquals(transaction2, repository.transactionById(transaction2.id).first())
     }
 
     @Test
@@ -335,7 +309,7 @@ class SqlTransactionRepositoryTest {
         repository.add(original)
         val updated = original.copy(id = TransactionId(), memo = "Updated", number = "1002")
         assertFailsWith<EntityNotFoundException> { repository.update(updated) }
-        assertEquals(listOf(original), repository.transactionsByAccountId(accountId).first())
+        assertEquals(original, repository.transactionById(original.id).first())
     }
 
     @Test
@@ -347,7 +321,7 @@ class SqlTransactionRepositoryTest {
         val transaction = Transaction(accountId = accountId, date = LocalDate(2024, 1, 15), status = unreconciled)
         repository.add(transaction)
         repository.removeById(transaction.id)
-        assertTrue(repository.transactionsByAccountId(accountId).first().isEmpty())
+        assertNull(repository.transactionById(transaction.id).first())
     }
 
     @Test
@@ -361,7 +335,8 @@ class SqlTransactionRepositoryTest {
         repository.add(transaction1)
         repository.add(transaction2)
         repository.removeById(transaction2.id)
-        assertEquals(listOf(transaction1), repository.transactionsByAccountId(accountId).first())
+        assertEquals(transaction1, repository.transactionById(transaction1.id).first())
+        assertNull(repository.transactionById(transaction2.id).first())
     }
 
     @Test
@@ -373,7 +348,7 @@ class SqlTransactionRepositoryTest {
         val transaction = Transaction(accountId = accountId, date = LocalDate(2024, 1, 15), status = unreconciled)
         repository.add(transaction)
         repository.removeById(TransactionId())
-        assertEquals(listOf(transaction), repository.transactionsByAccountId(accountId).first())
+        assertEquals(transaction, repository.transactionById(transaction.id).first())
     }
 
     @Test
@@ -385,7 +360,7 @@ class SqlTransactionRepositoryTest {
         val transaction = Transaction(accountId = accountId, date = LocalDate(2024, 1, 15), status = unreconciled)
         repository.add(transaction)
         repository.remove(transaction)
-        assertTrue(repository.transactionsByAccountId(accountId).first().isEmpty())
+        assertNull(repository.transactionById(transaction.id).first())
     }
 
     @Test

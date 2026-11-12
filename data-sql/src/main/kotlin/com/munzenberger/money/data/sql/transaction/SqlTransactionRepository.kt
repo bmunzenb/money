@@ -1,7 +1,6 @@
 package com.munzenberger.money.data.sql.transaction
 
 import app.cash.sqldelight.coroutines.asFlow
-import app.cash.sqldelight.coroutines.mapToList
 import app.cash.sqldelight.coroutines.mapToOneOrNull
 import com.munzenberger.money.data.api.account.AccountId
 import com.munzenberger.money.data.api.payee.PayeeId
@@ -23,12 +22,6 @@ internal class SqlTransactionRepository(
     private val context: CoroutineContext = Dispatchers.IO,
     private val clock: Clock = Clock.System,
 ) : TransactionRepository, TransactionWriter {
-
-    override fun transactionsByAccountId(accountId: AccountId): Flow<List<Transaction>> =
-        database.transactionQueries
-            .selectByAccountId(accountId.value, ::transaction)
-            .asFlow()
-            .mapToList(context)
 
     override fun transactionById(transactionId: TransactionId): Flow<Transaction?> =
         database.transactionQueries
@@ -66,7 +59,7 @@ internal class SqlTransactionRepository(
     }
 }
 
-/** Maps a row of `selectByAccountId` or `selectById` to a [Transaction]. */
+/** Maps a row of `selectById` to a [Transaction]. */
 @Suppress("LongParameterList")
 private fun transaction(
     id: Uuid,
