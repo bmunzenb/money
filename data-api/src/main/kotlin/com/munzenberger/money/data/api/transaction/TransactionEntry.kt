@@ -2,7 +2,7 @@ package com.munzenberger.money.data.api.transaction
 
 import com.munzenberger.money.data.api.Money
 
-interface TransactionEntry {
+sealed interface TransactionEntry {
     val transactionId: TransactionId
 
     /**
