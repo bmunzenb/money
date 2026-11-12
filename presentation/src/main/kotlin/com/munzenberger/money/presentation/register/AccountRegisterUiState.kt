@@ -4,6 +4,7 @@ import com.munzenberger.money.core.register.AccountRegister
 import com.munzenberger.money.core.register.RegisterDateFilter
 import com.munzenberger.money.core.register.RegisterStatusFilter
 import com.munzenberger.money.presentation.state.LoadState
+import com.munzenberger.money.presentation.state.map
 
 /**
  * The state of an account's register. [register] is the account, its register entries that match the selected
@@ -22,4 +23,8 @@ data class AccountRegisterUiState(
     /** Whether a transaction can be added: once the register is loaded, so there's an account to add it to. */
     val canAddTransaction: Boolean
         get() = register is LoadState.Loaded
+
+    /** The kind of account the amount columns are named for, once the register loads. */
+    val amountColumns: LoadState<RegisterAmountColumns>
+        get() = register.map { it.account.registerAmountColumns }
 }
