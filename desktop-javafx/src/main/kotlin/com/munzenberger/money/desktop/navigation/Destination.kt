@@ -15,7 +15,7 @@ sealed interface Destination {
      */
     class Dialog(
         override val node: Parent,
-        val title: String? = null,
+        val title: String,
         val onCloseRequest: (() -> Unit)? = null,
     ) : Destination
 }

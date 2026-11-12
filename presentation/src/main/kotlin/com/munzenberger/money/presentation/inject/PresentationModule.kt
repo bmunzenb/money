@@ -7,6 +7,7 @@ import com.munzenberger.money.core.account.GetAccountUseCase
 import com.munzenberger.money.core.account.UpdateAccountUseCase
 import com.munzenberger.money.core.demo.PopulateDemoDataUseCase
 import com.munzenberger.money.core.register.GetAccountRegisterUseCase
+import com.munzenberger.money.core.transaction.GetTransactionUseCase
 import com.munzenberger.money.presentation.AppViewModel
 import com.munzenberger.money.presentation.accounts.AccountSettingsViewModel
 import com.munzenberger.money.presentation.accounts.AccountListViewModel
@@ -19,6 +20,7 @@ import com.munzenberger.money.presentation.preferences.UserPreferences
 import com.munzenberger.money.presentation.rail.AppNavigationRailViewModel
 import com.munzenberger.money.presentation.register.AccountRegisterViewModel
 import com.munzenberger.money.presentation.toolbar.AppToolbarViewModel
+import com.munzenberger.money.presentation.transactions.TransactionDetailsViewModel
 import com.munzenberger.money.presentation.welcome.WelcomeViewModel
 import org.koin.core.module.dsl.viewModel
 import org.koin.dsl.module
@@ -35,6 +37,7 @@ val presentationModule = module {
     factory { GetAccountGroupsUseCase() }
     factory { GetAccountUseCase() }
     factory { UpdateAccountUseCase() }
+    factory { GetTransactionUseCase() }
     factory { PopulateDemoDataUseCase() }
 
     viewModel { AppViewModel(get(), get()) }
@@ -47,4 +50,5 @@ val presentationModule = module {
     viewModel { AppToolbarViewModel(get()) }
     viewModel { AppMenuBarViewModel(get()) }
     viewModel { params -> AccountRegisterViewModel(params.get(), get(), get(), get(), get()) }
+    viewModel { params -> TransactionDetailsViewModel(params.get(), get(), get(), get()) }
 }

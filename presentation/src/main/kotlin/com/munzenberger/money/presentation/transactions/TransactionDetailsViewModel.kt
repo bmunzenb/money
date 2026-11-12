@@ -1,0 +1,60 @@
+package com.munzenberger.money.presentation.transactions
+
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.munzenberger.money.core.transaction.GetTransactionUseCase
+import com.munzenberger.money.data.api.transaction.TransactionId
+import com.munzenberger.money.presentation.database.MoneyRepositoryController
+import com.munzenberger.money.presentation.database.flow
+import com.munzenberger.money.presentation.navigation.Navigator
+import com.munzenberger.money.presentation.navigation.Route
+import com.munzenberger.money.presentation.state.LoadState
+import com.munzenberger.money.presentation.state.toLoadState
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
+
+/**
+ * The transaction form, shown at [route]. For [Route.TransactionDetails], it edits that transaction, starting from its
+ * saved values; for [Route.NewTransaction], it adds a new transaction.
+ */
+class TransactionDetailsViewModel(
+    // This screen's route, so going back only pops this screen, even if a save finishes after the user has left it.
+    private val route: Route.TransactionFormRoute,
+    private val repositoryController: MoneyRepositoryController,
+    private val navigator: Navigator,
+    private val getTransaction: GetTransactionUseCase,
+) : ViewModel() {
+
+    private val transactionId: TransactionId? = when (route) {
+        is Route.NewTransaction -> null
+        is Route.TransactionDetails -> route.transactionId
+    }
+
+    private val _state = MutableStateFlow(
+        TransactionDetailsUiState(existingTransaction = transactionId?.let { LoadState.Loading })
+    )
+    val state: StateFlow<TransactionDetailsUiState> = _state.asStateFlow()
+
+    init {
+        if (transactionId != null) {
+            viewModelScope.launch { loadExistingTransaction(transactionId) }
+        }
+    }
+
+    /**
+     * Fills in the form from the saved transaction. It's read only once, so a later change to the transaction
+     * doesn't overwrite what the user has typed.
+     */
+    private suspend fun loadExistingTransaction(transactionId: TransactionId) {
+        val transaction = repositoryController.flow { getTransaction(it, transactionId) }.first()
+        _state.update { it.copy(existingTransaction = transaction.toLoadState()) }
+    }
+
+    fun onBackClick() {
+        navigator.back(from = route)
+    }
+}
