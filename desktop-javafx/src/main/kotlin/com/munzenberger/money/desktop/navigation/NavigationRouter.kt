@@ -5,6 +5,7 @@ import com.munzenberger.money.desktop.accounts.AccountListScreen
 import com.munzenberger.money.desktop.register.AccountRegisterScreen
 import com.munzenberger.money.desktop.strings
 import com.munzenberger.money.desktop.theme.Spacing
+import com.munzenberger.money.desktop.transactions.TransactionDetailsScreen
 import com.munzenberger.money.desktop.welcome.WelcomeScreen
 import com.munzenberger.money.presentation.navigation.Route
 import javafx.geometry.Insets
@@ -27,8 +28,16 @@ val navigationRouter: (route: Route, scope: ScreenScope) -> Destination = { rout
         is Route.AccountRegister -> Destination.Screen(AccountRegisterScreen(scope, route))
         Route.CategoryList -> Destination.Screen(placeholderScreen(route))
         Route.PayeeList -> Destination.Screen(placeholderScreen(route))
-        is Route.TransactionFormRoute -> Destination.Dialog(placeholderScreen(route))
-        is Route.TransferDetails -> Destination.Dialog(placeholderScreen(route))
+        is Route.NewTransaction -> TransactionDetailsScreen(scope, route).let { screen ->
+            Destination.Dialog(screen, strings.getString("new_transaction_title"), screen::onCloseRequest)
+        }
+        is Route.TransactionDetails -> TransactionDetailsScreen(scope, route).let { screen ->
+            Destination.Dialog(screen, strings.getString("transaction_details_title"), screen::onCloseRequest)
+        }
+        is Route.TransferDetails -> Destination.Dialog(
+            placeholderScreen(route),
+            strings.getString("transfer_details_title")
+        )
     }
 }
 
