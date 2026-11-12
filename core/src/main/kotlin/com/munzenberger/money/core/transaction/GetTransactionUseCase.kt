@@ -8,7 +8,10 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 
 class GetTransactionUseCase {
-    operator fun invoke(repository: MoneyRepository, transactionId: TransactionId): Flow<Result<TransactionWithEntries>> =
+    operator fun invoke(
+        repository: MoneyRepository,
+        transactionId: TransactionId,
+    ): Flow<Result<TransactionWithEntries>> =
         combine(
             repository.transactionById(transactionId),
             repository.categoryEntriesByTransactionId(transactionId),
