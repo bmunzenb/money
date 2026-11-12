@@ -26,7 +26,7 @@ data class AccountSettingsUiState(
     /** The existing bank matching [bankName], or null if the name is blank or for a new bank. */
     val bank: Bank? = null,
     val number: String = "",
-    /** The text in the initial balance field. Blank means a zero balance. */
+    /** The text in the initial balance field, as the amount owed for a liability. Blank means a zero balance. */
     val initialBalance: String = "",
     /** The initial balance's currency. */
     val currency: Currency,

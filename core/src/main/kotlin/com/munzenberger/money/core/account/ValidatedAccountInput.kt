@@ -2,6 +2,7 @@ package com.munzenberger.money.core.account
 
 import com.munzenberger.money.data.api.Money
 import com.munzenberger.money.data.api.account.Account
+import com.munzenberger.money.data.api.account.AccountClassConstant
 import com.munzenberger.money.data.api.account.AccountId
 import com.munzenberger.money.data.api.bank.Bank
 
@@ -20,7 +21,8 @@ internal sealed interface ValidatedAccountInput {
  * Validates this input and, if it's valid, turns it into the account with [accountId], closed if
  * [isClosed]: values are
  * trimmed, and blank optional values are left out. A financial institution named in [AccountInput.bankName]
- * that isn't an existing bank becomes a new one for the account.
+ * that isn't an existing bank becomes a new one for the account. A liability's initial balance is the amount owed, so
+ * it's negated, as the repository stores money owed.
  */
 internal fun AccountInput.validate(accountId: AccountId, isClosed: Boolean): ValidatedAccountInput {
     val initialBalance = parseInitialBalance(initialBalance)
@@ -43,7 +45,11 @@ internal fun AccountInput.validate(accountId: AccountId, isClosed: Boolean): Val
         number = number.trim().ifEmpty { null },
         accountType = accountType,
         bankId = (bank ?: newBank)?.id,
-        initialBalance = initialBalance,
+        initialBalance = if (accountType.accountClass.value == AccountClassConstant.Liability) {
+            -initialBalance
+        } else {
+            initialBalance
+        },
         memo = memo.trim().ifEmpty { null },
         isClosed = isClosed,
     )
