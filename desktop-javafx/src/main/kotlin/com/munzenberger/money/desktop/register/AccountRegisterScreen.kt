@@ -160,8 +160,9 @@ class AccountRegisterScreen(
         registerTable.show(
             entries = register.map { it.entries }.loadedOrEmpty,
             amountColumns = state.amountColumns.loadedOrNull,
+            balanceOwed = state.showsBalanceOwed.loadedOrNull,
         )
 
-        accountBalance.render(register.map { it.endingBalance })
+        accountBalance.render(state.balance)
     }
 }

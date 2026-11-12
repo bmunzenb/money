@@ -58,7 +58,8 @@ class AccountRegisterViewModel(
      * The balance is the last entry's balance before filtering, or the account's initial balance if it has no entries,
      * so the filters don't change it.
      *
-     * Amounts keep the repository's signs for every account, including liabilities.
+     * The register's entries and ending balance keep the repository's signs for every account, and the state's
+     * showsBalanceOwed and balance say to show a liability's balances as the amount owed.
      */
     val state: StateFlow<AccountRegisterUiState> = combine(
         dateFilter,

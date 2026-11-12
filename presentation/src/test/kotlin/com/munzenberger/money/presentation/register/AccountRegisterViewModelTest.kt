@@ -248,6 +248,32 @@ class AccountRegisterViewModelTest {
     }
 
     @Test
+    fun `state shows a liability account's balances as the amount owed`() = runTest {
+        every { getAccountRegister(any(), any(), any(), any()) } returns
+            flowOf(Result.success(register(listOf(entry.copy(balance = Money(-2500))), creditCard)))
+
+        viewModel().state.test {
+            runCurrent()
+            val state = expectMostRecentItem()
+            assertEquals(LoadState.Loaded(true), state.showsBalanceOwed)
+            assertEquals(LoadState.Loaded(Money(2500)), state.balance)
+        }
+    }
+
+    @Test
+    fun `state shows an asset account's balances with their signs`() = runTest {
+        every { getAccountRegister(any(), any(), any(), any()) } returns
+            flowOf(Result.success(register(listOf(entry.copy(balance = Money(-2500))))))
+
+        viewModel().state.test {
+            runCurrent()
+            val state = expectMostRecentItem()
+            assertEquals(LoadState.Loaded(false), state.showsBalanceOwed)
+            assertEquals(LoadState.Loaded(Money(-2500)), state.balance)
+        }
+    }
+
+    @Test
     fun `state keeps an asset account's balance and entries' signs`() = runTest {
         val overdrawn = entry.copy(balance = Money(-2500))
         every { getAccountRegister(any(), any(), any(), any()) } returns
