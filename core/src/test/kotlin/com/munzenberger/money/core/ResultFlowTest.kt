@@ -2,31 +2,18 @@ package com.munzenberger.money.core
 
 import app.cash.turbine.test
 import com.munzenberger.money.data.api.EntityNotFoundException
-import com.munzenberger.money.data.api.MoneyRepository
-import io.mockk.mockk
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertIs
-import kotlin.test.assertSame
 
-class MoneyRepositoryResultFlowTest {
-
-    private val repository = mockk<MoneyRepository>()
+class ResultFlowTest {
 
     @Test
-    fun `resultFlow applies selector to repository`() = runTest {
-        repository.resultFlow { flowOf(it) }.test {
-            assertSame(repository, awaitItem().getOrThrow())
-            awaitComplete()
-        }
-    }
-
-    @Test
-    fun `resultFlow emits success from selected flow`() = runTest {
-        repository.resultFlow { flowOf(1, 2) }.test {
+    fun `asResult wraps each value in a success`() = runTest {
+        flowOf(1, 2).asResult().test {
             assertEquals(Result.success(1), awaitItem())
             assertEquals(Result.success(2), awaitItem())
             awaitComplete()
@@ -34,10 +21,10 @@ class MoneyRepositoryResultFlowTest {
     }
 
     @Test
-    fun `resultFlow emits failure when selected flow throws`() = runTest {
+    fun `asResult emits failure when the flow throws`() = runTest {
         val error = IllegalStateException("query failed")
 
-        repository.resultFlow<Int> { flow { throw error } }.test {
+        flow<Int> { throw error }.asResult().test {
             assertEquals(Result.failure(error), awaitItem())
             awaitComplete()
         }
