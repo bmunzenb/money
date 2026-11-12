@@ -27,6 +27,8 @@ import com.munzenberger.money.data.sql.payee.SqlPayeeRepository
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.toList
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.runTest
 import kotlinx.datetime.LocalDate
@@ -34,6 +36,7 @@ import kotlin.test.Test
 import kotlin.test.assertContains
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
+import kotlin.test.assertNull
 import kotlin.test.assertTrue
 import kotlin.time.Clock
 import kotlin.time.Instant
@@ -193,6 +196,55 @@ class SqlTransactionRepositoryTest {
         repository.add(transaction1)
         repository.add(transaction2)
         assertEquals(listOf(transaction1), repository.transactionsByAccountId(accountId1).first())
+    }
+
+    @Test
+    fun `transactionById emits null when no transaction has the id`() = runTest {
+        val dispatcher = UnconfinedTestDispatcher(testScheduler)
+        val database = createTestDatabase()
+        val accountId = createAccount(database, dispatcher)
+        val repository = createRepository(database, dispatcher)
+        repository.add(Transaction(accountId = accountId, date = LocalDate(2024, 1, 15), status = unreconciled))
+        assertNull(repository.transactionById(TransactionId()).first())
+    }
+
+    @Test
+    fun `transactionById emits the transaction with the id`() = runTest {
+        val dispatcher = UnconfinedTestDispatcher(testScheduler)
+        val database = createTestDatabase()
+        val accountId = createAccount(database, dispatcher)
+        val payee = Payee(name = "Grocery Store")
+        SqlPayeeRepository(database, dispatcher).add(payee)
+        val repository = createRepository(database, dispatcher)
+        val transaction = Transaction(
+            accountId = accountId,
+            payeeId = payee.id,
+            date = LocalDate(2024, 1, 15),
+            number = "1001",
+            memo = "Groceries",
+            status = cleared,
+        )
+        repository.add(transaction)
+        repository.add(Transaction(accountId = accountId, date = LocalDate(2024, 1, 16), status = unreconciled))
+        assertEquals(transaction, repository.transactionById(transaction.id).first())
+    }
+
+    @Test
+    fun `transactionById re-emits when the transaction is updated and null when it's removed`() = runTest {
+        val dispatcher = UnconfinedTestDispatcher(testScheduler)
+        val database = createTestDatabase()
+        val accountId = createAccount(database, dispatcher)
+        val repository = createRepository(database, dispatcher)
+        val transaction = Transaction(accountId = accountId, date = LocalDate(2024, 1, 15), status = unreconciled)
+        repository.add(transaction)
+        val emissions = mutableListOf<Transaction?>()
+        backgroundScope.launch(dispatcher) {
+            repository.transactionById(transaction.id).toList(emissions)
+        }
+        val updated = transaction.copy(memo = "Updated", status = reconciled)
+        repository.update(updated)
+        repository.removeById(transaction.id)
+        assertEquals(listOf(transaction, updated, null), emissions)
     }
 
     @Test
