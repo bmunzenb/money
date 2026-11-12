@@ -27,12 +27,6 @@ internal class SqlTransferEntryRepository(
             .asFlow()
             .mapToList(context)
 
-    override fun transferEntriesByAccountId(accountId: AccountId): Flow<List<TransferEntry>> =
-        database.transferEntryQueries
-            .selectByAccountId(accountId.value, ::mapTransferEntry)
-            .asFlow()
-            .mapToList(context)
-
     override fun add(transferEntry: TransferEntry) {
         database.transferEntryQueries.insert(
             id = transferEntry.id.value,
