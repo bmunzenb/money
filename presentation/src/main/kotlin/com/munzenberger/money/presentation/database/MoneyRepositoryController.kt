@@ -2,7 +2,7 @@ package com.munzenberger.money.presentation.database
 
 import com.munzenberger.money.core.demo.PopulateDemoDataResult
 import com.munzenberger.money.core.demo.PopulateDemoDataUseCase
-import com.munzenberger.money.core.resultFlow
+import com.munzenberger.money.core.asResult
 import com.munzenberger.money.data.api.MoneyRepository
 import com.munzenberger.money.data.api.MoneyRepositoryConnectionResult
 import kotlinx.coroutines.Dispatchers
@@ -149,10 +149,10 @@ fun <T> MoneyRepositoryController.flow(selector: (MoneyRepository) -> Flow<T>): 
 
 /**
  * Returns a flow of values selected from the currently open [MoneyRepository], each wrapped in a
- * [Result] (see [flow] and [MoneyRepository.resultFlow]).
+ * [Result] (see [flow] and [asResult]).
  *
  * A failure ends only that repository's flow, so opening a different repository resumes emitting
  * values.
  */
 fun <T> MoneyRepositoryController.resultFlow(selector: (MoneyRepository) -> Flow<T>): Flow<Result<T>> =
-    flow { it.resultFlow(selector) }
+    flow { selector(it).asResult() }

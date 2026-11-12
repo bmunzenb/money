@@ -1,6 +1,6 @@
 package com.munzenberger.money.core.account
 
-import com.munzenberger.money.core.resultFlow
+import com.munzenberger.money.core.asResult
 import com.munzenberger.money.data.api.MoneyRepository
 import com.munzenberger.money.data.api.account.Account
 import com.munzenberger.money.data.api.bank.Bank
@@ -9,7 +9,7 @@ import kotlinx.coroutines.flow.combine
 
 /**
  * Returns a flow of the repository's accounts, grouped by the latest [AccountGrouping], each wrapped
- * in a [Result] (see [resultFlow]).
+ * in a [Result] (see [asResult]).
  *
  * A new grouping regroups the accounts already read, without reading them from the repository again.
  *
@@ -23,17 +23,15 @@ class GetAccountGroupsUseCase {
         repository: MoneyRepository,
         grouping: Flow<AccountGrouping>,
     ): Flow<Result<List<AccountGroup>>> =
-        repository.resultFlow {
-            combine(it.accounts, it.banks, grouping) { accounts, banks, grouping ->
-                when (grouping) {
-                    AccountGrouping.None ->
-                        if (accounts.isEmpty()) emptyList() else listOf(AccountGroup.All(accounts.sortedByName()))
-                    AccountGrouping.AccountType -> groupByAccountType(accounts)
-                    AccountGrouping.AccountClass -> groupByAccountClass(accounts)
-                    AccountGrouping.Bank -> groupByBank(accounts, banks)
-                }
+        combine(repository.accounts, repository.banks, grouping) { accounts, banks, grouping ->
+            when (grouping) {
+                AccountGrouping.None ->
+                    if (accounts.isEmpty()) emptyList() else listOf(AccountGroup.All(accounts.sortedByName()))
+                AccountGrouping.AccountType -> groupByAccountType(accounts)
+                AccountGrouping.AccountClass -> groupByAccountClass(accounts)
+                AccountGrouping.Bank -> groupByBank(accounts, banks)
             }
-        }
+        }.asResult()
 }
 
 private fun List<Account>.sortedByName(): List<Account> = sortedBy { it.name.lowercase() }
