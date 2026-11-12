@@ -85,16 +85,16 @@ class RegisterAmountColumnsTest {
     }
 
     @Test
-    fun `state's amount columns are other until the register loads`() {
-        assertEquals(RegisterAmountColumns.Other, AccountRegisterUiState().amountColumns)
-        assertEquals(RegisterAmountColumns.Other, AccountRegisterUiState(register = LoadState.Error).amountColumns)
+    fun `state's amount columns aren't loaded until the register loads`() {
+        assertEquals(LoadState.Loading, AccountRegisterUiState().amountColumns)
+        assertEquals(LoadState.Error, AccountRegisterUiState(register = LoadState.Error).amountColumns)
     }
 
     @Test
     fun `state's amount columns follow the loaded account's type`() {
         val register = AccountRegister(account(AccountTypeConstant.Credit), emptyList(), Money(0))
         assertEquals(
-            RegisterAmountColumns.CreditCard,
+            LoadState.Loaded(RegisterAmountColumns.CreditCard),
             AccountRegisterUiState(register = LoadState.Loaded(register)).amountColumns,
         )
     }

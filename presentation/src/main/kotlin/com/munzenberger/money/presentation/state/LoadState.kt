@@ -18,9 +18,13 @@ fun <T, R> LoadState<T>.map(transform: (T) -> R): LoadState<R> = when (this) {
     is LoadState.Loaded -> LoadState.Loaded(transform(value))
 }
 
+/** The loaded value, or null while loading or after an error. */
+val <T> LoadState<T>.loadedOrNull: T?
+    get() = (this as? LoadState.Loaded)?.value
+
 /** The loaded list, or an empty list while loading or after an error. */
 val <T> LoadState<List<T>>.loadedOrEmpty: List<T>
-    get() = (this as? LoadState.Loaded)?.value.orEmpty()
+    get() = loadedOrNull.orEmpty()
 
 fun <T> Result<T>.toLoadState(): LoadState<T> =
     fold(onSuccess = { LoadState.Loaded(it) }, onFailure = { LoadState.Error })

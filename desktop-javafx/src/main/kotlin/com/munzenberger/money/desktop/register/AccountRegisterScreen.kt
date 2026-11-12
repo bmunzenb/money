@@ -16,6 +16,7 @@ import com.munzenberger.money.presentation.register.AccountRegisterUiState
 import com.munzenberger.money.presentation.register.AccountRegisterViewModel
 import com.munzenberger.money.presentation.state.LoadState
 import com.munzenberger.money.presentation.state.loadedOrEmpty
+import com.munzenberger.money.presentation.state.loadedOrNull
 import com.munzenberger.money.presentation.state.map
 import javafx.geometry.Insets
 import javafx.geometry.Pos
@@ -156,7 +157,10 @@ class AccountRegisterScreen(
             LoadState.Error -> loadErrorMessage
             is LoadState.Loaded -> emptyMessage
         }
-        registerTable.show(register.map { it.entries }.loadedOrEmpty, state.amountColumns)
+        registerTable.show(
+            entries = register.map { it.entries }.loadedOrEmpty,
+            amountColumns = state.amountColumns.loadedOrNull,
+        )
 
         accountBalance.render(register.map { it.endingBalance })
     }

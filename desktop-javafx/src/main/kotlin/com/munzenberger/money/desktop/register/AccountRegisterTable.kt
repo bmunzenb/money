@@ -95,9 +95,9 @@ class AccountRegisterTable(
     }
 
     /** Shows [entries], replacing the ones shown, with amount columns named for [amountColumns]. */
-    fun show(entries: List<RegisterEntry>, amountColumns: RegisterAmountColumns) {
+    fun show(entries: List<RegisterEntry>, amountColumns: RegisterAmountColumns?) {
         if (entries != items) items.setAll(entries)
-        showAmountColumnTitles(amountColumns)
+        amountColumns?.let { showAmountColumnTitles(it) }
     }
 
     private fun showAmountColumnTitles(amountColumns: RegisterAmountColumns) {
