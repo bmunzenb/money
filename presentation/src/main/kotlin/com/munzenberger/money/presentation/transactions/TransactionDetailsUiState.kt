@@ -18,6 +18,8 @@ data class TransactionDetailsUiState(
     val account: Account? = null,
     /** The transaction's date: today for a new transaction, or the saved date of the one being edited. */
     val date: LocalDate,
+    /** Whether the transaction raises or lowers the account's balance. */
+    val type: TransactionType = TransactionType.Decrease,
 ) {
     val isEditing: Boolean
         get() = existingTransaction != null

@@ -95,6 +95,10 @@ class TransactionDetailsViewModel(
         _state.update { it.copy(date = date) }
     }
 
+    fun onTypeChange(type: TransactionType) {
+        _state.update { it.copy(type = type) }
+    }
+
     fun onBackClick() {
         navigator.back(from = route)
     }

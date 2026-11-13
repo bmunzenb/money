@@ -315,6 +315,22 @@ class TransactionDetailsViewModelTest {
     }
 
     @Test
+    fun `a new transaction is a decrease`() {
+        val viewModel = viewModel()
+
+        assertEquals(TransactionType.Decrease, viewModel.state.value.type)
+    }
+
+    @Test
+    fun `onTypeChange sets the type`() {
+        val viewModel = viewModel()
+
+        viewModel.onTypeChange(TransactionType.Increase)
+
+        assertEquals(TransactionType.Increase, viewModel.state.value.type)
+    }
+
+    @Test
     fun `onBackClick pops the transaction's route from the back stack`() {
         val route = Route.TransactionDetails(existingTransaction.id)
         navigator.navigate { clear(); add(Route.AccountRegister(existingTransaction.accountId)); add(route) }
