@@ -68,7 +68,7 @@ class AccountListTable(
             Bindings.createObjectBinding({ row?.balanceCellValue(balances.value) }, balances)
         }
         setCellFactory { AccountBalanceCell() }
-        comparator = compareBy(nullsFirst()) { (it?.balance as? LoadState.Loaded)?.value?.value }
+        comparator = compareBy(nullsFirst()) { (it?.balance as? LoadState.Loaded)?.value }
     }
 
     // The groups last shown, so showing the same groups again doesn't rebuild the rows.
