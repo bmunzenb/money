@@ -2,6 +2,7 @@ package com.munzenberger.money.desktop.accounts
 
 import com.munzenberger.money.core.account.AccountGroup
 import com.munzenberger.money.core.account.AccountGrouping
+import com.munzenberger.money.data.api.account.Account
 import com.munzenberger.money.data.api.account.AccountClassConstant
 import com.munzenberger.money.data.api.account.AccountType
 import com.munzenberger.money.data.api.account.AccountTypeConstant
@@ -57,4 +58,12 @@ internal object AccountTypeConverter : StringConverter<AccountType>() {
 
     // The combo box isn't editable, so it never converts text back to an account type.
     override fun fromString(string: String?): AccountType? = null
+}
+
+/** Shows each account by its name. */
+internal object AccountConverter : StringConverter<Account>() {
+    override fun toString(account: Account?): String = account?.name.orEmpty()
+
+    // The combo box isn't editable, so it never converts text back to an account.
+    override fun fromString(string: String?): Account? = null
 }

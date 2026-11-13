@@ -1,6 +1,7 @@
 package com.munzenberger.money.presentation.transactions
 
 import com.munzenberger.money.core.transaction.TransactionWithEntries
+import com.munzenberger.money.data.api.account.Account
 import com.munzenberger.money.presentation.state.LoadState
 
 /** The transaction form, for adding a new transaction or editing an existing one. */
@@ -10,6 +11,10 @@ data class TransactionDetailsUiState(
      * adding a new transaction. The fields can't be shown until it's loaded.
      */
     val existingTransaction: LoadState<TransactionWithEntries>? = null,
+    /** The accounts the transaction can be in, sorted by name. */
+    val accounts: LoadState<List<Account>> = LoadState.Loading,
+    /** The account selected from [accounts], or null if none is selected yet. */
+    val account: Account? = null,
 ) {
     val isEditing: Boolean
         get() = existingTransaction != null
