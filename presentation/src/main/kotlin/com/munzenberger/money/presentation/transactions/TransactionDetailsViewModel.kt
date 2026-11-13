@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.munzenberger.money.core.transaction.GetTransactionUseCase
 import com.munzenberger.money.data.api.account.Account
 import com.munzenberger.money.data.api.account.AccountId
+import com.munzenberger.money.data.api.today
 import com.munzenberger.money.data.api.transaction.TransactionId
 import com.munzenberger.money.presentation.database.MoneyRepositoryController
 import com.munzenberger.money.presentation.database.flow
@@ -21,6 +22,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.datetime.LocalDate
 
 /**
  * The transaction form, shown at [route]. For [Route.TransactionDetails], it edits that transaction, starting from its
@@ -32,18 +34,20 @@ class TransactionDetailsViewModel(
     private val repositoryController: MoneyRepositoryController,
     private val navigator: Navigator,
     private val getTransaction: GetTransactionUseCase,
+    // The date a new transaction starts on.
+    today: () -> LocalDate = { LocalDate.today() },
 ) : ViewModel() {
 
-    private val transactionId: TransactionId? = when (route) {
-        is Route.NewTransaction -> null
-        is Route.TransactionDetails -> route.transactionId
-    }
+    private val transactionId: TransactionId? = (route as? Route.TransactionDetails)?.transactionId
 
     // The account a new transaction starts in, if the route has one.
     private val newTransactionAccountId: AccountId? = (route as? Route.NewTransaction)?.accountId
 
     private val _state = MutableStateFlow(
-        TransactionDetailsUiState(existingTransaction = transactionId?.let { LoadState.Loading })
+        TransactionDetailsUiState(
+            existingTransaction = transactionId?.let { LoadState.Loading },
+            date = today(),
+        )
     )
     val state: StateFlow<TransactionDetailsUiState> = _state.asStateFlow()
 
@@ -65,7 +69,12 @@ class TransactionDetailsViewModel(
      */
     private suspend fun loadExistingTransaction(transactionId: TransactionId) {
         val transaction = repositoryController.flow { getTransaction(it, transactionId) }.first()
-        _state.update { it.copy(existingTransaction = transaction.toLoadState()).withInitialAccount() }
+        _state.update { state ->
+            state.copy(
+                existingTransaction = transaction.toLoadState(),
+                date = transaction.getOrNull()?.transaction?.date ?: state.date,
+            ).withInitialAccount()
+        }
     }
 
     /**
@@ -80,6 +89,10 @@ class TransactionDetailsViewModel(
 
     fun onAccountChange(account: Account) {
         _state.update { it.copy(account = account) }
+    }
+
+    fun onDateChange(date: LocalDate) {
+        _state.update { it.copy(date = date) }
     }
 
     fun onBackClick() {

@@ -34,6 +34,7 @@ import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
+import kotlinx.datetime.LocalDate
 import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
@@ -52,8 +53,10 @@ class TransactionDetailsViewModelTest {
     // unreadable transaction without restating the use case's mapping in a mock.
     private val getTransaction = GetTransactionUseCase()
 
+    private val today = LocalDate(2026, 5, 15)
+
     private fun viewModel(route: Route.TransactionFormRoute = Route.NewTransaction()) =
-        TransactionDetailsViewModel(route, fixture.controller, navigator, getTransaction)
+        TransactionDetailsViewModel(route, fixture.controller, navigator, getTransaction, today = { today })
 
     private val unreconciled = TransactionStatus(TransactionStatusId(1), TransactionStatusConstant.Unreconciled)
 
@@ -66,7 +69,8 @@ class TransactionDetailsViewModelTest {
     private val everyday = Account(name = "everyday", accountType = checking)
     private val bills = Account(name = "Bills", accountType = checking)
 
-    private val existingTransaction = Transaction(accountId = bills.id, status = unreconciled)
+    private val existingTransaction =
+        Transaction(accountId = bills.id, status = unreconciled, date = LocalDate(2026, 1, 20))
 
     private val groceries = CategoryEntry(
         transactionId = existingTransaction.id,
@@ -274,6 +278,40 @@ class TransactionDetailsViewModelTest {
         fixture.connect(repository(transaction = flowOf(null), accounts = flowOf(listOf(everyday, bills))))
 
         assertNull(viewModel.state.value.account)
+    }
+
+    @Test
+    fun `a new transaction's date is today`() {
+        val viewModel = viewModel()
+
+        assertEquals(today, viewModel.state.value.date)
+    }
+
+    @Test
+    fun `an existing transaction's date is its saved date once it's loaded`() = runTest {
+        val viewModel = viewModel(Route.TransactionDetails(existingTransaction.id))
+
+        fixture.connect(repository())
+
+        assertEquals(existingTransaction.date, viewModel.state.value.date)
+    }
+
+    @Test
+    fun `an existing transaction that can't be loaded keeps today's date`() = runTest {
+        val viewModel = viewModel(Route.TransactionDetails(existingTransaction.id))
+
+        fixture.connect(repository(transaction = flowOf(null)))
+
+        assertEquals(today, viewModel.state.value.date)
+    }
+
+    @Test
+    fun `onDateChange sets the date`() {
+        val viewModel = viewModel()
+
+        viewModel.onDateChange(LocalDate(2026, 3, 1))
+
+        assertEquals(LocalDate(2026, 3, 1), viewModel.state.value.date)
     }
 
     @Test
