@@ -2,6 +2,7 @@ package com.munzenberger.money.desktop.transactions
 
 import com.munzenberger.money.data.api.account.Account
 import com.munzenberger.money.desktop.accounts.AccountConverter
+import com.munzenberger.money.desktop.components.DateConverter
 import com.munzenberger.money.desktop.components.FormGrid
 import com.munzenberger.money.desktop.components.LoadStateContainer
 import com.munzenberger.money.desktop.components.errorLabel
@@ -20,8 +21,11 @@ import com.munzenberger.money.presentation.transactions.TransactionDetailsUiStat
 import com.munzenberger.money.presentation.transactions.TransactionDetailsViewModel
 import javafx.geometry.Insets
 import javafx.scene.control.ComboBox
+import javafx.scene.control.DatePicker
 import javafx.scene.layout.Priority
 import javafx.scene.layout.VBox
+import kotlinx.datetime.toJavaLocalDate
+import kotlinx.datetime.toKotlinLocalDate
 import org.koin.core.parameter.parametersOf
 
 /** Adds a new transaction at [Route.NewTransaction], or edits an existing one at [Route.TransactionDetails]. */
@@ -34,6 +38,19 @@ class TransactionDetailsScreen(scope: ScreenScope, route: Route.TransactionFormR
         setOnAction { value?.let(viewModel::onAccountChange) }
     }
 
+    // Setting the date the state already has, as render does, leaves the ViewModel's date unchanged. Clearing the text
+    // puts back the state's date, since the form always has one.
+    private val datePicker = DatePicker().apply {
+        converter = DateConverter
+        valueProperty().addListener { _, _, date ->
+            if (date != null) {
+                viewModel.onDateChange(date.toKotlinLocalDate())
+            } else {
+                value = viewModel.state.value.date.toJavaLocalDate()
+            }
+        }
+    }
+
     private val accountsProgress = smallProgressIndicator()
 
     private val accountsError = errorLabel(strings.getString("accounts_load_error_message"))
@@ -44,6 +61,7 @@ class TransactionDetailsScreen(scope: ScreenScope, route: Route.TransactionFormR
             accountComboBox,
             accountComboBox.withProgress(accountsProgress).withError(accountsError),
         )
+        addField(strings.getString("transaction_date_label"), datePicker)
     }
 
     private val form = VBox(Spacing.CONTROL_SPACING, fields)
@@ -67,6 +85,7 @@ class TransactionDetailsScreen(scope: ScreenScope, route: Route.TransactionFormR
         content.setLoadState(state.existingTransaction ?: LoadState.Loaded(Unit))
 
         renderAccount(state)
+        datePicker.value = state.date.toJavaLocalDate()
     }
 
     private fun renderAccount(state: TransactionDetailsUiState) {
