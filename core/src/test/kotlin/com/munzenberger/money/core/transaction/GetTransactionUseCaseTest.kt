@@ -156,6 +156,18 @@ class GetTransactionUseCaseTest {
         }
     }
 
+    @Test
+    fun `a transaction's amount is the sum of its entries`() {
+        val withEntries = TransactionWithEntries(transaction, listOf(groceries, toSavings, household))
+
+        assertEquals(Money(-155), withEntries.amount)
+    }
+
+    @Test
+    fun `a transaction with no entries has an amount of zero`() {
+        assertEquals(Money(0), TransactionWithEntries(transaction, emptyList()).amount)
+    }
+
     private fun categoryEntry(amount: Money, orderInTransaction: Int) = CategoryEntry(
         transactionId = transactionId,
         categoryId = CategoryId(),
