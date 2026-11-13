@@ -3,6 +3,7 @@ package com.munzenberger.money.presentation.transactions
 import com.munzenberger.money.core.transaction.TransactionWithEntries
 import com.munzenberger.money.data.api.account.Account
 import com.munzenberger.money.presentation.state.LoadState
+import kotlinx.datetime.LocalDate
 
 /** The transaction form, for adding a new transaction or editing an existing one. */
 data class TransactionDetailsUiState(
@@ -15,6 +16,8 @@ data class TransactionDetailsUiState(
     val accounts: LoadState<List<Account>> = LoadState.Loading,
     /** The account selected from [accounts], or null if none is selected yet. */
     val account: Account? = null,
+    /** The transaction's date: today for a new transaction, or the saved date of the one being edited. */
+    val date: LocalDate,
 ) {
     val isEditing: Boolean
         get() = existingTransaction != null
