@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.munzenberger.money.core.transaction.GetTransactionUseCase
 import com.munzenberger.money.data.api.account.Account
+import com.munzenberger.money.data.api.account.AccountId
 import com.munzenberger.money.data.api.transaction.TransactionId
 import com.munzenberger.money.presentation.database.MoneyRepositoryController
 import com.munzenberger.money.presentation.database.flow
@@ -11,6 +12,8 @@ import com.munzenberger.money.presentation.database.resultFlow
 import com.munzenberger.money.presentation.navigation.Navigator
 import com.munzenberger.money.presentation.navigation.Route
 import com.munzenberger.money.presentation.state.LoadState
+import com.munzenberger.money.presentation.state.loadedOrEmpty
+import com.munzenberger.money.presentation.state.loadedOrNull
 import com.munzenberger.money.presentation.state.toLoadState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -36,6 +39,9 @@ class TransactionDetailsViewModel(
         is Route.TransactionDetails -> route.transactionId
     }
 
+    // The account a new transaction starts in, if the route has one.
+    private val newTransactionAccountId: AccountId? = (route as? Route.NewTransaction)?.accountId
+
     private val _state = MutableStateFlow(
         TransactionDetailsUiState(existingTransaction = transactionId?.let { LoadState.Loading })
     )
@@ -45,7 +51,7 @@ class TransactionDetailsViewModel(
         viewModelScope.launch {
             repositoryController.resultFlow { it.accounts }.collect { result ->
                 val accounts = result.map { accounts -> accounts.sortedBy { it.name.lowercase() } }.toLoadState()
-                _state.update { it.copy(accounts = accounts) }
+                _state.update { it.copy(accounts = accounts).withInitialAccount() }
             }
         }
         if (transactionId != null) {
@@ -59,7 +65,17 @@ class TransactionDetailsViewModel(
      */
     private suspend fun loadExistingTransaction(transactionId: TransactionId) {
         val transaction = repositoryController.flow { getTransaction(it, transactionId) }.first()
-        _state.update { it.copy(existingTransaction = transaction.toLoadState()) }
+        _state.update { it.copy(existingTransaction = transaction.toLoadState()).withInitialAccount() }
+    }
+
+    /**
+     * Selects the account the form starts in, once both it and the accounts are loaded: the existing transaction's
+     * account, or the new transaction route's. Only while none is selected, so a reload keeps the user's choice.
+     */
+    private fun TransactionDetailsUiState.withInitialAccount(): TransactionDetailsUiState {
+        if (account != null) return this
+        val initialAccountId = existingTransaction?.loadedOrNull?.transaction?.accountId ?: newTransactionAccountId
+        return copy(account = accounts.loadedOrEmpty.find { it.id == initialAccountId })
     }
 
     fun onAccountChange(account: Account) {

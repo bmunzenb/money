@@ -8,7 +8,6 @@ import com.munzenberger.money.data.api.account.Account
 import com.munzenberger.money.data.api.account.AccountClass
 import com.munzenberger.money.data.api.account.AccountClassConstant
 import com.munzenberger.money.data.api.account.AccountClassId
-import com.munzenberger.money.data.api.account.AccountId
 import com.munzenberger.money.data.api.account.AccountType
 import com.munzenberger.money.data.api.account.AccountTypeConstant
 import com.munzenberger.money.data.api.account.AccountTypeId
@@ -27,6 +26,7 @@ import io.mockk.mockk
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
@@ -57,15 +57,6 @@ class TransactionDetailsViewModelTest {
 
     private val unreconciled = TransactionStatus(TransactionStatusId(1), TransactionStatusConstant.Unreconciled)
 
-    private val existingTransaction = Transaction(accountId = AccountId(), status = unreconciled)
-
-    private val groceries = CategoryEntry(
-        transactionId = existingTransaction.id,
-        categoryId = CategoryId(),
-        amount = Money(-40),
-        orderInTransaction = 0,
-    )
-
     private val checking = AccountType(
         id = AccountTypeId(2),
         accountClass = AccountClass(id = AccountClassId(1), value = AccountClassConstant.Asset),
@@ -74,6 +65,15 @@ class TransactionDetailsViewModelTest {
 
     private val everyday = Account(name = "everyday", accountType = checking)
     private val bills = Account(name = "Bills", accountType = checking)
+
+    private val existingTransaction = Transaction(accountId = bills.id, status = unreconciled)
+
+    private val groceries = CategoryEntry(
+        transactionId = existingTransaction.id,
+        categoryId = CategoryId(),
+        amount = Money(-40),
+        orderInTransaction = 0,
+    )
 
     private fun repository(
         transaction: Flow<Transaction?> = flowOf(existingTransaction),
@@ -211,6 +211,69 @@ class TransactionDetailsViewModelTest {
         viewModel.onAccountChange(bills)
 
         assertEquals(bills, viewModel.state.value.account)
+    }
+
+    @Test
+    fun `a new transaction in an account selects that account once the accounts are loaded`() = runTest {
+        val viewModel = viewModel(Route.NewTransaction(bills.id))
+
+        assertNull(viewModel.state.value.account)
+
+        fixture.connect(repository(accounts = flowOf(listOf(everyday, bills))))
+
+        assertEquals(bills, viewModel.state.value.account)
+    }
+
+    @Test
+    fun `a new transaction without an account selects none`() = runTest {
+        val viewModel = viewModel(Route.NewTransaction())
+
+        fixture.connect(repository(accounts = flowOf(listOf(everyday, bills))))
+
+        assertNull(viewModel.state.value.account)
+    }
+
+    @Test
+    fun `reloading the accounts keeps the selected account`() = runTest {
+        val accounts = MutableStateFlow(listOf(everyday, bills))
+        val viewModel = viewModel(Route.NewTransaction(bills.id))
+        fixture.connect(repository(accounts = accounts))
+
+        viewModel.onAccountChange(everyday)
+        accounts.value = listOf(bills, everyday)
+
+        assertEquals(everyday, viewModel.state.value.account)
+    }
+
+    @Test
+    fun `an existing transaction selects its account once it and the accounts are loaded`() = runTest {
+        val viewModel = viewModel(Route.TransactionDetails(existingTransaction.id))
+
+        fixture.connect(repository(accounts = flowOf(listOf(everyday, bills))))
+
+        assertEquals(bills, viewModel.state.value.account)
+    }
+
+    @Test
+    fun `an existing transaction selects its account when the accounts load after it`() = runTest {
+        val accounts = MutableSharedFlow<List<Account>>()
+        val viewModel = viewModel(Route.TransactionDetails(existingTransaction.id))
+        fixture.connect(repository(accounts = accounts))
+
+        assertNull(viewModel.state.value.account)
+
+        accounts.emit(listOf(everyday, bills))
+
+        assertEquals(bills, viewModel.state.value.account)
+    }
+
+    @Test
+    fun `an existing transaction that can't be loaded selects no account`() = runTest {
+        val viewModel = viewModel(Route.TransactionDetails(existingTransaction.id))
+
+        fixture.connect(repository(transaction = flowOf(null), accounts = flowOf(listOf(everyday, bills))))
+
+        assertNull(viewModel.state.value.account)
     }
 
     @Test
