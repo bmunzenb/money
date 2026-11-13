@@ -3,6 +3,7 @@ package com.munzenberger.money.presentation.transactions
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.munzenberger.money.core.transaction.GetTransactionUseCase
+import com.munzenberger.money.data.api.account.Account
 import com.munzenberger.money.data.api.transaction.TransactionId
 import com.munzenberger.money.presentation.database.MoneyRepositoryController
 import com.munzenberger.money.presentation.database.flow
@@ -59,6 +60,10 @@ class TransactionDetailsViewModel(
     private suspend fun loadExistingTransaction(transactionId: TransactionId) {
         val transaction = repositoryController.flow { getTransaction(it, transactionId) }.first()
         _state.update { it.copy(existingTransaction = transaction.toLoadState()) }
+    }
+
+    fun onAccountChange(account: Account) {
+        _state.update { it.copy(account = account) }
     }
 
     fun onBackClick() {

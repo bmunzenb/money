@@ -198,6 +198,22 @@ class TransactionDetailsViewModelTest {
     }
 
     @Test
+    fun `account is initially empty`() {
+        val viewModel = viewModel()
+
+        assertNull(viewModel.state.value.account)
+    }
+
+    @Test
+    fun `onAccountChange selects the account`() {
+        val viewModel = viewModel()
+
+        viewModel.onAccountChange(bills)
+
+        assertEquals(bills, viewModel.state.value.account)
+    }
+
+    @Test
     fun `onBackClick pops the transaction's route from the back stack`() {
         val route = Route.TransactionDetails(existingTransaction.id)
         navigator.navigate { clear(); add(Route.AccountRegister(existingTransaction.accountId)); add(route) }

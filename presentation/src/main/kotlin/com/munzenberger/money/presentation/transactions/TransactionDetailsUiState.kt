@@ -13,6 +13,8 @@ data class TransactionDetailsUiState(
     val existingTransaction: LoadState<TransactionWithEntries>? = null,
     /** The accounts the transaction can be in, sorted by name. */
     val accounts: LoadState<List<Account>> = LoadState.Loading,
+    /** The account selected from [accounts], or null if none is selected yet. */
+    val account: Account? = null,
 ) {
     val isEditing: Boolean
         get() = existingTransaction != null
