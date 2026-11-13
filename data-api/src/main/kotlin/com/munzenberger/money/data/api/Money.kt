@@ -11,7 +11,7 @@ import java.util.Locale
 data class Money(
     val value: Long,
     val currency: Currency = DEFAULT_CURRENCY,
-) {
+) : Comparable<Money> {
 
     /**
      * Formats this amount for [locale], converting [value] from whole fractional units (e.g. cents
@@ -113,6 +113,13 @@ data class Money(
                 null
             }
     }
+
+    /**
+     * Orders amounts by [currency] code, then by [value] within a currency, so amounts in different currencies, whose
+     * values aren't comparable, still have an order consistent with [equals].
+     */
+    override fun compareTo(other: Money): Int =
+        compareValuesBy(this, other, { it.currency.currencyCode }, { it.value })
 }
 
 /** The number of fractional digits [this] currency uses, or 0 for pseudo-currencies that have none. */

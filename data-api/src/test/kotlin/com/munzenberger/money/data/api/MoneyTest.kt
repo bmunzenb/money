@@ -5,6 +5,7 @@ import java.util.Locale
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
+import kotlin.test.assertTrue
 
 class MoneyTest {
 
@@ -179,5 +180,18 @@ class MoneyTest {
         assertFailsWith<ArithmeticException> {
             -Money(Long.MIN_VALUE, usd)
         }
+    }
+
+    @Test
+    fun `compareTo orders by value within a currency`() {
+        assertTrue(Money(-100, usd) < Money(50, usd))
+        assertEquals(0, Money(50, usd).compareTo(Money(50, usd)))
+    }
+
+    @Test
+    fun `compareTo orders by currency code before value`() {
+        val eur = Currency.getInstance("EUR")
+        assertTrue(Money(1000, eur) < Money(1, usd))
+        assertTrue(Money(1, eur).compareTo(Money(1, usd)) != 0)
     }
 }
