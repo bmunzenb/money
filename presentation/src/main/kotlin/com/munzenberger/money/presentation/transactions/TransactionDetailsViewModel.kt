@@ -6,6 +6,7 @@ import com.munzenberger.money.core.transaction.GetTransactionUseCase
 import com.munzenberger.money.data.api.transaction.TransactionId
 import com.munzenberger.money.presentation.database.MoneyRepositoryController
 import com.munzenberger.money.presentation.database.flow
+import com.munzenberger.money.presentation.database.resultFlow
 import com.munzenberger.money.presentation.navigation.Navigator
 import com.munzenberger.money.presentation.navigation.Route
 import com.munzenberger.money.presentation.state.LoadState
@@ -40,6 +41,12 @@ class TransactionDetailsViewModel(
     val state: StateFlow<TransactionDetailsUiState> = _state.asStateFlow()
 
     init {
+        viewModelScope.launch {
+            repositoryController.resultFlow { it.accounts }.collect { result ->
+                val accounts = result.map { accounts -> accounts.sortedBy { it.name.lowercase() } }.toLoadState()
+                _state.update { it.copy(accounts = accounts) }
+            }
+        }
         if (transactionId != null) {
             viewModelScope.launch { loadExistingTransaction(transactionId) }
         }

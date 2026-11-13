@@ -4,7 +4,14 @@ import com.munzenberger.money.core.transaction.GetTransactionUseCase
 import com.munzenberger.money.core.transaction.TransactionWithEntries
 import com.munzenberger.money.data.api.Money
 import com.munzenberger.money.data.api.MoneyRepository
+import com.munzenberger.money.data.api.account.Account
+import com.munzenberger.money.data.api.account.AccountClass
+import com.munzenberger.money.data.api.account.AccountClassConstant
+import com.munzenberger.money.data.api.account.AccountClassId
 import com.munzenberger.money.data.api.account.AccountId
+import com.munzenberger.money.data.api.account.AccountType
+import com.munzenberger.money.data.api.account.AccountTypeConstant
+import com.munzenberger.money.data.api.account.AccountTypeId
 import com.munzenberger.money.data.api.category.CategoryId
 import com.munzenberger.money.data.api.transaction.CategoryEntry
 import com.munzenberger.money.data.api.transaction.Transaction
@@ -59,10 +66,21 @@ class TransactionDetailsViewModelTest {
         orderInTransaction = 0,
     )
 
+    private val checking = AccountType(
+        id = AccountTypeId(2),
+        accountClass = AccountClass(id = AccountClassId(1), value = AccountClassConstant.Asset),
+        value = AccountTypeConstant.Checking,
+    )
+
+    private val everyday = Account(name = "everyday", accountType = checking)
+    private val bills = Account(name = "Bills", accountType = checking)
+
     private fun repository(
         transaction: Flow<Transaction?> = flowOf(existingTransaction),
         categoryEntries: Flow<List<CategoryEntry>> = flowOf(listOf(groceries)),
+        accounts: Flow<List<Account>> = flowOf(emptyList()),
     ) = mockk<MoneyRepository>(relaxUnitFun = true) {
+        every { this@mockk.accounts } returns accounts
         every { transactionById(existingTransaction.id) } returns transaction
         every { categoryEntriesByTransactionId(existingTransaction.id) } returns categoryEntries
         every { transferEntriesByTransactionId(existingTransaction.id) } returns flowOf(emptyList())
@@ -141,6 +159,42 @@ class TransactionDetailsViewModelTest {
         fixture.connect(repository(categoryEntries = failingFlow()))
 
         assertEquals(LoadState.Error, viewModel.state.value.existingTransaction)
+    }
+
+    @Test
+    fun `accounts are loading until a repository is connected`() {
+        val viewModel = viewModel()
+
+        assertEquals(LoadState.Loading, viewModel.state.value.accounts)
+    }
+
+    @Test
+    fun `accounts are loaded from the connected repository sorted by name`() = runTest {
+        val viewModel = viewModel()
+
+        fixture.connect(repository(accounts = flowOf(listOf(everyday, bills))))
+
+        assertEquals(LoadState.Loaded(listOf(bills, everyday)), viewModel.state.value.accounts)
+    }
+
+    @Test
+    fun `accounts are reloaded when they change`() = runTest {
+        val accounts = MutableStateFlow(listOf(everyday))
+        val viewModel = viewModel()
+        fixture.connect(repository(accounts = accounts))
+
+        accounts.value = listOf(everyday, bills)
+
+        assertEquals(LoadState.Loaded(listOf(bills, everyday)), viewModel.state.value.accounts)
+    }
+
+    @Test
+    fun `accounts are an error when they can't be loaded`() = runTest {
+        val viewModel = viewModel()
+
+        fixture.connect(repository(accounts = failingFlow()))
+
+        assertEquals(LoadState.Error, viewModel.state.value.accounts)
     }
 
     @Test
