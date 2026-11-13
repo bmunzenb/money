@@ -4,6 +4,7 @@ import com.munzenberger.money.data.api.Money
 import com.munzenberger.money.data.api.register.RegisterEntry
 import com.munzenberger.money.data.api.transaction.TransactionStatusConstant
 import com.munzenberger.money.desktop.components.columnLayoutKey
+import com.munzenberger.money.desktop.components.dateColumn
 import com.munzenberger.money.desktop.components.saveColumnLayout
 import com.munzenberger.money.desktop.components.textColumn
 import com.munzenberger.money.desktop.getString
@@ -14,6 +15,8 @@ import com.munzenberger.money.presentation.register.decrease
 import com.munzenberger.money.presentation.register.increase
 import com.munzenberger.money.presentation.register.registerBalance
 import javafx.beans.property.ReadOnlyObjectWrapper
+import javafx.collections.FXCollections
+import javafx.collections.transformation.SortedList
 import javafx.css.PseudoClass
 import javafx.scene.control.ContextMenu
 import javafx.scene.control.MenuItem
@@ -23,11 +26,12 @@ import javafx.scene.control.TableView
 import javafx.scene.input.MouseButton
 import kotlinx.datetime.toJavaLocalDate
 import java.time.LocalDate
-import java.time.format.DateTimeFormatter
 
 /**
- * An account register's table of entries, in the register's order. The columns can't be sorted, since each entry's
- * balance is the account's balance after it in that order. Entries dated after today are dimmed.
+ * An account register's table of entries, shown in the register's order until a column is sorted. Sorting keeps
+ * applying as the entries change. Each entry's balance is still the account's balance after it in the register's
+ * order, so it doesn't follow from the rows above it when the table is sorted by another column. Entries dated after
+ * today are dimmed.
  *
  * Each entry's amount shows as a positive value in one of two columns, for amounts that lower the account's balance
  * and amounts that raise it, named for the kind of account (e.g. Payment and Deposit, or Charge and Payment). Only the
@@ -49,8 +53,8 @@ class AccountRegisterTable(
         it.number.orEmpty()
     }
 
-    private val dateColumn = column(id = "date", titleKey = "register_date_column_title") {
-        DATE_FORMATTER.format(it.date.toJavaLocalDate())
+    private val dateColumn = dateColumn<RegisterEntry>(id = "date", titleKey = "register_date_column_title") {
+        it.date
     }
 
     private val payeeColumn = column(id = "payee", titleKey = "register_payee_column_title") {
@@ -84,7 +88,14 @@ class AccountRegisterTable(
         it.balance.registerBalance(balanceOwed)
     }
 
+    // The entries in the register's order. The table shows them through a sorted list bound to its sort order, so new
+    // entries are sorted as they're shown.
+    private val registerEntries = FXCollections.observableArrayList<RegisterEntry>()
+
     init {
+        items = SortedList(registerEntries).apply {
+            comparatorProperty().bind(this@AccountRegisterTable.comparatorProperty())
+        }
         columnResizePolicy = CONSTRAINED_RESIZE_POLICY_LAST_COLUMN
         columns.setAll(
             numberColumn,
@@ -98,7 +109,6 @@ class AccountRegisterTable(
         )
         saveColumnLayout(preferences, COLUMN_LAYOUT_KEY)
         setRowFactory { AccountRegisterTableRow() }
-        showAmountColumnTitles(RegisterAmountColumns.Other)
     }
 
     /**
@@ -108,8 +118,8 @@ class AccountRegisterTable(
     fun show(entries: List<RegisterEntry>, amountColumns: RegisterAmountColumns?, balanceOwed: Boolean?) {
         val balanceOwedChanged = balanceOwed != null && balanceOwed != this.balanceOwed
         balanceOwed?.let { this.balanceOwed = it }
-        if (entries != items) {
-            items.setAll(entries)
+        if (entries != registerEntries) {
+            registerEntries.setAll(entries)
         } else if (balanceOwedChanged) {
             // The entries are the same, such as when the account's type changes, so their balances need showing again.
             refresh()
@@ -133,14 +143,13 @@ class AccountRegisterTable(
     }
 
     private fun column(id: String, titleKey: String, value: (RegisterEntry) -> String) =
-        textColumn(id, titleKey, value).apply { isSortable = false }
+        textColumn(id, titleKey, value)
 
     // A right-aligned column of amounts, with negative amounts in red. Only the balance column has any, since the
     // others show their amounts as positive values.
     private fun amountColumn(id: String, title: String = "", value: (RegisterEntry) -> Money?) =
         TableColumn<RegisterEntry, Money?>(title).apply {
             this.id = id
-            isSortable = false
             styleClass += "amount-column"
             setCellValueFactory { features -> ReadOnlyObjectWrapper(features.value?.let(value)) }
             setCellFactory { RegisterAmountCell() }
@@ -181,8 +190,6 @@ class AccountRegisterTable(
         val COLUMN_LAYOUT_KEY = columnLayoutKey("account.register.columns")
         const val DECREASE_COLUMN_ID = "decrease"
         const val INCREASE_COLUMN_ID = "increase"
-        // The locale's numeric date, with a four-digit year, e.g. 1/15/2026 in the US.
-        val DATE_FORMATTER: DateTimeFormatter = DateTimeFormatter.ofLocalizedPattern("yMd")
     }
 }
 
