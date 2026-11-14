@@ -2,6 +2,7 @@ package com.munzenberger.money.presentation.transactions
 
 import com.munzenberger.money.core.transaction.TransactionWithEntries
 import com.munzenberger.money.data.api.account.Account
+import com.munzenberger.money.data.api.payee.Payee
 import com.munzenberger.money.presentation.state.LoadState
 import kotlinx.datetime.LocalDate
 
@@ -16,6 +17,8 @@ data class TransactionDetailsUiState(
     val accounts: LoadState<List<Account>> = LoadState.Loading,
     /** The account selected from [accounts], or null if none is selected yet. */
     val account: Account? = null,
+    /** The payees the transaction can be paid to, sorted by name. */
+    val payees: LoadState<List<Payee>> = LoadState.Loading,
     /** The transaction's date: today for a new transaction, or the saved date of the one being edited. */
     val date: LocalDate,
     /**

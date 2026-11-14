@@ -58,6 +58,12 @@ class TransactionDetailsViewModel(
                 _state.update { it.copy(accounts = accounts).withInitialAccount() }
             }
         }
+        viewModelScope.launch {
+            repositoryController.resultFlow { it.payees }.collect { result ->
+                val payees = result.map { payees -> payees.sortedBy { it.name.lowercase() } }.toLoadState()
+                _state.update { it.copy(payees = payees) }
+            }
+        }
         if (transactionId != null) {
             viewModelScope.launch { loadExistingTransaction(transactionId) }
         }
