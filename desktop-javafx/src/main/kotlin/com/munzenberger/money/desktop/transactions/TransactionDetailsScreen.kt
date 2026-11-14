@@ -8,6 +8,7 @@ import com.munzenberger.money.desktop.components.LoadStateContainer
 import com.munzenberger.money.desktop.components.errorLabel
 import com.munzenberger.money.desktop.components.setError
 import com.munzenberger.money.desktop.components.setShown
+import com.munzenberger.money.desktop.components.setTextIfChanged
 import com.munzenberger.money.desktop.components.smallProgressIndicator
 import com.munzenberger.money.desktop.components.withError
 import com.munzenberger.money.desktop.components.withProgress
@@ -28,6 +29,7 @@ import javafx.geometry.Insets
 import javafx.scene.control.ComboBox
 import javafx.scene.control.DatePicker
 import javafx.scene.control.RadioButton
+import javafx.scene.control.TextField
 import javafx.scene.control.ToggleGroup
 import javafx.scene.layout.Priority
 import javafx.scene.layout.VBox
@@ -72,6 +74,11 @@ class TransactionDetailsScreen(scope: ScreenScope, route: Route.TransactionFormR
 
     private val typeRadioButtons = VBox(Spacing.CONTROL_SPACING, decreaseRadioButton, increaseRadioButton)
 
+    private val numberField = TextField().apply {
+        maxWidth = NUMBER_MAX_WIDTH
+        textProperty().addListener { _, _, number -> viewModel.onNumberChange(number) }
+    }
+
     private val accountsProgress = smallProgressIndicator()
 
     private val accountsError = errorLabel(strings.getString("accounts_load_error_message"))
@@ -82,7 +89,6 @@ class TransactionDetailsScreen(scope: ScreenScope, route: Route.TransactionFormR
             accountComboBox,
             accountComboBox.withProgress(accountsProgress).withError(accountsError),
         )
-        addField(strings.getString("transaction_date_label"), datePicker)
         // A radio button's text has no padding of its own, so its label takes none either.
         addField(
             strings.getString("transaction_type_label"),
@@ -90,6 +96,8 @@ class TransactionDetailsScreen(scope: ScreenScope, route: Route.TransactionFormR
             typeRadioButtons,
             labelPadding = Insets.EMPTY,
         )
+        addField(strings.getString("transaction_number_label"), numberField)
+        addField(strings.getString("transaction_date_label"), datePicker)
     }
 
     private val form = VBox(Spacing.CONTROL_SPACING, fields)
@@ -115,6 +123,7 @@ class TransactionDetailsScreen(scope: ScreenScope, route: Route.TransactionFormR
         renderAccount(state)
         datePicker.value = state.date.toJavaLocalDate()
         renderType(state)
+        numberField.setTextIfChanged(state.number)
     }
 
     private fun renderType(state: TransactionDetailsUiState) {
@@ -151,5 +160,6 @@ class TransactionDetailsScreen(scope: ScreenScope, route: Route.TransactionFormR
 
     private companion object {
         const val PREF_WIDTH = 500.0
+        const val NUMBER_MAX_WIDTH = 150.0
     }
 }

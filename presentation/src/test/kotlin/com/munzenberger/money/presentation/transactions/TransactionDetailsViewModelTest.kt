@@ -70,7 +70,7 @@ class TransactionDetailsViewModelTest {
     private val bills = Account(name = "Bills", accountType = checking)
 
     private val existingTransaction =
-        Transaction(accountId = bills.id, status = unreconciled, date = LocalDate(2026, 1, 20))
+        Transaction(accountId = bills.id, status = unreconciled, date = LocalDate(2026, 1, 20), number = "1042")
 
     private val groceries = CategoryEntry(
         transactionId = existingTransaction.id,
@@ -365,6 +365,51 @@ class TransactionDetailsViewModelTest {
         viewModel.onTypeChange(TransactionType.Increase)
 
         assertEquals(TransactionType.Increase, viewModel.state.value.type)
+    }
+
+    @Test
+    fun `a new transaction's number is empty`() {
+        val viewModel = viewModel()
+
+        assertEquals("", viewModel.state.value.number)
+    }
+
+    @Test
+    fun `an existing transaction's number is its saved number once it's loaded`() = runTest {
+        val viewModel = viewModel(Route.TransactionDetails(existingTransaction.id))
+
+        fixture.connect(repository())
+
+        assertEquals("1042", viewModel.state.value.number)
+    }
+
+    @Test
+    fun `an existing transaction without a number has an empty number once it's loaded`() = runTest {
+        val viewModel = viewModel(Route.TransactionDetails(existingTransaction.id))
+        viewModel.onNumberChange("7")
+
+        fixture.connect(repository(transaction = flowOf(existingTransaction.copy(number = null))))
+
+        assertEquals("", viewModel.state.value.number)
+    }
+
+    @Test
+    fun `an existing transaction that can't be loaded keeps the number`() = runTest {
+        val viewModel = viewModel(Route.TransactionDetails(existingTransaction.id))
+        viewModel.onNumberChange("7")
+
+        fixture.connect(repository(transaction = flowOf(null)))
+
+        assertEquals("7", viewModel.state.value.number)
+    }
+
+    @Test
+    fun `onNumberChange sets the number`() {
+        val viewModel = viewModel()
+
+        viewModel.onNumberChange("1043")
+
+        assertEquals("1043", viewModel.state.value.number)
     }
 
     @Test
