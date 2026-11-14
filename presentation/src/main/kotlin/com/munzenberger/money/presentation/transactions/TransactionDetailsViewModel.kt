@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.munzenberger.money.core.transaction.GetTransactionUseCase
 import com.munzenberger.money.data.api.account.Account
 import com.munzenberger.money.data.api.account.AccountId
+import com.munzenberger.money.data.api.payee.Payee
 import com.munzenberger.money.data.api.today
 import com.munzenberger.money.data.api.transaction.TransactionId
 import com.munzenberger.money.presentation.database.MoneyRepositoryController
@@ -61,7 +62,7 @@ class TransactionDetailsViewModel(
         viewModelScope.launch {
             repositoryController.resultFlow { it.payees }.collect { result ->
                 val payees = result.map { payees -> payees.sortedBy { it.name.lowercase() } }.toLoadState()
-                _state.update { it.copy(payees = payees) }
+                _state.update { it.copy(payees = payees, payee = payees.loadedOrEmpty.matching(it.payeeName)) }
             }
         }
         if (transactionId != null) {
@@ -71,17 +72,27 @@ class TransactionDetailsViewModel(
 
     /**
      * Fills in the form from the saved transaction. It's read only once, so a later change to the transaction
-     * doesn't overwrite what the user has typed.
+     * doesn't overwrite what the user has typed. The payees are needed too, to show the transaction's payee by
+     * name; without them, saving would drop the payee, so the transaction counts as not loaded.
      */
     private suspend fun loadExistingTransaction(transactionId: TransactionId) {
-        val transaction = repositoryController.flow { getTransaction(it, transactionId) }.first()
+        val transaction = repositoryController.flow { getTransaction(it, transactionId) }.first().getOrNull()
+        val payees = repositoryController.resultFlow { it.payees }.first().getOrNull()
+
+        if (transaction == null || payees == null) {
+            _state.update { it.copy(existingTransaction = LoadState.Error) }
+            return
+        }
+
+        val payee = payees.firstOrNull { it.id == transaction.transaction.payeeId }
         _state.update { state ->
-            val loaded = transaction.getOrNull()
             state.copy(
-                existingTransaction = transaction.toLoadState(),
-                date = loaded?.transaction?.date ?: state.date,
-                type = loaded?.let { TransactionType.of(it.amount) } ?: state.type,
-                number = loaded?.let { it.transaction.number.orEmpty() } ?: state.number,
+                existingTransaction = LoadState.Loaded(transaction),
+                payeeName = payee?.name.orEmpty(),
+                payee = payee,
+                date = transaction.transaction.date,
+                type = TransactionType.of(transaction.amount),
+                number = transaction.transaction.number.orEmpty(),
             ).withInitialAccount()
         }
     }
@@ -100,6 +111,14 @@ class TransactionDetailsViewModel(
         _state.update { it.copy(account = account) }
     }
 
+    fun onPayeeNameChange(payeeName: String) {
+        _state.update { it.copy(payeeName = payeeName, payee = it.payees.loadedOrEmpty.matching(payeeName)) }
+    }
+
+    fun onPayeeChange(payee: Payee) {
+        _state.update { it.copy(payeeName = payee.name, payee = payee) }
+    }
+
     fun onDateChange(date: LocalDate) {
         _state.update { it.copy(date = date) }
     }
@@ -115,4 +134,13 @@ class TransactionDetailsViewModel(
     fun onBackClick() {
         navigator.back(from = route)
     }
+}
+
+/**
+ * Typing an existing payee's name selects that payee rather than starting a new one, so the user doesn't
+ * end up with a duplicate just because they typed instead of picking from the list.
+ */
+private fun List<Payee>.matching(payeeName: String): Payee? {
+    val name = payeeName.trim()
+    return if (name.isEmpty()) null else firstOrNull { it.name.equals(name, ignoreCase = true) }
 }

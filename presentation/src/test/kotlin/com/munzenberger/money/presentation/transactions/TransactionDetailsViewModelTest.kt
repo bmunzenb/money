@@ -74,7 +74,13 @@ class TransactionDetailsViewModelTest {
     private val bakery = Payee(name = "Bakery")
 
     private val existingTransaction =
-        Transaction(accountId = bills.id, status = unreconciled, date = LocalDate(2026, 1, 20), number = "1042")
+        Transaction(
+            accountId = bills.id,
+            payeeId = grocer.id,
+            status = unreconciled,
+            date = LocalDate(2026, 1, 20),
+            number = "1042",
+        )
 
     private val groceries = CategoryEntry(
         transactionId = existingTransaction.id,
@@ -235,12 +241,153 @@ class TransactionDetailsViewModelTest {
     }
 
     @Test
-    fun `payees are an error when they can't be loaded`() = runTest {
+    fun `payees are an error when they can't be loaded, and a typed name is still remembered`() = runTest {
         val viewModel = viewModel()
+        fixture.connect(repository(payees = failingFlow()))
+
+        viewModel.onPayeeNameChange("New Payee")
+
+        assertEquals(LoadState.Error, viewModel.state.value.payees)
+        assertEquals("New Payee", viewModel.state.value.payeeName)
+        assertNull(viewModel.state.value.payee)
+    }
+
+    @Test
+    fun `a new transaction has no payee`() = runTest {
+        val viewModel = viewModel()
+
+        fixture.connect(repository(payees = flowOf(listOf(grocer, bakery))))
+
+        assertEquals("", viewModel.state.value.payeeName)
+        assertNull(viewModel.state.value.payee)
+    }
+
+    @Test
+    fun `an existing transaction's payee is filled in once it's loaded`() = runTest {
+        val viewModel = viewModel(Route.TransactionDetails(existingTransaction.id))
+
+        fixture.connect(repository(payees = flowOf(listOf(grocer, bakery))))
+
+        assertEquals("grocer", viewModel.state.value.payeeName)
+        assertEquals(grocer, viewModel.state.value.payee)
+    }
+
+    @Test
+    fun `an existing transaction is loading until the payees are loaded`() = runTest {
+        val payees = MutableSharedFlow<List<Payee>>()
+        val viewModel = viewModel(Route.TransactionDetails(existingTransaction.id))
+        fixture.connect(repository(payees = payees))
+
+        assertEquals(LoadState.Loading, viewModel.state.value.existingTransaction)
+
+        payees.emit(listOf(grocer, bakery))
+
+        assertTrue(viewModel.state.value.isFormReady)
+        assertEquals(grocer, viewModel.state.value.payee)
+    }
+
+    @Test
+    fun `an existing transaction is an error when the payees can't be loaded`() = runTest {
+        val viewModel = viewModel(Route.TransactionDetails(existingTransaction.id))
 
         fixture.connect(repository(payees = failingFlow()))
 
-        assertEquals(LoadState.Error, viewModel.state.value.payees)
+        assertEquals(LoadState.Error, viewModel.state.value.existingTransaction)
+    }
+
+    @Test
+    fun `an existing transaction without a payee has an empty payee name`() = runTest {
+        val viewModel = viewModel(Route.TransactionDetails(existingTransaction.id))
+
+        fixture.connect(
+            repository(
+                transaction = flowOf(existingTransaction.copy(payeeId = null)),
+                payees = flowOf(listOf(grocer, bakery)),
+            )
+        )
+
+        assertEquals("", viewModel.state.value.payeeName)
+        assertNull(viewModel.state.value.payee)
+    }
+
+    @Test
+    fun `an existing transaction that can't be loaded keeps the payee name`() = runTest {
+        val viewModel = viewModel(Route.TransactionDetails(existingTransaction.id))
+        viewModel.onPayeeNameChange("New Payee")
+
+        fixture.connect(repository(transaction = flowOf(null), payees = flowOf(listOf(grocer, bakery))))
+
+        assertEquals("New Payee", viewModel.state.value.payeeName)
+        assertNull(viewModel.state.value.payee)
+    }
+
+    @Test
+    fun `onPayeeChange selects the existing payee`() = runTest {
+        val viewModel = viewModel()
+        fixture.connect(repository(payees = flowOf(listOf(grocer, bakery))))
+
+        viewModel.onPayeeChange(bakery)
+
+        assertEquals("Bakery", viewModel.state.value.payeeName)
+        assertEquals(bakery, viewModel.state.value.payee)
+    }
+
+    @Test
+    fun `onPayeeNameChange with a new name remembers the name without a payee`() = runTest {
+        val viewModel = viewModel()
+        fixture.connect(repository(payees = flowOf(listOf(grocer))))
+
+        viewModel.onPayeeNameChange("New Payee")
+
+        assertEquals("New Payee", viewModel.state.value.payeeName)
+        assertNull(viewModel.state.value.payee)
+    }
+
+    @Test
+    fun `onPayeeNameChange with an existing payee's name selects that payee`() = runTest {
+        val viewModel = viewModel()
+        fixture.connect(repository(payees = flowOf(listOf(grocer))))
+
+        viewModel.onPayeeNameChange(" Grocer ")
+
+        assertEquals(" Grocer ", viewModel.state.value.payeeName)
+        assertEquals(grocer, viewModel.state.value.payee)
+    }
+
+    @Test
+    fun `editing a selected payee's name clears the selection`() = runTest {
+        val viewModel = viewModel()
+        fixture.connect(repository(payees = flowOf(listOf(grocer))))
+        viewModel.onPayeeChange(grocer)
+
+        viewModel.onPayeeNameChange("grocer outlet")
+
+        assertNull(viewModel.state.value.payee)
+    }
+
+    @Test
+    fun `a typed payee name selects its payee once the payees load`() = runTest {
+        val payees = MutableSharedFlow<List<Payee>>()
+        val viewModel = viewModel()
+        fixture.connect(repository(payees = payees))
+        viewModel.onPayeeNameChange("bakery")
+
+        payees.emit(listOf(grocer, bakery))
+
+        assertEquals(bakery, viewModel.state.value.payee)
+    }
+
+    @Test
+    fun `clearing the payee name keeps it cleared when the payees reload`() = runTest {
+        val payees = MutableStateFlow(listOf(grocer, bakery))
+        val viewModel = viewModel(Route.TransactionDetails(existingTransaction.id))
+        fixture.connect(repository(payees = payees))
+
+        viewModel.onPayeeNameChange("")
+        payees.value = listOf(bakery, grocer)
+
+        assertEquals("", viewModel.state.value.payeeName)
+        assertNull(viewModel.state.value.payee)
     }
 
     @Test
