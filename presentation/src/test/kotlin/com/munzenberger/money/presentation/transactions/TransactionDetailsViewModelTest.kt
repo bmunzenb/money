@@ -315,6 +315,59 @@ class TransactionDetailsViewModelTest {
     }
 
     @Test
+    fun `a new transaction is a decrease`() {
+        val viewModel = viewModel()
+
+        assertEquals(TransactionType.Decrease, viewModel.state.value.type)
+    }
+
+    @Test
+    fun `an existing transaction that lowers the balance is a decrease once it's loaded`() = runTest {
+        val viewModel = viewModel(Route.TransactionDetails(existingTransaction.id))
+        viewModel.onTypeChange(TransactionType.Increase)
+
+        fixture.connect(repository())
+
+        assertEquals(TransactionType.Decrease, viewModel.state.value.type)
+    }
+
+    @Test
+    fun `an existing transaction that raises the balance is an increase once it's loaded`() = runTest {
+        val viewModel = viewModel(Route.TransactionDetails(existingTransaction.id))
+
+        fixture.connect(repository(categoryEntries = flowOf(listOf(groceries, groceries.copy(amount = Money(100))))))
+
+        assertEquals(TransactionType.Increase, viewModel.state.value.type)
+    }
+
+    @Test
+    fun `an existing transaction of zero is an increase once it's loaded`() = runTest {
+        val viewModel = viewModel(Route.TransactionDetails(existingTransaction.id))
+
+        fixture.connect(repository(categoryEntries = flowOf(listOf(groceries.copy(amount = Money(0))))))
+
+        assertEquals(TransactionType.Increase, viewModel.state.value.type)
+    }
+
+    @Test
+    fun `an existing transaction that can't be loaded keeps the type`() = runTest {
+        val viewModel = viewModel(Route.TransactionDetails(existingTransaction.id))
+
+        fixture.connect(repository(transaction = flowOf(null)))
+
+        assertEquals(TransactionType.Decrease, viewModel.state.value.type)
+    }
+
+    @Test
+    fun `onTypeChange sets the type`() {
+        val viewModel = viewModel()
+
+        viewModel.onTypeChange(TransactionType.Increase)
+
+        assertEquals(TransactionType.Increase, viewModel.state.value.type)
+    }
+
+    @Test
     fun `onBackClick pops the transaction's route from the back stack`() {
         val route = Route.TransactionDetails(existingTransaction.id)
         navigator.navigate { clear(); add(Route.AccountRegister(existingTransaction.accountId)); add(route) }

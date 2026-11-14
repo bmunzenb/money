@@ -70,9 +70,11 @@ class TransactionDetailsViewModel(
     private suspend fun loadExistingTransaction(transactionId: TransactionId) {
         val transaction = repositoryController.flow { getTransaction(it, transactionId) }.first()
         _state.update { state ->
+            val loaded = transaction.getOrNull()
             state.copy(
                 existingTransaction = transaction.toLoadState(),
-                date = transaction.getOrNull()?.transaction?.date ?: state.date,
+                date = loaded?.transaction?.date ?: state.date,
+                type = loaded?.let { TransactionType.of(it.amount) } ?: state.type,
             ).withInitialAccount()
         }
     }
@@ -93,6 +95,10 @@ class TransactionDetailsViewModel(
 
     fun onDateChange(date: LocalDate) {
         _state.update { it.copy(date = date) }
+    }
+
+    fun onTypeChange(type: TransactionType) {
+        _state.update { it.copy(type = type) }
     }
 
     fun onBackClick() {

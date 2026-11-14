@@ -128,18 +128,8 @@ class AccountRegisterTable(
     }
 
     private fun showAmountColumnTitles(amountColumns: RegisterAmountColumns) {
-        val (decreaseKey, increaseKey) = when (amountColumns) {
-            RegisterAmountColumns.Banking ->
-                "register_banking_decrease_column_title" to "register_banking_increase_column_title"
-            RegisterAmountColumns.CreditCard ->
-                "register_credit_card_decrease_column_title" to "register_credit_card_increase_column_title"
-            RegisterAmountColumns.Loan ->
-                "register_loan_decrease_column_title" to "register_loan_increase_column_title"
-            RegisterAmountColumns.Other ->
-                "register_other_decrease_column_title" to "register_other_increase_column_title"
-        }
-        decreaseColumn.text = strings.getString(decreaseKey)
-        increaseColumn.text = strings.getString(increaseKey)
+        decreaseColumn.text = amountColumns.decreaseTitle
+        increaseColumn.text = amountColumns.increaseTitle
     }
 
     private fun column(id: String, titleKey: String, value: (RegisterEntry) -> String) =
