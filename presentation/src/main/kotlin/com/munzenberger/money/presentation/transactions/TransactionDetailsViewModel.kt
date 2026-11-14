@@ -75,6 +75,7 @@ class TransactionDetailsViewModel(
                 existingTransaction = transaction.toLoadState(),
                 date = loaded?.transaction?.date ?: state.date,
                 type = loaded?.let { TransactionType.of(it.amount) } ?: state.type,
+                number = loaded?.let { it.transaction.number.orEmpty() } ?: state.number,
             ).withInitialAccount()
         }
     }
@@ -99,6 +100,10 @@ class TransactionDetailsViewModel(
 
     fun onTypeChange(type: TransactionType) {
         _state.update { it.copy(type = type) }
+    }
+
+    fun onNumberChange(number: String) {
+        _state.update { it.copy(number = number) }
     }
 
     fun onBackClick() {

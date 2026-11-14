@@ -23,6 +23,11 @@ data class TransactionDetailsUiState(
      * the one being edited's total once it's loaded.
      */
     val type: TransactionType = TransactionType.Decrease,
+    /**
+     * The transaction's number, such as a check number: empty for a new transaction, or the saved number of the one
+     * being edited once it's loaded.
+     */
+    val number: String = "",
 ) {
     val isEditing: Boolean
         get() = existingTransaction != null
