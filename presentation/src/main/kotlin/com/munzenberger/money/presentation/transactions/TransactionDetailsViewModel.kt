@@ -32,11 +32,14 @@ import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.datetime.LocalDate
+import kotlin.uuid.Uuid
 
 /**
  * The transaction form, shown at [route]. For [Route.TransactionDetails], it edits that transaction, starting from its
  * saved values; for [Route.NewTransaction], it adds a new transaction.
  */
+// One handler per field, so the function count grows with the form.
+@Suppress("TooManyFunctions")
 class TransactionDetailsViewModel(
     // This screen's route, so going back only pops this screen, even if a save finishes after the user has left it.
     private val route: Route.TransactionFormRoute,
@@ -196,9 +199,69 @@ class TransactionDetailsViewModel(
         _state.update { it.copy(number = number) }
     }
 
+    /**
+     * Selects the category or transfer account shown as [categoryText] for the entry with [key], ignoring case and
+     * surrounding whitespace. Text that doesn't match one of the categories leaves the entry without a category.
+     */
+    fun onEntryCategoryChange(key: Uuid, categoryText: String) {
+        _state.update { state ->
+            val category = state.categories.loadedOrEmpty.matching(categoryText)
+            state.withEntry(key) { it.copy(category = category) }
+        }
+    }
+
+    fun onEntryAmountChange(key: Uuid, amountText: String) {
+        _state.update { state -> state.withEntry(key) { it.copy(amountText = amountText) } }
+    }
+
+    fun onEntryMemoChange(key: Uuid, memo: String) {
+        _state.update { state -> state.withEntry(key) { it.copy(memo = memo) } }
+    }
+
+    /** Adds an empty row after the last one. */
+    fun onAddEntryClick() {
+        _state.update { state -> state.withEntries { it + TransactionEntryInput() } }
+    }
+
+    /**
+     * Removes the row with [key]. Removing the only row leaves an empty one in its place, so there's always a row to
+     * fill in.
+     */
+    fun onRemoveEntryClick(key: Uuid) {
+        _state.update { state ->
+            state.withEntries { entries ->
+                entries.filterNot { it.key == key }.ifEmpty { listOf(TransactionEntryInput()) }
+            }
+        }
+    }
+
+    /** The category shown as [categoryText], or null if there isn't one. */
+    private fun List<TransactionCategory>.matching(categoryText: String): TransactionCategory? {
+        val text = categoryText.trim()
+        if (text.isEmpty()) return null
+        return firstOrNull { categoryFormatter.format(it).equals(text, ignoreCase = true) }
+    }
+
     fun onBackClick() {
         navigator.back(from = route)
     }
+}
+
+/**
+ * This state with the entry with [key] changed by [transform]. Unchanged if the entries aren't loaded or none has [key],
+ * such as a row the user removed.
+ */
+private fun TransactionDetailsUiState.withEntry(
+    key: Uuid,
+    transform: (TransactionEntryInput) -> TransactionEntryInput,
+): TransactionDetailsUiState = withEntries { entries -> entries.map { if (it.key == key) transform(it) else it } }
+
+/** This state with its rows changed by [transform]. Unchanged if the entries aren't loaded. */
+private fun TransactionDetailsUiState.withEntries(
+    transform: (List<TransactionEntryInput>) -> List<TransactionEntryInput>,
+): TransactionDetailsUiState {
+    val entries = entries.loadedOrNull ?: return this
+    return copy(entries = LoadState.Loaded(transform(entries)))
 }
 
 /**
