@@ -2,6 +2,8 @@ package com.munzenberger.money.presentation.transactions
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.munzenberger.money.core.category.CategoryWithParent
+import com.munzenberger.money.core.category.GetCategoriesUseCase
 import com.munzenberger.money.core.transaction.GetTransactionUseCase
 import com.munzenberger.money.data.api.account.Account
 import com.munzenberger.money.data.api.account.AccountId
@@ -18,9 +20,12 @@ import com.munzenberger.money.presentation.state.loadedOrEmpty
 import com.munzenberger.money.presentation.state.loadedOrNull
 import com.munzenberger.money.presentation.state.toLoadState
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.datetime.LocalDate
@@ -35,6 +40,7 @@ class TransactionDetailsViewModel(
     private val repositoryController: MoneyRepositoryController,
     private val navigator: Navigator,
     private val getTransaction: GetTransactionUseCase,
+    private val getCategories: GetCategoriesUseCase,
     // The date a new transaction starts on.
     today: () -> LocalDate = { LocalDate.today() },
 ) : ViewModel() {
@@ -52,9 +58,14 @@ class TransactionDetailsViewModel(
     )
     val state: StateFlow<TransactionDetailsUiState> = _state.asStateFlow()
 
+    // Read once and shared, since they're both the account options and transfer categories. The latest is replayed so
+    // each collector gets it however they're scheduled.
+    private val accounts = repositoryController.resultFlow { it.accounts }
+        .shareIn(viewModelScope, SharingStarted.Eagerly, replay = 1)
+
     init {
         viewModelScope.launch {
-            repositoryController.resultFlow { it.accounts }.collect { result ->
+            accounts.collect { result ->
                 val accounts = result.map { accounts -> accounts.sortedBy { it.name.lowercase() } }.toLoadState()
                 _state.update { it.copy(accounts = accounts).withInitialAccount() }
             }
@@ -63,6 +74,15 @@ class TransactionDetailsViewModel(
             repositoryController.resultFlow { it.payees }.collect { result ->
                 val payees = result.map { payees -> payees.sortedBy { it.name.lowercase() } }.toLoadState()
                 _state.update { it.copy(payees = payees, payee = payees.loadedOrEmpty.matching(it.payeeName)) }
+            }
+        }
+        viewModelScope.launch {
+            combine(
+                repositoryController.flow { getCategories(it) },
+                accounts,
+                ::transactionCategories,
+            ).collect { categories ->
+                _state.update { it.copy(categories = categories) }
             }
         }
         if (transactionId != null) {
@@ -105,6 +125,31 @@ class TransactionDetailsViewModel(
         if (account != null) return this
         val initialAccountId = existingTransaction?.loadedOrNull?.transaction?.accountId ?: newTransactionAccountId
         return copy(account = accounts.loadedOrEmpty.find { it.id == initialAccountId })
+    }
+
+    /**
+     * The categories, each after its parent, followed by the accounts to transfer to or from, each sorted by name. If
+     * either couldn't be read, none are shown.
+     */
+    private fun transactionCategories(
+        categories: Result<List<CategoryWithParent>>,
+        accounts: Result<List<Account>>,
+    ): LoadState<List<TransactionCategory>> {
+        val categories = categories.getOrNull()
+        val accounts = accounts.getOrNull()
+        if (categories == null || accounts == null) return LoadState.Error
+
+        val sortedCategories = categories.sortedWith(
+            compareBy(
+                { (it.parent ?: it.category).name.lowercase() },
+                { it.parent != null },
+                { it.category.name.lowercase() },
+            )
+        )
+        return LoadState.Loaded(
+            sortedCategories.map { TransactionCategory.Category(it) } +
+                accounts.sortedBy { it.name.lowercase() }.map { TransactionCategory.Transfer(it) }
+        )
     }
 
     fun onAccountChange(account: Account) {

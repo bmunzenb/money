@@ -38,7 +38,10 @@ data class TransactionDetailsUiState(
      * being edited once it's loaded.
      */
     val number: String = "",
-    /** The categories and transfer accounts the transaction's entries can be assigned to. */
+    /**
+     * The categories and transfer accounts the transaction's entries can be assigned to: the categories, each after
+     * its parent, then the accounts, each sorted by name.
+     */
     val categories: LoadState<List<TransactionCategory>> = LoadState.Loading,
 ) {
     val isEditing: Boolean
