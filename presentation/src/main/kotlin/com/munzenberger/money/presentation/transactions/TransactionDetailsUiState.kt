@@ -38,6 +38,8 @@ data class TransactionDetailsUiState(
      * being edited once it's loaded.
      */
     val number: String = "",
+    /** The categories and transfer accounts the transaction's entries can be assigned to. */
+    val categories: LoadState<List<TransactionCategory>> = LoadState.Loading,
 ) {
     val isEditing: Boolean
         get() = existingTransaction != null
