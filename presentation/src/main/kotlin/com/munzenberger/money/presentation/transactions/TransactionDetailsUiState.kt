@@ -38,6 +38,16 @@ data class TransactionDetailsUiState(
      * being edited once it's loaded.
      */
     val number: String = "",
+    /**
+     * The categories and transfer accounts the transaction's entries can be assigned to: the categories, each after
+     * its parent, then the accounts, each sorted by name.
+     */
+    val categories: LoadState<List<TransactionCategory>> = LoadState.Loading,
+    /**
+     * The rows of the transaction's split, as the user has entered them, in order. Loading while they're being filled
+     * in from the transaction being edited.
+     */
+    val entries: LoadState<List<TransactionEntryInput>> = LoadState.Loading,
 ) {
     val isEditing: Boolean
         get() = existingTransaction != null

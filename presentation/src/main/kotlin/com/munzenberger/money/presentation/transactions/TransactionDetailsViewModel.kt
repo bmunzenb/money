@@ -2,12 +2,17 @@ package com.munzenberger.money.presentation.transactions
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.munzenberger.money.core.category.CategoryWithParent
+import com.munzenberger.money.core.category.GetCategoriesUseCase
 import com.munzenberger.money.core.transaction.GetTransactionUseCase
 import com.munzenberger.money.data.api.account.Account
 import com.munzenberger.money.data.api.account.AccountId
 import com.munzenberger.money.data.api.payee.Payee
 import com.munzenberger.money.data.api.today
+import com.munzenberger.money.data.api.transaction.CategoryEntry
+import com.munzenberger.money.data.api.transaction.TransactionEntry
 import com.munzenberger.money.data.api.transaction.TransactionId
+import com.munzenberger.money.data.api.transaction.TransferEntry
 import com.munzenberger.money.presentation.database.MoneyRepositoryController
 import com.munzenberger.money.presentation.database.flow
 import com.munzenberger.money.presentation.database.resultFlow
@@ -18,9 +23,12 @@ import com.munzenberger.money.presentation.state.loadedOrEmpty
 import com.munzenberger.money.presentation.state.loadedOrNull
 import com.munzenberger.money.presentation.state.toLoadState
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.datetime.LocalDate
@@ -35,6 +43,7 @@ class TransactionDetailsViewModel(
     private val repositoryController: MoneyRepositoryController,
     private val navigator: Navigator,
     private val getTransaction: GetTransactionUseCase,
+    private val getCategories: GetCategoriesUseCase,
     // The date a new transaction starts on.
     today: () -> LocalDate = { LocalDate.today() },
 ) : ViewModel() {
@@ -47,14 +56,26 @@ class TransactionDetailsViewModel(
     private val _state = MutableStateFlow(
         TransactionDetailsUiState(
             existingTransaction = transactionId?.let { LoadState.Loading },
+            // A new transaction starts with one empty row to fill in.
+            entries = transactionId?.let { LoadState.Loading } ?: LoadState.Loaded(listOf(TransactionEntryInput())),
             date = today(),
         )
     )
     val state: StateFlow<TransactionDetailsUiState> = _state.asStateFlow()
 
+    // Read once and shared, since they're the account options, the transfer categories, and the existing transaction's
+    // transfer accounts. The latest is replayed so each collector gets it however they're scheduled.
+    private val accounts = repositoryController.resultFlow { it.accounts }
+        .shareIn(viewModelScope, SharingStarted.Eagerly, replay = 1)
+
+    // Read once and shared like the accounts, since they're both the category options and the existing transaction's
+    // categories.
+    private val categories = repositoryController.flow { getCategories(it) }
+        .shareIn(viewModelScope, SharingStarted.Eagerly, replay = 1)
+
     init {
         viewModelScope.launch {
-            repositoryController.resultFlow { it.accounts }.collect { result ->
+            accounts.collect { result ->
                 val accounts = result.map { accounts -> accounts.sortedBy { it.name.lowercase() } }.toLoadState()
                 _state.update { it.copy(accounts = accounts).withInitialAccount() }
             }
@@ -65,6 +86,15 @@ class TransactionDetailsViewModel(
                 _state.update { it.copy(payees = payees, payee = payees.loadedOrEmpty.matching(it.payeeName)) }
             }
         }
+        viewModelScope.launch {
+            combine(
+                categories,
+                accounts,
+                ::transactionCategories,
+            ).collect { categories ->
+                _state.update { it.copy(categories = categories) }
+            }
+        }
         if (transactionId != null) {
             viewModelScope.launch { loadExistingTransaction(transactionId) }
         }
@@ -73,28 +103,36 @@ class TransactionDetailsViewModel(
     /**
      * Fills in the form from the saved transaction. It's read only once, so a later change to the transaction
      * doesn't overwrite what the user has typed. The payees are needed too, to show the transaction's payee by
-     * name; without them, saving would drop the payee, so the transaction counts as not loaded.
+     * name; without them, saving would drop the payee, so the transaction counts as not loaded. The same goes for the
+     * categories and accounts, to fill in each entry's row.
      */
     private suspend fun loadExistingTransaction(transactionId: TransactionId) {
         val transaction = repositoryController.flow { getTransaction(it, transactionId) }.first().getOrNull()
         val payees = repositoryController.resultFlow { it.payees }.first().getOrNull()
+        if (transaction == null || payees == null) return onExistingTransactionLoadFailed()
 
-        if (transaction == null || payees == null) {
-            _state.update { it.copy(existingTransaction = LoadState.Error) }
-            return
-        }
+        val categories = categories.first().getOrNull()
+        val accounts = accounts.first().getOrNull()
+        if (categories == null || accounts == null) return onExistingTransactionLoadFailed()
 
         val payee = payees.firstOrNull { it.id == transaction.transaction.payeeId }
+        val type = TransactionType.of(transaction.amount)
+        val entries = transaction.entries.map { it.toInput(type, categories, accounts) }
         _state.update { state ->
             state.copy(
                 existingTransaction = LoadState.Loaded(transaction),
                 payeeName = payee?.name.orEmpty(),
                 payee = payee,
                 date = transaction.transaction.date,
-                type = TransactionType.of(transaction.amount),
+                type = type,
                 number = transaction.transaction.number.orEmpty(),
+                entries = LoadState.Loaded(entries),
             ).withInitialAccount()
         }
+    }
+
+    private fun onExistingTransactionLoadFailed() {
+        _state.update { it.copy(existingTransaction = LoadState.Error, entries = LoadState.Error) }
     }
 
     /**
@@ -105,6 +143,31 @@ class TransactionDetailsViewModel(
         if (account != null) return this
         val initialAccountId = existingTransaction?.loadedOrNull?.transaction?.accountId ?: newTransactionAccountId
         return copy(account = accounts.loadedOrEmpty.find { it.id == initialAccountId })
+    }
+
+    /**
+     * The categories, each after its parent, followed by the accounts to transfer to or from, each sorted by name. If
+     * either couldn't be read, none are shown.
+     */
+    private fun transactionCategories(
+        categories: Result<List<CategoryWithParent>>,
+        accounts: Result<List<Account>>,
+    ): LoadState<List<TransactionCategory>> {
+        val categories = categories.getOrNull()
+        val accounts = accounts.getOrNull()
+        if (categories == null || accounts == null) return LoadState.Error
+
+        val sortedCategories = categories.sortedWith(
+            compareBy(
+                { (it.parent ?: it.category).name.lowercase() },
+                { it.parent != null },
+                { it.category.name.lowercase() },
+            )
+        )
+        return LoadState.Loaded(
+            sortedCategories.map { TransactionCategory.Category(it) } +
+                accounts.sortedBy { it.name.lowercase() }.map { TransactionCategory.Transfer(it) }
+        )
     }
 
     fun onAccountChange(account: Account) {
@@ -143,4 +206,30 @@ class TransactionDetailsViewModel(
 private fun List<Payee>.matching(payeeName: String): Payee? {
     val name = payeeName.trim()
     return if (name.isEmpty()) null else firstOrNull { it.name.equals(name, ignoreCase = true) }
+}
+
+/**
+ * The row for this saved entry, with its amount as entered for a transaction of [type], so it saves back unchanged. An
+ * entry whose category or account isn't among [categories] or [accounts] has no category, so the user picks one.
+ */
+private fun TransactionEntry.toInput(
+    type: TransactionType,
+    categories: List<CategoryWithParent>,
+    accounts: List<Account>,
+): TransactionEntryInput {
+    val amountText = (if (type == TransactionType.Decrease) -amount else amount).toString(asCurrency = false)
+    return when (this) {
+        is CategoryEntry -> TransactionEntryInput(
+            category = categories.find { it.category.id == categoryId }?.let { TransactionCategory.Category(it) },
+            amountText = amountText,
+            memo = memo.orEmpty(),
+        )
+        is TransferEntry -> TransactionEntryInput(
+            category = accounts.find { it.id == accountId }?.let { TransactionCategory.Transfer(it) },
+            amountText = amountText,
+            memo = memo.orEmpty(),
+            transferNumber = number.orEmpty(),
+            transferStatus = status,
+        )
+    }
 }
