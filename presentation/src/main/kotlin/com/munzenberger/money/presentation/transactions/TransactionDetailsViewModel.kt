@@ -44,6 +44,8 @@ class TransactionDetailsViewModel(
     private val navigator: Navigator,
     private val getTransaction: GetTransactionUseCase,
     private val getCategories: GetCategoriesUseCase,
+    // Formats each category as the UI shows it, to find the one the user picked from its text.
+    private val categoryFormatter: TransactionCategoryFormatter,
     // The date a new transaction starts on.
     today: () -> LocalDate = { LocalDate.today() },
 ) : ViewModel() {

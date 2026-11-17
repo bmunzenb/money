@@ -64,6 +64,14 @@ class TransactionDetailsViewModelTest {
     private val getTransaction = GetTransactionUseCase()
     private val getCategories = GetCategoriesUseCase()
 
+    // Formats a category by its name, or a transfer by its account's.
+    private val categoryFormatter = TransactionCategoryFormatter { category ->
+        when (category) {
+            is TransactionCategory.Category -> category.category.category.name
+            is TransactionCategory.Transfer -> category.account.name
+        }
+    }
+
     private val today = LocalDate(2026, 5, 15)
 
     private fun viewModel(route: Route.TransactionFormRoute = Route.NewTransaction()) =
@@ -73,6 +81,7 @@ class TransactionDetailsViewModelTest {
             navigator,
             getTransaction,
             getCategories,
+            categoryFormatter,
             today = { today },
         )
 

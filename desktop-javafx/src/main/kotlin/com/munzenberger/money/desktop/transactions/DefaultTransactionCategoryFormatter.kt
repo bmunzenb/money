@@ -3,6 +3,7 @@ package com.munzenberger.money.desktop.transactions
 import com.munzenberger.money.desktop.getString
 import com.munzenberger.money.desktop.strings
 import com.munzenberger.money.presentation.transactions.TransactionCategory
+import com.munzenberger.money.presentation.transactions.TransactionCategoryFormatter
 
 /** Formats a category or transfer the same way the account register shows an entry's. */
 class DefaultTransactionCategoryFormatter : TransactionCategoryFormatter {
