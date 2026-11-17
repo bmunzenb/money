@@ -12,12 +12,13 @@ private val logger = Logger.getLogger("com.munzenberger.money.core.ResultFlow")
 /**
  * Returns this flow, read from the money repository, with each value wrapped in a [Result].
  *
- * An exception thrown by this flow is logged and emitted as a [Result.failure], which ends the flow.
+ * An exception thrown by this flow is logged with [message]'s message and emitted as a [Result.failure], which ends
+ * the flow.
  */
-fun <T> Flow<T>.asResult(): Flow<Result<T>> =
+fun <T> Flow<T>.asResult(message: () -> String = { "Failed to read from the money repository" }): Flow<Result<T>> =
     map { value -> Result.success(value) }
         .catch { e ->
-            logger.log(Level.WARNING, "Failed to read from the money repository", e)
+            logger.log(Level.WARNING, message(), e)
             emit(Result.failure(e))
         }
 
