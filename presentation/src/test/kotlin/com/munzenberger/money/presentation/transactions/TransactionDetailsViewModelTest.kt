@@ -24,10 +24,12 @@ import com.munzenberger.money.data.api.transaction.Transaction
 import com.munzenberger.money.data.api.transaction.TransactionStatus
 import com.munzenberger.money.data.api.transaction.TransactionStatusConstant
 import com.munzenberger.money.data.api.transaction.TransactionStatusId
+import com.munzenberger.money.data.api.transaction.TransferEntry
 import com.munzenberger.money.presentation.MoneyRepositoryControllerFixture
 import com.munzenberger.money.presentation.navigation.Navigator
 import com.munzenberger.money.presentation.navigation.Route
 import com.munzenberger.money.presentation.state.LoadState
+import com.munzenberger.money.presentation.state.loadedOrNull
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
@@ -75,6 +77,7 @@ class TransactionDetailsViewModelTest {
         )
 
     private val unreconciled = TransactionStatus(TransactionStatusId(1), TransactionStatusConstant.Unreconciled)
+    private val reconciled = TransactionStatus(TransactionStatusId(3), TransactionStatusConstant.Reconciled)
 
     private val checking = AccountType(
         id = AccountTypeId(2),
@@ -114,6 +117,7 @@ class TransactionDetailsViewModelTest {
     private fun repository(
         transaction: Flow<Transaction?> = flowOf(existingTransaction),
         categoryEntries: Flow<List<CategoryEntry>> = flowOf(listOf(groceries)),
+        transferEntries: Flow<List<TransferEntry>> = flowOf(emptyList()),
         accounts: Flow<List<Account>> = flowOf(emptyList()),
         categories: Flow<List<Category>> = flowOf(emptyList()),
         payees: Flow<List<Payee>> = flowOf(emptyList()),
@@ -123,7 +127,7 @@ class TransactionDetailsViewModelTest {
         every { this@mockk.payees } returns payees
         every { transactionById(existingTransaction.id) } returns transaction
         every { categoryEntriesByTransactionId(existingTransaction.id) } returns categoryEntries
-        every { transferEntriesByTransactionId(existingTransaction.id) } returns flowOf(emptyList())
+        every { transferEntriesByTransactionId(existingTransaction.id) } returns transferEntries
     }
 
     private fun <T> failingFlow(): Flow<T> = flow { error("query failed") }
@@ -199,6 +203,113 @@ class TransactionDetailsViewModelTest {
         fixture.connect(repository(categoryEntries = failingFlow()))
 
         assertEquals(LoadState.Error, viewModel.state.value.existingTransaction)
+    }
+
+    @Test
+    fun `a new transaction starts with one empty entry`() {
+        val viewModel = viewModel()
+
+        val entry = viewModel.state.value.entries.loadedOrNull!!.single()
+        assertEquals(TransactionEntryInput(key = entry.key), entry)
+    }
+
+    @Test
+    fun `an existing transaction's entries are loading until a repository is connected`() {
+        val viewModel = viewModel(Route.TransactionDetails(existingTransaction.id))
+
+        assertEquals(LoadState.Loading, viewModel.state.value.entries)
+    }
+
+    @Test
+    fun `an existing transaction's entries are filled in from its saved entries, in order`() = runTest {
+        val transfer = TransferEntry(
+            transactionId = existingTransaction.id,
+            accountId = everyday.id,
+            amount = Money(-1000),
+            number = "7",
+            memo = "Move",
+            status = reconciled,
+            orderInTransaction = 0,
+        )
+        val lunch = groceries.copy(categoryId = food.id, memo = "Lunch", orderInTransaction = 1)
+        val viewModel = viewModel(Route.TransactionDetails(existingTransaction.id))
+
+        fixture.connect(
+            repository(
+                categoryEntries = flowOf(listOf(lunch)),
+                transferEntries = flowOf(listOf(transfer)),
+                accounts = flowOf(listOf(everyday, bills)),
+                categories = flowOf(listOf(food)),
+            )
+        )
+
+        val entries = viewModel.state.value.entries.loadedOrNull!!
+        assertEquals(
+            listOf(
+                TransactionEntryInput(
+                    key = entries[0].key,
+                    category = TransactionCategory.Transfer(everyday),
+                    amountText = Money(1000).toString(asCurrency = false),
+                    memo = "Move",
+                    transferNumber = "7",
+                    transferStatus = reconciled,
+                ),
+                TransactionEntryInput(
+                    key = entries[1].key,
+                    category = TransactionCategory.Category(CategoryWithParent(food, parent = null)),
+                    amountText = Money(40).toString(asCurrency = false),
+                    memo = "Lunch",
+                ),
+            ),
+            entries,
+        )
+    }
+
+    @Test
+    fun `an existing transaction's entry against its type has a negative amount`() = runTest {
+        val viewModel = viewModel(Route.TransactionDetails(existingTransaction.id))
+
+        fixture.connect(
+            repository(
+                categoryEntries = flowOf(
+                    listOf(groceries, groceries.copy(amount = Money(10), orderInTransaction = 1)),
+                ),
+            )
+        )
+
+        assertEquals(
+            listOf(Money(40), Money(-10)).map { it.toString(asCurrency = false) },
+            viewModel.state.value.entries.loadedOrNull!!.map { it.amountText },
+        )
+    }
+
+    @Test
+    fun `an existing transaction's entry without its category has none selected`() = runTest {
+        val viewModel = viewModel(Route.TransactionDetails(existingTransaction.id))
+
+        fixture.connect(repository(categories = flowOf(emptyList())))
+
+        assertNull(viewModel.state.value.entries.loadedOrNull!!.single().category)
+    }
+
+    @Test
+    fun `an existing transaction is an error when the categories can't be loaded`() = runTest {
+        val viewModel = viewModel(Route.TransactionDetails(existingTransaction.id))
+
+        fixture.connect(repository(categories = failingFlow()))
+
+        assertEquals(LoadState.Error, viewModel.state.value.existingTransaction)
+        assertEquals(LoadState.Error, viewModel.state.value.entries)
+    }
+
+    @Test
+    fun `an existing transaction is an error when the accounts can't be loaded`() = runTest {
+        val viewModel = viewModel(Route.TransactionDetails(existingTransaction.id))
+
+        fixture.connect(repository(accounts = failingFlow()))
+
+        assertEquals(LoadState.Error, viewModel.state.value.existingTransaction)
+        assertEquals(LoadState.Error, viewModel.state.value.entries)
     }
 
     @Test

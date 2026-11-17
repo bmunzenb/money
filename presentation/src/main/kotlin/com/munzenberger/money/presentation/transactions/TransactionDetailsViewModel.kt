@@ -9,7 +9,10 @@ import com.munzenberger.money.data.api.account.Account
 import com.munzenberger.money.data.api.account.AccountId
 import com.munzenberger.money.data.api.payee.Payee
 import com.munzenberger.money.data.api.today
+import com.munzenberger.money.data.api.transaction.CategoryEntry
+import com.munzenberger.money.data.api.transaction.TransactionEntry
 import com.munzenberger.money.data.api.transaction.TransactionId
+import com.munzenberger.money.data.api.transaction.TransferEntry
 import com.munzenberger.money.presentation.database.MoneyRepositoryController
 import com.munzenberger.money.presentation.database.flow
 import com.munzenberger.money.presentation.database.resultFlow
@@ -53,14 +56,21 @@ class TransactionDetailsViewModel(
     private val _state = MutableStateFlow(
         TransactionDetailsUiState(
             existingTransaction = transactionId?.let { LoadState.Loading },
+            // A new transaction starts with one empty row to fill in.
+            entries = transactionId?.let { LoadState.Loading } ?: LoadState.Loaded(listOf(TransactionEntryInput())),
             date = today(),
         )
     )
     val state: StateFlow<TransactionDetailsUiState> = _state.asStateFlow()
 
-    // Read once and shared, since they're both the account options and transfer categories. The latest is replayed so
-    // each collector gets it however they're scheduled.
+    // Read once and shared, since they're the account options, the transfer categories, and the existing transaction's
+    // transfer accounts. The latest is replayed so each collector gets it however they're scheduled.
     private val accounts = repositoryController.resultFlow { it.accounts }
+        .shareIn(viewModelScope, SharingStarted.Eagerly, replay = 1)
+
+    // Read once and shared like the accounts, since they're both the category options and the existing transaction's
+    // categories.
+    private val categories = repositoryController.flow { getCategories(it) }
         .shareIn(viewModelScope, SharingStarted.Eagerly, replay = 1)
 
     init {
@@ -78,7 +88,7 @@ class TransactionDetailsViewModel(
         }
         viewModelScope.launch {
             combine(
-                repositoryController.flow { getCategories(it) },
+                categories,
                 accounts,
                 ::transactionCategories,
             ).collect { categories ->
@@ -93,28 +103,36 @@ class TransactionDetailsViewModel(
     /**
      * Fills in the form from the saved transaction. It's read only once, so a later change to the transaction
      * doesn't overwrite what the user has typed. The payees are needed too, to show the transaction's payee by
-     * name; without them, saving would drop the payee, so the transaction counts as not loaded.
+     * name; without them, saving would drop the payee, so the transaction counts as not loaded. The same goes for the
+     * categories and accounts, to fill in each entry's row.
      */
     private suspend fun loadExistingTransaction(transactionId: TransactionId) {
         val transaction = repositoryController.flow { getTransaction(it, transactionId) }.first().getOrNull()
         val payees = repositoryController.resultFlow { it.payees }.first().getOrNull()
+        if (transaction == null || payees == null) return onExistingTransactionLoadFailed()
 
-        if (transaction == null || payees == null) {
-            _state.update { it.copy(existingTransaction = LoadState.Error) }
-            return
-        }
+        val categories = categories.first().getOrNull()
+        val accounts = accounts.first().getOrNull()
+        if (categories == null || accounts == null) return onExistingTransactionLoadFailed()
 
         val payee = payees.firstOrNull { it.id == transaction.transaction.payeeId }
+        val type = TransactionType.of(transaction.amount)
+        val entries = transaction.entries.map { it.toInput(type, categories, accounts) }
         _state.update { state ->
             state.copy(
                 existingTransaction = LoadState.Loaded(transaction),
                 payeeName = payee?.name.orEmpty(),
                 payee = payee,
                 date = transaction.transaction.date,
-                type = TransactionType.of(transaction.amount),
+                type = type,
                 number = transaction.transaction.number.orEmpty(),
+                entries = LoadState.Loaded(entries),
             ).withInitialAccount()
         }
+    }
+
+    private fun onExistingTransactionLoadFailed() {
+        _state.update { it.copy(existingTransaction = LoadState.Error, entries = LoadState.Error) }
     }
 
     /**
@@ -188,4 +206,30 @@ class TransactionDetailsViewModel(
 private fun List<Payee>.matching(payeeName: String): Payee? {
     val name = payeeName.trim()
     return if (name.isEmpty()) null else firstOrNull { it.name.equals(name, ignoreCase = true) }
+}
+
+/**
+ * The row for this saved entry, with its amount as entered for a transaction of [type], so it saves back unchanged. An
+ * entry whose category or account isn't among [categories] or [accounts] has no category, so the user picks one.
+ */
+private fun TransactionEntry.toInput(
+    type: TransactionType,
+    categories: List<CategoryWithParent>,
+    accounts: List<Account>,
+): TransactionEntryInput {
+    val amountText = (if (type == TransactionType.Decrease) -amount else amount).toString(asCurrency = false)
+    return when (this) {
+        is CategoryEntry -> TransactionEntryInput(
+            category = categories.find { it.category.id == categoryId }?.let { TransactionCategory.Category(it) },
+            amountText = amountText,
+            memo = memo.orEmpty(),
+        )
+        is TransferEntry -> TransactionEntryInput(
+            category = accounts.find { it.id == accountId }?.let { TransactionCategory.Transfer(it) },
+            amountText = amountText,
+            memo = memo.orEmpty(),
+            transferNumber = number.orEmpty(),
+            transferStatus = status,
+        )
+    }
 }

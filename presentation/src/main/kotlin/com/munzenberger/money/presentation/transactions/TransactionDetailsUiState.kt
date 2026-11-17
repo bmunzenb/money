@@ -43,6 +43,11 @@ data class TransactionDetailsUiState(
      * its parent, then the accounts, each sorted by name.
      */
     val categories: LoadState<List<TransactionCategory>> = LoadState.Loading,
+    /**
+     * The rows of the transaction's split, as the user has entered them, in order. Loading while they're being filled
+     * in from the transaction being edited.
+     */
+    val entries: LoadState<List<TransactionEntryInput>> = LoadState.Loading,
 ) {
     val isEditing: Boolean
         get() = existingTransaction != null
