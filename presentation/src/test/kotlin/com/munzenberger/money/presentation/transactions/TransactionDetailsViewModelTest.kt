@@ -50,10 +50,13 @@ import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
+import kotlin.test.assertNotEquals
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 @OptIn(ExperimentalCoroutinesApi::class)
+// One test class for the whole form, so its fixtures are shared; it grows with the form's fields.
+@Suppress("LargeClass")
 class TransactionDetailsViewModelTest {
 
     private val navigator = Navigator()
@@ -64,6 +67,14 @@ class TransactionDetailsViewModelTest {
     private val getTransaction = GetTransactionUseCase()
     private val getCategories = GetCategoriesUseCase()
 
+    // Formats a category by its name, or a transfer by its account's.
+    private val categoryFormatter = TransactionCategoryFormatter { category ->
+        when (category) {
+            is TransactionCategory.Category -> category.category.category.name
+            is TransactionCategory.Transfer -> category.account.name
+        }
+    }
+
     private val today = LocalDate(2026, 5, 15)
 
     private fun viewModel(route: Route.TransactionFormRoute = Route.NewTransaction()) =
@@ -73,6 +84,7 @@ class TransactionDetailsViewModelTest {
             navigator,
             getTransaction,
             getCategories,
+            categoryFormatter,
             today = { today },
         )
 
@@ -836,5 +848,141 @@ class TransactionDetailsViewModelTest {
         viewModel.onBackClick()
 
         assertEquals(listOf(Route.AccountRegister(existingTransaction.accountId)), navigator.backStack.value)
+    }
+
+    @Test
+    fun `onEntryCategoryChange selects the category with that text`() = runTest {
+        val viewModel = viewModel()
+        fixture.connect(repository(categories = flowOf(listOf(utilities, food))))
+        val key = viewModel.state.value.entries.loadedOrNull!!.single().key
+
+        viewModel.onEntryCategoryChange(key, " FOOD ")
+
+        assertEquals(
+            TransactionCategory.Category(CategoryWithParent(food, parent = null)),
+            viewModel.state.value.entries.loadedOrNull!!.single().category,
+        )
+    }
+
+    @Test
+    fun `onEntryCategoryChange selects the transfer account with that text`() = runTest {
+        val viewModel = viewModel()
+        fixture.connect(repository(accounts = flowOf(listOf(everyday, bills)), categories = flowOf(listOf(food))))
+        val key = viewModel.state.value.entries.loadedOrNull!!.single().key
+
+        viewModel.onEntryCategoryChange(key, "bills")
+
+        assertEquals(
+            TransactionCategory.Transfer(bills),
+            viewModel.state.value.entries.loadedOrNull!!.single().category,
+        )
+    }
+
+    @Test
+    fun `onEntryCategoryChange with text that isn't a category clears the category`() = runTest {
+        val viewModel = viewModel()
+        fixture.connect(repository(categories = flowOf(listOf(food))))
+        val key = viewModel.state.value.entries.loadedOrNull!!.single().key
+        viewModel.onEntryCategoryChange(key, "Food")
+
+        viewModel.onEntryCategoryChange(key, "Foo")
+
+        assertNull(viewModel.state.value.entries.loadedOrNull!!.single().category)
+    }
+
+    @Test
+    fun `onEntryAmountChange sets the entry's amount text`() {
+        val viewModel = viewModel()
+        val key = viewModel.state.value.entries.loadedOrNull!!.single().key
+
+        viewModel.onEntryAmountChange(key, "12.5")
+
+        assertEquals("12.5", viewModel.state.value.entries.loadedOrNull!!.single().amountText)
+    }
+
+    @Test
+    fun `onEntryMemoChange sets the entry's memo`() {
+        val viewModel = viewModel()
+        val key = viewModel.state.value.entries.loadedOrNull!!.single().key
+
+        viewModel.onEntryMemoChange(key, "Weekly shop")
+
+        assertEquals("Weekly shop", viewModel.state.value.entries.loadedOrNull!!.single().memo)
+    }
+
+    @Test
+    fun `entry changes only change the entry with that key`() = runTest {
+        val lunch = groceries.copy(categoryId = food.id, memo = "Lunch", orderInTransaction = 1)
+        val viewModel = viewModel(Route.TransactionDetails(existingTransaction.id))
+        fixture.connect(
+            repository(
+                categoryEntries = flowOf(listOf(groceries, lunch)),
+                accounts = flowOf(listOf(bills)),
+                categories = flowOf(listOf(food)),
+            )
+        )
+        val (first, second) = viewModel.state.value.entries.loadedOrNull!!
+
+        viewModel.onEntryCategoryChange(second.key, "Bills")
+        viewModel.onEntryAmountChange(second.key, "5")
+        viewModel.onEntryMemoChange(second.key, "Dinner")
+
+        assertEquals(
+            listOf(
+                first,
+                second.copy(category = TransactionCategory.Transfer(bills), amountText = "5", memo = "Dinner"),
+            ),
+            viewModel.state.value.entries.loadedOrNull,
+        )
+    }
+
+    @Test
+    fun `onAddEntryClick adds an empty entry after the last one`() {
+        val viewModel = viewModel()
+        val first = viewModel.state.value.entries.loadedOrNull!!.single()
+        viewModel.onEntryMemoChange(first.key, "First")
+
+        viewModel.onAddEntryClick()
+
+        val entries = viewModel.state.value.entries.loadedOrNull!!
+        assertEquals(
+            listOf(first.copy(memo = "First"), TransactionEntryInput(key = entries[1].key)),
+            entries,
+        )
+        assertNotEquals(entries[0].key, entries[1].key)
+    }
+
+    @Test
+    fun `onAddEntryClick does nothing while an existing transaction's entries are loading`() {
+        val viewModel = viewModel(Route.TransactionDetails(existingTransaction.id))
+
+        viewModel.onAddEntryClick()
+
+        assertEquals(LoadState.Loading, viewModel.state.value.entries)
+    }
+
+    @Test
+    fun `onRemoveEntryClick removes the entry with that key`() {
+        val viewModel = viewModel()
+        viewModel.onAddEntryClick()
+        viewModel.onAddEntryClick()
+        val (first, second, third) = viewModel.state.value.entries.loadedOrNull!!
+
+        viewModel.onRemoveEntryClick(second.key)
+
+        assertEquals(listOf(first, third), viewModel.state.value.entries.loadedOrNull)
+    }
+
+    @Test
+    fun `onRemoveEntryClick on the only entry leaves an empty entry in its place`() {
+        val viewModel = viewModel()
+        val only = viewModel.state.value.entries.loadedOrNull!!.single()
+        viewModel.onEntryMemoChange(only.key, "Removed")
+
+        viewModel.onRemoveEntryClick(only.key)
+
+        val entry = viewModel.state.value.entries.loadedOrNull!!.single()
+        assertEquals(TransactionEntryInput(key = entry.key), entry)
+        assertNotEquals(only.key, entry.key)
     }
 }
