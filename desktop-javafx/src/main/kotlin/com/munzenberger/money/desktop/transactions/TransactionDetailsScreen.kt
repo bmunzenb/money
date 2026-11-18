@@ -23,8 +23,10 @@ import com.munzenberger.money.presentation.register.RegisterAmountColumns
 import com.munzenberger.money.presentation.register.registerAmountColumns
 import com.munzenberger.money.presentation.state.LoadState
 import com.munzenberger.money.presentation.state.loadedOrEmpty
+import com.munzenberger.money.presentation.transactions.TransactionCategoryFormatter
 import com.munzenberger.money.presentation.transactions.TransactionDetailsUiState
 import com.munzenberger.money.presentation.transactions.TransactionDetailsViewModel
+import com.munzenberger.money.presentation.transactions.TransactionEntryInput
 import com.munzenberger.money.presentation.transactions.TransactionType
 import javafx.geometry.Insets
 import javafx.scene.control.ComboBox
@@ -36,11 +38,18 @@ import javafx.scene.layout.Priority
 import javafx.scene.layout.VBox
 import kotlinx.datetime.toJavaLocalDate
 import kotlinx.datetime.toKotlinLocalDate
+import org.koin.core.component.KoinComponent
+import org.koin.core.component.inject
 import org.koin.core.parameter.parametersOf
 
 /** Adds a new transaction at [Route.NewTransaction], or edits an existing one at [Route.TransactionDetails]. */
-class TransactionDetailsScreen(scope: ScreenScope, route: Route.TransactionFormRoute) : VBox(Spacing.CONTROL_SPACING) {
+class TransactionDetailsScreen(scope: ScreenScope, route: Route.TransactionFormRoute) :
+    VBox(Spacing.CONTROL_SPACING),
+    KoinComponent {
     private val viewModel: TransactionDetailsViewModel = scope.viewModel { parametersOf(route) }
+
+    // Formats the categories as the ViewModel matches them, so text picked from the list selects that category.
+    private val categoryFormatter: TransactionCategoryFormatter by inject()
 
     // Choosing the account the state already has, as render does, leaves the ViewModel's account unchanged.
     private val accountComboBox = ComboBox<Account>().apply {
@@ -89,6 +98,21 @@ class TransactionDetailsScreen(scope: ScreenScope, route: Route.TransactionFormR
 
     private val payeesProgress = smallProgressIndicator()
 
+    // Holds the categories' and transfer accounts' text, so the user can pick one or type a new category's name. The
+    // ViewModel matches the text to a category, so picking one from the list, which sets the text, selects that
+    // category. It edits the only entry, and is read-only when the transaction is split, so the text render sets for a
+    // split changes nothing.
+    private val categoryComboBox = AutoCompleteComboBox<String>().apply {
+        maxWidth = Double.MAX_VALUE
+        editor.textProperty().addListener { _, _, categoryText ->
+            viewModel.state.value.singleEntry?.let { viewModel.onEntryCategoryChange(it.key, categoryText) }
+        }
+    }
+
+    private val categoriesProgress = smallProgressIndicator()
+
+    private val categoriesError = errorLabel(strings.getString("categories_load_error_message"))
+
     private val payeesError = errorLabel(strings.getString("payees_load_error_message"))
 
     private val accountsProgress = smallProgressIndicator()
@@ -114,6 +138,11 @@ class TransactionDetailsScreen(scope: ScreenScope, route: Route.TransactionFormR
             strings.getString("transaction_payee_label"),
             payeeComboBox,
             payeeComboBox.withProgress(payeesProgress).withError(payeesError),
+        )
+        addField(
+            strings.getString("transaction_category_label"),
+            categoryComboBox,
+            categoryComboBox.withProgress(categoriesProgress).withError(categoriesError),
         )
     }
 
@@ -142,6 +171,29 @@ class TransactionDetailsScreen(scope: ScreenScope, route: Route.TransactionFormR
         renderType(state)
         numberField.setTextIfChanged(state.number)
         renderPayee(state)
+        renderCategory(state)
+    }
+
+    private fun renderCategory(state: TransactionDetailsUiState) {
+        val categoryTexts = state.categories.loadedOrEmpty.map(categoryFormatter::format)
+        if (categoryComboBox.items != categoryTexts) {
+            categoryComboBox.items.setAll(categoryTexts)
+        }
+
+        // A split's categories are changed in its entries, so the field only says it's split.
+        val entry = state.singleEntry
+        val isSplit = state.entries.loadedOrEmpty.size > 1
+        categoryComboBox.isReadOnly = entry == null
+        categoryComboBox.editor.setTextIfChanged(
+            when {
+                entry != null -> entry.categoryText
+                isSplit -> strings.getString("register_split_value")
+                else -> ""
+            }
+        )
+
+        categoriesProgress.setShown(state.categories is LoadState.Loading)
+        categoriesError.setShown(state.categories is LoadState.Error)
     }
 
     // The field can still take a new payee's name while the existing payees load, or if they fail to.
@@ -192,3 +244,7 @@ class TransactionDetailsScreen(scope: ScreenScope, route: Route.TransactionFormR
         const val NUMBER_MAX_WIDTH = 150.0
     }
 }
+
+/** The transaction's only entry, or null while its entries aren't loaded or if it's split into more than one. */
+private val TransactionDetailsUiState.singleEntry: TransactionEntryInput?
+    get() = entries.loadedOrEmpty.singleOrNull()

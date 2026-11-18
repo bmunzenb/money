@@ -260,6 +260,7 @@ class TransactionDetailsViewModelTest {
             listOf(
                 TransactionEntryInput(
                     key = entries[0].key,
+                    categoryText = everyday.name,
                     category = TransactionCategory.Transfer(everyday),
                     amountText = Money(1000).toString(asCurrency = false),
                     memo = "Move",
@@ -268,6 +269,7 @@ class TransactionDetailsViewModelTest {
                 ),
                 TransactionEntryInput(
                     key = entries[1].key,
+                    categoryText = food.name,
                     category = TransactionCategory.Category(CategoryWithParent(food, parent = null)),
                     amountText = Money(40).toString(asCurrency = false),
                     memo = "Lunch",
@@ -891,6 +893,30 @@ class TransactionDetailsViewModelTest {
     }
 
     @Test
+    fun `onEntryCategoryChange keeps the text as typed`() = runTest {
+        val viewModel = viewModel()
+        fixture.connect(repository(categories = flowOf(listOf(food))))
+        val key = viewModel.state.value.entries.loadedOrNull!!.single().key
+
+        viewModel.onEntryCategoryChange(key, " FOOD ")
+        assertEquals(" FOOD ", viewModel.state.value.entries.loadedOrNull!!.single().categoryText)
+
+        viewModel.onEntryCategoryChange(key, "Gifts")
+        assertEquals("Gifts", viewModel.state.value.entries.loadedOrNull!!.single().categoryText)
+    }
+
+    @Test
+    fun `an existing transaction's entry whose category isn't found has no category text`() = runTest {
+        val viewModel = viewModel(Route.TransactionDetails(existingTransaction.id))
+
+        fixture.connect(repository(categoryEntries = flowOf(listOf(groceries)), categories = flowOf(emptyList())))
+
+        val entry = viewModel.state.value.entries.loadedOrNull!!.single()
+        assertNull(entry.category)
+        assertEquals("", entry.categoryText)
+    }
+
+    @Test
     fun `onEntryAmountChange sets the entry's amount text`() {
         val viewModel = viewModel()
         val key = viewModel.state.value.entries.loadedOrNull!!.single().key
@@ -930,7 +956,12 @@ class TransactionDetailsViewModelTest {
         assertEquals(
             listOf(
                 first,
-                second.copy(category = TransactionCategory.Transfer(bills), amountText = "5", memo = "Dinner"),
+                second.copy(
+                    categoryText = "Bills",
+                    category = TransactionCategory.Transfer(bills),
+                    amountText = "5",
+                    memo = "Dinner",
+                ),
             ),
             viewModel.state.value.entries.loadedOrNull,
         )
