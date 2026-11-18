@@ -13,7 +13,12 @@ import kotlin.uuid.Uuid
 data class TransactionEntryInput @OptIn(ExperimentalUuidApi::class) constructor(
     /** Identifies the row in the list, since its entry gets a new id each time the transaction is saved. */
     val key: Uuid = Uuid.generateV7(),
-    /** The category or transfer account, or null until the user picks one. */
+    /**
+     * The text in the category field: an existing category's or transfer account's text, or a new category's name
+     * typed in. Empty for a new row, or the saved category's text of an entry being edited.
+     */
+    val categoryText: String = "",
+    /** The category or transfer account matching [categoryText], or null if the text is blank or for a new category. */
     val category: TransactionCategory? = null,
     /** The text in the amount field, as a positive amount; the form's [TransactionType] gives the sign. */
     val amountText: String = "",

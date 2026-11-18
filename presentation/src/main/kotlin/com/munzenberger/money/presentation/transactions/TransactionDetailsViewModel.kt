@@ -122,7 +122,7 @@ class TransactionDetailsViewModel(
 
         val payee = payees.firstOrNull { it.id == transaction.transaction.payeeId }
         val type = TransactionType.of(transaction.amount)
-        val entries = transaction.entries.map { it.toInput(type, categories, accounts) }
+        val entries = transaction.entries.map { it.toInput(type, categories, accounts, categoryFormatter) }
         _state.update { state ->
             state.copy(
                 existingTransaction = LoadState.Loaded(transaction),
@@ -200,13 +200,14 @@ class TransactionDetailsViewModel(
     }
 
     /**
-     * Selects the category or transfer account shown as [categoryText] for the entry with [key], ignoring case and
-     * surrounding whitespace. Text that doesn't match one of the categories leaves the entry without a category.
+     * Sets the entry with [key]'s category text, and selects the category or transfer account shown as [categoryText],
+     * ignoring case and surrounding whitespace. Text that doesn't match one of the categories is kept, as a new
+     * category's name, and leaves the entry without a category.
      */
     fun onEntryCategoryChange(key: Uuid, categoryText: String) {
         _state.update { state ->
             val category = state.categories.loadedOrEmpty.matching(categoryText)
-            state.withEntry(key) { it.copy(category = category) }
+            state.withEntry(key) { it.copy(categoryText = categoryText, category = category) }
         }
     }
 
@@ -275,15 +276,17 @@ private fun List<Payee>.matching(payeeName: String): Payee? {
 
 /**
  * The row for this saved entry, with its amount as entered for a transaction of [type], so it saves back unchanged. An
- * entry whose category or account isn't among [categories] or [accounts] has no category, so the user picks one.
+ * entry whose category or account isn't among [categories] or [accounts] has no category, so the user picks one. Its
+ * category text is the category formatted by [categoryFormatter], or empty if it has none.
  */
 private fun TransactionEntry.toInput(
     type: TransactionType,
     categories: List<CategoryWithParent>,
     accounts: List<Account>,
+    categoryFormatter: TransactionCategoryFormatter,
 ): TransactionEntryInput {
     val amountText = (if (type == TransactionType.Decrease) -amount else amount).toString(asCurrency = false)
-    return when (this) {
+    val input = when (this) {
         is CategoryEntry -> TransactionEntryInput(
             category = categories.find { it.category.id == categoryId }?.let { TransactionCategory.Category(it) },
             amountText = amountText,
@@ -297,4 +300,5 @@ private fun TransactionEntry.toInput(
             transferStatus = status,
         )
     }
+    return input.copy(categoryText = input.category?.let(categoryFormatter::format).orEmpty())
 }

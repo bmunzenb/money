@@ -41,7 +41,6 @@ import kotlinx.datetime.toKotlinLocalDate
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import org.koin.core.parameter.parametersOf
-import kotlin.uuid.Uuid
 
 /** Adds a new transaction at [Route.NewTransaction], or edits an existing one at [Route.TransactionDetails]. */
 class TransactionDetailsScreen(scope: ScreenScope, route: Route.TransactionFormRoute) :
@@ -99,18 +98,16 @@ class TransactionDetailsScreen(scope: ScreenScope, route: Route.TransactionFormR
 
     private val payeesProgress = smallProgressIndicator()
 
-    // Holds the categories' and transfer accounts' text, so the user can pick one or type it. The ViewModel matches the
-    // text to a category, so picking one from the list, which sets the text, selects that category. It edits the only
-    // entry, and is disabled when the transaction is split, so the text render sets for a split changes nothing.
+    // Holds the categories' and transfer accounts' text, so the user can pick one or type a new category's name. The
+    // ViewModel matches the text to a category, so picking one from the list, which sets the text, selects that
+    // category. It edits the only entry, and is disabled when the transaction is split, so the text render sets for a
+    // split changes nothing.
     private val categoryComboBox = AutoCompleteComboBox<String>().apply {
         maxWidth = Double.MAX_VALUE
         editor.textProperty().addListener { _, _, categoryText ->
             viewModel.state.value.singleEntry?.let { viewModel.onEntryCategoryChange(it.key, categoryText) }
         }
     }
-
-    // The entry the category field last showed, so the field is filled in again when it shows a different one.
-    private var categoryEntryKey: Uuid? = null
 
     private val categoriesProgress = smallProgressIndicator()
 
@@ -183,28 +180,17 @@ class TransactionDetailsScreen(scope: ScreenScope, route: Route.TransactionFormR
             categoryComboBox.items.setAll(categoryTexts)
         }
 
+        // A split's categories are changed in its entries, so the field only says it's split.
         val entry = state.singleEntry
+        val isSplit = state.entries.loadedOrEmpty.size > 1
         categoryComboBox.isDisable = entry == null
-        when {
-            // A split's categories are changed in its entries, so the field only says it's split.
-            entry == null -> {
-                categoryEntryKey = null
-                val isSplit = state.entries.loadedOrEmpty.size > 1
-                categoryComboBox.editor.setTextIfChanged(if (isSplit) strings.getString("register_split_value") else "")
+        categoryComboBox.editor.setTextIfChanged(
+            when {
+                entry != null -> entry.categoryText
+                isSplit -> strings.getString("register_split_value")
+                else -> ""
             }
-            // Filled in when it starts showing this entry, such as once the transaction loads or a split is undone.
-            entry.key != categoryEntryKey -> {
-                categoryEntryKey = entry.key
-                categoryComboBox.editor.setTextIfChanged(entry.category?.let(categoryFormatter::format).orEmpty())
-            }
-            // Otherwise the text is what the user typed, kept even while it matches no category, unless the entry has
-            // a category it doesn't match.
-            else -> entry.category?.let(categoryFormatter::format)?.let { categoryText ->
-                if (!categoryText.equals(categoryComboBox.editor.text.trim(), ignoreCase = true)) {
-                    categoryComboBox.editor.setTextIfChanged(categoryText)
-                }
-            }
-        }
+        )
 
         categoriesProgress.setShown(state.categories is LoadState.Loading)
         categoriesError.setShown(state.categories is LoadState.Error)
