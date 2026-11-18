@@ -29,11 +29,14 @@ import com.munzenberger.money.presentation.transactions.TransactionDetailsViewMo
 import com.munzenberger.money.presentation.transactions.TransactionEntryInput
 import com.munzenberger.money.presentation.transactions.TransactionType
 import javafx.geometry.Insets
+import javafx.geometry.Pos
+import javafx.scene.control.Button
 import javafx.scene.control.ComboBox
 import javafx.scene.control.DatePicker
 import javafx.scene.control.RadioButton
 import javafx.scene.control.TextField
 import javafx.scene.control.ToggleGroup
+import javafx.scene.layout.HBox
 import javafx.scene.layout.Priority
 import javafx.scene.layout.VBox
 import kotlinx.datetime.toJavaLocalDate
@@ -109,6 +112,14 @@ class TransactionDetailsScreen(scope: ScreenScope, route: Route.TransactionFormR
         }
     }
 
+    private val splitButton = Button(strings.getString("split_button_title"))
+
+    // The combo box takes the width the split button and progress indicator leave it.
+    private val categoryRow = HBox(Spacing.CONTROL_SPACING, categoryComboBox, splitButton).apply {
+        alignment = Pos.CENTER_LEFT
+        HBox.setHgrow(categoryComboBox, Priority.ALWAYS)
+    }
+
     private val categoriesProgress = smallProgressIndicator()
 
     private val categoriesError = errorLabel(strings.getString("categories_load_error_message"))
@@ -142,7 +153,7 @@ class TransactionDetailsScreen(scope: ScreenScope, route: Route.TransactionFormR
         addField(
             strings.getString("transaction_category_label"),
             categoryComboBox,
-            categoryComboBox.withProgress(categoriesProgress).withError(categoriesError),
+            categoryRow.withProgress(categoriesProgress).withError(categoriesError),
         )
     }
 
