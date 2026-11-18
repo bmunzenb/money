@@ -100,7 +100,7 @@ class TransactionDetailsScreen(scope: ScreenScope, route: Route.TransactionFormR
 
     // Holds the categories' and transfer accounts' text, so the user can pick one or type a new category's name. The
     // ViewModel matches the text to a category, so picking one from the list, which sets the text, selects that
-    // category. It edits the only entry, and is disabled when the transaction is split, so the text render sets for a
+    // category. It edits the only entry, and is read-only when the transaction is split, so the text render sets for a
     // split changes nothing.
     private val categoryComboBox = AutoCompleteComboBox<String>().apply {
         maxWidth = Double.MAX_VALUE
@@ -183,7 +183,7 @@ class TransactionDetailsScreen(scope: ScreenScope, route: Route.TransactionFormR
         // A split's categories are changed in its entries, so the field only says it's split.
         val entry = state.singleEntry
         val isSplit = state.entries.loadedOrEmpty.size > 1
-        categoryComboBox.isDisable = entry == null
+        categoryComboBox.isReadOnly = entry == null
         categoryComboBox.editor.setTextIfChanged(
             when {
                 entry != null -> entry.categoryText

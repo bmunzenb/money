@@ -97,3 +97,25 @@
 .context-menu .default-menu-item .label {
     -fx-font-weight: bold;
 }
+
+/*
+ * A read-only combo box's arrow is dimmed as Modena dims a disabled control, since its list can't be shown, and the
+ * combo box keeps its normal color when hovered or pressed. Its text keeps its normal look.
+ */
+.combo-box-base:read-only > .arrow-button {
+    -fx-opacity: 0.4;
+}
+
+.combo-box-base:read-only:hover,
+.combo-box-base:read-only:armed {
+    -fx-color: -fx-base;
+}
+
+/*
+ * Dims a read-only combo box's text field background to the window's background, so it looks like it can't be edited.
+ * Its text stays dark, since Modena picks the text color from this background, which is still light, rather than
+ * fading it as a disabled control does.
+ */
+.combo-box-base:read-only .text-field {
+    -fx-control-inner-background: -fx-background;
+}

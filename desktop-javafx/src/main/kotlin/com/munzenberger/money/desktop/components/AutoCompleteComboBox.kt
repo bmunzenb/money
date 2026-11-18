@@ -1,5 +1,6 @@
 package com.munzenberger.money.desktop.components
 
+import javafx.css.PseudoClass
 import javafx.scene.control.ComboBox
 import javafx.scene.control.TextFormatter
 
@@ -10,9 +11,26 @@ import javafx.scene.control.TextFormatter
  * It uses the editor's text formatter, so the editor can't have another.
  */
 class AutoCompleteComboBox<T> : ComboBox<T>() {
+    /**
+     * Whether the user can only read the text: the editor can't be edited and the list can't be shown, while the text
+     * keeps its normal look, unlike a disabled combo box's. The arrow is dimmed through the `read-only` pseudo-class.
+     */
+    var isReadOnly: Boolean = false
+        set(value) {
+            field = value
+            editor.isEditable = !value
+            pseudoClassStateChanged(READ_ONLY_PSEUDO_CLASS, value)
+            if (value) hide()
+        }
+
     init {
         isEditable = true
         editor.textFormatter = TextFormatter<String>(::complete)
+    }
+
+    // Covers every way of showing the list, such as clicking the arrow or pressing Alt+Down.
+    override fun show() {
+        if (!isReadOnly) super.show()
     }
 
     private fun complete(change: TextFormatter.Change): TextFormatter.Change {
@@ -34,5 +52,9 @@ class AutoCompleteComboBox<T> : ComboBox<T>() {
         val itemTexts = items.map(converter::toString)
         return itemTexts.firstOrNull { it.equals(typed, ignoreCase = true) }
             ?: itemTexts.firstOrNull { it.startsWith(typed, ignoreCase = true) }
+    }
+
+    private companion object {
+        val READ_ONLY_PSEUDO_CLASS: PseudoClass = PseudoClass.getPseudoClass("read-only")
     }
 }
