@@ -38,6 +38,8 @@ val navigationRouter: (route: Route, scope: ScreenScope) -> Destination = { rout
             placeholderScreen(route),
             strings.getString("transfer_details_title")
         )
+        Route.Portfolio -> Destination.Screen(placeholderScreen(route))
+        Route.Schedule -> Destination.Screen(placeholderScreen(route))
     }
 }
 
