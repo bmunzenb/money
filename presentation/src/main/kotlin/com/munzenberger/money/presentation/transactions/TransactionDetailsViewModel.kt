@@ -68,6 +68,12 @@ class TransactionDetailsViewModel(
     )
     val state: StateFlow<TransactionDetailsUiState> = _state.asStateFlow()
 
+    // The split dialog edits this form's entries, so it's opened and closed from here.
+    private val splitRoute = Route.TransactionSplit(route)
+
+    // The entries as they were when the split dialog opened, to put back if it's cancelled; null while it's closed.
+    private var entriesBeforeSplit: List<TransactionEntryInput>? = null
+
     // Read once and shared, since they're the account options, the transfer categories, and the existing transaction's
     // transfer accounts. The latest is replayed so each collector gets it however they're scheduled.
     private val accounts = repositoryController.resultFlow { it.accounts }
@@ -245,6 +251,32 @@ class TransactionDetailsViewModel(
 
     fun onBackClick() {
         navigator.back(from = route)
+    }
+
+    /**
+     * Opens the split dialog over the form, to edit the entries there. The entries are remembered as they are, so
+     * cancelling the dialog puts them back. Does nothing while the entries aren't loaded, or if the dialog is open.
+     */
+    fun onSplitClick() {
+        if (splitRoute in navigator.backStack.value) return
+        entriesBeforeSplit = _state.value.entries.loadedOrNull ?: return
+        navigator.navigate { add(splitRoute) }
+    }
+
+    /** Closes the split dialog, keeping the entries as edited there. */
+    fun onSplitDoneClick() {
+        entriesBeforeSplit = null
+        navigator.back(from = splitRoute)
+    }
+
+    /**
+     * Closes the split dialog, putting the entries back as they were when it opened. Also the dialog's close request,
+     * so closing its window discards its changes.
+     */
+    fun onSplitCancelClick() {
+        entriesBeforeSplit?.let { entries -> _state.update { it.copy(entries = LoadState.Loaded(entries)) } }
+        entriesBeforeSplit = null
+        navigator.back(from = splitRoute)
     }
 }
 

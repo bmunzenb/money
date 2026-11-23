@@ -109,6 +109,12 @@ The scope is closed (clearing its ViewModels and cancelling its collectors) when
 navigating to the screen again starts with a fresh ViewModel. `kotlinx-coroutines-javafx` supplies
 `Dispatchers.Main` for `viewModelScope`.
 
+A dialog that edits part of the screen below it, such as the transaction form's split (`Route.TransactionSplit`),
+doesn't get a ViewModel of its own: its route carries the route of the screen below (`TransactionSplit(form)`), and its
+screen shares that screen's ViewModel with `scope.viewModel<XViewModel>(of = route.form)`, which `NavigationHost` finds
+in that entry's scope. That ViewModel opens and closes the dialog (e.g. `onSplitClick`, `onSplitDoneClick`,
+`onSplitCancelClick`), and only its own entry's scope clears it.
+
 `MoneyApplication` handles only the stage (title, scene size, stylesheet, saved window bounds); the scene's root
 is `AppScreen` (`desktop-javafx/.../desktop/AppScreen.kt`), which holds the `AppViewModel` and the
 `NavigationHost`, and shows `AppToolbar` and `AppNavigationRail` beside it while a repository is open.

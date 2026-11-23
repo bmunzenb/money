@@ -42,6 +42,13 @@ sealed interface Route {
     @Serializable
     data class TransactionDetails(val transactionId: TransactionId) : TransactionFormRoute
 
+    /**
+     * Edits the split of the transaction in the form at [form]. It's shown over the form and edits the form's own
+     * entries, so its screen shares the form's ViewModel rather than having its own.
+     */
+    @Serializable
+    data class TransactionSplit(val form: TransactionFormRoute) : Route
+
     @Serializable
     data class TransferDetails(val transferEntryId: TransferEntryId) : Route
 

@@ -54,8 +54,9 @@ class NavigationHost(
         entries.drop(kept).forEach { it.close() }
         entries.subList(kept, entries.size).clear()
 
+        // A scope finds the entries below it, which are always added before it and kept while it is.
         backStack.drop(kept).forEach { route ->
-            val scope = ScreenScope()
+            val scope = ScreenScope { other -> entries.firstOrNull { it.route == other }?.scope }
             entries += entry(route, scope, router(route, scope))
         }
 
