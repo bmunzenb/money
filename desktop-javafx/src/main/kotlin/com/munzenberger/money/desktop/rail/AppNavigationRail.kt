@@ -58,6 +58,8 @@ class AppNavigationRail(scope: ScreenScope) : ListView<TopLevelDestination>() {
                 TopLevelDestination.Accounts -> "accounts_button_title"
                 TopLevelDestination.Categories -> "categories_button_title"
                 TopLevelDestination.Payees -> "payees_button_title"
+                TopLevelDestination.Portfolio -> "portfolio_button_title"
+                TopLevelDestination.Schedule -> "schedule_button_title"
             }
         )
 

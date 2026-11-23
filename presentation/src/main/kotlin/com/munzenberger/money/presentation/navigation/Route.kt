@@ -44,4 +44,10 @@ sealed interface Route {
 
     @Serializable
     data class TransferDetails(val transferEntryId: TransferEntryId) : Route
+
+    @Serializable
+    data object Portfolio : Route
+
+    @Serializable
+    data object Schedule : Route
 }

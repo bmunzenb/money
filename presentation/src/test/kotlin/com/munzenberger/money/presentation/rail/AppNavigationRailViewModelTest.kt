@@ -31,6 +31,16 @@ class AppNavigationRailViewModelTest {
     }
 
     @Test
+    fun `state selects each destination when its route is current`() {
+        TopLevelDestination.entries.forEach { destination ->
+            navigator.navigate { clear(); add(destination.route) }
+            val viewModel = AppNavigationRailViewModel(navigator)
+
+            assertEquals(AppNavigationRailUiState(selected = destination), viewModel.state.value)
+        }
+    }
+
+    @Test
     fun `state updates the selection when the current route changes`() = runTest {
         val viewModel = AppNavigationRailViewModel(navigator)
 
