@@ -1016,4 +1016,93 @@ class TransactionDetailsViewModelTest {
         assertEquals(TransactionEntryInput(key = entry.key), entry)
         assertNotEquals(only.key, entry.key)
     }
+
+    @Test
+    fun `onSplitClick opens the split dialog over the form`() {
+        val route = Route.NewTransaction(bills.id)
+        navigator.navigate { clear(); add(Route.AccountRegister(bills.id)); add(route) }
+        val viewModel = viewModel(route)
+
+        viewModel.onSplitClick()
+
+        assertEquals(
+            listOf(Route.AccountRegister(bills.id), route, Route.TransactionSplit(route)),
+            navigator.backStack.value,
+        )
+    }
+
+    @Test
+    fun `onSplitClick doesn't open the split dialog again while it's open`() {
+        val route = Route.NewTransaction()
+        navigator.navigate { clear(); add(route) }
+        val viewModel = viewModel(route)
+
+        viewModel.onSplitClick()
+        viewModel.onSplitClick()
+
+        assertEquals(listOf(route, Route.TransactionSplit(route)), navigator.backStack.value)
+    }
+
+    @Test
+    fun `onSplitClick does nothing while an existing transaction's entries are loading`() {
+        val route = Route.TransactionDetails(existingTransaction.id)
+        navigator.navigate { clear(); add(route) }
+        val viewModel = viewModel(route)
+
+        viewModel.onSplitClick()
+
+        assertEquals(listOf(route), navigator.backStack.value)
+    }
+
+    @Test
+    fun `onSplitDoneClick closes the split dialog and keeps the entries as edited`() {
+        val route = Route.NewTransaction()
+        navigator.navigate { clear(); add(route) }
+        val viewModel = viewModel(route)
+        val first = viewModel.state.value.entries.loadedOrNull!!.single()
+        viewModel.onSplitClick()
+        viewModel.onEntryMemoChange(first.key, "Edited")
+        viewModel.onAddEntryClick()
+        val edited = viewModel.state.value.entries
+
+        viewModel.onSplitDoneClick()
+
+        assertEquals(listOf(route), navigator.backStack.value)
+        assertEquals(edited, viewModel.state.value.entries)
+    }
+
+    @Test
+    fun `onSplitCancelClick closes the split dialog and puts the entries back as they were`() {
+        val route = Route.NewTransaction()
+        navigator.navigate { clear(); add(route) }
+        val viewModel = viewModel(route)
+        val first = viewModel.state.value.entries.loadedOrNull!!.single()
+        viewModel.onEntryMemoChange(first.key, "Before")
+        val before = viewModel.state.value.entries
+        viewModel.onSplitClick()
+        viewModel.onEntryMemoChange(first.key, "Edited")
+        viewModel.onAddEntryClick()
+
+        viewModel.onSplitCancelClick()
+
+        assertEquals(listOf(route), navigator.backStack.value)
+        assertEquals(before, viewModel.state.value.entries)
+    }
+
+    @Test
+    fun `onSplitCancelClick after onSplitDoneClick doesn't undo the split`() {
+        val route = Route.NewTransaction()
+        navigator.navigate { clear(); add(route) }
+        val viewModel = viewModel(route)
+        viewModel.onSplitClick()
+        viewModel.onAddEntryClick()
+        viewModel.onSplitDoneClick()
+        val edited = viewModel.state.value.entries
+
+        // Such as a second close request for a dialog that's already closing.
+        viewModel.onSplitCancelClick()
+
+        assertEquals(listOf(route), navigator.backStack.value)
+        assertEquals(edited, viewModel.state.value.entries)
+    }
 }

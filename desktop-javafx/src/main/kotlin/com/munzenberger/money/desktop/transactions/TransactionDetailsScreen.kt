@@ -112,7 +112,9 @@ class TransactionDetailsScreen(scope: ScreenScope, route: Route.TransactionFormR
         }
     }
 
-    private val splitButton = Button(strings.getString("split_button_title"))
+    private val splitButton = Button(strings.getString("split_button_title")).apply {
+        setOnAction { viewModel.onSplitClick() }
+    }
 
     // The combo box takes the width the split button and progress indicator leave it.
     private val categoryRow = HBox(Spacing.CONTROL_SPACING, categoryComboBox, splitButton).apply {
@@ -202,6 +204,9 @@ class TransactionDetailsScreen(scope: ScreenScope, route: Route.TransactionFormR
                 else -> ""
             }
         )
+
+        // The split edits the entries, so it can't open until they're loaded.
+        splitButton.isDisable = state.entries !is LoadState.Loaded
 
         categoriesProgress.setShown(state.categories is LoadState.Loading)
         categoriesError.setShown(state.categories is LoadState.Error)
