@@ -1,13 +1,15 @@
 package com.munzenberger.money.desktop.transactions
 
-import com.munzenberger.money.desktop.strings
+import com.munzenberger.money.desktop.components.AutoCompleteComboBox
+import com.munzenberger.money.desktop.components.column
 import com.munzenberger.money.presentation.transactions.TransactionEntryInput
 import javafx.beans.property.ObjectProperty
 import javafx.beans.property.SimpleObjectProperty
 import javafx.collections.FXCollections
 import javafx.collections.ObservableList
-import javafx.scene.control.TableColumn
+import javafx.geometry.Pos
 import javafx.scene.control.TableView
+import javafx.scene.control.TextField
 import kotlin.uuid.Uuid
 
 /**
@@ -35,18 +37,46 @@ internal class TransactionSplitTable(
     // Shared by the rows' combo boxes, so they all list the same categories.
     private val categoryTexts: ObservableList<String> = FXCollections.observableArrayList()
 
+    // Picks a category or transfer account from the list, or takes a new category's typed name, as the form's does.
     private val categoryColumn = entryColumn(id = "category", titleKey = "split_category_column_title").apply {
-        setCellFactory { TransactionSplitCategoryCell(categoryTexts, onCategoryChange) }
+        setCellFactory {
+            val comboBox = AutoCompleteComboBox<String>().apply { items = categoryTexts }
+            TransactionSplitFieldCell(
+                field = comboBox,
+                editor = comboBox.editor,
+                textOf = { it.categoryText },
+                onTextChange = onCategoryChange,
+            )
+        }
     }
 
     private val memoColumn = entryColumn(id = "memo", titleKey = "split_memo_column_title").apply {
-        setCellFactory { TransactionSplitMemoCell(onMemoChange) }
+        setCellFactory {
+            val textField = TextField()
+            TransactionSplitFieldCell(
+                field = textField,
+                editor = textField,
+                textOf = { it.memo },
+                onTextChange = onMemoChange,
+            )
+        }
     }
 
-    // Edits the amount's text as entered, right-aligned like the other tables' amounts, and shows the amount's error.
+    // Edits the amount's text as entered, right-aligned like the other tables' amounts. Leaving it checks the amount,
+    // as the form's amount field does, and an amount that isn't valid is outlined as an error.
     private val amountColumn = entryColumn(id = "amount", titleKey = "split_amount_column_title").apply {
         styleClass += "amount-column"
-        setCellFactory { TransactionSplitAmountCell(onAmountChange, onAmountFocusLost) }
+        setCellFactory {
+            val textField = TextField().apply { alignment = Pos.CENTER_RIGHT }
+            TransactionSplitFieldCell(
+                field = textField,
+                editor = textField,
+                textOf = { it.amountText },
+                onTextChange = onAmountChange,
+                onFocusLost = onAmountFocusLost,
+                isError = { it.isAmountError },
+            )
+        }
     }
 
     init {
@@ -61,8 +91,13 @@ internal class TransactionSplitTable(
      * entry is updated in place, so a field the user is typing in keeps its focus. Otherwise the rows are replaced.
      */
     fun show(entries: List<TransactionEntryInput>) {
-        if (entries.map { it.key } == items.map { it.key }) {
-            entries.forEachIndexed { index, entry -> items[index].entry.value = entry }
+        val isSameRows = entries.size == items.size && entries.indices.all { entries[it].key == items[it].key }
+        if (isSameRows) {
+            // Leaves the rows whose entries are unchanged, so only the changed rows' cells update.
+            entries.forEachIndexed { index, entry ->
+                val row = items[index]
+                if (row.entry.value != entry) row.entry.value = entry
+            }
         } else {
             items.setAll(entries.map(::TransactionSplitRow))
         }
@@ -77,10 +112,7 @@ internal class TransactionSplitTable(
 
     // Each column's cells are given the row's whole entry and show the part of it they edit.
     private fun entryColumn(id: String, titleKey: String) =
-        TableColumn<TransactionSplitRow, TransactionEntryInput>(strings.getString(titleKey)).apply {
-            this.id = id
-            setCellValueFactory { features -> features.value.entry }
-        }
+        column<TransactionSplitRow, TransactionEntryInput>(id, titleKey) { it.entry }
 }
 
 /** A row of the split dialog's table, holding the entry with [key] as it changes. */

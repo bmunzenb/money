@@ -1,9 +1,7 @@
 package com.munzenberger.money.desktop.components
 
-import com.munzenberger.money.desktop.strings
 import javafx.beans.property.ReadOnlyObjectWrapper
 import javafx.scene.control.TableCell
-import javafx.scene.control.TableColumn
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.toJavaLocalDate
 
@@ -12,9 +10,7 @@ import kotlinx.datetime.toJavaLocalDate
  * date. It holds the dates themselves, so it sorts them by date rather than by their text.
  */
 internal fun <S> dateColumn(id: String, titleKey: String, value: (S) -> LocalDate) =
-    TableColumn<S, LocalDate>(strings.getString(titleKey)).apply {
-        this.id = id
-        setCellValueFactory { features -> ReadOnlyObjectWrapper(features.value?.let(value)) }
+    column<S, LocalDate>(id, titleKey) { ReadOnlyObjectWrapper(value(it)) }.apply {
         setCellFactory { DateCell() }
     }
 

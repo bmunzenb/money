@@ -31,6 +31,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.flow.updateAndGet
 import kotlinx.coroutines.launch
 import kotlinx.datetime.LocalDate
 import kotlin.uuid.Uuid
@@ -241,16 +242,7 @@ class TransactionDetailsViewModel(
      * "1234.5" to "1,234.50", text that isn't one is shown as an error, and a blank amount is cleared.
      */
     fun onEntryAmountFocusLost(key: Uuid) {
-        _state.update { state ->
-            state.withEntry(key) {
-                val amount = Money.parseOrNull(it.amountText)
-                when {
-                    it.amountText.isBlank() -> it.copy(amountText = "", isAmountError = false)
-                    amount == null -> it.copy(isAmountError = true)
-                    else -> it.copy(amountText = amount.toString(asCurrency = false), isAmountError = false)
-                }
-            }
-        }
+        _state.update { state -> state.withEntry(key) { it.withAmountChecked() } }
     }
 
     fun onEntryMemoChange(key: Uuid, memo: String) {
@@ -295,8 +287,16 @@ class TransactionDetailsViewModel(
         navigator.navigate { add(splitRoute) }
     }
 
-    /** Closes the split dialog, keeping the entries as edited there. */
+    /**
+     * Checks every entry's amount, as leaving its field does, since Done can be pressed without leaving the field being
+     * typed in. Closes the split dialog, keeping the entries as edited there, unless an amount isn't valid: the dialog
+     * then stays open, showing the error.
+     */
     fun onSplitDoneClick() {
+        val entries = _state.updateAndGet { state ->
+            state.withEntries { entries -> entries.map { it.withAmountChecked() } }
+        }.entries.loadedOrEmpty
+        if (entries.any { it.isAmountError }) return
         entriesBeforeSplit = null
         navigator.back(from = splitRoute)
     }
@@ -309,6 +309,19 @@ class TransactionDetailsViewModel(
         entriesBeforeSplit?.let { entries -> _state.update { it.copy(entries = LoadState.Loaded(entries)) } }
         entriesBeforeSplit = null
         navigator.back(from = splitRoute)
+    }
+}
+
+/**
+ * This entry with its amount checked: a valid amount is reformatted, such as "1234.5" to "1,234.50", text that isn't
+ * one is shown as an error, and a blank amount is cleared.
+ */
+private fun TransactionEntryInput.withAmountChecked(): TransactionEntryInput {
+    val amount = Money.parseOrNull(amountText)
+    return when {
+        amountText.isBlank() -> copy(amountText = "", isAmountError = false)
+        amount == null -> copy(isAmountError = true)
+        else -> copy(amountText = amount.toString(asCurrency = false), isAmountError = false)
     }
 }
 
