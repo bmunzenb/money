@@ -7,7 +7,6 @@ import com.munzenberger.money.desktop.theme.Spacing
 import com.munzenberger.money.presentation.navigation.Route
 import com.munzenberger.money.presentation.state.LoadState
 import com.munzenberger.money.presentation.state.loadedOrEmpty
-import com.munzenberger.money.presentation.transactions.TransactionCategoryFormatter
 import com.munzenberger.money.presentation.transactions.TransactionDetailsUiState
 import com.munzenberger.money.presentation.transactions.TransactionDetailsViewModel
 import com.munzenberger.money.presentation.transactions.total
@@ -18,31 +17,17 @@ import javafx.scene.control.ButtonBar
 import javafx.scene.layout.HBox
 import javafx.scene.layout.Priority
 import javafx.scene.layout.VBox
-import org.koin.core.component.KoinComponent
-import org.koin.core.component.inject
 
 /**
  * Edits the split of the transaction in the form at [Route.TransactionSplit.form]. It shares the form's ViewModel, so
  * it edits the form's own entries: Done keeps the changes, and Cancel or closing the window puts the entries back as
  * they were when it opened.
  */
-class TransactionSplitScreen(scope: ScreenScope, route: Route.TransactionSplit) :
-    VBox(Spacing.CONTROL_SPACING),
-    KoinComponent {
+class TransactionSplitScreen(scope: ScreenScope, route: Route.TransactionSplit) : VBox(Spacing.CONTROL_SPACING) {
     private val viewModel: TransactionDetailsViewModel = scope.viewModel(of = route.form)
 
-    // Formats the categories as the ViewModel matches them, so text picked from a row's list selects that category.
-    private val categoryFormatter: TransactionCategoryFormatter by inject()
-
     // Fills the space above the footer as the dialog is resized.
-    private val table = TransactionSplitTable(
-        onCategoryChange = viewModel::onEntryCategoryChange,
-        onMemoChange = viewModel::onEntryMemoChange,
-        onAmountChange = viewModel::onEntryAmountChange,
-        onAmountFocusLost = viewModel::onEntryAmountFocusLost,
-    ).apply {
-        setVgrow(this, Priority.ALWAYS)
-    }
+    private val table = TransactionSplitTable().apply { setVgrow(this, Priority.ALWAYS) }
 
     // The sum of the rows' amounts, right below the table and in bold, like the account list's total. It's unavailable
     // while any row's amount isn't a valid amount.
@@ -59,7 +44,7 @@ class TransactionSplitScreen(scope: ScreenScope, route: Route.TransactionSplit) 
     private val cancelButton = Button(strings.getString("cancel_button_title")).apply {
         isCancelButton = true
         ButtonBar.setButtonData(this, ButtonBar.ButtonData.CANCEL_CLOSE)
-        setOnAction { cancel() }
+        setOnAction { viewModel.onSplitCancelClick() }
     }
 
     // ButtonBar orders the buttons for the platform, as the forms' footers do.
@@ -74,7 +59,6 @@ class TransactionSplitScreen(scope: ScreenScope, route: Route.TransactionSplit) 
     }
 
     private fun render(state: TransactionDetailsUiState) {
-        table.showCategories(state.categories.loadedOrEmpty.map(categoryFormatter::format))
         table.show(state.entries.loadedOrEmpty)
         totalBalance.render(
             when (val entries = state.entries) {
@@ -86,18 +70,7 @@ class TransactionSplitScreen(scope: ScreenScope, route: Route.TransactionSplit) 
     }
 
     /** Cancels the split, as Cancel does. */
-    fun onCloseRequest() = cancel()
-
-    /**
-     * Puts the entries back as they were and closes the dialog. The focus moves to Cancel first, as clicking it would,
-     * so a field being typed in is left while its entry is still the edited one. Otherwise, pressing Escape or closing
-     * the window would leave it as the dialog closes, after the entries are put back, and leaving an amount's field
-     * would change the restored entry.
-     */
-    private fun cancel() {
-        cancelButton.requestFocus()
-        viewModel.onSplitCancelClick()
-    }
+    fun onCloseRequest() = viewModel.onSplitCancelClick()
 
     private companion object {
         const val PREF_WIDTH = 600.0
