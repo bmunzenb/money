@@ -14,14 +14,11 @@ import kotlin.uuid.Uuid
  * change it. Each change to the text is passed to [onAmountChange] with the key of the entry in the cell's row, and
  * leaving the field is passed to [onAmountFocusLost], so the amount is checked and reformatted. An amount that isn't
  * valid is outlined as an error.
- *
- * The cell's item is the whole entry, rather than its amount's text, so a change to only its error still updates the
- * cell.
  */
 internal class TransactionSplitAmountCell(
     private val onAmountChange: (key: Uuid, amountText: String) -> Unit,
     private val onAmountFocusLost: (key: Uuid) -> Unit,
-) : TableCell<TransactionEntryInput, TransactionEntryInput>() {
+) : TableCell<TransactionSplitRow, TransactionEntryInput>() {
 
     // Set while the cell fills in its row's text, so showing an entry, or another entry as the cell is reused, isn't
     // taken as the user changing it.

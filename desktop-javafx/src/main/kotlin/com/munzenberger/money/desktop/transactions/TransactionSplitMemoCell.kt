@@ -13,7 +13,7 @@ import kotlin.uuid.Uuid
  */
 internal class TransactionSplitMemoCell(
     private val onMemoChange: (key: Uuid, memo: String) -> Unit,
-) : TableCell<TransactionEntryInput, String>() {
+) : TableCell<TransactionSplitRow, TransactionEntryInput>() {
 
     // Set while the cell fills in its row's text, so showing an entry, or another entry as the cell is reused, isn't
     // taken as the user changing it.
@@ -23,7 +23,7 @@ internal class TransactionSplitMemoCell(
         maxWidth = Double.MAX_VALUE
         textProperty().addListener { _, _, memo ->
             if (!isUpdating) {
-                tableRow?.item?.let { onMemoChange(it.key, memo) }
+                item?.let { onMemoChange(it.key, memo) }
             }
         }
     }
@@ -32,15 +32,15 @@ internal class TransactionSplitMemoCell(
         contentDisplay = ContentDisplay.GRAPHIC_ONLY
     }
 
-    override fun updateItem(item: String?, empty: Boolean) {
+    override fun updateItem(item: TransactionEntryInput?, empty: Boolean) {
         super.updateItem(item, empty)
         text = null
-        if (empty) {
+        if (empty || item == null) {
             graphic = null
         } else {
             isUpdating = true
             try {
-                textField.setTextIfChanged(item.orEmpty())
+                textField.setTextIfChanged(item.memo)
             } finally {
                 isUpdating = false
             }

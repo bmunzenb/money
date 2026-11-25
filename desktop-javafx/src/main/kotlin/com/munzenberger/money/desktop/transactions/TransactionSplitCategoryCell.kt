@@ -16,7 +16,7 @@ import kotlin.uuid.Uuid
 internal class TransactionSplitCategoryCell(
     categoryTexts: ObservableList<String>,
     private val onCategoryChange: (key: Uuid, categoryText: String) -> Unit,
-) : TableCell<TransactionEntryInput, String>() {
+) : TableCell<TransactionSplitRow, TransactionEntryInput>() {
 
     // Set while the cell fills in its row's text, so showing an entry, or another entry as the cell is reused, isn't
     // taken as the user changing it.
@@ -27,7 +27,7 @@ internal class TransactionSplitCategoryCell(
         maxWidth = Double.MAX_VALUE
         editor.textProperty().addListener { _, _, categoryText ->
             if (!isUpdating) {
-                tableRow?.item?.let { onCategoryChange(it.key, categoryText) }
+                item?.let { onCategoryChange(it.key, categoryText) }
             }
         }
     }
@@ -36,15 +36,15 @@ internal class TransactionSplitCategoryCell(
         contentDisplay = ContentDisplay.GRAPHIC_ONLY
     }
 
-    override fun updateItem(item: String?, empty: Boolean) {
+    override fun updateItem(item: TransactionEntryInput?, empty: Boolean) {
         super.updateItem(item, empty)
         text = null
-        if (empty) {
+        if (empty || item == null) {
             graphic = null
         } else {
             isUpdating = true
             try {
-                comboBox.editor.setTextIfChanged(item.orEmpty())
+                comboBox.editor.setTextIfChanged(item.categoryText)
             } finally {
                 isUpdating = false
             }
