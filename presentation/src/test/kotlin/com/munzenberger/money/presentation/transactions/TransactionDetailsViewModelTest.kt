@@ -1191,6 +1191,36 @@ class TransactionDetailsViewModelTest {
     }
 
     @Test
+    fun `onSplitDoneClick checks the entries' amounts`() {
+        val route = Route.NewTransaction()
+        navigator.navigate { clear(); add(route) }
+        val viewModel = viewModel(route)
+        val first = viewModel.state.value.entries.loadedOrNull!!.single()
+        viewModel.onSplitClick()
+        viewModel.onEntryAmountChange(first.key, "1234.5")
+
+        viewModel.onSplitDoneClick()
+
+        assertEquals(listOf(route), navigator.backStack.value)
+        assertEquals("1,234.50", viewModel.state.value.entries.loadedOrNull!!.single().amountText)
+    }
+
+    @Test
+    fun `onSplitDoneClick keeps the split dialog open and shows the error when an amount isn't valid`() {
+        val route = Route.NewTransaction()
+        navigator.navigate { clear(); add(route) }
+        val viewModel = viewModel(route)
+        val first = viewModel.state.value.entries.loadedOrNull!!.single()
+        viewModel.onSplitClick()
+        viewModel.onEntryAmountChange(first.key, "abc")
+
+        viewModel.onSplitDoneClick()
+
+        assertEquals(listOf(route, Route.TransactionSplit(route)), navigator.backStack.value)
+        assertEquals(true, viewModel.state.value.entries.loadedOrNull!!.single().isAmountError)
+    }
+
+    @Test
     fun `onSplitCancelClick closes the split dialog and puts the entries back as they were`() {
         val route = Route.NewTransaction()
         navigator.navigate { clear(); add(route) }

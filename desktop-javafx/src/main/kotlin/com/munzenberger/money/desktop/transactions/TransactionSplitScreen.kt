@@ -32,7 +32,12 @@ class TransactionSplitScreen(scope: ScreenScope, route: Route.TransactionSplit) 
     private val categoryFormatter: TransactionCategoryFormatter by inject()
 
     // Fills the space above the footer as the dialog is resized.
-    private val table = TransactionSplitTable(onCategoryChange = viewModel::onEntryCategoryChange).apply {
+    private val table = TransactionSplitTable(
+        onCategoryChange = viewModel::onEntryCategoryChange,
+        onMemoChange = viewModel::onEntryMemoChange,
+        onAmountChange = viewModel::onEntryAmountChange,
+        onAmountFocusLost = viewModel::onEntryAmountFocusLost,
+    ).apply {
         setVgrow(this, Priority.ALWAYS)
     }
 
@@ -45,7 +50,7 @@ class TransactionSplitScreen(scope: ScreenScope, route: Route.TransactionSplit) 
     private val cancelButton = Button(strings.getString("cancel_button_title")).apply {
         isCancelButton = true
         ButtonBar.setButtonData(this, ButtonBar.ButtonData.CANCEL_CLOSE)
-        setOnAction { viewModel.onSplitCancelClick() }
+        setOnAction { cancel() }
     }
 
     // ButtonBar orders the buttons for the platform, as the forms' footers do.
@@ -65,7 +70,18 @@ class TransactionSplitScreen(scope: ScreenScope, route: Route.TransactionSplit) 
     }
 
     /** Cancels the split, as Cancel does. */
-    fun onCloseRequest() = viewModel.onSplitCancelClick()
+    fun onCloseRequest() = cancel()
+
+    /**
+     * Puts the entries back as they were and closes the dialog. The focus moves to Cancel first, as clicking it would,
+     * so a field being typed in is left while its entry is still the edited one. Otherwise, pressing Escape or closing
+     * the window would leave it as the dialog closes, after the entries are put back, and leaving an amount's field
+     * would change the restored entry.
+     */
+    private fun cancel() {
+        cancelButton.requestFocus()
+        viewModel.onSplitCancelClick()
+    }
 
     private companion object {
         const val PREF_WIDTH = 600.0
