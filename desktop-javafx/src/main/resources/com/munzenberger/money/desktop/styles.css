@@ -112,10 +112,11 @@
 }
 
 /*
- * Dims a read-only combo box's text field background to the window's background, so it looks like it can't be edited.
- * Its text stays dark, since Modena picks the text color from this background, which is still light, rather than
- * fading it as a disabled control does.
+ * Dims a read-only combo box's or text field's background to the window's background, so it looks like it can't be
+ * edited. Its text stays dark, since Modena picks the text color from this background, which is still light, rather
+ * than fading it as a disabled control does. A text field that isn't editable has JavaFX's own `readonly` pseudo-class.
  */
-.combo-box-base:read-only .text-field {
+.combo-box-base:read-only .text-field,
+.text-field:readonly {
     -fx-control-inner-background: -fx-background;
 }

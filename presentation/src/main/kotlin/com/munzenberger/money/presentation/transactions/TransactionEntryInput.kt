@@ -22,12 +22,28 @@ data class TransactionEntryInput @OptIn(ExperimentalUuidApi::class) constructor(
     val category: TransactionCategory? = null,
     /** The text in the amount field, as a positive amount; the form's [TransactionType] gives the sign. */
     val amountText: String = "",
+    /** Whether [amountText] was left as text that isn't a valid amount, so it's shown as an error. */
+    val isAmountError: Boolean = false,
     val memo: String = "",
     /** The transfer's number. Only used when [category] is a transfer. */
     val transferNumber: String = "",
     /** The transfer's status, or null for a new transfer's default. Only used when [category] is a transfer. */
     val transferStatus: TransactionStatus? = null,
 )
+
+/**
+ * The sum of the rows' amounts, as entered, with a blank amount counting as zero. Null if any row's amount isn't a
+ * valid amount, or the sum is too large to fit in a [Money], since there's no total to show.
+ */
+fun List<TransactionEntryInput>.total(): Money? {
+    val amounts = map { input -> if (input.amountText.isBlank()) Money(0) else Money.parseOrNull(input.amountText) }
+    return try {
+        amounts.fold(Money(0)) { total, amount -> total + (amount ?: return null) }
+    } catch (_: ArithmeticException) {
+        // Too large to fit in a Money.
+        null
+    }
+}
 
 /**
  * The entries to save for the transaction with [transactionId], in the rows' order, each with a new id. Amounts are
