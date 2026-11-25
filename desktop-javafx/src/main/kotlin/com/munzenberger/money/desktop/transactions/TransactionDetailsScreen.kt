@@ -23,11 +23,13 @@ import com.munzenberger.money.presentation.register.RegisterAmountColumns
 import com.munzenberger.money.presentation.register.registerAmountColumns
 import com.munzenberger.money.presentation.state.LoadState
 import com.munzenberger.money.presentation.state.loadedOrEmpty
+import com.munzenberger.money.presentation.state.loadedOrNull
 import com.munzenberger.money.presentation.transactions.TransactionCategoryFormatter
 import com.munzenberger.money.presentation.transactions.TransactionDetailsUiState
 import com.munzenberger.money.presentation.transactions.TransactionDetailsViewModel
 import com.munzenberger.money.presentation.transactions.TransactionEntryInput
 import com.munzenberger.money.presentation.transactions.TransactionType
+import com.munzenberger.money.presentation.transactions.total
 import javafx.geometry.Insets
 import javafx.geometry.Pos
 import javafx.scene.control.Button
@@ -124,6 +126,20 @@ class TransactionDetailsScreen(scope: ScreenScope, route: Route.TransactionFormR
 
     private val categoriesProgress = smallProgressIndicator()
 
+    // Like the category field, it edits the only entry, and is read-only when the transaction is split, so the total
+    // render sets for a split changes nothing.
+    private val amountField = TextField().apply {
+        maxWidth = AMOUNT_MAX_WIDTH
+        textProperty().addListener { _, _, amountText ->
+            viewModel.state.value.singleEntry?.let { viewModel.onEntryAmountChange(it.key, amountText) }
+        }
+        focusedProperty().addListener { _, _, focused ->
+            if (!focused) viewModel.state.value.singleEntry?.let { viewModel.onEntryAmountFocusLost(it.key) }
+        }
+    }
+
+    private val amountError = errorLabel(strings.getString("transaction_amount_error_message"))
+
     private val categoriesError = errorLabel(strings.getString("categories_load_error_message"))
 
     private val payeesError = errorLabel(strings.getString("payees_load_error_message"))
@@ -157,6 +173,11 @@ class TransactionDetailsScreen(scope: ScreenScope, route: Route.TransactionFormR
             categoryComboBox,
             categoryRow.withProgress(categoriesProgress).withError(categoriesError),
         )
+        addField(
+            strings.getString("transaction_amount_label"),
+            amountField,
+            amountField.withError(amountError),
+        )
     }
 
     private val form = VBox(Spacing.CONTROL_SPACING, fields)
@@ -185,6 +206,20 @@ class TransactionDetailsScreen(scope: ScreenScope, route: Route.TransactionFormR
         numberField.setTextIfChanged(state.number)
         renderPayee(state)
         renderCategory(state)
+        renderAmount(state)
+    }
+
+    private fun renderAmount(state: TransactionDetailsUiState) {
+        // A split's amounts are changed in its entries, so the field shows their total.
+        val entry = state.singleEntry
+        amountField.isEditable = entry != null
+        amountField.setTextIfChanged(
+            entry?.amountText ?: state.entries.loadedOrNull?.total()?.toString(asCurrency = false).orEmpty()
+        )
+
+        val isError = entry?.isAmountError == true
+        amountField.setError(isError)
+        amountError.setShown(isError)
     }
 
     private fun renderCategory(state: TransactionDetailsUiState) {
@@ -258,6 +293,7 @@ class TransactionDetailsScreen(scope: ScreenScope, route: Route.TransactionFormR
     private companion object {
         const val PREF_WIDTH = 500.0
         const val NUMBER_MAX_WIDTH = 150.0
+        const val AMOUNT_MAX_WIDTH = 150.0
     }
 }
 

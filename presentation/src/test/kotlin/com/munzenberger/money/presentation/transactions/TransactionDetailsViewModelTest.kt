@@ -927,6 +927,79 @@ class TransactionDetailsViewModelTest {
     }
 
     @Test
+    fun `onEntryAmountFocusLost reformats a valid amount`() {
+        val viewModel = viewModel()
+        val key = viewModel.state.value.entries.loadedOrNull!!.single().key
+        viewModel.onEntryAmountChange(key, "1234.5")
+
+        viewModel.onEntryAmountFocusLost(key)
+
+        val entry = viewModel.state.value.entries.loadedOrNull!!.single()
+        assertEquals(Money(123450).toString(asCurrency = false), entry.amountText)
+        assertFalse(entry.isAmountError)
+    }
+
+    @Test
+    fun `onEntryAmountFocusLost shows an error for an invalid amount and keeps the text`() {
+        val viewModel = viewModel()
+        val key = viewModel.state.value.entries.loadedOrNull!!.single().key
+        viewModel.onEntryAmountChange(key, "lots")
+
+        viewModel.onEntryAmountFocusLost(key)
+
+        val entry = viewModel.state.value.entries.loadedOrNull!!.single()
+        assertEquals("lots", entry.amountText)
+        assertTrue(entry.isAmountError)
+    }
+
+    @Test
+    fun `onEntryAmountFocusLost clears a blank amount without an error`() {
+        val viewModel = viewModel()
+        val key = viewModel.state.value.entries.loadedOrNull!!.single().key
+        viewModel.onEntryAmountChange(key, "  ")
+
+        viewModel.onEntryAmountFocusLost(key)
+
+        val entry = viewModel.state.value.entries.loadedOrNull!!.single()
+        assertEquals("", entry.amountText)
+        assertFalse(entry.isAmountError)
+    }
+
+    @Test
+    fun `onEntryAmountChange keeps an amount error while the text is still invalid`() {
+        val viewModel = viewModel()
+        val key = viewModel.state.value.entries.loadedOrNull!!.single().key
+        viewModel.onEntryAmountChange(key, "lots")
+        viewModel.onEntryAmountFocusLost(key)
+
+        viewModel.onEntryAmountChange(key, "lots of")
+
+        assertTrue(viewModel.state.value.entries.loadedOrNull!!.single().isAmountError)
+    }
+
+    @Test
+    fun `onEntryAmountChange clears an amount error once the text is valid`() {
+        val viewModel = viewModel()
+        val key = viewModel.state.value.entries.loadedOrNull!!.single().key
+        viewModel.onEntryAmountChange(key, "lots")
+        viewModel.onEntryAmountFocusLost(key)
+
+        viewModel.onEntryAmountChange(key, "12")
+
+        assertFalse(viewModel.state.value.entries.loadedOrNull!!.single().isAmountError)
+    }
+
+    @Test
+    fun `onEntryAmountChange doesn't show an error while typing`() {
+        val viewModel = viewModel()
+        val key = viewModel.state.value.entries.loadedOrNull!!.single().key
+
+        viewModel.onEntryAmountChange(key, "lots")
+
+        assertFalse(viewModel.state.value.entries.loadedOrNull!!.single().isAmountError)
+    }
+
+    @Test
     fun `onEntryMemoChange sets the entry's memo`() {
         val viewModel = viewModel()
         val key = viewModel.state.value.entries.loadedOrNull!!.single().key

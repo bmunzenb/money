@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.munzenberger.money.core.category.CategoryWithParent
 import com.munzenberger.money.core.category.GetCategoriesUseCase
 import com.munzenberger.money.core.transaction.GetTransactionUseCase
+import com.munzenberger.money.data.api.Money
 import com.munzenberger.money.data.api.account.Account
 import com.munzenberger.money.data.api.account.AccountId
 import com.munzenberger.money.data.api.payee.Payee
@@ -218,7 +219,33 @@ class TransactionDetailsViewModel(
     }
 
     fun onEntryAmountChange(key: Uuid, amountText: String) {
-        _state.update { state -> state.withEntry(key) { it.copy(amountText = amountText) } }
+        _state.update { state ->
+            state.withEntry(key) {
+                // Clear the error as soon as the text becomes valid, but don't show one while still typing.
+                it.copy(
+                    amountText = amountText,
+                    isAmountError = it.isAmountError &&
+                        amountText.isNotBlank() && Money.parseOrNull(amountText) == null,
+                )
+            }
+        }
+    }
+
+    /**
+     * Checks the entry with [key]'s amount once the user leaves its field: a valid amount is reformatted, such as
+     * "1234.5" to "1,234.50", text that isn't one is shown as an error, and a blank amount is cleared.
+     */
+    fun onEntryAmountFocusLost(key: Uuid) {
+        _state.update { state ->
+            state.withEntry(key) {
+                val amount = Money.parseOrNull(it.amountText)
+                when {
+                    it.amountText.isBlank() -> it.copy(amountText = "", isAmountError = false)
+                    amount == null -> it.copy(isAmountError = true)
+                    else -> it.copy(amountText = amount.toString(asCurrency = false), isAmountError = false)
+                }
+            }
+        }
     }
 
     fun onEntryMemoChange(key: Uuid, memo: String) {

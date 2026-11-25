@@ -151,4 +151,35 @@ class TransactionEntryInputTest {
     fun `a row with a blank amount can't be saved`() {
         assertNull(listOf(foodInput.copy(amountText = "")).toEntries())
     }
+
+    @Test
+    fun `the total is the sum of the rows' amounts`() {
+        assertEquals(Money(1734), listOf(foodInput, savingsInput).total())
+    }
+
+    @Test
+    fun `the total counts a blank amount as zero`() {
+        assertEquals(Money(1234), listOf(foodInput, TransactionEntryInput(amountText = " ")).total())
+    }
+
+    @Test
+    fun `the total includes negative amounts`() {
+        assertEquals(Money(1134), listOf(foodInput, TransactionEntryInput(amountText = "-1")).total())
+    }
+
+    @Test
+    fun `there's no total when a row's amount is invalid`() {
+        assertNull(listOf(foodInput, TransactionEntryInput(amountText = "lots")).total())
+    }
+
+    @Test
+    fun `there's no total when it's too large`() {
+        val large = TransactionEntryInput(amountText = Money(Long.MAX_VALUE).toString(asCurrency = false))
+        assertNull(listOf(large, large).total())
+    }
+
+    @Test
+    fun `no rows total zero`() {
+        assertEquals(Money(0), emptyList<TransactionEntryInput>().total())
+    }
 }
