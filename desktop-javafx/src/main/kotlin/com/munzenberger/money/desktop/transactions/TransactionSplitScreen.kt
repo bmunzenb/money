@@ -1,13 +1,16 @@
 package com.munzenberger.money.desktop.transactions
 
+import com.munzenberger.money.desktop.components.AccountBalanceView
 import com.munzenberger.money.desktop.navigation.ScreenScope
 import com.munzenberger.money.desktop.strings
 import com.munzenberger.money.desktop.theme.Spacing
 import com.munzenberger.money.presentation.navigation.Route
+import com.munzenberger.money.presentation.state.LoadState
 import com.munzenberger.money.presentation.state.loadedOrEmpty
 import com.munzenberger.money.presentation.transactions.TransactionCategoryFormatter
 import com.munzenberger.money.presentation.transactions.TransactionDetailsUiState
 import com.munzenberger.money.presentation.transactions.TransactionDetailsViewModel
+import com.munzenberger.money.presentation.transactions.total
 import javafx.geometry.Insets
 import javafx.geometry.Pos
 import javafx.scene.control.Button
@@ -41,6 +44,12 @@ class TransactionSplitScreen(scope: ScreenScope, route: Route.TransactionSplit) 
         setVgrow(this, Priority.ALWAYS)
     }
 
+    // The sum of the rows' amounts, right below the table and in bold, like the account list's total. It's unavailable
+    // while any row's amount isn't a valid amount.
+    private val totalBalance = AccountBalanceView(strings.getString("split_total_label")).apply {
+        styleClass += "total-balance"
+    }
+
     private val doneButton = Button(strings.getString("done_button_title")).apply {
         isDefaultButton = true
         ButtonBar.setButtonData(this, ButtonBar.ButtonData.OK_DONE)
@@ -60,13 +69,20 @@ class TransactionSplitScreen(scope: ScreenScope, route: Route.TransactionSplit) 
     init {
         padding = Insets(Spacing.SCREEN_PADDING)
         setPrefSize(PREF_WIDTH, PREF_HEIGHT)
-        children.setAll(table, footer)
+        children.setAll(table, totalBalance, footer)
         scope.collect(viewModel.state, ::render)
     }
 
     private fun render(state: TransactionDetailsUiState) {
         table.showCategories(state.categories.loadedOrEmpty.map(categoryFormatter::format))
         table.show(state.entries.loadedOrEmpty)
+        totalBalance.render(
+            when (val entries = state.entries) {
+                LoadState.Loading -> LoadState.Loading
+                LoadState.Error -> LoadState.Error
+                is LoadState.Loaded -> entries.value.total()?.let { LoadState.Loaded(it) } ?: LoadState.Error
+            },
+        )
     }
 
     /** Cancels the split, as Cancel does. */
