@@ -39,6 +39,11 @@ data class TransactionDetailsUiState(
      */
     val number: String = "",
     /**
+     * The transaction's memo, apart from its entries' memos: empty for a new transaction, or the saved memo of the one
+     * being edited once it's loaded.
+     */
+    val memo: String = "",
+    /**
      * The categories and transfer accounts the transaction's entries can be assigned to: the categories, each after
      * its parent, then the accounts, each sorted by name.
      */

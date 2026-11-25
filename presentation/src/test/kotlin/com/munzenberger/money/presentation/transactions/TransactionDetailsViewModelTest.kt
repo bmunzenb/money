@@ -117,6 +117,7 @@ class TransactionDetailsViewModelTest {
             status = unreconciled,
             date = LocalDate(2026, 1, 20),
             number = "1042",
+            memo = "Weekly shop",
         )
 
     private val groceries = CategoryEntry(
@@ -839,6 +840,51 @@ class TransactionDetailsViewModelTest {
         viewModel.onNumberChange("1043")
 
         assertEquals("1043", viewModel.state.value.number)
+    }
+
+    @Test
+    fun `a new transaction's memo is empty`() {
+        val viewModel = viewModel()
+
+        assertEquals("", viewModel.state.value.memo)
+    }
+
+    @Test
+    fun `an existing transaction's memo is its saved memo once it's loaded`() = runTest {
+        val viewModel = viewModel(Route.TransactionDetails(existingTransaction.id))
+
+        fixture.connect(repository())
+
+        assertEquals("Weekly shop", viewModel.state.value.memo)
+    }
+
+    @Test
+    fun `an existing transaction without a memo has an empty memo once it's loaded`() = runTest {
+        val viewModel = viewModel(Route.TransactionDetails(existingTransaction.id))
+        viewModel.onMemoChange("Groceries")
+
+        fixture.connect(repository(transaction = flowOf(existingTransaction.copy(memo = null))))
+
+        assertEquals("", viewModel.state.value.memo)
+    }
+
+    @Test
+    fun `an existing transaction that can't be loaded keeps the memo`() = runTest {
+        val viewModel = viewModel(Route.TransactionDetails(existingTransaction.id))
+        viewModel.onMemoChange("Groceries")
+
+        fixture.connect(repository(transaction = flowOf(null)))
+
+        assertEquals("Groceries", viewModel.state.value.memo)
+    }
+
+    @Test
+    fun `onMemoChange sets the memo`() {
+        val viewModel = viewModel()
+
+        viewModel.onMemoChange("Groceries")
+
+        assertEquals("Groceries", viewModel.state.value.memo)
     }
 
     @Test

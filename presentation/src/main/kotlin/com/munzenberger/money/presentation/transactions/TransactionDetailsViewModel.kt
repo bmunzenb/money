@@ -138,6 +138,7 @@ class TransactionDetailsViewModel(
                 date = transaction.transaction.date,
                 type = type,
                 number = transaction.transaction.number.orEmpty(),
+                memo = transaction.transaction.memo.orEmpty(),
                 entries = LoadState.Loaded(entries),
             ).withInitialAccount()
         }
@@ -204,6 +205,10 @@ class TransactionDetailsViewModel(
 
     fun onNumberChange(number: String) {
         _state.update { it.copy(number = number) }
+    }
+
+    fun onMemoChange(memo: String) {
+        _state.update { it.copy(memo = memo) }
     }
 
     /**

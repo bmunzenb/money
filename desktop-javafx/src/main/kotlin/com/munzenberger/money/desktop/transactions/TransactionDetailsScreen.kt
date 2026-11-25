@@ -140,6 +140,11 @@ class TransactionDetailsScreen(scope: ScreenScope, route: Route.TransactionFormR
 
     private val amountError = errorLabel(strings.getString("transaction_amount_error_message"))
 
+    // The transaction's own memo, not its entries'.
+    private val memoField = TextField().apply {
+        textProperty().addListener { _, _, memo -> viewModel.onMemoChange(memo) }
+    }
+
     private val categoriesError = errorLabel(strings.getString("categories_load_error_message"))
 
     private val payeesError = errorLabel(strings.getString("payees_load_error_message"))
@@ -178,6 +183,7 @@ class TransactionDetailsScreen(scope: ScreenScope, route: Route.TransactionFormR
             amountField,
             amountField.withError(amountError),
         )
+        addField(strings.getString("transaction_memo_label"), memoField)
     }
 
     private val form = VBox(Spacing.CONTROL_SPACING, fields)
@@ -207,6 +213,7 @@ class TransactionDetailsScreen(scope: ScreenScope, route: Route.TransactionFormR
         renderPayee(state)
         renderCategory(state)
         renderAmount(state)
+        memoField.setTextIfChanged(state.memo)
     }
 
     private fun renderAmount(state: TransactionDetailsUiState) {
