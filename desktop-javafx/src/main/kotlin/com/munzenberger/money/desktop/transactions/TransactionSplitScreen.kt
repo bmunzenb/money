@@ -32,7 +32,12 @@ class TransactionSplitScreen(scope: ScreenScope, route: Route.TransactionSplit) 
     private val categoryFormatter: TransactionCategoryFormatter by inject()
 
     // Fills the space above the footer as the dialog is resized.
-    private val table = TransactionSplitTable(onCategoryChange = viewModel::onEntryCategoryChange).apply {
+    private val table = TransactionSplitTable(
+        onCategoryChange = viewModel::onEntryCategoryChange,
+        onMemoChange = viewModel::onEntryMemoChange,
+        onAmountChange = viewModel::onEntryAmountChange,
+        onAmountFocusLost = viewModel::onEntryAmountFocusLost,
+    ).apply {
         setVgrow(this, Priority.ALWAYS)
     }
 
