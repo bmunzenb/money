@@ -1137,6 +1137,52 @@ class TransactionDetailsViewModelTest {
     }
 
     @Test
+    fun `onMoveEntryUpClick moves the entry with that key up one place`() {
+        val viewModel = viewModel()
+        viewModel.onAddEntryClick()
+        viewModel.onAddEntryClick()
+        val (first, second, third) = viewModel.state.value.entries.loadedOrNull!!
+
+        viewModel.onMoveEntryUpClick(third.key)
+
+        assertEquals(listOf(first, third, second), viewModel.state.value.entries.loadedOrNull)
+    }
+
+    @Test
+    fun `onMoveEntryUpClick does nothing for the first entry`() {
+        val viewModel = viewModel()
+        viewModel.onAddEntryClick()
+        val entries = viewModel.state.value.entries.loadedOrNull!!
+
+        viewModel.onMoveEntryUpClick(entries.first().key)
+
+        assertEquals(entries, viewModel.state.value.entries.loadedOrNull)
+    }
+
+    @Test
+    fun `onMoveEntryDownClick moves the entry with that key down one place`() {
+        val viewModel = viewModel()
+        viewModel.onAddEntryClick()
+        viewModel.onAddEntryClick()
+        val (first, second, third) = viewModel.state.value.entries.loadedOrNull!!
+
+        viewModel.onMoveEntryDownClick(first.key)
+
+        assertEquals(listOf(second, first, third), viewModel.state.value.entries.loadedOrNull)
+    }
+
+    @Test
+    fun `onMoveEntryDownClick does nothing for the last entry`() {
+        val viewModel = viewModel()
+        viewModel.onAddEntryClick()
+        val entries = viewModel.state.value.entries.loadedOrNull!!
+
+        viewModel.onMoveEntryDownClick(entries.last().key)
+
+        assertEquals(entries, viewModel.state.value.entries.loadedOrNull)
+    }
+
+    @Test
     fun `onSplitClick opens the split dialog over the form`() {
         val route = Route.NewTransaction(bills.id)
         navigator.navigate { clear(); add(Route.AccountRegister(bills.id)); add(route) }
