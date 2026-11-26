@@ -38,10 +38,32 @@ internal class TransactionSplitTable : TableView<TransactionEntryInput>() {
         columns.forEach { it.isSortable = false }
     }
 
-    /** Shows [entries], replacing the ones shown. Showing the same entries again leaves the rows as they are. */
+    /**
+     * Shows [entries], replacing the ones shown. Showing the same entries again leaves the rows as they are.
+     *
+     * The selection follows the entries by key, so a moved row stays selected. A row added to rows already shown is
+     * selected, and removing the selected row selects the one that takes its place, or the new last row.
+     */
     fun show(entries: List<TransactionEntryInput>) {
-        if (entries != items) {
-            items.setAll(entries)
+        if (entries == items) return
+
+        val selectedIndex = selectionModel.selectedIndex
+        val selectedKey = selectionModel.selectedItem?.key
+        val shownKeys = items.mapTo(HashSet()) { it.key }
+        items.setAll(entries)
+
+        val addedIndex = if (shownKeys.isEmpty()) -1 else entries.indexOfFirst { it.key !in shownKeys }
+        val newIndex = when {
+            addedIndex >= 0 -> addedIndex
+            selectedKey == null -> -1
+            else -> entries.indexOfFirst { it.key == selectedKey }.takeIf { it >= 0 }
+                ?: minOf(selectedIndex, entries.lastIndex)
+        }
+        if (newIndex >= 0) {
+            selectionModel.clearAndSelect(newIndex)
+            scrollTo(newIndex)
+        } else {
+            selectionModel.clearSelection()
         }
     }
 }

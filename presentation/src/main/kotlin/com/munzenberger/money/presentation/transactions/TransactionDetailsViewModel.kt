@@ -266,6 +266,16 @@ class TransactionDetailsViewModel(
         }
     }
 
+    /** Moves the row with [key] up one place. Does nothing for the first row, or if none has [key]. */
+    fun onMoveEntryUpClick(key: Uuid) {
+        _state.update { state -> state.withEntries { it.withEntryMoved(key, by = -1) } }
+    }
+
+    /** Moves the row with [key] down one place. Does nothing for the last row, or if none has [key]. */
+    fun onMoveEntryDownClick(key: Uuid) {
+        _state.update { state -> state.withEntries { it.withEntryMoved(key, by = 1) } }
+    }
+
     /** The category shown as [categoryText], or null if there isn't one. */
     private fun List<TransactionCategory>.matching(categoryText: String): TransactionCategory? {
         val text = categoryText.trim()
@@ -333,6 +343,17 @@ private fun TransactionDetailsUiState.withEntry(
     key: Uuid,
     transform: (TransactionEntryInput) -> TransactionEntryInput,
 ): TransactionDetailsUiState = withEntries { entries -> entries.map { if (it.key == key) transform(it) else it } }
+
+/**
+ * These rows with the one with [key] moved [by] places, such as -1 for up one place. Unchanged if none has [key], or
+ * the move would take it past either end.
+ */
+private fun List<TransactionEntryInput>.withEntryMoved(key: Uuid, by: Int): List<TransactionEntryInput> {
+    val index = indexOfFirst { it.key == key }
+    val newIndex = index + by
+    if (index < 0 || newIndex !in indices) return this
+    return toMutableList().apply { add(newIndex, removeAt(index)) }
+}
 
 /** This state with its rows changed by [transform]. Unchanged if the entries aren't loaded. */
 private fun TransactionDetailsUiState.withEntries(
